@@ -7,6 +7,4 @@
 	
 >> SERVER:
 
-	[!!!] connect to realm from login code; 10/10/19 - 22/10/19; Fassinger
-
 >> GUI/ART:
