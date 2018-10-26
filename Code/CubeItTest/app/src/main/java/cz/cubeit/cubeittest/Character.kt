@@ -70,19 +70,22 @@ class Character : AppCompatActivity() {
             val index:Int = if(position == 0) 0 else{
                 position*4
             }
+            val handler = Handler()
             try {
                 viewHolder.buttonInventory1.setBackgroundResource(getDrawable(inventory[index]))
                 var clicks = 0
                 viewHolder.buttonInventory1.setOnClickListener {
                     textViewInfoItem.text = spellSpec(inventory[index], 0)+"\n"+spellSpec(inventory[index], 3)+"\n"+spellSpec(inventory[index], 2)+"\n"+spellSpec(inventory[index], 4)
                     ++clicks
-                    if(clicks==2){
+                    if(clicks>=2){
                         Toast.makeText(it.context,"Double clicked", Toast.LENGTH_LONG).show()
+                        handler.removeCallbacksAndMessages(null)
+                    }else if(clicks==1){
+
                     }
-                    val handler = Handler()
                     handler.postDelayed({
                         clicks=0
-                    }, 500)
+                    }, 250)
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory1.setBackgroundResource(getDrawable(0)); viewHolder.buttonInventory1.isClickable = false
@@ -93,13 +96,15 @@ class Character : AppCompatActivity() {
                 viewHolder.buttonInventory2.setOnClickListener {
                     textViewInfoItem.text = spellSpec(inventory[index+1], 0)+"\n"+spellSpec(inventory[index+1], 3)+"\n"+spellSpec(inventory[index+1], 2)+"\n"+spellSpec(inventory[index+1], 4)
                     ++clicks
-                    if(clicks==2){
+                    if(clicks>=2){
                         Toast.makeText(it.context,"Double clicked", Toast.LENGTH_LONG).show()
+                        handler.removeCallbacksAndMessages(null)
+                    }else if(clicks==1){
+
                     }
-                    val handler = Handler()
                     handler.postDelayed({
                         clicks=0
-                    }, 500)
+                    }, 250)
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory2.setBackgroundResource(getDrawable(0)); viewHolder.buttonInventory2.isClickable = false
@@ -110,13 +115,15 @@ class Character : AppCompatActivity() {
                 viewHolder.buttonInventory3.setOnClickListener {
                     textViewInfoItem.text = spellSpec(inventory[index+2], 0)+"\n"+spellSpec(inventory[index+2], 3)+"\n"+spellSpec(inventory[index+2], 2)+"\n"+spellSpec(inventory[index+2], 4)
                     ++clicks
-                    if(clicks==2){
+                    if(clicks>=2){
                         Toast.makeText(it.context,"Double clicked", Toast.LENGTH_LONG).show()
+                        handler.removeCallbacksAndMessages(null)
+                    }else if(clicks==1){
+
                     }
-                    val handler = Handler()
                     handler.postDelayed({
                         clicks=0
-                    }, 500)
+                    }, 250)
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory3.setBackgroundResource(getDrawable(0)); viewHolder.buttonInventory3.isClickable = false
@@ -127,13 +134,15 @@ class Character : AppCompatActivity() {
                 viewHolder.buttonInventory4.setOnClickListener {
                     textViewInfoItem.text = spellSpec(inventory[index+3], 0)+"\n"+spellSpec(inventory[index+3], 3)+"\n"+spellSpec(inventory[index+3], 2)+"\n"+spellSpec(inventory[index+3], 4)
                     ++clicks
-                    if(clicks==2){
+                    if(clicks>=2){
                         Toast.makeText(it.context,"Double clicked", Toast.LENGTH_LONG).show()
+                        handler.removeCallbacksAndMessages(null)
+                    }else if(clicks==1){
+
                     }
-                    val handler = Handler()
                     handler.postDelayed({
                         clicks=0
-                    }, 500)
+                    }, 250)
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory4.setBackgroundResource(getDrawable(0)); viewHolder.buttonInventory4.isClickable = false
