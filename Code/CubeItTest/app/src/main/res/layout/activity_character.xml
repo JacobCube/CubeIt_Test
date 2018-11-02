@@ -8,25 +8,115 @@
     tools:context="cz.cubeit.cubeittest.Character">
 
 
+    <Button
+        android:id="@+id/equipItem2"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="63dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+
+    <Button
+        android:id="@+id/equipItem3"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toTopOf="@+id/equipItem2"
+        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+
+    <Button
+        android:id="@+id/equipItem4"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toTopOf="@+id/equipItem3"
+        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+
+    <Button
+        android:id="@+id/equipItem5"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toTopOf="@+id/equipItem4"
+        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+
+    <Button
+        android:id="@+id/equipItem6"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="63dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/equipItem7"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toTopOf="@+id/equipItem6"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/equipItem8"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toTopOf="@+id/equipItem7"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/equipItem9"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toTopOf="@+id/equipItem8"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <ListView
         android:id="@+id/inventoryListView"
         android:layout_width="212dp"
         android:layout_height="0dp"
-        android:layout_marginStart="216dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/bagView"
-        app:layout_constraintStart_toStartOf="@+id/equipView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.532"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/bagView" />
 
     <TextView
         android:id="@+id/textViewInfoItem"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:minHeight="50dp"
         android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/buttonItemAdd"
+        app:layout_constraintBottom_toTopOf="@+id/inventoryListView"
+        app:layout_constraintEnd_toEndOf="@+id/inventoryListView"
+        app:layout_constraintStart_toStartOf="@+id/inventoryListView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewInfoCharacter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/inventoryListView"
+        app:layout_constraintStart_toEndOf="@+id/textViewInfoItem"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
@@ -36,6 +126,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/inventoryListView"
         app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
@@ -43,69 +134,50 @@
     <View
         android:id="@+id/bagView"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="202dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/inventoryListView"
-        app:layout_constraintTop_toBottomOf="@+id/buttonItemAdd" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewInfoCharacter"
+        app:layout_constraintVertical_bias="1.0" />
 
 
     <Button
-        android:id="@+id/button17"
+        android:id="@+id/buttonBag0"
         android:layout_width="45dp"
-        android:layout_height="49dp"
+        android:layout_height="45dp"
         android:layout_marginBottom="8dp"
-        android:text="Button"
         app:layout_constraintBottom_toBottomOf="@+id/bagView"
         app:layout_constraintEnd_toEndOf="@+id/bagView"
-        app:layout_constraintTop_toBottomOf="@+id/button18"
+        app:layout_constraintTop_toBottomOf="@+id/buttonBag1"
         app:layout_constraintVertical_bias="0.0" />
 
     <Button
-        android:id="@+id/button18"
+        android:id="@+id/buttonBag1"
         android:layout_width="45dp"
-        android:layout_height="49dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Button"
-        app:layout_constraintBottom_toTopOf="@+id/button17"
+        android:layout_height="45dp"
         app:layout_constraintEnd_toEndOf="@+id/bagView"
-        app:layout_constraintTop_toTopOf="@+id/bagView"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <Button
-        android:id="@+id/buttonItemAdd"
-        android:layout_width="57dp"
-        android:layout_height="39dp"
-        android:layout_marginTop="156dp"
-        android:text="add"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/equipItem0"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:onClick="onUnequip"
-        android:text="Button"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem1"
-        app:layout_constraintEnd_toEndOf="@+id/equipView"
-        app:layout_constraintTop_toTopOf="@+id/equipView"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toTopOf="@+id/bagView" />
 
     <Button
         android:id="@+id/equipItem1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="140dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="45dp"
+        android:layout_marginBottom="8dp"
         android:onClick="onUnequip"
-        android:text="Button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/equipView" />
+
+    <Button
+        android:id="@+id/equipItem0"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="45dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="onUnequip"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

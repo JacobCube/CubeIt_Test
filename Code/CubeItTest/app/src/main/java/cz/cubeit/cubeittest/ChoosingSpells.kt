@@ -4,39 +4,34 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import cz.cubeit.cubeitfighttemplate.R
-import cz.cubeit.cubeitfighttemplate.R.id.*
 import kotlinx.android.synthetic.main.activity_choosing_spells.*
 import kotlinx.android.synthetic.main.row_choosingspells.view.*
 import kotlinx.android.synthetic.main.row_chosen_spells.view.*
 import java.sql.Types.NULL
 
-class ChoosingSpells : AppCompatActivity() {
-    private var learnedSpells = listOf(1,2,3,4,5,3)
-    private var chosenSpells = arrayOf(5,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-    private var energy = 100
-    private var requiredEnergy = 0
+var learnedSpells:MutableList<Int> = mutableListOf(1,2,3,4,5)
+private var requiredEnergy = 0
+
+class ChoosingSpells : AppCompatActivity(){
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_choosing_spells)
-        errorTextView.visibility = View.INVISIBLE
+        textViewError.visibility = View.INVISIBLE
 
         chosen_listView.adapter = ChosenSpellsView(chosenSpells, energy)
-        choosing_listview.adapter = LearnedSpellsView(textViewInfoSpells, learnedSpells, errorTextView, chosenSpells, chosen_listView.adapter as ChosenSpellsView, requiredEnergy, energy)
+        choosing_listview.adapter = LearnedSpellsView(textViewInfoSpells, learnedSpells, textViewError, chosenSpells, chosen_listView.adapter as ChosenSpellsView, requiredEnergy, energy)
 
     }
 
-    private class LearnedSpellsView(var textViewInfoSpells: TextView, val learnedSpells: List<Int>, val errorTextView: TextView, var chosenSpells: Array<Int>, var chosen_listView:BaseAdapter, var requiredEnergy:Int, var energy: Int) : BaseAdapter() {
+    private class LearnedSpellsView(var textViewInfoSpells: TextView, val learnedSpells: List<Int>, val errorTextView: TextView, var chosenSpells: MutableList<Int>, var chosen_listView:BaseAdapter, var requiredEnergy:Int, var energy: Int) : BaseAdapter() {
 
         override fun getCount(): Int {
             return (learnedSpells.size/2+1)
@@ -50,6 +45,7 @@ class ChoosingSpells : AppCompatActivity() {
             return "TEST STRING"
         }
 
+        @SuppressLint("SetTextI18n")
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
@@ -193,7 +189,7 @@ class ChoosingSpells : AppCompatActivity() {
         }
         fun spellSpec(spellCode: Int, index: Int): String {                                        // going to be server function...or partly made from server
             val returnSpell = when(spellCode) {
-                0 -> arrayOf("Name", "@drawable/emptyslot", "0", "0", "description")
+                0 -> arrayOf("Name","drawable", "0","0","description")
                 1 -> arrayOf("Basic attack","@drawable/basicattack", "20","0","description")
                 2 -> arrayOf("Block","@drawable/shield","0","0","Blocks 80% of next enemy attack")
                 3 -> arrayOf("Fire Ball","@drawable/firespell", "20","100","description")
@@ -206,7 +202,7 @@ class ChoosingSpells : AppCompatActivity() {
         private class ViewHolder(val button1: TextView, val button2: TextView)
     }
 
-    private class ChosenSpellsView(var chosenSpells: Array<Int>, var energy:Int) : BaseAdapter() {
+    private class ChosenSpellsView(var chosenSpells: MutableList<Int>, var energy:Int) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 20
