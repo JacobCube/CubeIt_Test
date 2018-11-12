@@ -10,7 +10,7 @@ apply plugin: 'kotlin-android-extensions'
 
 
 realm {
-    syncEnabled = true;
+    syncEnabled = true
 }
 
 android {
