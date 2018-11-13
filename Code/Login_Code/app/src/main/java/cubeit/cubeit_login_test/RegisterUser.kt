@@ -1,5 +1,6 @@
 package cubeit.cubeit_login_test
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -7,7 +8,7 @@ import io.realm.ObjectServerError
 import io.realm.Realm
 import io.realm.SyncCredentials
 import io.realm.SyncUser
-import kotlinx.android.synthetic.main.register_user.*
+import kotlinx.android.synthetic.main.activity_register.*
 import java.util.regex.Pattern
 
 class RegisterUser : AppCompatActivity() {
@@ -16,11 +17,15 @@ class RegisterUser : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.register_user)
-
+        setContentView(R.layout.activity_register)
         Realm.init(this)
 
-        sendForm.setOnClickListener { view -> createUser() }
+        registerButton.setOnClickListener { view -> createUser() }
+
+        accountExistsButton.setOnClickListener {
+            val intent = Intent(this, LoginUser::class.java)
+            startActivity(intent)
+        }
     }
 
     fun isEmailValid(email: String): Boolean {
@@ -39,7 +44,7 @@ class RegisterUser : AppCompatActivity() {
 
     fun isPasswordValid(password: String): Boolean {
 
-        // Password RQ's: 1+ uppercase letter, 2+ numbers, 1+ special character, length >= 8 (Max length is 31 characters
+        // Password RQ's: 1+ uppercase letter, 2+ numbers, 1+ special character, length >= 8 (Max length is 31 characters)
 
         val regExpn = ("^(?=.*[A-Z])(?=.*[!@#\$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,31}\$")
 

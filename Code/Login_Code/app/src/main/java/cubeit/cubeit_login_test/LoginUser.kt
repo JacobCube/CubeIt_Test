@@ -8,7 +8,7 @@ import io.realm.ObjectServerError
 import io.realm.Realm
 import io.realm.SyncCredentials
 import io.realm.SyncUser
-import kotlinx.android.synthetic.main.login_user.*
+import kotlinx.android.synthetic.main.activity_login.*
 import java.util.regex.Pattern
 
 class LoginUser : AppCompatActivity()  {
@@ -17,12 +17,12 @@ class LoginUser : AppCompatActivity()  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.login_user)
+        setContentView(R.layout.activity_login)
 
         Realm.init(this) // Initialzes Realm
 
-        button.setOnClickListener({ view -> userLogin() })
-        button4.setOnClickListener {
+        buttonLogin.setOnClickListener({ view -> userLogin() })
+        userCreateButton.setOnClickListener {
             val intent = Intent(this, RegisterUser::class.java)
             startActivity(intent)
         }
@@ -56,8 +56,8 @@ class LoginUser : AppCompatActivity()  {
 
     fun userLogin() {
 
-        val userEmail = editTextName.text.toString()
-        val userPassword = editTextPassword.text.toString()
+        val userEmail = userEmailText.text.toString()
+        val userPassword = userPasswordText.text.toString()
 
         if (isEmailValid(userEmail) && isPasswordValid(userPassword)){
 
