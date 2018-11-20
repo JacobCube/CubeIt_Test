@@ -1,27 +1,26 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import cz.cubeit.cubeitfighttemplate.R
 import kotlinx.android.synthetic.main.activity_character.*
-import kotlinx.android.synthetic.main.row_character_inventory.view.*
-import java.sql.Types.NULL
+import kotlinx.android.synthetic.main.row_shop_inventory.view.*
 
 
 private var inventorySlots = 20
 private const val charClass = 1
 private const val name = "MexxFM"
-private var level = 100
+private var level = 10
 private var look:Array<Int> = arrayOf(0,0,0,0,0,0,0,0,0,0)
-private var equip: Array<Wearable?> = arrayOfNulls(10)
+private var equip: Array<Item?> = arrayOfNulls(10)
 private val handler = Handler()
 private var clicks = 0
 private var backpackRunes:Array<Runes?> = arrayOfNulls(2)
@@ -33,97 +32,55 @@ private var power:Int = 40
 private var poison:Int = 0
 private var bleed:Int = 0
 private var adventureSpeed:Int = 0
-var energy:Int = 100
-var learnedSpells:MutableList<Int> = mutableListOf(1,2,3,4,5)
-var shopOffer:Array<Item?> = arrayOfNulls(8)
+private var energy:Int = 100
+private var shopOffer:Array<Item?> = arrayOfNulls(8)
 //-------------------------------------------------------------------------------------------
+val spellsClass1:Array<Spell> = arrayOf(
+        Spell(R.drawable.basicattack, "Basic attack", 0, 10, 0, 0, 1,"")
+        ,Spell(R.drawable.shield, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
+        ,Spell(R.drawable.windspell, "Wind hug", 100, 40, 0, 0, 1,"")
+)
+private var learnedSpells:MutableList<Spell?> = mutableListOf(spellsClass1[0],spellsClass1[1],spellsClass1[2],spellsClass1[3],spellsClass1[4])
+private var chosenSpellsAttack:MutableList<Spell?> = mutableListOf(spellsClass1[2],spellsClass1[3],spellsClass1[4])
+private var chosenSpellsDefense:MutableList<Spell?> = mutableListOf(spellsClass1[0],spellsClass1[1], spellsClass1[0],spellsClass1[1], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
+
 val itemsUniversal:Array<Item?> = arrayOf(
-        Runes("Backpack", R.drawable.backpack, 1, 0, "Why is all your stuff so heavy?!", 0, 0, 0, 0, 0, 0, 0, 0, 10, 0)//arrayOf("Straps","@drawable/belt","1", "0","0","description")
-        ,Runes("Zipper", R.drawable.zipper, 1, 0, "Helps you take enemy's loot fast", 0, 0, 0, 0, 0, 0, 0, 0, 11, 0)//arrayOf("Zipper","@drawable/helmet","1","0","0","Helps you take enemy's loot fast")
-        ,Wearable("Universal item 1", R.drawable.universalitem1, 1, 0, "For everyone", 0, 0, 0, 0, 0, 0, 0, 0, 2, 0)//arrayOf("Universal item 1","@drawable/universalitem1","1", "0","0","description")
-        ,Wearable("Universal item 2", R.drawable.universalitem2, 1, 0, "Not for everyone", 0, 0, 0, 0, 0, 0, 0, 0, 3, 0)//arrayOf("Universal item 2", "@drawable/universalitem2","1","0","0","description")
+        Runes("Backpack", R.drawable.backpack, 1, 0, "Why is all your stuff so heavy?!", 0, 0, 0, 0, 0, 0, 0, 0, 10, 1)
+        ,Runes("Zipper", R.drawable.zipper, 1, 0, "Helps you take enemy's loot fast", 0, 0, 0, 0, 0, 0, 0, 0, 11, 1)
+        ,Wearable("Universal item 1", R.drawable.universalitem1, 1, 0, "For everyone", 0, 0, 0, 0, 0, 0, 0, 0, 2, 1)
+        ,Wearable("Universal item 2", R.drawable.universalitem2, 1, 0, "Not for everyone", 0, 0, 0, 0, 0, 0, 0, 0, 3, 1)
 )
 val itemsClass1:Array<Item?> = arrayOf(
-        Wearable("Sword", R.drawable.basicattack, 1, 1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        ,Wearable("Shield", R.drawable.shield, 1, 1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
-        ,Wearable("Belt", R.drawable.belt, 1, 1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 0)//arrayOf("Belt", "@drawable/belt","1","0","0","description")
-        ,Wearable("Overall", R.drawable.overall, 1, 1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 0)//arrayOf("Overall", "@drawable/overall","1","0","0","description")
-        ,Wearable("Boots", R.drawable.boots, 1, 1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 0)//arrayOf("Boots","@drawable/boots","1", "0","0","description")
-        ,Wearable("Trousers", R.drawable.trousers, 1, 1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 0)//arrayOf("Trousers","@drawable/trousers","1", "0","0","description")
-        ,Wearable("Chestplate", R.drawable.chestplate, 1, 1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 0)//arrayOf("Chestplate","@drawable/chestplate","1", "0","0","description")
-        ,Wearable("Helmet", R.drawable.helmet, 1, 1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 0)//arrayOf("Helmet","@drawable/helmet","1", "0","0","description")
+        Weapon("Sword", R.drawable.basicattack, 1, 1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        , Weapon("Shield", R.drawable.shield, 1, 1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", R.drawable.belt, 1, 1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
+        ,Wearable("Overall", R.drawable.overall, 1, 1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", R.drawable.boots, 1, 1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", R.drawable.trousers, 1, 1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", R.drawable.chestplate, 1, 1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", R.drawable.helmet, 1, 1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )
-
 val itemsClass2:Array<Item?> = arrayOf(
-        Wearable("Sword", R.drawable.basicattack, 1, 2, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        ,Wearable("Shield", R.drawable.shield, 1, 2, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
-        ,Wearable("Belt", R.drawable.belt, 1, 2, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 0)//arrayOf("Belt", "@drawable/belt","1","0","0","description")
-        ,Wearable("Overall", R.drawable.overall, 1, 2, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 0)//arrayOf("Overall", "@drawable/overall","1","0","0","description")
-        ,Wearable("Boots", R.drawable.boots, 1, 2, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 0)//arrayOf("Boots","@drawable/boots","1", "0","0","description")
-        ,Wearable("Trousers", R.drawable.trousers, 1, 2, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 0)//arrayOf("Trousers","@drawable/trousers","1", "0","0","description")
-        ,Wearable("Chestplate", R.drawable.chestplate, 1, 2, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 0)//arrayOf("Chestplate","@drawable/chestplate","1", "0","0","description")
-        ,Wearable("Helmet", R.drawable.helmet, 1, 2, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 0)
+        Weapon("Sword", R.drawable.basicattack, 1, 2, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        ,Weapon("Shield", R.drawable.shield, 1, 2, "Blocks 8  0% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", R.drawable.belt, 1, 2, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)//arrayOf("Belt", "@drawable/belt","1","0","0","description")
+        ,Wearable("Overall", R.drawable.overall, 1, 2, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", R.drawable.boots, 1, 2, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", R.drawable.trousers, 1, 2, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", R.drawable.chestplate, 1, 2, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", R.drawable.helmet, 1, 2, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )
 
-internal fun returnItem(player:Player): MutableList<Item?> {
-    val arrayTemp:MutableList<Item?> = mutableListOf()
-    when (player.charClass) {
-        1 ->{ for(i:Int in 0 until itemsClass1.size){
-            if(itemsClass1[i]!!.levelRq in player.level-100..player.level){
-                arrayTemp.add(itemsClass1[i])
-            }
-            }
-            for(i:Int in 0 until itemsUniversal.size){
-                if(itemsUniversal[i]!!.levelRq in player.level-100..player.level){
-                    arrayTemp.add(itemsUniversal[i])
-                }
-            }
-        }
-        2 -> { for(i:Int in 0 until itemsClass2.size){
-            if(itemsClass2[i]!!.levelRq in player.level-100..player.level){
-                arrayTemp.add(itemsClass2[i])
-            }
-            }
-            for(i:Int in 0 until itemsUniversal.size){
-                if(itemsUniversal[i]!!.levelRq in player.level-100..player.level){
-                    arrayTemp.add(itemsUniversal[i])
-                }
-            }
-        }
-    }
-    return arrayTemp
-}
-
-private var inventory : MutableList<Item?> = mutableListOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5])
-var player:Player = Player(name, look, level, charClass, power, armor, block, poison, bleed, health, energy, adventureSpeed, inventorySlots, inventory, equip, backpackRunes, learnedSpells, chosenSpells, money, shopOffer)
+private var inventory : MutableList<Item?> = mutableListOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5], null, null, null, null, null)
+var player:Player = Player(name, look, level, charClass, power, armor, block, poison, bleed, health, energy, adventureSpeed, inventorySlots, inventory, equip, backpackRunes, learnedSpells, chosenSpellsDefense, chosenSpellsAttack, money, shopOffer)
 
 data class Player(val name:String, var look:Array<Int>, var level:Int, val charClass:Int, var power:Int, var armor:Int, var block:Double, var poison:Int, var bleed:Int, var health:Double, var energy:Int,
-                           var adventureSpeed:Int, var inventorySlots:Int, var inventory:MutableList<Item?>, var equip: Array<Wearable?>, var backpackRunes: Array<Runes?>,
-                           var learnedSpells:MutableList<Int>, var chosenSpells:MutableList<Int>, var money:Int, var shopOffer:Array<Item?>){
-    /*fun serverDataSync(){  /*call me to sync*/
-        if (name != /*server*/) return false /*save me on server*/
-        if (!look.contentEquals(/*server*/)) return false
-        if (level != /*server*/) return false
-        if (charClass != /*server*/) return false
-        if (power != /*server*/) return false
-        if (armor != /*server*/) return false
-        if (block != /*server*/) return false
-        if (poison != /*server*/) return false
-        if (bleed != /*server*/) return false
-        if (health != /*server*/) return false
-        if (energy != /*server*/) return false
-        if (adventureSpeed != /*server*/) return false
-        if (inventorySlots != /*server*/) return false
-        if (inventory != /*server*/) return false
-        if (!equip.contentEquals(/*server*/)) return false
-        if (!backpackRunes.contentEquals(/*server*/)) return false
-        if (learnedSpells != /*server*/) return false
-        if (chosenSpells != /*server*/) return false
-        if (money != /*server*/) return false
-    }*/
-}
-private class Spell(name:String, energy:Int, power:Int, fire:Int, poison:Int)
-//-------------------
+                  var adventureSpeed:Int, var inventorySlots:Int, var inventory:MutableList<Item?>, var equip: Array<Item?>, var backpackRunes: Array<Runes?>,
+                  var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:MutableList<Spell?>, var money:Int, var shopOffer:Array<Item?>)
+open class Spell(var drawable: Int, var name:String, var energy:Int, var power:Int, var fire:Int, var poison:Int, var level:Int, var description:String)
+
 open class Item(name:String, drawable:Int, levelRq:Int, charClass:Int, description:String, power:Int, armor:Int, block:Int, poison:Int, bleed:Int, health:Int, adventureSpeed:Int, inventorySlots:Int, slot:Int, price:Int){
     open val name:String = ""
     open val drawable:Int = 0
@@ -138,7 +95,7 @@ open class Item(name:String, drawable:Int, levelRq:Int, charClass:Int, descripti
     open var health:Int = 0
     open var adventureSpeed:Int = 0
     open var inventorySlots:Int = 0
-    open val slot:Int = 0
+    open val slot: Int = 0
     open val price:Int = 0
 }
 
@@ -148,6 +105,9 @@ data class Wearable(override val name:String, override val drawable:Int, overrid
 data class Runes(override val name:String, override val drawable:Int, override var levelRq:Int, override val charClass:Int, override val description:String, override var power:Int, override var armor:Int, override var block:Int, override var poison:Int, override var bleed:Int, override var health:Int, override var adventureSpeed:Int,
                  override var inventorySlots: Int, override val slot:Int, override val price:Int):Item(name, drawable, levelRq, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
 
+data class Weapon(override val name:String, override val drawable:Int, override var levelRq:Int, override val charClass:Int, override val description:String, override var power:Int, override var armor:Int, override var block:Int, override var poison:Int, override var bleed:Int, override var health:Int, override var adventureSpeed:Int,
+                  override var inventorySlots: Int, override val slot:Int, override val price:Int):Item(name, drawable, levelRq, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
+
 class Character : AppCompatActivity() {
     private var lastClicked = ""
 
@@ -155,142 +115,135 @@ class Character : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_character)
-        inventoryListView.adapter = InventoryView(player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked,
+        textViewInfoCharacter.text = syncStats(player)
+
+        buttonFight.setOnClickListener{
+            val intent = Intent(this, FightSystem::class.java)
+            startActivity(intent)
+        }
+        buttonDefence.setOnClickListener{
+            val intent = Intent(this, ChoosingSpells::class.java)
+            startActivity(intent)
+        }
+        buttonCharacter.setOnClickListener{
+            val intent = Intent(this, Character::class.java)
+            startActivity(intent)
+        }
+        buttonSettings.setOnClickListener{
+            val intent = Intent(this, Settings::class.java)
+            startActivity(intent)
+        }
+        buttonShop.setOnClickListener {
+            val intent = Intent(this, Shop::class.java)
+            startActivity(intent)
+        }
+
+        inventoryListView.adapter = InventoryView(player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, textViewInfoCharacter, this,
                 equipItem0, equipItem1, equipItem2, equipItem3, equipItem4, equipItem5, equipItem6, equipItem7, equipItem8, equipItem9)
 
-        try {
-            equipItem0.setBackgroundResource(player.equip[0]!!.drawable)
-        } catch (e: Exception) {
-            equipItem0.setBackgroundResource(getDrawables(0))
-            equipItem0.isClickable = false
+        for(i in 0 until 10) {
+            val button: Button = findViewById(this.resources.getIdentifier("equipItem$i", "id", this.packageName))
+            try {
+                button.setBackgroundResource(player.equip[i]!!.drawable)
+            } catch (e: Exception) {
+                button.setBackgroundResource(R.drawable.emptyslot)
+                button.isClickable = false
+            }
         }
-        try {
-            equipItem1.setBackgroundResource(player.equip[1]!!.drawable)
-        } catch (e: Exception) {
-            equipItem1.setBackgroundResource(getDrawables(0))
-            equipItem1.isClickable = false
-        }
-        try {
-            equipItem2.setBackgroundResource(player.equip[2]!!.drawable)
-        } catch (e: Exception) {
-            equipItem2.setBackgroundResource(getDrawables(0))
-            equipItem2.isClickable = false
-        }
-        try {
-            equipItem3.setBackgroundResource(player.equip[3]!!.drawable)
-        } catch (e: Exception) {
-            equipItem3.setBackgroundResource(getDrawables(0))
-            equipItem3.isClickable = false
-        }
-        try {
-            equipItem4.setBackgroundResource(player.equip[4]!!.drawable)
-        } catch (e: Exception) {
-            equipItem4.setBackgroundResource(getDrawables(0))
-            equipItem4.isClickable = false
-        }
-        try {
-            equipItem5.setBackgroundResource(player.equip[5]!!.drawable)
-        } catch (e: Exception) {
-            equipItem5.setBackgroundResource(getDrawables(0))
-            equipItem5.isClickable = false
-        }
-        try {
-            equipItem6.setBackgroundResource(player.equip[6]!!.drawable)
-        } catch (e: Exception) {
-            equipItem6.setBackgroundResource(getDrawables(0))
-            equipItem6.isClickable = false
-        }
-        try {
-            equipItem7.setBackgroundResource(player.equip[7]!!.drawable)
-        } catch (e: Exception) {
-            equipItem7.setBackgroundResource(getDrawables(0))
-            equipItem7.isClickable = false
-        }
-        try {
-            equipItem8.setBackgroundResource(player.equip[8]!!.drawable)
-        } catch (e: Exception) {
-            equipItem8.setBackgroundResource(getDrawables(0))
-            equipItem8.isClickable = false
-        }
-        try {
-            equipItem9.setBackgroundResource(player.equip[9]!!.drawable)
-        } catch (e: Exception) {
-            equipItem9.setBackgroundResource(getDrawables(0))
-            equipItem9.isClickable = false
-        }
-        try {
-            buttonBag0.setBackgroundResource(player.backpackRunes[0]!!.drawable)
-        } catch (e: Exception) {
-            buttonBag0.setBackgroundResource(getDrawables(0))
-            buttonBag0.isClickable = false
-        }
-        try {
-            buttonBag1.setBackgroundResource(player.backpackRunes[1]!!.drawable)
-        } catch (e: Exception) {
-            buttonBag1.setBackgroundResource(getDrawables(0))
-            buttonBag1.isClickable = false
+        for(i in 0 until 2){
+            val button: Button = findViewById(this.resources.getIdentifier("buttonBag$i", "id", this.packageName))
+            try {
+                button.setBackgroundResource(player.backpackRunes[i]!!.drawable)
+            } catch (e: Exception){
+                button.setBackgroundResource(R.drawable.emptyslot)
+                button.isClickable = false
+            }
         }
 
         buttonBag0.setOnClickListener {
-                ++clicks
-            try {
-                if (clicks >= 2) {                                                  //DOUBLE CLICK
-                    for (i in 0..player.inventory.size) {
-                        if (player.inventory[i] == null) {
-                            buttonBag0.setBackgroundResource(getDrawables(0))
-                            player.inventory[i] = player.backpackRunes[0]
-                            player.backpackRunes[0] = null
-                            buttonBag0.isClickable = false
-                            (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
-                            break
-                        } else {
+            if(lastClicked!="runes0")handler.removeCallbacksAndMessages(null)
+            ++clicks
+            if (player.backpackRunes[0] != null) {
+                try {
+                    if (clicks == 2&&lastClicked == "runes0"){
+                        for (i in 0..player.inventory.size) {
+                            if (player.inventory[i] == null) {
+                                buttonBag0.setBackgroundResource(R.drawable.emptyslot)
+                                player.inventory[i] = player.backpackRunes[0]
+                                player.backpackRunes[0] = null
+                                buttonBag0.isClickable = false
+                                textViewInfoCharacter.text = syncStats(player)
+                                (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
+                                handler.removeCallbacksAndMessages(null)
+                                if(player.inventory[i]!=null)textViewInfoItem.text = itemStatsInventory(player,i)else textViewInfoItem.visibility = View.INVISIBLE
+                                break
+                            } else {
+                            }
                         }
+                        handler.removeCallbacksAndMessages(null)
+                    } else if (clicks == 1) {                                            //SINGLE CLICK
+                        if (textViewInfoItem.visibility == View.VISIBLE && lastClicked == "runes0") {
+                            textViewInfoItem.visibility = View.INVISIBLE
+                        } else {
+                            textViewInfoItem.visibility = View.VISIBLE
+                        }
+                        lastClicked = "runes0"
+                        textViewInfoItem.text = runesStatsBackpack(player, 0)
                     }
-                    handler.removeCallbacksAndMessages(null)
-                } else if (clicks == 1) {                                            //SINGLE CLICK
-                    if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="runes0"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
-                    lastClicked="runes0"
-                    textViewInfoItem.text = runesStatsBackpack(player, 0)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
                 }
-            }catch(e:Exception){
-            Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
-            }
                 handler.postDelayed({
-                    clicks=0
+                    clicks = 0
                 }, 250)
+            }else{
+                buttonBag0.isClickable = false
+            }
         }
         buttonBag1.setOnClickListener {
+            if(lastClicked!="runes1")handler.removeCallbacksAndMessages(null)
             ++clicks
-            try {
-                if (clicks >= 2) {                                                  //DOUBLE CLICK
-                    for (i in 0..inventory.size){
-                        if (player.inventory[i] == null){
-                            buttonBag1.setBackgroundResource(R.drawable.emptyslot)
-                            inventory[i] = backpackRunes[1]
-                            backpackRunes[1] = null
-                            buttonBag1.isClickable = false
-                            (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
-                            break
-                        }else{
+            if (player.backpackRunes[1] != null) {
+                try {
+                    if (clicks == 2&&lastClicked == "runes1") {
+                        for (i in 0..inventory.size) {
+                            if (player.inventory[i] == null) {
+                                buttonBag1.setBackgroundResource(R.drawable.emptyslot)
+                                inventory[i] = backpackRunes[1]
+                                backpackRunes[1] = null
+                                buttonBag1.isClickable = false
+                                textViewInfoCharacter.text = syncStats(player)
+                                (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
+                                handler.removeCallbacksAndMessages(null)
+                                if(player.inventory[i]!=null)textViewInfoItem.text = itemStatsInventory(player,i)else textViewInfoItem.visibility = View.INVISIBLE
+                                break
+                            } else {
+                            }
                         }
+                        handler.removeCallbacksAndMessages(null)
+                    } else if (clicks == 1) {                                            //SINGLE CLICK
+                        if (textViewInfoItem.visibility == View.VISIBLE && lastClicked == "runes1") {
+                            textViewInfoItem.visibility = View.INVISIBLE
+                        } else {
+                            textViewInfoItem.visibility = View.VISIBLE
+                        }
+                        lastClicked = "runes1"
+                        textViewInfoItem.text = runesStatsBackpack(player, 1)
                     }
-                    handler.removeCallbacksAndMessages(null)
-                } else if (clicks == 1) {                                            //SINGLE CLICK
-                    if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="runes1"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
-                    lastClicked="runes1"
-                    textViewInfoItem.text = runesStatsBackpack(player, 1)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
                 }
-            }catch(e:Exception){
-            Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
+                handler.postDelayed({
+                    clicks = 0
+                }, 250)
+            }else{
+                buttonBag0.isClickable = false
             }
-            handler.postDelayed({
-                clicks=0
-            }, 250)
         }
     }
 
-    private class InventoryView(var player:Player, val textViewInfoItem: TextView, val buttonBag0:Button, val buttonBag1:Button, var lastClicked:String,
-                                val equipItem0:Button,val equipItem1:Button,val equipItem2:Button,val equipItem3:Button,val equipItem4:Button,val equipItem5:Button,val equipItem6:Button,val equipItem7:Button,val equipItem8:Button,val equipItem9:Button) : BaseAdapter() {
+    private class InventoryView(var player:Player, val textViewInfoItem: TextView, val buttonBag0:Button, val buttonBag1:Button, var lastClicked:String, val textViewInfoCharacter:TextView, val context: Context,
+                                val equipItem0:Button, val equipItem1:Button, val equipItem2:Button, val equipItem3:Button, val equipItem4:Button, val equipItem5:Button, val equipItem6:Button, val equipItem7:Button, val equipItem8:Button, val equipItem9:Button) : BaseAdapter() {
 
         override fun getCount(): Int {
             return player.inventorySlots/4+1
@@ -324,11 +277,15 @@ class Character : AppCompatActivity() {
                 viewHolder.buttonInventory1.setBackgroundResource(player.inventory[index]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory1.setOnClickListener {
+                    if(lastClicked!="inventory0$position")handler.removeCallbacksAndMessages(null)
                     ++clicks
-                    if(clicks>=2){                                                  //DOUBLE CLICK
-                        getDoubleClick(index)
+                    if(clicks==2&&lastClicked=="inventory0$position"){
+                        getDoubleClick(index, player)
+                        //(viewB.findViewById(context.resources.getIdentifier("equipItem1", "id", context.packageName))as Button)
 
+                        textViewInfoCharacter.text = syncStats(player)
                         handler.removeCallbacksAndMessages(null)
+                        if(player.inventory[index]!=null)textViewInfoItem.text = itemStatsInventory(player,index)else textViewInfoItem.visibility = View.INVISIBLE
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory0$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory0$position"
@@ -339,18 +296,20 @@ class Character : AppCompatActivity() {
                     }, 250)
                 }
             }catch(e:Exception){
-                viewHolder.buttonInventory1.setBackgroundResource(getDrawables(0))
+                viewHolder.buttonInventory1.setBackgroundResource(R.drawable.emptyslot)
                 viewHolder.buttonInventory1.isClickable = false
             }
             try {
                 viewHolder.buttonInventory2.setBackgroundResource(player.inventory[index+1]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory2.setOnClickListener {
+                    if(lastClicked!="inventory1$position")handler.removeCallbacksAndMessages(null)
                     ++clicks
-                    if(clicks>=2){
-                        getDoubleClick(index+1)
-
+                    if(clicks==2&&lastClicked=="inventory1$position"){
+                        getDoubleClick(index+1, player)
+                        textViewInfoCharacter.text = syncStats(player)
                         handler.removeCallbacksAndMessages(null)
+                        if(player.inventory[index+1]!=null)textViewInfoItem.text = itemStatsInventory(player,index+1)else textViewInfoItem.visibility = View.INVISIBLE
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory1$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory1$position"
@@ -361,18 +320,20 @@ class Character : AppCompatActivity() {
                     }, 250)
                 }
             }catch(e:Exception){
-                viewHolder.buttonInventory2.setBackgroundResource(getDrawables(0))
+                viewHolder.buttonInventory2.setBackgroundResource(R.drawable.emptyslot)
                 viewHolder.buttonInventory2.isClickable = false
             }
             try {
                 viewHolder.buttonInventory3.setBackgroundResource(player.inventory[index+2]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory3.setOnClickListener {
+                    if(lastClicked!="inventory2$position")handler.removeCallbacksAndMessages(null)
                     ++clicks
-                    if(clicks>=2){
-                        getDoubleClick(index+2)
-
+                    if(clicks==2&&lastClicked=="inventory2$position"){
+                        getDoubleClick(index+2, player)
+                        textViewInfoCharacter.text = syncStats(player)
                         handler.removeCallbacksAndMessages(null)
+                        if(player.inventory[index+2]!=null)textViewInfoItem.text = itemStatsInventory(player,index+2)else textViewInfoItem.visibility = View.INVISIBLE
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory2$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory2$position"
@@ -383,18 +344,20 @@ class Character : AppCompatActivity() {
                     }, 250)
                 }
             }catch(e:Exception){
-                viewHolder.buttonInventory3.setBackgroundResource(getDrawables(0))
+                viewHolder.buttonInventory3.setBackgroundResource(R.drawable.emptyslot)
                 viewHolder.buttonInventory3.isClickable = false
             }
             try {
                 viewHolder.buttonInventory4.setBackgroundResource(player.inventory[index+3]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory4.setOnClickListener {
+                    if(lastClicked!="inventory3$position")handler.removeCallbacksAndMessages(null)
                     ++clicks
-                    if(clicks>=2){
-                        getDoubleClick(index+3)
-
+                    if(clicks==2&&lastClicked=="inventory3$position"){
+                        getDoubleClick(index+3,player)
+                        textViewInfoCharacter.text = syncStats(player)
                         handler.removeCallbacksAndMessages(null)
+                        if(player.inventory[index+3]!=null)textViewInfoItem.text = itemStatsInventory(player,index+3)else textViewInfoItem.visibility = View.INVISIBLE
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory3$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory3$position"
@@ -405,152 +368,54 @@ class Character : AppCompatActivity() {
                     }, 250)
                 }
             }catch(e:Exception){
-                viewHolder.buttonInventory4.setBackgroundResource(getDrawables(0))
+                viewHolder.buttonInventory4.setBackgroundResource(R.drawable.emptyslot)
                 viewHolder.buttonInventory4.isClickable = false
             }
 
             return rowMain
         }
-        private fun getDoubleClick(index: Int) {
+        private fun getDoubleClick(index: Int, player:Player) {
             val tempMemory: Item?
 
-            when (player.inventory[index]!!.slot) {                                                    //The system of adding items depends on number of number of wearable items
-                0 -> if (player.equip[0] == null) {
-                    equipItem0.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem0.isClickable = true
-                    player.equip[0] = (inventory[index] as Wearable)
+            val button:Button = when(player.inventory[index]!!.slot){
+                0->equipItem0
+                1->equipItem1
+                2->equipItem2
+                3->equipItem3
+                4->equipItem4
+                5->equipItem5
+                6->equipItem6
+                7->equipItem7
+                8->equipItem8
+                9->equipItem9
+                10->buttonBag0
+                11->buttonBag1
+                else -> equipItem0
+            }
+            when(player.inventory[index]){
+                is Runes -> if (player.backpackRunes[player.inventory[index]!!.slot-10] == null) {
+                    button.setBackgroundResource(player.inventory[index]!!.drawable)
+                    button.isClickable = true
+                    player.backpackRunes[player.inventory[index]!!.slot-10] = (player.inventory[index] as Runes)
                     player.inventory[index] = null
                 } else {
-                    equipItem0.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem0.isClickable = true
-                    tempMemory = equip[0]
-                    player.equip[0] = (inventory[index] as Wearable)
+                    button.setBackgroundResource(player.inventory[index]!!.drawable)
+                    button.isClickable = true
+                    tempMemory = player.backpackRunes[player.inventory[index]!!.slot-10]
+                    player.backpackRunes[player.inventory[index]!!.slot-10] = (player.inventory[index] as Runes)
                     player.inventory[index] = tempMemory
                 }
-                1 -> if (player.equip[1] == null) {
-                    equipItem1.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem1.isClickable = true
-                    player.equip[1] = (inventory[index] as Wearable)
+
+                is Weapon,is Wearable -> if (player.equip[player.inventory[index]!!.slot] == null) {
+                    button.setBackgroundResource(player.inventory[index]!!.drawable)
+                    button.isClickable = true
+                    player.equip[player.inventory[index]!!.slot] = inventory[index]
                     player.inventory[index] = null
                 } else {
-                    equipItem1.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem1.isClickable = true
-                    tempMemory = equip[1]
-                    player.equip[1] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                2 -> if (player.equip[2] == null) {
-                    equipItem2.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem2.isClickable = true
-                    player.equip[2] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                } else {
-                    equipItem2.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem2.isClickable = true
-                    tempMemory = equip[2]
-                    player.equip[2] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                3 -> if (player.equip[3] == null) {
-                    equipItem3.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem3.isClickable = true
-                    player.equip[3] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                } else {
-                    equipItem3.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem3.isClickable = true
-                    tempMemory = equip[3]
-                    player.equip[3] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                4 -> if (player.equip[4] == null) {
-                    equipItem4.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem4.isClickable = true
-                    player.equip[4] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                } else {
-                    equipItem4.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem4.isClickable = true
-                    tempMemory = equip[4]
-                    player.equip[4] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                5 -> if (player.equip[5] == null) {
-                    equipItem5.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem5.isClickable = true
-                    player.equip[5] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                } else {
-                    equipItem5.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem5.isClickable = true
-                    tempMemory = equip[5]
-                    player.equip[5] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                6 -> if (player.equip[6] == null) {
-                    equipItem6.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem6.isClickable = true
-                    player.equip[6] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                } else {
-                    equipItem6.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem6.isClickable = true
-                    tempMemory = equip[6]
-                    player.equip[6] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                7 -> if (player.equip[7] == null) {
-                    equipItem7.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem7.isClickable = true
-                    player.equip[7] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                } else {
-                    equipItem7.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem7.isClickable = true
-                    tempMemory = equip[7]
-                    player.equip[7] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                8 -> if (player.equip[8] == null) {
-                    equipItem8.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem8.isClickable = true
-                    player.equip[8] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                } else {
-                    equipItem8.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem8.isClickable = true
-                    tempMemory = equip[8]
-                    player.equip[8] = (inventory[index] as Wearable)
-                    player.inventory[index] = tempMemory
-                }
-                9 -> if (player.equip[9] == null) {
-                    equipItem9.setBackgroundResource((player.inventory[index] as Wearable).drawable)
-                    equipItem9.isClickable = true
-                    player.equip[9] = (inventory[index] as Wearable)
-                    player.inventory[index] = null
-                }
-                10 -> if (player.backpackRunes[0] == null) {
-                    buttonBag0.setBackgroundResource((player.inventory[index] as Runes).drawable)
-                    buttonBag0.isClickable = true
-                    player.backpackRunes[0] = (player.inventory[index] as Runes)
-                    player.inventory[index] = null
-                } else {
-                    buttonBag0.setBackgroundResource((player.inventory[index] as Runes).drawable)
-                    buttonBag0.isClickable = true
-                    tempMemory = player.backpackRunes[0]
-                    player.backpackRunes[0] = (player.inventory[index] as Runes)
-                    player.inventory[index] = tempMemory
-                }
-                11 -> if (player.backpackRunes[1] == null) {
-                    buttonBag1.setBackgroundResource((player.inventory[index] as Runes).drawable)
-                    buttonBag1.isClickable = true
-                    player.backpackRunes[1] = (player.inventory[index] as Runes)
-                    player.inventory[index] = null
-                } else {
-                    buttonBag1.setBackgroundResource((player.inventory[index] as Runes).drawable)
-                    buttonBag1.isClickable = true
-                    tempMemory = player.backpackRunes[1]
-                    player.backpackRunes[1] = (player.inventory[index] as Runes)
+                    button.setBackgroundResource(player.inventory[index]!!.drawable)
+                    button.isClickable = true
+                    tempMemory = equip[player.inventory[index]!!.slot]
+                    player.equip[player.inventory[index]!!.slot] = inventory[index]
                     player.inventory[index] = tempMemory
                 }
             }
@@ -561,37 +426,40 @@ class Character : AppCompatActivity() {
     }
     @SuppressLint("SetTextI18n")
     fun onUnequip(view:View){
-            if(player.equip[view.toString()[view.toString().length-2].toString().toInt()]!=null) {
-                ++clicks
-                try {
-                    if (clicks >= 2) {                                                  //DOUBLE CLICK
-                        for (i in 0..player.inventory.size) {
-                            if (player.inventory[i] == null) {
-                                player.inventory[i] = player.equip[view.toString()[view.toString().length - 2].toString().toInt()]
-                                player.equip[view.toString()[view.toString().length - 2].toString().toInt()] = null
-                                (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
-                                view.setBackgroundResource(getDrawables(0))
-                                break
-                            } else {
-                            }
-                        }
-                        handler.removeCallbacksAndMessages(null)
-                    } else if (clicks == 1) {                                            //SINGLE CLICK
-                        if(textViewInfoItem.visibility == View.VISIBLE && lastClicked=="equip${view.toString()[view.toString().length-2]}"){textViewInfoItem.visibility = View.INVISIBLE}else{
+        val index = view.toString()[view.toString().length - 2].toString().toInt()
+        if(player.equip[index]!=null) {
+            ++clicks
+            try {
+                if (clicks == 2&&lastClicked=="equip$index") {
+                    for (i in 0..player.inventory.size) {
+                        if (player.inventory[i] == null) {
+                            textViewInfoCharacter.text = syncStats(player)
+                            player.inventory[i] = player.equip[index]
+                            player.equip[index] = null
+                            (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
                             textViewInfoItem.visibility = View.VISIBLE
+                            view.setBackgroundResource(R.drawable.emptyslot)
+                            break
+                        } else {
                         }
-                        lastClicked="equip${view.toString()[view.toString().length-2]}"
-                        textViewInfoItem.text = itemStatsEquip(player, view.toString()[view.toString().length-2].toString().toInt())
                     }
-                }catch(e:Exception){
-                    if(player.inventory[0]!=null)Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
+                    handler.removeCallbacksAndMessages(null)
+                } else if (clicks == 1) {                                            //SINGLE CLICK
+                    if(textViewInfoItem.visibility == View.VISIBLE && lastClicked=="equip$index"){textViewInfoItem.visibility = View.INVISIBLE}else{
+                        textViewInfoItem.visibility = View.VISIBLE
+                    }
+                    lastClicked="equip$index"
+                    textViewInfoItem.text = itemStatsEquip(player, index)
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }else{
-                view.isClickable = false
+            }catch(e:Exception){
+                if(player.inventory[0]!=null)Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
             }
+            handler.postDelayed({
+                clicks=0
+            }, 250)
+        }else{
+            view.isClickable = false
+        }
     }
     companion object {
         private fun getCharClass(charClass:Int):String{
@@ -602,33 +470,48 @@ class Character : AppCompatActivity() {
                 else -> "All classes"
             }
         }
-        private fun getDrawables(index:Int): Int {
-            return(when(index) {
-                1 -> R.drawable.basicattack     //
-                2 -> R.drawable.shield
-                3 -> R.drawable.universalitem1
-                4 -> R.drawable.universalitem2
-                5 -> R.drawable.belt
-                6 -> R.drawable.overall
-                7 -> R.drawable.boots
-                8 -> R.drawable.trousers
-                9 -> R.drawable.chestplate
-                10-> R.drawable.helmet
-                0 -> R.drawable.emptyslot    //empty slot
-                else -> NULL
-            }
-                    )
-        }
         private fun itemStatsInventory(player:Player, inventoryIndex:Int):String{
             var textView = "${player.inventory[inventoryIndex]!!.name}\nLevel: ${player.inventory[inventoryIndex]!!.levelRq}\n${getCharClass(player.inventory[inventoryIndex]!!.charClass)}\n${player.inventory[inventoryIndex]!!.description}"
-            if(player.inventory[inventoryIndex]!!.power!=0) textView+="\nPower: ${player.inventory[inventoryIndex]!!.power}"
-            if(player.inventory[inventoryIndex]!!.armor!=0) textView+="\nArmor: ${player.inventory[inventoryIndex]!!.armor}"
-            if(player.inventory[inventoryIndex]!!.block!=0) textView+="\nBlock/dodge: ${player.inventory[inventoryIndex]!!.block}"
-            if(player.inventory[inventoryIndex]!!.poison!=0) textView+="\nPoison: ${player.inventory[inventoryIndex]!!.poison}"
-            if(player.inventory[inventoryIndex]!!.bleed!=0) textView+="\nBleed: ${player.inventory[inventoryIndex]!!.bleed}"
-            if(player.inventory[inventoryIndex]!!.health!=0) textView+="\nHealth: ${player.inventory[inventoryIndex]!!.health}"
-            if(player.inventory[inventoryIndex]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.inventory[inventoryIndex]!!.adventureSpeed}"
-            if(player.inventory[inventoryIndex]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.inventory[inventoryIndex]!!.inventorySlots}"
+            when(player.inventory[inventoryIndex]){
+                is Wearable, is Weapon -> {if(player.equip[player.inventory[inventoryIndex]!!.slot]==null){
+                    if(player.inventory[inventoryIndex]!!.power!=0) textView+="\nPower: ${player.inventory[inventoryIndex]!!.power}"
+                    if(player.inventory[inventoryIndex]!!.armor!=0) textView+="\nArmor: ${player.inventory[inventoryIndex]!!.armor}"
+                    if(player.inventory[inventoryIndex]!!.block!=0) textView+="\nBlock/dodge: ${player.inventory[inventoryIndex]!!.block}"
+                    if(player.inventory[inventoryIndex]!!.poison!=0) textView+="\nPoison: ${player.inventory[inventoryIndex]!!.poison}"
+                    if(player.inventory[inventoryIndex]!!.bleed!=0) textView+="\nBleed: ${player.inventory[inventoryIndex]!!.bleed}"
+                    if(player.inventory[inventoryIndex]!!.health!=0) textView+="\nHealth: ${player.inventory[inventoryIndex]!!.health}"
+                    if(player.inventory[inventoryIndex]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.inventory[inventoryIndex]!!.adventureSpeed}"
+                    if(player.inventory[inventoryIndex]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.inventory[inventoryIndex]!!.inventorySlots}"
+                }else if(player.equip[player.inventory[inventoryIndex]!!.slot]!=null){
+                    if(player.inventory[inventoryIndex]!!.power!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.power!=0) textView+="\nPower: ${player.inventory[inventoryIndex]!!.power - player.equip[player.inventory[inventoryIndex]!!.slot]!!.power}"
+                    if(player.inventory[inventoryIndex]!!.armor!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.armor!=0) textView+="\nArmor: ${player.inventory[inventoryIndex]!!.armor - player.equip[player.inventory[inventoryIndex]!!.slot]!!.armor}"
+                    if(player.inventory[inventoryIndex]!!.block!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.block!=0) textView+="\nBlock/dodge: ${player.inventory[inventoryIndex]!!.block - player.equip[player.inventory[inventoryIndex]!!.slot]!!.block}"
+                    if(player.inventory[inventoryIndex]!!.poison!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.poison!=0) textView+="\nPoison: ${player.inventory[inventoryIndex]!!.poison - player.equip[player.inventory[inventoryIndex]!!.slot]!!.poison}"
+                    if(player.inventory[inventoryIndex]!!.bleed!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.bleed!=0) textView+="\nBleed: ${player.inventory[inventoryIndex]!!.bleed - player.equip[player.inventory[inventoryIndex]!!.slot]!!.bleed}"
+                    if(player.inventory[inventoryIndex]!!.health!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.health!=0) textView+="\nHealth: ${player.inventory[inventoryIndex]!!.health - player.equip[player.inventory[inventoryIndex]!!.slot]!!.health}"
+                    if(player.inventory[inventoryIndex]!!.adventureSpeed!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.inventory[inventoryIndex]!!.adventureSpeed - player.equip[player.inventory[inventoryIndex]!!.slot]!!.adventureSpeed}"
+                    if(player.inventory[inventoryIndex]!!.inventorySlots!=0||player.equip[player.inventory[inventoryIndex]!!.slot]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.inventory[inventoryIndex]!!.inventorySlots - player.equip[player.inventory[inventoryIndex]!!.slot]!!.inventorySlots}"
+                }}
+                is Runes -> {if(player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]==null){
+                    if(player.inventory[inventoryIndex]!!.power!=0) textView+="\nPower: ${player.inventory[inventoryIndex]!!.power}"
+                    if(player.inventory[inventoryIndex]!!.armor!=0) textView+="\nArmor: ${player.inventory[inventoryIndex]!!.armor}"
+                    if(player.inventory[inventoryIndex]!!.block!=0) textView+="\nBlock/dodge: ${player.inventory[inventoryIndex]!!.block}"
+                    if(player.inventory[inventoryIndex]!!.poison!=0) textView+="\nPoison: ${player.inventory[inventoryIndex]!!.poison}"
+                    if(player.inventory[inventoryIndex]!!.bleed!=0) textView+="\nBleed: ${player.inventory[inventoryIndex]!!.bleed}"
+                    if(player.inventory[inventoryIndex]!!.health!=0) textView+="\nHealth: ${player.inventory[inventoryIndex]!!.health}"
+                    if(player.inventory[inventoryIndex]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.inventory[inventoryIndex]!!.adventureSpeed}"
+                    if(player.inventory[inventoryIndex]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.inventory[inventoryIndex]!!.inventorySlots}"
+                }else if(player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!=null){
+                    if(player.inventory[inventoryIndex]!!.power!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.power!=0) textView+="\nPower: ${player.inventory[inventoryIndex]!!.power - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.power}"
+                    if(player.inventory[inventoryIndex]!!.armor!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.armor!=0) textView+="\nArmor: ${player.inventory[inventoryIndex]!!.armor - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.armor}"
+                    if(player.inventory[inventoryIndex]!!.block!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.block!=0) textView+="\nBlock/dodge: ${player.inventory[inventoryIndex]!!.block - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.block}"
+                    if(player.inventory[inventoryIndex]!!.poison!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.poison!=0) textView+="\nPoison: ${player.inventory[inventoryIndex]!!.poison - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.poison}"
+                    if(player.inventory[inventoryIndex]!!.bleed!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.bleed!=0) textView+="\nBleed: ${player.inventory[inventoryIndex]!!.bleed - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.bleed}"
+                    if(player.inventory[inventoryIndex]!!.health!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.health!=0) textView+="\nHealth: ${player.inventory[inventoryIndex]!!.health - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.health}"
+                    if(player.inventory[inventoryIndex]!!.adventureSpeed!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.inventory[inventoryIndex]!!.adventureSpeed - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.adventureSpeed}"
+                    if(player.inventory[inventoryIndex]!!.inventorySlots!=0||player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.inventory[inventoryIndex]!!.inventorySlots - player.backpackRunes[player.inventory[inventoryIndex]!!.slot-10]!!.inventorySlots}"
+                }}
+            }
             return textView
         }
         private fun itemStatsEquip(player:Player, inventoryIndex:Int):String {
@@ -654,6 +537,38 @@ class Character : AppCompatActivity() {
             if(player.backpackRunes[inventoryIndex]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.backpackRunes[inventoryIndex]!!.adventureSpeed}"
             if(player.backpackRunes[inventoryIndex]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.backpackRunes[inventoryIndex]!!.inventorySlots}"
             return textView
+        }
+        private fun syncStats(player:Player):String{
+            var health = 1050.0
+            var armor = 0
+            var block = 0.0
+            var power = 20
+            var poison = 0
+            var bleed = 0
+            var adventureSpeed = 0
+            var inventorySlots = 20
+
+            for(i in 0 until player.equip.size){
+                if(player.equip[i]!=null) {
+                    health += player.equip[i]!!.health
+                    armor += player.equip[i]!!.armor
+                    block += player.equip[i]!!.block
+                    power += player.equip[i]!!.power
+                    poison += player.equip[i]!!.poison
+                    bleed += player.equip[i]!!.bleed
+                    adventureSpeed += player.equip[i]!!.adventureSpeed
+                    inventorySlots += player.equip[i]!!.inventorySlots
+                }
+            }
+            player.health = health
+            player.armor = armor
+            player.block = block
+            player.power = power
+            player.poison = poison
+            player.bleed = bleed
+            player.adventureSpeed = adventureSpeed
+            player.inventorySlots = inventorySlots
+            return "HP: ${player.health}\nArmor: ${player.armor}\nBlock: ${player.block}\nPower: ${player.power}\nPoison: ${player.poison}\nBleed: ${player.bleed}\nAdventure speed: ${player.adventureSpeed}\nInventory slots: ${player.inventorySlots}"
         }
     }
 }

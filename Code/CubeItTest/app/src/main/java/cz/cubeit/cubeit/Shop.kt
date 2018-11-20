@@ -9,10 +9,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import cz.cubeit.cubeitfighttemplate.R
 import kotlinx.android.synthetic.main.activity_shop.*
 import kotlinx.android.synthetic.main.row_shop_inventory.view.*
 import kotlinx.android.synthetic.main.row_shop_offer.view.*
-import java.sql.Types
 import kotlin.random.Random.Default.nextInt
 
 class Shop : AppCompatActivity(){
@@ -28,7 +28,7 @@ class Shop : AppCompatActivity(){
         }
 
         listViewInventoryShop.adapter = ShopInventory(player, lastClicked, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewInventoryShop, textViewMoney)
-        listViewShop.adapter = ShopOffer(player, lastClicked, textViewInfoItem)
+        listViewShop.adapter = ShopOffer(player, lastClicked, textViewInfoItem, errorShop, listViewInventoryShop.adapter as ShopInventory)
 
         shopOfferRefresh.setOnClickListener {
             for(i in 0 until player.shopOffer.size){
@@ -69,20 +69,12 @@ class Shop : AppCompatActivity(){
 
             val handler = Handler()
             try {
-                viewHolder.buttonInventory1.setBackgroundResource(when {
-                    player.inventory[index] is Wearable -> (player.inventory[index] as Wearable).drawable
-                    player.inventory[index] is Runes -> (player.inventory[index] as Runes).drawable
-                    else -> (player.inventory[index] as Wearable).drawable
-                })
+                viewHolder.buttonInventory1.setBackgroundResource(player.inventory[index]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory1.setOnClickListener {
                     ++clicks
-                    if(clicks>=2&&lastClicked=="inventory0$position"){                                                  //DOUBLE CLICK
-                        handler.removeCallbacksAndMessages(null)
-                        getDoubleClick(index, context, viewInflater, viewHolder.buttonInventory1,listView)
-                        viewHolder.buttonInventory1.isClickable = false
-                        textViewMoney.text = player.money.toString()
-                        handler.postDelayed({viewHolder.buttonInventory1.isClickable = true},100)
+                    if(clicks==2&&lastClicked=="inventory0$position"){
+                        getDoubleClick(index, context, viewInflater, viewHolder.buttonInventory1,listView, player, handler, textViewMoney, textViewInfoItem)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory0$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory0$position"
@@ -97,20 +89,12 @@ class Shop : AppCompatActivity(){
                 viewHolder.buttonInventory1.isClickable = false
             }
             try {
-                viewHolder.buttonInventory2.setBackgroundResource(when {
-                    player.inventory[index+1] is Wearable -> (player.inventory[index+1] as Wearable).drawable
-                    player.inventory[index+1] is Runes -> (player.inventory[index+1] as Runes).drawable
-                    else -> (player.inventory[index+1] as Wearable).drawable
-                })
+                viewHolder.buttonInventory2.setBackgroundResource(player.inventory[index+1]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory2.setOnClickListener {
                     ++clicks
-                    if(clicks>=2&&lastClicked=="inventory1$position"){
-                        handler.removeCallbacksAndMessages(null)
-                        getDoubleClick(index+1, context, viewInflater, viewHolder.buttonInventory2, listView)
-                        viewHolder.buttonInventory2.isClickable = false
-                        textViewMoney.text = player.money.toString()
-                        handler.postDelayed({viewHolder.buttonInventory2.isClickable = true},100)
+                    if(clicks==2&&lastClicked=="inventory1$position"){
+                        getDoubleClick(index+1, context, viewInflater, viewHolder.buttonInventory2, listView,player, handler, textViewMoney, textViewInfoItem)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory1$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory1$position"
@@ -125,20 +109,12 @@ class Shop : AppCompatActivity(){
                 viewHolder.buttonInventory2.isClickable = false
             }
             try {
-                viewHolder.buttonInventory3.setBackgroundResource(when {
-                    player.inventory[index+2] is Wearable -> (player.inventory[index+2] as Wearable).drawable
-                    player.inventory[index+2] is Runes -> (player.inventory[index+2] as Runes).drawable
-                    else -> (player.inventory[index+2] as Wearable).drawable
-                })
+                viewHolder.buttonInventory3.setBackgroundResource(player.inventory[index+2]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory3.setOnClickListener {
                     ++clicks
-                    if(clicks>=2&&lastClicked=="inventory2$position"){
-                        handler.removeCallbacksAndMessages(null)
-                        getDoubleClick(index+2, context, viewInflater, viewHolder.buttonInventory3, listView)
-                        viewHolder.buttonInventory3.isClickable = false
-                        textViewMoney.text = player.money.toString()
-                        handler.postDelayed({viewHolder.buttonInventory3.isClickable = true},100)
+                    if(clicks==2&&lastClicked=="inventory2$position"){
+                        getDoubleClick(index+2, context, viewInflater, viewHolder.buttonInventory3, listView, player, handler, textViewMoney, textViewInfoItem)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory2$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory2$position"
@@ -153,20 +129,12 @@ class Shop : AppCompatActivity(){
                 viewHolder.buttonInventory3.isClickable = false
             }
             try {
-                viewHolder.buttonInventory4.setBackgroundResource(when {
-                    player.inventory[index+3] is Wearable -> (player.inventory[index+3] as Wearable).drawable
-                    player.inventory[index+3] is Runes -> (player.inventory[index+3] as Runes).drawable
-                    else -> (player.inventory[index+3] as Wearable).drawable
-                })
+                viewHolder.buttonInventory4.setBackgroundResource(player.inventory[index+3]!!.drawable)
                 var clicks = 0
                 viewHolder.buttonInventory4.setOnClickListener {
                     ++clicks
-                    if(clicks>=2&&lastClicked=="inventory3$position"){
-                        handler.removeCallbacksAndMessages(null)
-                        getDoubleClick(index+3, context, viewInflater, viewHolder.buttonInventory4, listView)
-                        viewHolder.buttonInventory4.isClickable = false
-                        textViewMoney.text = player.money.toString()
-                        handler.postDelayed({viewHolder.buttonInventory4.isClickable = true},100)
+                    if(clicks==2&&lastClicked=="inventory3$position"){
+                        getDoubleClick(index+3, context, viewInflater, viewHolder.buttonInventory4, listView, player, handler, textViewMoney, textViewInfoItem)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory3$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                         lastClicked="inventory3$position"
@@ -186,8 +154,7 @@ class Shop : AppCompatActivity(){
         private class ViewHolder(val buttonInventory1:Button, val buttonInventory2:Button, val buttonInventory3:Button, val buttonInventory4:Button)
     }
 
-
-    private class ShopOffer(val player:Player, var lastClicked:String, val textViewInfoItem: TextView) : BaseAdapter() {
+    private class ShopOffer(val player:Player, var lastClicked:String, val textViewInfoItem: TextView, val errorShop:TextView, val InventoryShop:BaseAdapter) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 2
@@ -223,8 +190,10 @@ class Shop : AppCompatActivity(){
                 var clicks = 0
                 viewHolder.buttonOffer1.setOnClickListener {
                     ++clicks
-                    if(clicks>=2){                                                  //DOUBLE CLICK
-
+                    if(clicks==2&&lastClicked=="offer0$position"){                                                  //DOUBLE CLICK
+                        getDoubleClickOffer(index, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
                         handler.removeCallbacksAndMessages(null)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer0$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
@@ -244,8 +213,10 @@ class Shop : AppCompatActivity(){
                 var clicks = 0
                 viewHolder.buttonOffer2.setOnClickListener {
                     ++clicks
-                    if(clicks>=2){
-
+                    if(clicks==2&&lastClicked=="offer1$position"){
+                        getDoubleClickOffer(index+1, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
                         handler.removeCallbacksAndMessages(null)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer1$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
@@ -265,8 +236,10 @@ class Shop : AppCompatActivity(){
                 var clicks = 0
                 viewHolder.buttonOffer3.setOnClickListener {
                     ++clicks
-                    if(clicks>=2){
-
+                    if(clicks==2&&lastClicked=="offer2$position"){
+                        getDoubleClickOffer(index+2, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
                         handler.removeCallbacksAndMessages(null)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer2$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
@@ -286,8 +259,10 @@ class Shop : AppCompatActivity(){
                 var clicks = 0
                 viewHolder.buttonOffer4.setOnClickListener {
                     ++clicks
-                    if(clicks>=2){
-
+                    if(clicks==2&&lastClicked=="offer3$position"){
+                        getDoubleClickOffer(index+3, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
                         handler.removeCallbacksAndMessages(null)
                     }else if(clicks==1){
                         if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer3$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
@@ -330,7 +305,7 @@ class Shop : AppCompatActivity(){
                 9 -> R.drawable.chestplate
                 10-> R.drawable.helmet
                 0 -> R.drawable.emptyslot    //empty slot
-                else -> Types.NULL
+                else -> R.drawable.emptyslot
             }
                     )
         }
@@ -347,28 +322,64 @@ class Shop : AppCompatActivity(){
             return textView
         }
         private fun itemStatsOffer(player:Player, inventoryIndex:Int):String{
-            var textView = "${player.shopOffer[inventoryIndex] !!.name}\nLevel: ${player.shopOffer[inventoryIndex] !!.levelRq}\n${getCharClass(player.shopOffer[inventoryIndex] !!.charClass)}\n${player.shopOffer[inventoryIndex] !!.description}"
-            if(player.shopOffer[inventoryIndex] !!.power!=0) textView+="\nPower: ${player.shopOffer[inventoryIndex] !!.power}"
-            if(player.shopOffer[inventoryIndex] !!.armor!=0) textView+="\nArmor: ${player.shopOffer[inventoryIndex] !!.armor}"
-            if(player.shopOffer[inventoryIndex] !!.block!=0) textView+="\nBlock/dodge: ${player.shopOffer[inventoryIndex] !!.block}"
-            if(player.shopOffer[inventoryIndex] !!.poison!=0) textView+="\nPoison: ${player.shopOffer[inventoryIndex] !!.poison}"
-            if(player.shopOffer[inventoryIndex] !!.bleed!=0) textView+="\nBleed: ${player.shopOffer[inventoryIndex] !!.bleed}"
-            if(player.shopOffer[inventoryIndex] !!.health!=0) textView+="\nHealth: ${player.shopOffer[inventoryIndex] !!.health}"
-            if(player.shopOffer[inventoryIndex] !!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.shopOffer[inventoryIndex] !!.adventureSpeed}"
-            if(player.shopOffer[inventoryIndex] !!.inventorySlots!=0) textView+="\nInventory slots: ${player.shopOffer[inventoryIndex] !!.inventorySlots}"
+            var textView = "${player.shopOffer[inventoryIndex]!!.name}\nLevel: ${player.shopOffer[inventoryIndex]!!.levelRq}\n${getCharClass(player.shopOffer[inventoryIndex]!!.charClass)}\n${player.shopOffer[inventoryIndex]!!.description}"
+            when(player.shopOffer[inventoryIndex]){
+                is Wearable, is Weapon -> {if(player.equip[player.shopOffer[inventoryIndex]!!.slot]==null){
+                    if(player.shopOffer[inventoryIndex]!!.power!=0) textView+="\nPower: ${player.shopOffer[inventoryIndex]!!.power}"
+                    if(player.shopOffer[inventoryIndex]!!.armor!=0) textView+="\nArmor: ${player.shopOffer[inventoryIndex]!!.armor}"
+                    if(player.shopOffer[inventoryIndex]!!.block!=0) textView+="\nBlock/dodge: ${player.shopOffer[inventoryIndex]!!.block}"
+                    if(player.shopOffer[inventoryIndex]!!.poison!=0) textView+="\nPoison: ${player.shopOffer[inventoryIndex]!!.poison}"
+                    if(player.shopOffer[inventoryIndex]!!.bleed!=0) textView+="\nBleed: ${player.shopOffer[inventoryIndex]!!.bleed}"
+                    if(player.shopOffer[inventoryIndex]!!.health!=0) textView+="\nHealth: ${player.shopOffer[inventoryIndex]!!.health}"
+                    if(player.shopOffer[inventoryIndex]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.shopOffer[inventoryIndex]!!.adventureSpeed}"
+                    if(player.shopOffer[inventoryIndex]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.shopOffer[inventoryIndex]!!.inventorySlots}"
+                }else if(player.equip[player.shopOffer[inventoryIndex]!!.slot]!=null){
+                    if(player.shopOffer[inventoryIndex]!!.power!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.power!=0) textView+="\nPower: ${player.shopOffer[inventoryIndex]!!.power - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.power}"
+                    if(player.shopOffer[inventoryIndex]!!.armor!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.armor!=0) textView+="\nArmor: ${player.shopOffer[inventoryIndex]!!.armor - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.armor}"
+                    if(player.shopOffer[inventoryIndex]!!.block!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.block!=0) textView+="\nBlock/dodge: ${player.shopOffer[inventoryIndex]!!.block - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.block}"
+                    if(player.shopOffer[inventoryIndex]!!.poison!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.poison!=0) textView+="\nPoison: ${player.shopOffer[inventoryIndex]!!.poison - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.poison}"
+                    if(player.shopOffer[inventoryIndex]!!.bleed!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.bleed!=0) textView+="\nBleed: ${player.shopOffer[inventoryIndex]!!.bleed - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.bleed}"
+                    if(player.shopOffer[inventoryIndex]!!.health!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.health!=0) textView+="\nHealth: ${player.shopOffer[inventoryIndex]!!.health - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.health}"
+                    if(player.shopOffer[inventoryIndex]!!.adventureSpeed!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.shopOffer[inventoryIndex]!!.adventureSpeed - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.adventureSpeed}"
+                    if(player.shopOffer[inventoryIndex]!!.inventorySlots!=0||player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.shopOffer[inventoryIndex]!!.inventorySlots - player.equip[player.shopOffer[inventoryIndex]!!.slot]!!.inventorySlots}"
+                }}
+                is Runes -> {if(player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]==null){
+                    if(player.shopOffer[inventoryIndex]!!.power!=0) textView+="\nPower: ${player.shopOffer[inventoryIndex]!!.power}"
+                    if(player.shopOffer[inventoryIndex]!!.armor!=0) textView+="\nArmor: ${player.shopOffer[inventoryIndex]!!.armor}"
+                    if(player.shopOffer[inventoryIndex]!!.block!=0) textView+="\nBlock/dodge: ${player.shopOffer[inventoryIndex]!!.block}"
+                    if(player.shopOffer[inventoryIndex]!!.poison!=0) textView+="\nPoison: ${player.shopOffer[inventoryIndex]!!.poison}"
+                    if(player.shopOffer[inventoryIndex]!!.bleed!=0) textView+="\nBleed: ${player.shopOffer[inventoryIndex]!!.bleed}"
+                    if(player.shopOffer[inventoryIndex]!!.health!=0) textView+="\nHealth: ${player.shopOffer[inventoryIndex]!!.health}"
+                    if(player.shopOffer[inventoryIndex]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.shopOffer[inventoryIndex]!!.adventureSpeed}"
+                    if(player.shopOffer[inventoryIndex]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.shopOffer[inventoryIndex]!!.inventorySlots}"
+                }else if(player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!=null){
+                    if(player.shopOffer[inventoryIndex]!!.power!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.power!=0) textView+="\nPower: ${player.shopOffer[inventoryIndex]!!.power - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.power}"
+                    if(player.shopOffer[inventoryIndex]!!.armor!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.armor!=0) textView+="\nArmor: ${player.shopOffer[inventoryIndex]!!.armor - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.armor}"
+                    if(player.shopOffer[inventoryIndex]!!.block!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.block!=0) textView+="\nBlock/dodge: ${player.shopOffer[inventoryIndex]!!.block - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.block}"
+                    if(player.shopOffer[inventoryIndex]!!.poison!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.poison!=0) textView+="\nPoison: ${player.shopOffer[inventoryIndex]!!.poison - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.poison}"
+                    if(player.shopOffer[inventoryIndex]!!.bleed!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.bleed!=0) textView+="\nBleed: ${player.shopOffer[inventoryIndex]!!.bleed - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.bleed}"
+                    if(player.shopOffer[inventoryIndex]!!.health!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.health!=0) textView+="\nHealth: ${player.shopOffer[inventoryIndex]!!.health - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.health}"
+                    if(player.shopOffer[inventoryIndex]!!.adventureSpeed!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.adventureSpeed!=0) textView+="\nAdventure speed: ${player.shopOffer[inventoryIndex]!!.adventureSpeed - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.adventureSpeed}"
+                    if(player.shopOffer[inventoryIndex]!!.inventorySlots!=0||player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.inventorySlots!=0) textView+="\nInventory slots: ${player.shopOffer[inventoryIndex]!!.inventorySlots - player.backpackRunes[player.shopOffer[inventoryIndex]!!.slot-10]!!.inventorySlots}"
+                }}
+            }
             return textView
         }
-        private fun getDoubleClick(index:Int, context:Context, view:View, button:Button, listViewInventoryShop:ListView){
+        private fun getDoubleClick(index:Int, context:Context, view:View, button:Button, listViewInventoryShop:ListView, player:Player, handler:Handler, textViewMoney:TextView, textViewInfoItem:TextView){
             val window = PopupWindow(context)
             window.contentView = view
             val buttonYes:Button = view.findViewById(R.id.buttonYes)
             val buttonNo:Button = view.findViewById(R.id.buttonNo)
+            val info:TextView = view.findViewById(R.id.textViewInfo)
             window.isOutsideTouchable = false
             window.isFocusable = true
             buttonYes.setOnClickListener {
                 player.money+=1
                 player.inventory[index]=null
                 (listViewInventoryShop.adapter as ShopInventory).notifyDataSetChanged()
+                handler.removeCallbacksAndMessages(null)
+                textViewMoney.text = player.money.toString()
+                textViewInfoItem.visibility = View.INVISIBLE
                 window.dismiss()
             }
             buttonNo.setOnClickListener {
@@ -377,55 +388,131 @@ class Shop : AppCompatActivity(){
             window.showAsDropDown(button)
         }
 
+        private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, textViewInfoItem:TextView){
+            if(player.money>=player.shopOffer[index]!!.price){
+                var emptyslots = player.inventory.size
+                for(i in 0 until player.inventory.size){
+                    if(player.inventory[i] == null){
+                        error.visibility = View.INVISIBLE
+                        player.money-=player.shopOffer[index]!!.price
+                        player.inventory[i] = player.shopOffer[index]
+                        player.shopOffer[index] = getItemOffer(player)
+                        textViewInfoItem.visibility = View.INVISIBLE
+                        break
+                    }else{
+                        emptyslots--
+                    }
+                }
+                if(emptyslots==0)errorShop(message = "Are you getting fat ? Or is it because of the amount of items you have ?", error = error)
+            }else{
+                errorShop(message = "Not enough money!", error = error)
+            }
+        }
+
+        private fun returnItem(player:Player): MutableList<Item?> {
+            val arrayTemp:MutableList<Item?> = mutableListOf()
+            when (player.charClass) {
+                1 ->{ for(i:Int in 0 until itemsClass1.size){
+                    if(itemsClass1[i]!!.levelRq in player.level-50..player.level){
+                        arrayTemp.add(itemsClass1[i])
+                    }
+                }
+                    for(i:Int in 0 until itemsUniversal.size){
+                        if(itemsUniversal[i]!!.levelRq in player.level-50..player.level){
+                            arrayTemp.add(itemsUniversal[i])
+                        }
+                    }
+                }
+                2 -> { for(i:Int in 0 until itemsClass2.size){
+                    if(itemsClass2[i]!!.levelRq in player.level-50..player.level){
+                        arrayTemp.add(itemsClass2[i])
+                    }
+                }
+                    for(i:Int in 0 until itemsUniversal.size){
+                        if(itemsUniversal[i]!!.levelRq in player.level-50..player.level){
+                            arrayTemp.add(itemsUniversal[i])
+                        }
+                    }
+                }
+            }
+            return arrayTemp
+        }
+
+        private fun errorShop(message: String, error: TextView){
+            error.visibility = View.VISIBLE
+            error.text = message
+        }
+
         private fun getItemOffer(player:Player):Item?{
             val tempArray:MutableList<Item?> = returnItem(player)
             val itemReturned = tempArray[nextInt(0, tempArray.size)]
             val itemTemp:Item? = when(itemReturned){
                 is Wearable -> Wearable(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
                 is Runes -> Runes(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
+                is Weapon -> Weapon(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
                 else -> Item(itemReturned!!.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
             }
             itemTemp!!.levelRq = nextInt(player.level-9, player.level)
             if(itemTemp.levelRq<1)itemTemp.levelRq=1
             var points = nextInt(itemTemp.levelRq*10-itemTemp.levelRq*4, itemTemp.levelRq*10+itemTemp.levelRq*2)
             var pointsTemp:Int
-            val numberOfStats = nextInt(1,8)
-            for(i in 0 until numberOfStats) {
-                pointsTemp = nextInt(points / (numberOfStats * 2), points / numberOfStats * 2)
-                when (nextInt(0, 7)) {
-                    0 -> {
-                        itemTemp.power+= pointsTemp
-                        points -= pointsTemp
+            val numberOfStats = nextInt(1,9)
+            for(i in 0..numberOfStats) {
+                pointsTemp = nextInt(points / (numberOfStats * 2), points/numberOfStats+1)
+                when(itemTemp){
+                    is Weapon -> {
+                        when (nextInt(0, 4)) {
+                            0 -> {
+                                itemTemp.power += pointsTemp
+                            }
+                            1 -> {
+                                itemTemp.block += pointsTemp
+                            }
+                            2 -> {
+                                itemTemp.poison += pointsTemp
+                            }
+                            3 -> {
+                                itemTemp.bleed += pointsTemp
+                            }
+                        }
                     }
-                    1 -> {
-                        itemTemp.armor += pointsTemp
-                        points -= pointsTemp
+                    is Wearable -> {
+                        when (nextInt(0, 5)) {
+                            0 -> {
+                                itemTemp.armor += pointsTemp
+                            }
+                            1 -> {
+                                itemTemp.block += pointsTemp
+                            }
+                            2 -> {
+                                itemTemp.poison += pointsTemp
+                            }
+                            3 -> {
+                                itemTemp.bleed += pointsTemp
+                            }
+                            4 -> {
+                                itemTemp.health += pointsTemp
+                            }
+                        }
                     }
-                    2 -> {
-                        itemTemp.block += pointsTemp
-                        points -= pointsTemp
-                    }
-                    3 -> {
-                        itemTemp.poison += pointsTemp
-                        points -= pointsTemp
-                    }
-                    4 -> {
-                        itemTemp.bleed += pointsTemp
-                        points -= pointsTemp
-                    }
-                    5 -> {
-                        itemTemp.health += pointsTemp
-                        points -= pointsTemp
-                    }
-                    6 -> {
-                        itemTemp.adventureSpeed += pointsTemp
-                        points -= pointsTemp
-                    }
-                    7 -> {
-                        itemTemp.inventorySlots += pointsTemp
-                        points -= pointsTemp
+                    is Runes -> {
+                        when (nextInt(0, 4)) {
+                            0 -> {
+                                itemTemp.armor += pointsTemp
+                            }
+                            1 -> {
+                                itemTemp.health += pointsTemp
+                            }
+                            2 -> {
+                                itemTemp.adventureSpeed += pointsTemp
+                            }
+                            3 -> {
+                                itemTemp.inventorySlots += pointsTemp
+                            }
+                        }
                     }
                 }
+                points -= pointsTemp
             }
             return itemTemp
         }
