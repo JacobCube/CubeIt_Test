@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">help</string>
+    <string name="no_image">No Image</string>
+    <string name="developed_by">Developed by CubeIt.cz</string>
+    <string name="first_fragment">First Fragment</string>
+    <string name="second_fragment">Second Fragment</string>
+    <string name="third_fragment">Third Fragment</string>
+    <string name="level_adventure">Required level: %1$d</string>
+    <string name="money_adventure">You will receive: %1$d cubes</string>
+    <string name="experience_adventure">You will receive: %1$d experience</string>
+    <string name="settings_sounds">Sounds: %1$d </string>
 </resources>

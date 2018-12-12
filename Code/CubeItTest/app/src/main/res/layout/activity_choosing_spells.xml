@@ -5,19 +5,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
-    android:screenOrientation="landscape"
-    tools:context="cz.cubeit.cubeittest.ChoosingSpells">
+    android:screenOrientation="landscape">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.73" />
+
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline18"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25" />
 
     <ListView
         android:id="@+id/chosen_listView"
-        android:layout_width="184dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:divider="@null"
         android:dividerHeight="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintStart_toStartOf="@+id/guideline12"
+        app:layout_constraintTop_toTopOf="parent">
 
     </ListView>
 
@@ -25,6 +46,7 @@
         android:id="@+id/textViewInfoSpells"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
         android:fontFamily="sans-serif"
         android:maxWidth="200dp"
         android:maxHeight="50dp"
@@ -35,21 +57,22 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/textViewError"
         app:layout_constraintEnd_toStartOf="@+id/chosen_listView"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/choosing_listview"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <ListView
         android:id="@+id/choosing_listview"
-        android:layout_width="150dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:divider="@null"
         android:dividerHeight="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/chosen_listView"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        app:layout_constraintEnd_toStartOf="@+id/guideline18"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/textViewError"
@@ -62,8 +85,10 @@
         android:text="error"
         android:textAlignment="center"
         android:textColor="@android:color/holo_red_light"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
         app:layout_constraintEnd_toStartOf="@+id/chosen_listView"
+        app:layout_constraintHorizontal_bias="0.512"
         app:layout_constraintStart_toEndOf="@+id/choosing_listview" />
 
 </android.support.constraint.ConstraintLayout>

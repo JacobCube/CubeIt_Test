@@ -1,6 +1,7 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
@@ -10,20 +11,26 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_choosing_spells.*
-import cz.cubeit.cubeitfighttemplate.R
 import kotlinx.android.synthetic.main.row_choosingspells.view.*
 import kotlinx.android.synthetic.main.row_chosen_spells.view.*
 
+
+
 class ChoosingSpells : AppCompatActivity(){
 
-    private var requiredEnergy = 0
+    override fun onBackPressed() {
+        val intent = Intent(this, Home::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+    }
 
-    @SuppressLint("SetTextI18n")
+    var requiredEnergy:Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        overridePendingTransition(0, 0)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_choosing_spells)
-        textViewError.visibility = View.INVISIBLE
-
         chosen_listView.adapter = ChosenSpellsView(player)
         choosing_listview.adapter = LearnedSpellsView(textViewInfoSpells, textViewError, chosen_listView.adapter as ChosenSpellsView, requiredEnergy, player)
     }
@@ -61,97 +68,97 @@ class ChoosingSpells : AppCompatActivity(){
             val handler = Handler()
             try{
                 viewHolder.button1.setBackgroundResource(player.learnedSpells[index]!!.drawable)
-                    var clicks = 0
-                    viewHolder.button1.setOnClickListener {
-                        ++clicks
-                        if(clicks>=2){
-                            requiredEnergy = 0
-                            for (i in 0..19){
-                                if (player.chosenSpellsDefense[i] == null) {
-                                    if(requiredEnergy + player.learnedSpells[index]!!.energy <= (player.energy+25*i)){
-                                        errorTextView.visibility = View.INVISIBLE
-                                        player.chosenSpellsDefense[i] = player.learnedSpells[index]
-                                        chosen_listView.notifyDataSetChanged()
-                                        break
-                                    }else{
-                                        errorTextView.visibility = View.VISIBLE
-                                        errorTextView.text = "You would be too exhausted this round"
-                                        break
-                                    }
+                var clicks = 0
+                viewHolder.button1.setOnClickListener {
+                    ++clicks
+                    if(clicks>=2){
+                        requiredEnergy = 0
+                        for (i in 0..19){
+                            if (player.chosenSpellsDefense[i] == null) {
+                                if(requiredEnergy + player.learnedSpells[index]!!.energy <= (player.energy+25*i)){
+                                    errorTextView.visibility = View.INVISIBLE
+                                    player.chosenSpellsDefense[i] = player.learnedSpells[index]
+                                    chosen_listView.notifyDataSetChanged()
+                                    break
                                 }else{
-                                    requiredEnergy += player.chosenSpellsDefense[i]!!.energy
+                                    errorTextView.visibility = View.VISIBLE
+                                    errorTextView.text = "You would be too exhausted this round"
+                                    break
                                 }
+                            }else{
+                                requiredEnergy += player.chosenSpellsDefense[i]!!.energy
                             }
-                            requiredEnergy = 0
-                            for(j in 0..19){
-                                if(player.chosenSpellsDefense[j]!=null){
-                                    if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
-                                        player.chosenSpellsDefense[j]=null
-                                    }else{
-                                        if(player.chosenSpellsDefense[j]!=null) {
-                                            requiredEnergy += player.chosenSpellsDefense[j]!!.energy
-                                        }
+                        }
+                        requiredEnergy = 0
+                        for(j in 0..19){
+                            if(player.chosenSpellsDefense[j]!=null){
+                                if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
+                                    player.chosenSpellsDefense[j]=null
+                                }else{
+                                    if(player.chosenSpellsDefense[j]!=null) {
+                                        requiredEnergy += player.chosenSpellsDefense[j]!!.energy
                                     }
                                 }
                             }
-                            handler.removeCallbacksAndMessages(null)
-                        }else if(clicks == 1){
-                            textViewInfoSpells.text = spellStats(player.learnedSpells[index])
                         }
-                        handler.postDelayed({
-                            clicks = 0
-                        }, 250)
+                        handler.removeCallbacksAndMessages(null)
+                    }else if(clicks == 1){
+                        textViewInfoSpells.text = spellStats(player.learnedSpells[index])
                     }
+                    handler.postDelayed({
+                        clicks = 0
+                    }, 250)
+                }
             }catch(e:Exception){
                 viewHolder.button1.isClickable = false
-                viewHolder.button1.setBackgroundResource(getDrawable(0))
+                viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
             }
             try{
                 viewHolder.button2.setBackgroundResource(player.learnedSpells[index+1]!!.drawable)
-                    var clicks = 0
-                    viewHolder.button2.setOnClickListener {
-                        ++clicks
-                        if(clicks>=2){                                          //DOUBLE CLICK
-                            requiredEnergy = 0
-                            for (i in 0..19) {
-                                if (player.chosenSpellsDefense[i] == null) {
-                                    if(requiredEnergy + player.learnedSpells[index+1]!!.energy <= (player.energy+25*i)){
-                                        errorTextView.visibility = View.INVISIBLE
-                                        player.chosenSpellsDefense[i] = player.learnedSpells[index+1]
-                                        chosen_listView.notifyDataSetChanged()
-                                        break
-                                    }else{
-                                        errorTextView.visibility = View.VISIBLE
-                                        break
-                                    }
+                var clicks = 0
+                viewHolder.button2.setOnClickListener {
+                    ++clicks
+                    if(clicks>=2){                                          //DOUBLE CLICK
+                        requiredEnergy = 0
+                        for (i in 0..19){
+                            if (player.chosenSpellsDefense[i] == null) {
+                                if(requiredEnergy + player.learnedSpells[index+1]!!.energy <= (player.energy+25*i)){
+                                    errorTextView.visibility = View.INVISIBLE
+                                    player.chosenSpellsDefense[i] = player.learnedSpells[index+1]
+                                    chosen_listView.notifyDataSetChanged()
+                                    break
                                 }else{
-                                    requiredEnergy += player.chosenSpellsDefense[i]!!.energy
+                                    errorTextView.visibility = View.VISIBLE
+                                    break
                                 }
+                            }else{
+                                requiredEnergy += player.chosenSpellsDefense[i]!!.energy
                             }
-                            requiredEnergy = 0
-                            for(j in 0..19){
-                                if(player.chosenSpellsDefense[j]!=null){
-                                    if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
-                                        player.chosenSpellsDefense[j]=null
-                                    }else{
-                                        if(player.chosenSpellsDefense[j]!=null) {
-                                            requiredEnergy += player.chosenSpellsDefense[j]!!.energy
-                                        }
+                        }
+                        requiredEnergy = 0
+                        for(j in 0..19){
+                            if(player.chosenSpellsDefense[j]!=null){
+                                if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
+                                    player.chosenSpellsDefense[j]=null
+                                }else{
+                                    if(player.chosenSpellsDefense[j]!=null) {
+                                        requiredEnergy += player.chosenSpellsDefense[j]!!.energy
                                     }
                                 }
                             }
-                            handler.removeCallbacksAndMessages(null)
-                        }else if(clicks==1){
-                            textViewInfoSpells.text = spellStats(player.learnedSpells[index+1])
                         }
-                        handler.postDelayed({
-                            clicks = 0
-
-                        }, 250)
+                        handler.removeCallbacksAndMessages(null)
+                    }else if(clicks==1){
+                        textViewInfoSpells.text = spellStats(player.learnedSpells[index+1])
                     }
+                    handler.postDelayed({
+                        clicks = 0
+
+                    }, 250)
+                }
             }catch(e:Exception){
                 viewHolder.button2.isClickable = false
-                viewHolder.button2.setBackgroundResource(getDrawable(0))
+                viewHolder.button2.setBackgroundResource(R.drawable.emptyslot)
             }
             return rowMain
         }
@@ -188,7 +195,7 @@ class ChoosingSpells : AppCompatActivity(){
             try{
                 viewHolder.button1.setBackgroundResource(player.chosenSpellsDefense[position]!!.drawable)
             }catch(e:Exception){
-                viewHolder.button1.setBackgroundResource(getDrawable(0))
+                viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
             }
 
             var requiredEnergy = 0
@@ -203,7 +210,7 @@ class ChoosingSpells : AppCompatActivity(){
 
             viewHolder.button1.setOnClickListener {
                 player.chosenSpellsDefense[position] = null
-                viewHolder.button1.setBackgroundResource(getDrawable(0))
+                viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
                 notifyDataSetChanged()
             }
             return rowMain
@@ -216,19 +223,6 @@ class ChoosingSpells : AppCompatActivity(){
             if(spell.fire!=0)text+="Fire: ${spell.fire}"
             if(spell.poison!=0)text+="Fire: ${spell.poison}"
             return text
-        }
-
-        private fun getDrawable(index:Int): Int {
-            return(when(index) {
-                1 -> R.drawable.basicattack
-                2 -> R.drawable.shield
-                3 -> R.drawable.firespell
-                4 -> R.drawable.icespell
-                5 -> R.drawable.windspell
-                0 -> R.drawable.emptyslot
-                else -> R.drawable.emptyslot
-            }
-                    )
         }
     }
 }

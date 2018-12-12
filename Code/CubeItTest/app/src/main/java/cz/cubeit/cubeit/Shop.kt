@@ -1,7 +1,9 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
@@ -9,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import cz.cubeit.cubeitfighttemplate.R
 import kotlinx.android.synthetic.main.activity_shop.*
 import kotlinx.android.synthetic.main.row_shop_inventory.view.*
 import kotlinx.android.synthetic.main.row_shop_offer.view.*
@@ -19,10 +20,54 @@ class Shop : AppCompatActivity(){
 
     private var lastClicked = ""
 
+    override fun onBackPressed() {
+        val intent = Intent(this, Home::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(intent)
+        this.overridePendingTransition(0,0)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop)
         textViewMoney.text = player.money.toString()
+        buttonFight.setOnClickListener{
+            val intent = Intent(this, FightSystem::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+        buttonDefence.setOnClickListener{
+            val intent = Intent(this, ChoosingSpells::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+        buttonCharacter.setOnClickListener{
+            val intent = Intent(this, Character::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+        buttonShop.setOnClickListener {
+            val intent = Intent(this, Shop::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+        buttonAdventure.setOnClickListener{
+            val intent = Intent(this, Adventure::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+        buttonSettings.setOnClickListener {
+            val intent = Intent(this, Adventure::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+
         for(i in 0 until player.shopOffer.size){
             player.shopOffer[i] = getItemOffer(player)
         }
@@ -86,7 +131,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory1.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonInventory1.isClickable = false
+                viewHolder.buttonInventory1.isClickable = false; viewHolder.buttonInventory1.isLongClickable = false
             }
             try {
                 viewHolder.buttonInventory2.setBackgroundResource(player.inventory[index+1]!!.drawable)
@@ -106,7 +151,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory2.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonInventory2.isClickable = false
+                viewHolder.buttonInventory2.isClickable = false; viewHolder.buttonInventory2.isLongClickable = false
             }
             try {
                 viewHolder.buttonInventory3.setBackgroundResource(player.inventory[index+2]!!.drawable)
@@ -126,7 +171,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory3.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonInventory3.isClickable = false
+                viewHolder.buttonInventory3.isClickable = false; viewHolder.buttonInventory3.isLongClickable = false
             }
             try {
                 viewHolder.buttonInventory4.setBackgroundResource(player.inventory[index+3]!!.drawable)
@@ -146,7 +191,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonInventory4.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonInventory4.isClickable = false
+                viewHolder.buttonInventory4.isClickable = false; viewHolder.buttonInventory4.isLongClickable = false
             }
 
             return rowMain
@@ -206,7 +251,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonOffer1.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonOffer1.isClickable = false
+                viewHolder.buttonOffer1.isClickable = false; viewHolder.buttonOffer1.isLongClickable = false
             }
             try {
                 viewHolder.buttonOffer2.setBackgroundResource(player.shopOffer[index+1]!!.drawable)
@@ -229,7 +274,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonOffer2.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonOffer2.isClickable = false
+                viewHolder.buttonOffer2.isClickable = false; viewHolder.buttonOffer2.isLongClickable = false
             }
             try {
                 viewHolder.buttonOffer3.setBackgroundResource(player.shopOffer[index+2]!!.drawable)
@@ -252,7 +297,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonOffer3.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonOffer3.isClickable = false
+                viewHolder.buttonOffer3.isClickable = false; viewHolder.buttonOffer3.isLongClickable = false
             }
             try {
                 viewHolder.buttonOffer4.setBackgroundResource(player.shopOffer[index+3]!!.drawable)
@@ -275,7 +320,7 @@ class Shop : AppCompatActivity(){
                 }
             }catch(e:Exception){
                 viewHolder.buttonOffer4.setBackgroundResource(getDrawables(0))
-                viewHolder.buttonOffer4.isClickable = false
+                viewHolder.buttonOffer4.isClickable = false; viewHolder.buttonOffer4.isLongClickable = false
             }
 
             return rowMain
@@ -477,7 +522,7 @@ class Shop : AppCompatActivity(){
                         }
                     }
                     is Wearable -> {
-                        when (nextInt(0, 5)) {
+                        when (nextInt(0, 3)) {
                             0 -> {
                                 itemTemp.armor += pointsTemp
                             }
@@ -485,12 +530,6 @@ class Shop : AppCompatActivity(){
                                 itemTemp.block += pointsTemp
                             }
                             2 -> {
-                                itemTemp.poison += pointsTemp
-                            }
-                            3 -> {
-                                itemTemp.bleed += pointsTemp
-                            }
-                            4 -> {
                                 itemTemp.health += pointsTemp
                             }
                         }

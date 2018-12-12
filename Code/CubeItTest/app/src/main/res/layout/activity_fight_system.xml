@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
-    android:screenOrientation="landscape"
-    tools:context="cz.cubeit.cubeittest.FightSystem">
+    android:screenOrientation="landscape">
 
     <Button
         android:id="@+id/buttonBlock"
@@ -112,13 +111,14 @@
         android:id="@+id/textViewError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:text="error"
         android:textAlignment="textStart"
         android:textColor="@android:color/holo_red_light"
+        android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/textViewSpecs"
         app:layout_constraintEnd_toEndOf="@+id/textViewSpecs"
-        app:layout_constraintHorizontal_bias="0.233"
+        app:layout_constraintHorizontal_bias="0.633"
         app:layout_constraintStart_toStartOf="@+id/textViewSpecs" />
 
     <TextView

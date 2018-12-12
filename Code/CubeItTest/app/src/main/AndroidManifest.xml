@@ -1,29 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="cz.cubeit.cubeitfighttemplate">
-
+    xmlns:tools="http://schemas.android.com/tools"
+    package="cz.cubeit.cubeit">
 
     <application
-            android:icon="@mipmap/cubeitactivity"
-            android:label="CubeIt"
-            android:roundIcon="@mipmap/cubeitactivity"
-            android:supportsRtl="true"
-            android:theme="@style/AppTheme"
-            tools:ignore="GoogleAppIndexingWarning"
-            android:fullBackupContent="@xml/backup_descriptor" android:allowBackup="true">
-        <activity android:name="cz.cubeit.cubeit.Home">
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:icon="@mipmap/game_icon"
+        android:label="CubeIt"
+        android:roundIcon="@mipmap/game_icon"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".Home" android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="cz.cubeit.cubeit.ChoosingSpells" />
-        <activity android:name="cz.cubeit.cubeit.Character" />
-        <activity android:name="cz.cubeit.cubeit.FightSystem" />
-        <activity android:name="cz.cubeit.cubeit.Settings" />
-        <activity android:name="cz.cubeit.cubeit.Shop" />
-        <activity android:name="cz.cubeit.cubeit.CharacterCustomization" />
+        <activity android:name=".ChoosingSpells" android:screenOrientation="landscape"/>
+        <activity android:name=".Character" android:screenOrientation="landscape"/>
+        <activity android:name=".FightSystem" android:screenOrientation="landscape"/>
+        <activity android:name=".Settings" android:screenOrientation="landscape"/>
+        <activity android:name=".SpellManagement" android:screenOrientation="landscape"/>
+        <activity android:name=".Shop" android:screenOrientation="landscape"/>
+        <activity android:name=".Adventure" android:screenOrientation="landscape"/>
+        <activity android:name=".Spells" android:screenOrientation="landscape"/>
+        <activity android:name=".CharacterCustomization" android:screenOrientation="landscape"/>
     </application>
 
 </manifest>

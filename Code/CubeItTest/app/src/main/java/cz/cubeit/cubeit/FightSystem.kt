@@ -7,7 +7,6 @@ import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
-import cz.cubeit.cubeitfighttemplate.R
 import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlin.random.Random.Default.nextInt
 
@@ -29,6 +28,11 @@ fun damageDefense(roundCounter:Int, player:Player):Int{
         (player.chosenSpellsDefense[roundCounter]!!.power.toDouble() * (player.power.toDouble() / 10)).toInt()
     }
 }
+/*fun checkEndGame(playerHP:Int, enemyHP:Int){
+    if(playerHP){
+
+    }
+}*/
 
 @Suppress("DEPRECATION")
 class FightSystem : AppCompatActivity() {
@@ -102,7 +106,8 @@ class FightSystem : AppCompatActivity() {
             textViewError.visibility = View.VISIBLE
         }
     }
-
+    override fun onBackPressed() {
+    }
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
