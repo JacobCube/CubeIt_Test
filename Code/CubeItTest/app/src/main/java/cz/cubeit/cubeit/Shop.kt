@@ -10,6 +10,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_shop.*
 import kotlinx.android.synthetic.main.row_shop_inventory.view.*
@@ -18,11 +20,13 @@ import kotlin.random.Random.Default.nextInt
 
 class Shop : AppCompatActivity(){
 
+    private var folded = false
     private var lastClicked = ""
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        folded = false
         startActivity(intent)
         this.overridePendingTransition(0,0)
     }
@@ -31,38 +35,103 @@ class Shop : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop)
         textViewMoney.text = player.money.toString()
-        buttonFight.setOnClickListener{
+
+        val animUp: Animation = AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_adventure_up)
+        val animDown: Animation = AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_adventure_down)
+
+        shopMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeDown() {
+                if(!folded) {
+                    imageViewMenuShop.startAnimation(animDown)
+                    buttonFightShop.isClickable = false
+                    buttonDefenceShop.isClickable = false
+                    buttonCharacterShop.isClickable = false
+                    buttonSettingsShop.isClickable = false
+                    buttonAdventureShop.isClickable = false
+                    folded = true
+                }
+            }
+        })
+        imageViewMenuShop.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeDown() {
+                if(!folded){
+                    imageViewMenuShop.startAnimation(animDown)
+                    buttonFightShop.isClickable = false
+                    buttonDefenceShop.isClickable = false
+                    buttonCharacterShop.isClickable = false
+                    buttonSettingsShop.isClickable = false
+                    buttonAdventureShop.isClickable = false
+                    folded = true
+                }
+            }
+            override fun onSwipeUp() {
+                if(folded){
+                    imageViewMenuShop.startAnimation(animUp)
+                    buttonFightShop.isClickable = true
+                    buttonDefenceShop.isClickable = true
+                    buttonCharacterShop.isClickable = true
+                    buttonSettingsShop.isClickable = true
+                    buttonAdventureShop.isClickable = true
+                    folded = false
+                }
+            }
+        })
+
+        animUp.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                imageViewMenuShop.isEnabled = true
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+                imageViewMenuShop.isEnabled = false
+            }
+        })
+        animDown.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                shopMenuSwipe.isEnabled = true
+                imageViewMenuShop.isEnabled = true
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+                shopMenuSwipe.isEnabled = false
+                imageViewMenuShop.isEnabled = false
+            }
+        })
+
+        buttonFightShop.setOnClickListener{
             val intent = Intent(this, FightSystem::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonDefence.setOnClickListener{
-            val intent = Intent(this, ChoosingSpells::class.java)
+        buttonDefenceShop.setOnClickListener{
+            val intent = Intent(this, Spells::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonCharacter.setOnClickListener{
+        buttonCharacterShop.setOnClickListener{
             val intent = Intent(this, Character::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonShop.setOnClickListener {
-            val intent = Intent(this, Shop::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        buttonAdventure.setOnClickListener{
+        buttonAdventureShop.setOnClickListener{
             val intent = Intent(this, Adventure::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonSettings.setOnClickListener {
-            val intent = Intent(this, Adventure::class.java)
+        buttonSettingsShop.setOnClickListener {
+            val intent = Intent(this, Settings::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)

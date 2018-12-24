@@ -12,12 +12,16 @@ import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_character.*
+import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.row_shop_inventory.view.*
 
 private val handler = Handler()
 private var clicks = 0
+private var folded = false
 //-------------------------------------------------------------------------------------------
 val spellsClass1:Array<Spell> = arrayOf(
         Spell(R.drawable.basicattack, "Basic attack", 0, 10, 0, 0, 1,"")
@@ -57,11 +61,11 @@ val itemsClass2:Array<Item?> = arrayOf(
 var player:Player = Player("MexxFM", arrayOf(0,0,0,0,0,0,0,0,0,0), 10, 1, 40, 0, 0.0, 0, 0, 1050.0, 100, 1,
         10, mutableListOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5], null, null, null, null), arrayOfNulls(10),
         arrayOfNulls(2),mutableListOf(spellsClass1[0],spellsClass1[1],spellsClass1[2],spellsClass1[3],spellsClass1[4]) , mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null),
-        mutableListOf(spellsClass1[2],spellsClass1[3],spellsClass1[4], null, null, null), 100, arrayOfNulls(8))
+        arrayOf(spellsClass1[2],spellsClass1[3],spellsClass1[4], null, null, null), 100, arrayOfNulls(8))
 
 data class Player(val name:String, var look:Array<Int>, var level:Int, val charClass:Int, var power:Int, var armor:Int, var block:Double, var poison:Int, var bleed:Int, var health:Double, var energy:Int,
                   var adventureSpeed:Int, var inventorySlots:Int, var inventory:MutableList<Item?>, var equip: Array<Item?>, var backpackRunes: Array<Runes?>,
-                  var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:MutableList<Spell?>, var money:Int, var shopOffer:Array<Item?>)
+                  var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:Array<Spell?>, var money:Int, var shopOffer:Array<Item?>)
 open class Spell(var drawable: Int, var name:String, var energy:Int, var power:Int, var fire:Int, var poison:Int, var level:Int, var description:String)
 
 open class Item(name:String, drawable:Int, levelRq:Int, charClass:Int, description:String, power:Int, armor:Int, block:Int, poison:Int, bleed:Int, health:Int, adventureSpeed:Int, inventorySlots:Int, slot:Int, price:Int){
@@ -97,6 +101,7 @@ class Character : AppCompatActivity() {
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        folded = false
         startActivity(intent)
         this.overridePendingTransition(0,0)
     }
@@ -107,31 +112,101 @@ class Character : AppCompatActivity() {
         setContentView(R.layout.activity_character)
         textViewInfoCharacter.text = syncStats(player)
 
-        buttonFight.setOnClickListener{
+        val animUp: Animation = AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_adventure_up)
+        val animDown: Animation = AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_adventure_down)
+
+        characterMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeDown() {
+                if(!folded) {
+                    imageViewMenuCharacter.startAnimation(animDown)
+                    buttonFightCharacter.isClickable = false
+                    buttonDefenceCharacter.isClickable = false
+                    buttonAdventureCharacter.isClickable = false
+                    buttonSettingsCharacter.isClickable = false
+                    buttonShopCharacter.isClickable = false
+                    folded = true
+                }
+            }
+        })
+        imageViewMenuCharacter.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeDown() {
+                if(!folded){
+                    imageViewMenuCharacter.startAnimation(animDown)
+                    buttonFightCharacter.isClickable = false
+                    buttonDefenceCharacter.isClickable = false
+                    buttonAdventureCharacter.isClickable = false
+                    buttonSettingsCharacter.isClickable = false
+                    buttonShopCharacter.isClickable = false
+                    folded = true
+                }
+            }
+            override fun onSwipeUp() {
+                if(folded){
+                    imageViewMenuCharacter.startAnimation(animUp)
+                    buttonFightCharacter.isClickable = true
+                    buttonDefenceCharacter.isClickable = true
+                    buttonAdventureCharacter.isClickable = true
+                    buttonSettingsCharacter.isClickable = true
+                    buttonShopCharacter.isClickable = true
+                    folded = false
+                }
+            }
+        })
+
+        animUp.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                imageViewMenuCharacter.isEnabled = true
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+                imageViewMenuCharacter.isEnabled = false
+            }
+        })
+        animDown.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                characterMenuSwipe.isEnabled = true
+                imageViewMenuCharacter.isEnabled = true
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+                characterMenuSwipe.isEnabled = false
+                imageViewMenuCharacter.isEnabled = false
+            }
+        })
+
+        buttonFightCharacter.setOnClickListener{
             val intent = Intent(this, FightSystem::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonDefence.setOnClickListener{
-            val intent = Intent(this, ChoosingSpells::class.java)
+        buttonDefenceCharacter.setOnClickListener{
+            val intent = Intent(this, Spells::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonSettings.setOnClickListener{
+        buttonSettingsCharacter.setOnClickListener{
             val intent = Intent(this, Settings::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonShop.setOnClickListener {
+        buttonShopCharacter.setOnClickListener {
             val intent = Intent(this, Shop::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        buttonAdventure.setOnClickListener{
+        buttonAdventureCharacter.setOnClickListener{
             val intent = Intent(this, Adventure::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)

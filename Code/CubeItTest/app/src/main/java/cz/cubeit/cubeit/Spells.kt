@@ -2,8 +2,15 @@ package cz.cubeit.cubeit
 
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_spells.*
+import kotlinx.android.synthetic.main.fragment_choosing_spells.*
+
+
+
 
 class Spells: AppCompatActivity(){
 
@@ -18,35 +25,33 @@ class Spells: AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_spells)
 
-        buttonFight.setOnClickListener{
-            val intent = Intent(this, FightSystem::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
+        viewPagerSpells.offscreenPageLimit = 2
+        if (viewPagerSpells != null) {
+            val adapter =
+                    ViewPagerSpells(supportFragmentManager)
+            viewPagerSpells.adapter = adapter
         }
-        buttonCharacter.setOnClickListener{
-            val intent = Intent(this, Character::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
+
+        viewPagerSpells.setOnTouchListener { v, event -> true }
+    }
+}
+class ViewPagerSpells internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
+
+    override fun getItem(position: Int): Fragment? {
+        var fragment: Fragment? = null
+        when (position) {
+            0 -> fragment = SpellManagement()
+            1 -> fragment = ChoosingSpells()
         }
-        buttonSettings.setOnClickListener{
-            val intent = Intent(this, Settings::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        buttonShop.setOnClickListener {
-            val intent = Intent(this, Shop::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        buttonAdventure.setOnClickListener{
-            val intent = Intent(this, Adventure::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
+
+        return fragment
+    }
+
+    override fun getCount(): Int {
+        return 2
+    }
+
+    override fun getPageTitle(position: Int): CharSequence? {
+        return "Surface " + (position + 1)
     }
 }

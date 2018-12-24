@@ -19,11 +19,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ChoosingSpells" android:screenOrientation="landscape"/>
         <activity android:name=".Character" android:screenOrientation="landscape"/>
         <activity android:name=".FightSystem" android:screenOrientation="landscape"/>
         <activity android:name=".Settings" android:screenOrientation="landscape"/>
-        <activity android:name=".SpellManagement" android:screenOrientation="landscape"/>
         <activity android:name=".Shop" android:screenOrientation="landscape"/>
         <activity android:name=".Adventure" android:screenOrientation="landscape"/>
         <activity android:name=".Spells" android:screenOrientation="landscape"/>

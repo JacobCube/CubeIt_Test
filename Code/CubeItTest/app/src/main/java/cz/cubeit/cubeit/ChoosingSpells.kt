@@ -4,38 +4,163 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.support.v7.app.AppCompatActivity
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.BaseAdapter
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_choosing_spells.*
+import kotlinx.android.synthetic.main.fragment_choosing_spells.view.*
 import kotlinx.android.synthetic.main.row_choosingspells.view.*
 import kotlinx.android.synthetic.main.row_chosen_spells.view.*
 
+class ChoosingSpells : Fragment(){
 
+    private var requiredEnergy = 0
+    private var neededEnergy = 0
+    private var folded = false
 
-class ChoosingSpells : AppCompatActivity(){
+    override fun onStop() {
+        var tempNull:Int = 0
+        super.onStop()
+        for(i in 0 until player.chosenSpellsDefense.size){
+            if(player.chosenSpellsDefense[i]==null){
+                tempNull = i
+                for(d in i until player.chosenSpellsDefense.size){
+                    player.chosenSpellsDefense[d] = null
+                    if(d>19){player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.lastIndex)}
+                }
+                break
+            }
+        }
+        while(true){reset@
+            for(j in 0..19){
+                if(player.chosenSpellsDefense[j]!=null){
+                    if((player.energy+25*j) - neededEnergy-100 < player.chosenSpellsDefense[j]!!.energy){
+                        if(tempNull<=19)player.chosenSpellsDefense[tempNull]=player.learnedSpells[0] else player.chosenSpellsDefense.add(player.learnedSpells[0])
+                        continue@reset
+                    }
+                    neededEnergy+=player.chosenSpellsDefense[j]!!.energy
+                }
+            }
+            break
+        }
+        //check the energy usage, generate no energy needed spell
+        //ex: for.... if(energyNeeded - player.energy*i<player.chosenSpells[i]) player.chosenSpellsDefence.add()
+    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.fragment_choosing_spells, container, false)
+        folded = false
 
-    override fun onBackPressed() {
-        val intent = Intent(this, Home::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(intent)
-        overridePendingTransition(0, 0)
+        val animUp: Animation = AnimationUtils.loadAnimation(activity!!,
+                R.anim.animation_adventure_up)
+        val animDown: Animation = AnimationUtils.loadAnimation(activity!!,
+                R.anim.animation_adventure_down)
+
+        view.spellsMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(activity) {
+            override fun onSwipeDown(){
+                if(!folded) {
+                    view.imageViewSpells.startAnimation(animDown)
+                    view.buttonFightSpells.isClickable = false
+                    view.buttonCharacterSpells.isClickable = false
+                    view.buttonSettingsSpells.isClickable = false
+                    view.buttonShopSpells.isClickable = false
+                    view.buttonAdventureSpells.isClickable = true
+                    folded = true
+                }
+            }
+        })
+        view.imageViewSpells.setOnTouchListener(object : OnSwipeTouchListener(activity) {
+            override fun onSwipeDown() {
+                if(!folded){
+                    view.imageViewSpells.startAnimation(animDown)
+                    view.buttonFightSpells.isClickable = false
+                    view.buttonCharacterSpells.isClickable = false
+                    view.buttonSettingsSpells.isClickable = false
+                    view.buttonShopSpells.isClickable = false
+                    view.buttonAdventureSpells.isClickable = false
+                    folded = true
+                }
+            }
+            override fun onSwipeUp() {
+                if(folded){
+                    view.imageViewSpells.startAnimation(animUp)
+                    view.buttonFightSpells.isClickable = true
+                    view.buttonAdventureSpells.isClickable = true
+                    view.buttonCharacterSpells.isClickable = true
+                    view.buttonSettingsSpells.isClickable = true
+                    view.buttonShopSpells.isClickable = true
+                    folded = false
+                }
+            }
+        })
+
+        animUp.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                view.imageViewSpells.isEnabled = true
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+                view.imageViewSpells.isEnabled = false
+            }
+        })
+        animDown.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                view.spellsMenuSwipe.isEnabled = true
+                view.imageViewSpells.isEnabled = true
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+                view.spellsMenuSwipe.isEnabled = false
+                view.imageViewSpells.isEnabled = false
+            }
+        })
+
+        view.buttonFightSpells.setOnClickListener{
+            val intent = Intent(activity, FightSystem::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            activity!!.overridePendingTransition(0,0)
+        }
+        view.buttonCharacterSpells.setOnClickListener{
+            val intent = Intent(activity, Character::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            activity!!.overridePendingTransition(0,0)
+        }
+        view.buttonSettingsSpells.setOnClickListener{
+            val intent = Intent(activity, Settings::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            activity!!.overridePendingTransition(0,0)
+        }
+        view.buttonShopSpells.setOnClickListener {
+            val intent = Intent(activity, Shop::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            activity!!.overridePendingTransition(0,0)
+        }
+        view.buttonAdventureSpells.setOnClickListener{
+            val intent = Intent(activity, Adventure::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            activity!!.overridePendingTransition(0,0)
+        }
+
+        view.chosen_listView.adapter = ChosenSpellsView(player)
+        view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy)
+        return view
     }
 
-    var requiredEnergy:Int = 0
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        overridePendingTransition(0, 0)
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_choosing_spells)
-        chosen_listView.adapter = ChosenSpellsView(player)
-        choosing_listview.adapter = LearnedSpellsView(textViewInfoSpells, textViewError, chosen_listView.adapter as ChosenSpellsView, requiredEnergy, player)
-    }
-
-    private class LearnedSpellsView(var textViewInfoSpells: TextView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int, player: Player) : BaseAdapter() {
+    private class LearnedSpellsView(var textViewInfoSpells: TextView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int) : BaseAdapter() {
 
         override fun getCount(): Int {
             return (player.learnedSpells.size/2+1)

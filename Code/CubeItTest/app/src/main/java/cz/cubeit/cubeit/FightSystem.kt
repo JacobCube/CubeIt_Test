@@ -1,11 +1,15 @@
 package cz.cubeit.cubeit
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.view.MotionEvent
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlin.random.Random.Default.nextInt
@@ -28,26 +32,14 @@ fun damageDefense(roundCounter:Int, player:Player):Int{
         (player.chosenSpellsDefense[roundCounter]!!.power.toDouble() * (player.power.toDouble() / 10)).toInt()
     }
 }
-/*fun checkEndGame(playerHP:Int, enemyHP:Int){
-    if(playerHP){
-
-    }
-}*/
 
 @Suppress("DEPRECATION")
 class FightSystem : AppCompatActivity() {
     private var enemy:Player = Player("Enemy", arrayOf(0,0,0,0), nextInt(player.level-player.level/4,player.level+player.level/4), 1, nextInt(player.power-player.power/4,player.power+player.power/4), 0, 0.0, 0, 0, nextInt((player.health- player.health/4).toInt(), (player.health + player.health/4).toInt()).toDouble(), 100, 10, 20,mutableListOf(null, null, null), arrayOf(null,null,null,null,null,null), arrayOf(null,null), player.learnedSpells, player.chosenSpellsDefense, player.chosenSpellsAttack, player.money, player.shopOffer)
 
     private var roundCounter = 0
-    private var clicks0 = 0
-    private var clicks1 = 0
-    private var clicks2 = 0
-    private var clicks3 = 0
-    private var clicks4 = 0
-    private var clicksAttack = 0
     private var requiredEnergy = 0
     private var requiredEnergyEnemy = 0
-    private var clicksBlock = 0
 
     private var playerHP = player.health
     private var enemyHP = enemy.health
@@ -59,8 +51,8 @@ class FightSystem : AppCompatActivity() {
     private fun useSpell(spellIndex:Int){
         if(requiredEnergy + player.chosenSpellsAttack[spellIndex]!!.energy <= energy){
             try {
-                if (enemy.chosenSpellsDefense[roundCounter] == null){
-                    if((energyEnemy - requiredEnergyEnemy)< enemy.chosenSpellsDefense[0]!!.energy){
+                if (enemy.chosenSpellsDefense[roundCounter] == null&&roundCounter == enemy.chosenSpellsDefense.lastIndex){
+                    if((energyEnemy - requiredEnergyEnemy)< enemy.chosenSpellsDefense[roundCounter]!!.energy){
                         enemy.chosenSpellsDefense.add(roundCounter, spellsClass1[0])
                         enemy.chosenSpellsDefense.removeAt(enemy.chosenSpellsDefense.lastIndex)
                     }else{
@@ -106,8 +98,6 @@ class FightSystem : AppCompatActivity() {
             textViewError.visibility = View.VISIBLE
         }
     }
-    override fun onBackPressed() {
-    }
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,9 +133,82 @@ class FightSystem : AppCompatActivity() {
         textPlayer.text = playerHP.toString()
         textEnemy.text = enemyHP.toString()
 
-        buttonAttack.setOnClickListener {
-            ++clicksAttack
-            if(clicksAttack==2){                                                  //DOUBLE CLICK
+        val animSpellUp:Array<Animation> = arrayOf(AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use))
+
+        animSpellUp[0].setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                buttonAttack.clearAnimation()
+            }
+            override fun onAnimationStart(animation: Animation?) {
+            }
+        })
+        animSpellUp[1].setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                buttonBlock.clearAnimation()
+            }
+            override fun onAnimationStart(animation: Animation?) {
+            }
+        })
+        animSpellUp[2].setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                buttonSpell1.clearAnimation()
+            }
+            override fun onAnimationStart(animation: Animation?) {
+            }
+        })
+        animSpellUp[3].setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                buttonSpell2.clearAnimation()
+            }
+            override fun onAnimationStart(animation: Animation?) {
+            }
+        })
+        animSpellUp[4].setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                buttonSpell3.clearAnimation()
+            }
+            override fun onAnimationStart(animation: Animation?) {
+            }
+        })
+        animSpellUp[5].setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                buttonSpell4.clearAnimation()
+            }
+            override fun onAnimationStart(animation: Animation?) {
+            }
+        })
+        animSpellUp[6].setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                buttonSpell5.clearAnimation()
+            }
+            override fun onAnimationStart(animation: Animation?) {
+            }
+        })
+
+        buttonAttack.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                buttonAttack.startAnimation(animSpellUp[0])
                 try {
                     if (enemy.chosenSpellsDefense[roundCounter] == null) {
                         if((energyEnemy - requiredEnergyEnemy)< enemy.chosenSpellsDefense[0]!!.energy){
@@ -180,24 +243,23 @@ class FightSystem : AppCompatActivity() {
                     toast("Player's dead, fight's over")
                 }
 
+
                 roundCounter++
                 energy+=25
-                energyEnemyTextView.text = (energy - requiredEnergyEnemy ).toString()
+                energyEnemy+=25
+                energyEnemyTextView.text = (energyEnemy - requiredEnergyEnemy ).toString()
                 energyTextView.text = (energy - requiredEnergy).toString()
                 textViewError.visibility = View.INVISIBLE
-
-                handler.removeCallbacksAndMessages(null)
-            }else if(clicksAttack==1){                                            //SINGLE CLICK
-                textViewSpecs.text = spellStats(spellsClass1[0])
             }
-            handler.postDelayed({
-                clicksAttack=0
-            }, 250)
-        }
+            override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
+                textViewSpecs.text = spellStats(spellsClass1[0])
+                return super.onTouch(view, motionEvent)
+            }
+        })
 
-        buttonBlock.setOnClickListener {
-            ++clicksBlock
-            if(clicksBlock==2){                                                  //DOUBLE CLICK
+        buttonBlock.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                buttonBlock.startAnimation(animSpellUp[1])
                 try {
                     if (enemy.chosenSpellsDefense[roundCounter] == null) {
                         if((energyEnemy - requiredEnergyEnemy)< enemy.chosenSpellsDefense[0]!!.energy){
@@ -228,80 +290,68 @@ class FightSystem : AppCompatActivity() {
                 energyEnemyTextView.text = (energyEnemy - requiredEnergyEnemy ).toString()
                 energyTextView.text = (energy - requiredEnergy).toString()
                 textViewError.visibility = View.INVISIBLE
-
-                handler.removeCallbacksAndMessages(null)
-            }else if(clicksBlock==1){                                            //SINGLE CLICK
+            }
+            override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
                 textViewSpecs.text = spellStats(spellsClass1[1])
+                return super.onTouch(view, motionEvent)
             }
-            handler.postDelayed({
-                clicksBlock=0
-            }, 250)
-        }
+        })
 
-        buttonSpell1.setOnClickListener {
-            ++clicks0
-            if(clicks0==2){                                                  //DOUBLE CLICK
+        buttonSpell1.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
                 useSpell(0)
-                handler.removeCallbacksAndMessages(null)
-            }else if(clicks0==1){                                            //SINGLE CLICK
+                buttonSpell1.startAnimation(animSpellUp[2])
+            }
+
+            override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
                 textViewSpecs.text = spellStats(player.chosenSpellsAttack[0])
+                return super.onTouch(view, motionEvent)
             }
-            handler.postDelayed({
-                clicks0=0
-            }, 250)
-        }
+        })
 
-        buttonSpell2.setOnClickListener {
-            ++clicks1
-            if(clicks1==2){                                                  //DOUBLE CLICK
+        buttonSpell2.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
                 useSpell(1)
-                handler.removeCallbacksAndMessages(null)
-            }else if(clicks1==1){                                            //SINGLE CLICK
+                buttonSpell2.startAnimation(animSpellUp[3])
+            }
+            override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
                 textViewSpecs.text = spellStats(player.chosenSpellsAttack[1])
+                return super.onTouch(view, motionEvent)
             }
-            handler.postDelayed({
-                clicks1=0
-            }, 250)
-        }
+        })
 
-        buttonSpell3.setOnClickListener {
-            ++clicks2
-            if(clicks2==2){                                                  //DOUBLE CLICK
+        buttonSpell3.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
                 useSpell(2)
-                handler.removeCallbacksAndMessages(null)
-            }else if(clicks2==1){                                            //SINGLE CLICK
+                buttonSpell3.startAnimation(animSpellUp[4])
+            }
+            override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
                 textViewSpecs.text = spellStats(player.chosenSpellsAttack[2])
+                return super.onTouch(view, motionEvent)
             }
-            handler.postDelayed({
-                clicks2=0
-            }, 250)
-        }
+        })
 
-        buttonSpell4.setOnClickListener {
-            ++clicks3
-            if(clicks3==2){                                                  //DOUBLE CLICK
+        buttonSpell4.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
                 useSpell(3)
-                handler.removeCallbacksAndMessages(null)
-            }else if(clicks3==1){                                            //SINGLE CLICK
+                buttonSpell4.startAnimation(animSpellUp[5])
+            }
+            override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
                 textViewSpecs.text = spellStats(player.chosenSpellsAttack[3])
+                return super.onTouch(view, motionEvent)
             }
-            handler.postDelayed({
-                clicks3=0
-            }, 250)
-        }
+        })
 
-        buttonSpell5.setOnClickListener {
-            ++clicks4
-            if(clicks4==2){                                                  //DOUBLE CLICK
+        buttonSpell5.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
                 useSpell(4)
-                handler.removeCallbacksAndMessages(null)
-            }else if(clicks4==1){                                            //SINGLE CLICK
-                textViewSpecs.text = spellStats(player.chosenSpellsAttack[4])
+                buttonSpell5.startAnimation(animSpellUp[6])
             }
-            handler.postDelayed({
-                clicks4=0
-            }, 250)
-        }
+            override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
+                textViewSpecs.text = spellStats(player.chosenSpellsAttack[4])
+                return super.onTouch(view, motionEvent)
+            }
+        })
     }
     private fun spellStats(spell:Spell?):String{
         var text = "${spell!!.name}\nLevel: ${spell.level}\nEnergy: ${spell.energy}\nPower: ${spell.power}"
