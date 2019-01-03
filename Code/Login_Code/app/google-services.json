@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "348288766853",
+    "firebase_url": "https://cubeit-testing.firebaseio.com",
+    "project_id": "cubeit-testing",
+    "storage_bucket": "cubeit-testing.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348288766853:android:47a94757959bdd11",
+        "android_client_info": {
+          "package_name": "cubeit.cubeit_login_test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "348288766853-23fk3oms2voelksnounp26ae2c3fv4qh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMlzVwdF8z5_8Oq8R3JlQnxehd6nPtD2o"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

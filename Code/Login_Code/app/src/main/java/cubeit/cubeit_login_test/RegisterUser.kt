@@ -4,122 +4,66 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 import io.realm.ObjectServerError
 import io.realm.Realm
 import io.realm.SyncCredentials
 import io.realm.SyncUser
 import kotlinx.android.synthetic.main.activity_register.*
 import java.util.regex.Pattern
+// Code by CubeIt / Max | 2019
+
+/*
+    To Olda: keep out!
+    If you aren't Olda: contact me at fassinger[at]protonmail[dot]com I could use your help in securing this game, thanks :D
+ */
 
 class RegisterUser : AppCompatActivity() {
 
-    val authURL: String = "https://cubeit-test.de1a.cloud.realm.io/auth" //static URL of Realm server (In final build this should be in a seperate file)
+    val authURL: String = "https://cubeit-test.de1a.cloud.realm.io/auth" //static URL of Realm server (In final build this should be in a separate file)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
-        Realm.init(this)
 
-        registerButton.setOnClickListener { view -> createUser() }
+        Realm.init(this) // Initialize realm
+        var Auth = FirebaseAuth.getInstance(); // Initialize Firebase
 
-        accountExistsButton.setOnClickListener {
+        var userEmail: String
+        var userPassword: String
+
+        registerButton.setOnClickListener { view ->
+            userEmail = userEmailText.text.toString()
+
+            if (userPasswordText.text.toString().equals(userPasswordTextConfirm.text.toString()) && TOSCheckbox.isChecked == true) // Check if passwords match
+            {
+                userPassword = userPasswordText.text.toString()
+                Auth.createUserWithEmailAndPassword(userEmail, userPassword)
+
+                val user = Auth!!.currentUser
+                user!!.sendEmailVerification()
+
+                val builder = AlertDialog.Builder(this@RegisterUser)
+                builder.setTitle("Alert")
+                builder.setMessage("Confirmation Email sent!")
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
+            }
+
+            else {
+                val builder = AlertDialog.Builder(this@RegisterUser)
+                builder.setTitle("Oops!")
+                builder.setMessage("Please enter a valid email and/or password and agree to the terms and conditions")
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
+            }
+
+        }
+        accountExistsButton.setOnClickListener { // Teleport to user login screen
             val intent = Intent(this, LoginUser::class.java)
             startActivity(intent)
         }
+
+        // go to main game
     }
-
-    fun isEmailValid(email: String): Boolean {
-        val regExpn = ("^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
-                + "((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                + "[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
-                + "([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                + "[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
-                + "([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$")
-
-        val pattern = Pattern.compile(regExpn, Pattern.CASE_INSENSITIVE)
-        val matcher = pattern.matcher(email)
-
-        return matcher.matches();
-    }
-
-    fun isPasswordValid(password: String): Boolean {
-
-        // Password RQ's: 1+ uppercase letter, 2+ numbers, 1+ special character, length >= 8 (Max length is 31 characters)
-
-        val regExpn = ("^(?=.*[A-Z])(?=.*[!@#\$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,31}\$")
-
-        val pattern = Pattern.compile(regExpn, Pattern.CASE_INSENSITIVE)
-        val matcher = pattern.matcher(password)
-
-        return matcher.matches();
-    }
-
-    fun createUser() {
-
-        val userEmail = userEmailText.text.toString()
-        var userPassword: String = ""
-
-
-        if (userPasswordText.text.toString() == userPasswordTextConfirm.text.toString()) {
-            userPassword = userPasswordText.text.toString()
-        }
-        else {
-
-            val builder = AlertDialog.Builder(this@RegisterUser)
-
-            builder.setTitle("Error")
-            builder.setMessage("Passwords must match.")
-
-            val dialog: AlertDialog = builder.create()
-
-            dialog.show()
-        }
-
-        if (isEmailValid(userEmail) && isPasswordValid(userPassword)){
-
-            val credentials: SyncCredentials = SyncCredentials.usernamePassword(userEmail, userPassword, true)
-
-            SyncUser.logInAsync(credentials, authURL, object:SyncUser.Callback<SyncUser> {
-                override fun onSuccess(user: SyncUser) {
-
-                    val builder = AlertDialog.Builder(this@RegisterUser)
-
-                    builder.setTitle("Success")
-                    builder.setMessage("User created!")
-
-                    val dialog: AlertDialog = builder.create()
-
-                    dialog.show()
-                }
-
-                override fun onError(error: ObjectServerError) {
-
-                    val builder = AlertDialog.Builder(this@RegisterUser)
-
-                    builder.setTitle("Fail")
-                    builder.setMessage("User already exists!")
-
-                    val dialog: AlertDialog = builder.create()
-
-                    dialog.show()
-                }
-            })
-
-        }
-        else {
-            val builder = AlertDialog.Builder(this@RegisterUser)
-
-            builder.setTitle("Error")
-            builder.setMessage("Please enter a valid email/password")
-
-            val dialog: AlertDialog = builder.create()
-
-            dialog.show()
-
-        }
-
-
-    }
-
-
 }
