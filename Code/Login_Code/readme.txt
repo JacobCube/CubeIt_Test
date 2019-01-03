@@ -1,18 +1,1 @@
-> Updated 8.10.2018//Fassinger
-> This app will add/authenticate a user -- demonstrating a connection between the realm server and our local application.
-
-> Status: 30% done
-
-> Working:
-	
-	$ app starts :D
-	$ project has realm linked
-	$ project has basic GUI for entering creds
-	$ project initializes Realm on startup
-
-> Not working:
-	
-	$ mostly everything, no connection to external server
-	$ need to learn kotlin...
- 
-> Priority: needs to be done by the 22nd of October -- High Priority
+Status: working, code needs clean up (remove realm dependencies, move to non testing Firebase instance - my fault for not thinking ahead) In prep for moving to Firebase and combining the main app and login system, I will re-do the project for scratch to insure stability. Also need to limit users.
