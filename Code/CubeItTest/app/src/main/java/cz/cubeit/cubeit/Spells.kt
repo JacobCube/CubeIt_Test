@@ -6,13 +6,15 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import kotlinx.android.synthetic.main.activity_spells.*
 import kotlinx.android.synthetic.main.fragment_choosing_spells.*
 
-
-
-
 class Spells: AppCompatActivity(){
+
+    fun onUnChoose(view: View){
+        SpellManagement().onUnChoose(view)
+    }
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -31,8 +33,6 @@ class Spells: AppCompatActivity(){
                     ViewPagerSpells(supportFragmentManager)
             viewPagerSpells.adapter = adapter
         }
-
-        viewPagerSpells.setOnTouchListener { v, event -> true }
     }
 }
 class ViewPagerSpells internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){

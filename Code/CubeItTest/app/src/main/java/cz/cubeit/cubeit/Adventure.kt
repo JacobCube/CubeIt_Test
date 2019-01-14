@@ -16,7 +16,7 @@ import android.view.animation.AnimationUtils
 
 
 open class Quest(val name:String, val description:String, val level:Int, val experience:Int, val money:Int)
-open class Surface(val background:Int, val quests:Array<Quest>, val completedQuests:Array<Boolean?>)
+open class Surface(val background:Int, val quests:Array<Quest>, val completedQuests:Array<Int?>)
 val questsSurface0:Array<Quest> = arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 1*25, 1*10),
         Quest("Quest 2", "Description of quest 2", 2, 2*25, 2*10),
         Quest("Quest 3", "Description of quest 3", 3, 3*25, 3*10),
@@ -181,9 +181,9 @@ class Adventure : AppCompatActivity() {
 
         window.isOutsideTouchable = false
         window.isFocusable = true
-        if(surfaces[0].completedQuests[index] == true)buttonAccept.visibility = View.GONE
+        if(surfaces[0].completedQuests[index] == null)buttonAccept.visibility = View.GONE
         buttonAccept.setOnClickListener {
-            surfaces[0].completedQuests[index] = true
+            surfaces[0].completedQuests[index] = 1
             window.dismiss()
         }
         buttonClose.setOnClickListener {

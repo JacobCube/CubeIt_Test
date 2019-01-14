@@ -6,7 +6,10 @@
     android:paddingBottom="1dp"
     android:screenOrientation="landscape">
 
-    <Button
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/emptyslot"
         android:id="@+id/buttonOffer1"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -16,7 +19,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/emptyslot"
         android:id="@+id/buttonOffer3"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -25,7 +31,10 @@
         app:layout_constraintStart_toStartOf="@+id/guideline3"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/emptyslot"
         android:id="@+id/buttonOffer2"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -34,7 +43,10 @@
         app:layout_constraintStart_toStartOf="@+id/guideline2"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/emptyslot"
         android:id="@+id/buttonOffer4"
         android:layout_width="0dp"
         android:layout_height="0dp"

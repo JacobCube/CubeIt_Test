@@ -7,8 +7,6 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import kotlinx.android.synthetic.main.activity_home.*
 
-
-@Suppress("DEPRECATION")
 class Home : AppCompatActivity() {
 
     private var folded = false
@@ -17,14 +15,16 @@ class Home : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        val fightSystem = FightSystem(player)
+
         buttonFight.setOnClickListener{
-            val intent = Intent(this, FightSystem::class.java)
+            val intent = Intent(this, fightSystem.javaClass)//FightSystem::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         buttonDefence.setOnClickListener{
-            val intent = Intent(this, Spells::class.java)
+            val intent = Intent(this, Spells()::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
@@ -63,12 +63,12 @@ class Home : AppCompatActivity() {
             override fun onSwipeDown() {
                 if(!folded) {
                     imageView.startAnimation(animDown)
-                    buttonFight.isClickable = false
-                    buttonDefence.isClickable = false
-                    buttonCharacter.isClickable = false
-                    buttonAdventure.isClickable = false
-                    buttonSettings.isClickable = false
-                    buttonShop.isClickable = false
+                    buttonFight.isEnabled = false
+                    buttonDefence.isEnabled = false
+                    buttonCharacter.isEnabled = false
+                    buttonAdventure.isEnabled = false
+                    buttonSettings.isEnabled = false
+                    buttonShop.isEnabled = false
                     folded = true
                 }
             }
@@ -77,24 +77,24 @@ class Home : AppCompatActivity() {
             override fun onSwipeDown() {
                 if(!folded){
                     imageView.startAnimation(animDown)
-                    buttonFight.isClickable = false
-                    buttonDefence.isClickable = false
-                    buttonCharacter.isClickable = false
-                    buttonSettings.isClickable = false
-                    buttonShop.isClickable = false
-                    buttonAdventure.isClickable = false
+                    buttonFight.isEnabled = false
+                    buttonDefence.isEnabled = false
+                    buttonCharacter.isEnabled = false
+                    buttonSettings.isEnabled = false
+                    buttonShop.isEnabled = false
+                    buttonAdventure.isEnabled = false
                     folded = true
                 }
             }
             override fun onSwipeUp() {
                 if(folded){
                     imageView.startAnimation(animUp)
-                    buttonFight.isClickable = true
-                    buttonAdventure.isClickable = true
-                    buttonDefence.isClickable = true
-                    buttonCharacter.isClickable = true
-                    buttonSettings.isClickable = true
-                    buttonShop.isClickable = true
+                    buttonFight.isEnabled = true
+                    buttonAdventure.isEnabled = true
+                    buttonDefence.isEnabled = true
+                    buttonCharacter.isEnabled = true
+                    buttonSettings.isEnabled = true
+                    buttonShop.isEnabled = true
                     folded = false
                 }
             }

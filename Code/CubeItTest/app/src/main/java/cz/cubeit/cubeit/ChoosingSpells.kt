@@ -8,121 +8,50 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.BaseAdapter
+import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_choosing_spells.view.*
 import kotlinx.android.synthetic.main.row_choosingspells.view.*
 import kotlinx.android.synthetic.main.row_chosen_spells.view.*
 
 class ChoosingSpells : Fragment(){
-
     private var requiredEnergy = 0
-    private var neededEnergy = 0
     private var folded = false
 
     override fun onStop() {
-        var tempNull:Int = 0
         super.onStop()
-        for(i in 0 until player.chosenSpellsDefense.size){
+        var tempNull = 0   //index of first item, which is null
+        var tempEnergy = player.energy-25
+        for(i in 0 until player.chosenSpellsDefense.size){  //clean the list from white spaces between items, and items of higher index than is allowed to be
             if(player.chosenSpellsDefense[i]==null){
                 tempNull = i
                 for(d in i until player.chosenSpellsDefense.size){
                     player.chosenSpellsDefense[d] = null
-                    if(d>19){player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.lastIndex)}
+                    if(d>19){player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.size-1)}
                 }
                 break
             }
-        }
-        while(true){reset@
-            for(j in 0..19){
-                if(player.chosenSpellsDefense[j]!=null){
-                    if((player.energy+25*j) - neededEnergy-100 < player.chosenSpellsDefense[j]!!.energy){
-                        if(tempNull<=19)player.chosenSpellsDefense[tempNull]=player.learnedSpells[0] else player.chosenSpellsDefense.add(player.learnedSpells[0])
-                        continue@reset
-                    }
-                    neededEnergy+=player.chosenSpellsDefense[j]!!.energy
-                }
+            else{
+                tempEnergy+=(25-player.chosenSpellsDefense[i]!!.energy)
             }
-            break
         }
-        //check the energy usage, generate no energy needed spell
-        //ex: for.... if(energyNeeded - player.energy*i<player.chosenSpells[i]) player.chosenSpellsDefence.add()
+
+        while(true){            //corrects energy usage by the last index, which is nulls, adds new item if it is bigger than limit of the memory
+            if(tempEnergy+25 < player.energy){
+                if (tempNull < 19) {
+                    tempEnergy+=25
+                    player.chosenSpellsDefense.add(tempNull, spellsClass1[0])
+                    player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.size - 1)
+                } else {
+                    player.chosenSpellsDefense.add(spellsClass1[0])
+                }
+            } else break
+        }
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_choosing_spells, container, false)
         folded = false
-
-        val animUp: Animation = AnimationUtils.loadAnimation(activity!!,
-                R.anim.animation_adventure_up)
-        val animDown: Animation = AnimationUtils.loadAnimation(activity!!,
-                R.anim.animation_adventure_down)
-
-        view.spellsMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(activity) {
-            override fun onSwipeDown(){
-                if(!folded) {
-                    view.imageViewSpells.startAnimation(animDown)
-                    view.buttonFightSpells.isClickable = false
-                    view.buttonCharacterSpells.isClickable = false
-                    view.buttonSettingsSpells.isClickable = false
-                    view.buttonShopSpells.isClickable = false
-                    view.buttonAdventureSpells.isClickable = true
-                    folded = true
-                }
-            }
-        })
-        view.imageViewSpells.setOnTouchListener(object : OnSwipeTouchListener(activity) {
-            override fun onSwipeDown() {
-                if(!folded){
-                    view.imageViewSpells.startAnimation(animDown)
-                    view.buttonFightSpells.isClickable = false
-                    view.buttonCharacterSpells.isClickable = false
-                    view.buttonSettingsSpells.isClickable = false
-                    view.buttonShopSpells.isClickable = false
-                    view.buttonAdventureSpells.isClickable = false
-                    folded = true
-                }
-            }
-            override fun onSwipeUp() {
-                if(folded){
-                    view.imageViewSpells.startAnimation(animUp)
-                    view.buttonFightSpells.isClickable = true
-                    view.buttonAdventureSpells.isClickable = true
-                    view.buttonCharacterSpells.isClickable = true
-                    view.buttonSettingsSpells.isClickable = true
-                    view.buttonShopSpells.isClickable = true
-                    folded = false
-                }
-            }
-        })
-
-        animUp.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                view.imageViewSpells.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                view.imageViewSpells.isEnabled = false
-            }
-        })
-        animDown.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                view.spellsMenuSwipe.isEnabled = true
-                view.imageViewSpells.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                view.spellsMenuSwipe.isEnabled = false
-                view.imageViewSpells.isEnabled = false
-            }
-        })
 
         view.buttonFightSpells.setOnClickListener{
             val intent = Intent(activity, FightSystem::class.java)
@@ -154,13 +83,20 @@ class ChoosingSpells : Fragment(){
             startActivity(intent)
             activity!!.overridePendingTransition(0,0)
         }
+        view.testSet.setOnClickListener {
+            val fightSystem = FightSystem(player, player)
+            val intent = Intent(activity, fightSystem.javaClass)//FightSystem::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            activity!!.overridePendingTransition(0,0)
+        }
 
         view.chosen_listView.adapter = ChosenSpellsView(player)
         view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy)
         return view
     }
 
-    private class LearnedSpellsView(var textViewInfoSpells: TextView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int) : BaseAdapter() {
+    private class LearnedSpellsView(var textViewInfoSpells: TextView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int) : BaseAdapter() { //listview of player's learned spells
 
         override fun getCount(): Int {
             return (player.learnedSpells.size/2+1)
@@ -191,9 +127,31 @@ class ChoosingSpells : Fragment(){
                 position*2
             }
             val handler = Handler()
-            try{
-                viewHolder.button1.setBackgroundResource(player.learnedSpells[index]!!.drawable)
-                var clicks = 0
+            var clicks = 0
+
+            for(i in 0..1){
+                val tempSpell = when(i){
+                    0->viewHolder.button1
+                    1->viewHolder.button2
+                    else->viewHolder.button1
+                }
+                if(index+i<player.learnedSpells.size){
+                    if(player.learnedSpells[index+i]!=null){
+                        tempSpell.setImageResource(player.learnedSpells[index+i]!!.drawable)
+                        tempSpell.isEnabled = true
+                    }else{
+                        tempSpell.setImageResource(0)
+                        tempSpell.isEnabled = false
+                    }
+                }else{
+                    tempSpell.isEnabled = false
+                    tempSpell.setBackgroundResource(0)
+                }
+            }
+            fun getClicked(){
+
+            }
+
                 viewHolder.button1.setOnClickListener {
                     ++clicks
                     if(clicks>=2){
@@ -234,13 +192,7 @@ class ChoosingSpells : Fragment(){
                         clicks = 0
                     }, 250)
                 }
-            }catch(e:Exception){
-                viewHolder.button1.isClickable = false
-                viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
-            }
-            try{
-                viewHolder.button2.setBackgroundResource(player.learnedSpells[index+1]!!.drawable)
-                var clicks = 0
+
                 viewHolder.button2.setOnClickListener {
                     ++clicks
                     if(clicks>=2){                                          //DOUBLE CLICK
@@ -273,7 +225,7 @@ class ChoosingSpells : Fragment(){
                             }
                         }
                         handler.removeCallbacksAndMessages(null)
-                    }else if(clicks==1){
+                    }else if(clicks==1){            // single click
                         textViewInfoSpells.text = spellStats(player.learnedSpells[index+1])
                     }
                     handler.postDelayed({
@@ -281,13 +233,10 @@ class ChoosingSpells : Fragment(){
 
                     }, 250)
                 }
-            }catch(e:Exception){
-                viewHolder.button2.isClickable = false
-                viewHolder.button2.setBackgroundResource(R.drawable.emptyslot)
-            }
+
             return rowMain
         }
-        private class ViewHolder(val button1: TextView, val button2: TextView)
+        private class ViewHolder(val button1: ImageView, val button2: ImageView)
     }
 
     private class ChosenSpellsView(val player: Player) : BaseAdapter() {
@@ -345,8 +294,8 @@ class ChoosingSpells : Fragment(){
     companion object {
         private fun spellStats(spell:Spell?):String{
             var text = "${spell!!.name}\n${spell.description}\nLevel: ${spell.level}\nEnergy: ${spell.energy}\nPower: ${spell.power}"
-            if(spell.fire!=0)text+="Fire: ${spell.fire}"
-            if(spell.poison!=0)text+="Fire: ${spell.poison}"
+            if(spell.fire!=0)text+="\nFire: ${spell.fire}"
+            if(spell.poison!=0)text+="\nPoison: ${spell.poison}"
             return text
         }
     }

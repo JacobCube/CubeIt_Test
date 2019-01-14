@@ -148,91 +148,107 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.34" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem2"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="2dp"
         android:layout_marginBottom="45dp"
-        android:onClick="onUnequip"
-        android:tag="equipItem2"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="2"
         app:layout_constraintBottom_toTopOf="@+id/guideline9"
-        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem3"
-        android:tag="equipItem3"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="2dp"
         android:layout_marginBottom="8dp"
-        android:onClick="onUnequip"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="3"
         app:layout_constraintBottom_toTopOf="@+id/equipItem2"
-        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem4"
-        android:tag="equipItem4"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="2dp"
         android:layout_marginBottom="8dp"
-        android:onClick="onUnequip"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="4"
         app:layout_constraintBottom_toTopOf="@+id/equipItem3"
-        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem5"
-        android:tag="equipItem5"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="2dp"
         android:layout_marginBottom="8dp"
-        android:onClick="onUnequip"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="5"
         app:layout_constraintBottom_toTopOf="@+id/equipItem4"
-        app:layout_constraintEnd_toEndOf="@+id/equipView" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem6"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="2dp"
         android:layout_marginBottom="45dp"
-        android:onClick="onUnequip"
-        android:tag="equipItem6"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="6"
         app:layout_constraintBottom_toTopOf="@+id/guideline9"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem7"
-        android:tag="equipItem7"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="2dp"
         android:layout_marginBottom="8dp"
-        android:onClick="onUnequip"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="7"
         app:layout_constraintBottom_toTopOf="@+id/equipItem6"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem8"
-        android:tag="equipItem8"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="2dp"
         android:layout_marginBottom="8dp"
-        android:onClick="onUnequip"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="8"
         app:layout_constraintBottom_toTopOf="@+id/equipItem7"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem9"
-        android:tag="equipItem9"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="2dp"
         android:layout_marginBottom="8dp"
-        android:onClick="onUnequip"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="9"
         app:layout_constraintBottom_toTopOf="@+id/equipItem8"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -249,40 +265,41 @@
         app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
     <TextView
-            android:id="@+id/textViewInfoItem"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:minHeight="50dp"
-            android:textAlignment="center"
-            android:visibility="invisible"
-            android:background="@android:color/transparent"
-            app:layout_constraintBottom_toTopOf="@+id/guideline5"
-            app:layout_constraintEnd_toStartOf="@+id/guideline6"
-            app:layout_constraintStart_toStartOf="@+id/guideline7"
-            app:layout_constraintTop_toTopOf="parent" app:layout_constraintHorizontal_bias="0.1"
-            app:layout_constraintVertical_bias="0.0"/>
+        android:id="@+id/textViewInfoItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"
+        android:textAlignment="center"
+        android:visibility="invisible"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline5"
+        app:layout_constraintEnd_toStartOf="@+id/guideline6"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toTopOf="parent" app:layout_constraintHorizontal_bias="0.1"
+        app:layout_constraintVertical_bias="0.0"/>
 
     <TextView
-            android:id="@+id/textViewInfoCharacter"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:background="@android:color/transparent"
-            app:layout_constraintBottom_toTopOf="@+id/guideline5"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/guideline6"
-            app:layout_constraintTop_toTopOf="parent" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="0.0"/>
+        android:id="@+id/textViewInfoCharacter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline6"
+        app:layout_constraintTop_toTopOf="parent" app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintVertical_bias="0.0"/>
 
-    <View
+    <ImageView
         android:id="@+id/equipView"
-        android:layout_width="192dp"
-        android:layout_height="263dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline9"
-        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/equipItem0"
+        app:layout_constraintEnd_toStartOf="@+id/equipItem4"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/equipItem8"
+        app:layout_constraintTop_toTopOf="@+id/equipItem5"
+        app:layout_constraintVertical_bias="0.0" />
 
     <View
         android:id="@+id/bagView"
@@ -295,7 +312,9 @@
         app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
 
-    <Button
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
         android:id="@+id/buttonBag0"
         android:layout_width="45dp"
         android:layout_height="45dp"
@@ -303,7 +322,9 @@
         app:layout_constraintBottom_toBottomOf="@+id/bagView"
         app:layout_constraintEnd_toEndOf="@+id/bagView" />
 
-    <Button
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
         android:id="@+id/buttonBag1"
         android:layout_width="45dp"
         android:layout_height="45dp"
@@ -311,30 +332,36 @@
         app:layout_constraintBottom_toTopOf="@+id/buttonBag0"
         app:layout_constraintEnd_toEndOf="@+id/bagView" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem1"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_marginStart="2dp"
-        android:layout_marginEnd="52dp"
-        android:onClick="onUnequip"
-        android:tag="equipItem1"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="2dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnEquip"
+        android:tag="1"
         app:layout_constraintBottom_toTopOf="@+id/guideline9"
-        app:layout_constraintEnd_toEndOf="@+id/equipView"
+        app:layout_constraintEnd_toStartOf="@+id/equipItem2"
         app:layout_constraintStart_toEndOf="@+id/equipItem0" />
 
-    <Button
+    <ImageView
         android:id="@+id/equipItem0"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginStart="52dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="2dp"
-        android:onClick="onUnequip"
+        android:layout_marginBottom="2dp"
+        android:clickable="true"
+        android:focusable="true"
         android:longClickable="true"
-        android:tag="equipItem0"
+        android:onClick="onUnEquip"
+        android:tag="0"
         app:layout_constraintBottom_toTopOf="@+id/guideline9"
         app:layout_constraintEnd_toStartOf="@+id/equipItem1"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/equipItem6" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline5"
@@ -349,5 +376,18 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.68" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/equipView"
+        app:layout_constraintEnd_toStartOf="@+id/textViewInfoItem"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

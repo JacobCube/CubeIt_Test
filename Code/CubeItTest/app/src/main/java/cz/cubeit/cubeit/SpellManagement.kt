@@ -7,10 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_spell_managment.*
 import kotlinx.android.synthetic.main.row_spells_managment.view.*
 import kotlinx.android.synthetic.main.fragment_spell_managment.view.*
 
@@ -18,19 +16,35 @@ private val handler = Handler()
 
 class SpellManagement : Fragment(){
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    fun onUnChoose(view:View){
+        player.chosenSpellsAttack[view.tag.toString().toInt()-2] = null
+        (view as ImageView).setImageResource(0)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { //I/Choreographer: Skipped 74 frames!  The application may be doing too much work on its main thread.
         val view = inflater.inflate(R.layout.fragment_spell_managment, container, false)
-        val spellButtons:Array<Button> = arrayOf(view.buttonSpells0, view.buttonSpells1, view.buttonSpells2, view.buttonSpells3, view.buttonSpells4, view.buttonSpells5)
+        val spellButtons:Array<ImageView> = arrayOf(view.buttonSpells0, view.buttonSpells1, view.buttonSpells2, view.buttonSpells3, view.buttonSpells4, view.buttonSpells5)
+
+        spellButtons[0].setImageResource(player.learnedSpells[0]!!.drawable)
+        spellButtons[1].setImageResource(player.learnedSpells[1]!!.drawable)
         for(i in 0 until player.chosenSpellsAttack.size){
-            if(player.chosenSpellsAttack[i] != null){spellButtons[i].setBackgroundResource(player.chosenSpellsAttack[i]!!.drawable)}
+            if(player.chosenSpellsAttack[i] != null){
+                spellButtons[i+2].setImageResource(player.chosenSpellsAttack[i]!!.drawable)
+            }else {
+                spellButtons[i+2].isEnabled = false
+                spellButtons[i+2].setImageResource(0)
+            }
         }
+
         view.listViewSpells.adapter = AllSpells(view.textViewInfoSpell, view.imageViewIcon, spellButtons)
+
         return view
     }
 }
-class AllSpells(val textViewInfoSpell: TextView, val imageViewIcon: ImageView, val spellButtons: Array<Button>): BaseAdapter() {
+
+class AllSpells(val textViewInfoSpell: TextView, val imageViewIcon: ImageView, private val spellButtons: Array<ImageView>): BaseAdapter() {
         override fun getCount(): Int {
-            return if(player.learnedSpells.size/5 < 5) 5 else player.learnedSpells.size/5+1
+            return if(player.learnedSpells.size/5 < 5) 1 else player.learnedSpells.size/5+1
         }
 
         override fun getItemId(position: Int): Long {
@@ -55,11 +69,23 @@ class AllSpells(val textViewInfoSpell: TextView, val imageViewIcon: ImageView, v
             } else rowMain = convertView
             val viewHolder = rowMain.tag as ViewHolder
 
-            if(index<player.learnedSpells.size)viewHolder.buttonSpellsManagement1.setBackgroundResource(player.learnedSpells[index]!!.drawable) else{ viewHolder.buttonSpellsManagement1.setBackgroundResource(R.drawable.emptyslot); viewHolder.buttonSpellsManagement1.isEnabled = false}
-            if(index+1<player.learnedSpells.size)viewHolder.buttonSpellsManagement2.setBackgroundResource(player.learnedSpells[index+1]!!.drawable) else{ viewHolder.buttonSpellsManagement2.setBackgroundResource(R.drawable.emptyslot); viewHolder.buttonSpellsManagement2.isEnabled = false}
-            if(index+2<player.learnedSpells.size)viewHolder.buttonSpellsManagement3.setBackgroundResource(player.learnedSpells[index+2]!!.drawable) else{ viewHolder.buttonSpellsManagement3.setBackgroundResource(R.drawable.emptyslot); viewHolder.buttonSpellsManagement3.isEnabled = false}
-            if(index+3<player.learnedSpells.size)viewHolder.buttonSpellsManagement4.setBackgroundResource(player.learnedSpells[index+3]!!.drawable) else{ viewHolder.buttonSpellsManagement4.setBackgroundResource(R.drawable.emptyslot); viewHolder.buttonSpellsManagement4.isEnabled = false}
-            if(index+4<player.learnedSpells.size)viewHolder.buttonSpellsManagement5.setBackgroundResource(player.learnedSpells[index+4]!!.drawable) else{ viewHolder.buttonSpellsManagement5.setBackgroundResource(R.drawable.emptyslot); viewHolder.buttonSpellsManagement5.isEnabled = false}
+            for(i in 0..4){
+                val tempSpell = when(i){
+                    0->viewHolder.buttonSpellsManagement1
+                    1->viewHolder.buttonSpellsManagement2
+                    2->viewHolder.buttonSpellsManagement3
+                    3->viewHolder.buttonSpellsManagement4
+                    4->viewHolder.buttonSpellsManagement5
+                    else->viewHolder.buttonSpellsManagement1
+                }
+                    if((index + i) < player.learnedSpells.size){
+                        tempSpell.setImageResource(player.learnedSpells[index+i]!!.drawable)
+                        tempSpell.isEnabled = true
+                    }else{
+                        tempSpell.isEnabled = false
+                        tempSpell.setBackgroundResource(0)
+                    }
+            }
 
             val clicks = arrayOf(0,0,0,0,0)
 
@@ -97,7 +123,7 @@ class AllSpells(val textViewInfoSpell: TextView, val imageViewIcon: ImageView, v
             }
             viewHolder.buttonSpellsManagement3.setOnClickListener {
                 ++clicks[2]
-                if(clicks[2]>=2){                                          //DOUBLE CLICK
+                if(clicks[2]>=2){
                     if(!player.chosenSpellsAttack.contains(player.learnedSpells[index+2])){
                         getClickSpell(index+2, spellButtons)
                     }
@@ -147,21 +173,24 @@ class AllSpells(val textViewInfoSpell: TextView, val imageViewIcon: ImageView, v
         }
         companion object {
             private fun spellStats(spell:Spell?):String{
-                var text = "${spell!!.name}\n${spell.description}\nLevel: ${spell.level}\nEnergy: ${spell.energy}\nPower: ${spell.power}"
-                if(spell.fire!=0)text+="Fire: ${spell.fire}"
-                if(spell.poison!=0)text+="Fire: ${spell.poison}"
+                var text = "${spell?.name}\n${spell?.description}\nLevel: ${spell?.level}\nEnergy: ${spell?.energy}\nPower: ${spell?.power}"
+                if(spell?.fire!=0)text+="Fire: ${spell?.fire}"
+                if(spell?.poison!=0)text+="Fire: ${spell?.poison}"
                 return text
             }
-            private fun getClickSpell(index:Int, spellButtons:Array<Button>){
+            private fun getClickSpell(index:Int, spellButtons:Array<ImageView>){
                 for(i in 0 until player.chosenSpellsAttack.size){
                     if(player.chosenSpellsAttack[i]==null) {
-                        player.chosenSpellsAttack[i] = player.learnedSpells[index]
-                        spellButtons[i].setBackgroundResource(player.chosenSpellsAttack[i]!!.drawable)
-                        break
+                        if(index!=0||index!=1) {
+                            player.chosenSpellsAttack[i] = player.learnedSpells[index]
+                            spellButtons[i + 2].setImageResource(player.chosenSpellsAttack[i]!!.drawable)
+                            spellButtons[i + 2].isEnabled = true
+                            break
+                        }
                     }
                 }
             }
 
     }
-        private class ViewHolder(val buttonSpellsManagement1: Button, val buttonSpellsManagement2: Button, val buttonSpellsManagement3: Button, val buttonSpellsManagement4: Button, val buttonSpellsManagement5: Button)
+        private class ViewHolder(val buttonSpellsManagement1: ImageView, val buttonSpellsManagement2: ImageView, val buttonSpellsManagement3: ImageView, val buttonSpellsManagement4: ImageView, val buttonSpellsManagement5: ImageView)
 }

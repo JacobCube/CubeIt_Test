@@ -1,46 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingBottom="1dp"
     android:screenOrientation="landscape">
 
-    <Button
-        android:id="@+id/buttonInventory1"
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:id="@+id/itemInventory1"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline21"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/buttonInventory3"
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:id="@+id/itemInventory3"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline23"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline22"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/buttonInventory2"
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:id="@+id/itemInventory2"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline22"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline21"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/buttonInventory4"
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:id="@+id/itemInventory4"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:screenOrientation="landscape">
@@ -15,71 +14,10 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline9"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline14"
         app:layout_constraintStart_toEndOf="@+id/guideline30"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/buttonSpells2"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline13"
-        app:layout_constraintStart_toStartOf="@+id/guideline7"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonSpells0"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline10"
-        app:layout_constraintStart_toStartOf="@+id/guideline11"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonSpells3"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline14"
-        app:layout_constraintStart_toStartOf="@+id/guideline13"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonSpells5"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline16"
-        app:layout_constraintStart_toStartOf="@+id/guideline15"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonSpells1"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline7"
-        app:layout_constraintStart_toStartOf="@+id/guideline10"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonSpells4"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline15"
-        app:layout_constraintStart_toStartOf="@+id/guideline14"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
 
     <ImageView
         android:id="@+id/imageViewAdventure2"
@@ -92,8 +30,85 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/menu" />
+        app:layout_constraintVertical_bias="1.0" />
+
+    <ImageView
+        android:id="@+id/buttonSpells2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnChoose"
+        android:tag="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline13"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+
+    <ImageView
+        android:id="@+id/buttonSpells0"
+        android:tag="0"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10"
+        app:layout_constraintStart_toStartOf="@+id/guideline11"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:id="@+id/buttonSpells3"
+        android:tag="3"
+        android:onClick="onUnChoose"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline14"
+        app:layout_constraintStart_toStartOf="@+id/guideline13"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:id="@+id/buttonSpells5"
+        android:tag="5"
+        android:layout_width="0dp"
+        android:onClick="onUnChoose"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline16"
+        app:layout_constraintStart_toStartOf="@+id/guideline15"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+
+    <ImageView
+        android:id="@+id/buttonSpells1"
+        android:tag="1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintStart_toStartOf="@+id/guideline10"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+
+    <ImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onUnChoose"
+        android:id="@+id/buttonSpells4"
+        android:layout_width="0dp"
+        android:tag="4"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyslot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline15"
+        app:layout_constraintStart_toStartOf="@+id/guideline14"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline9"
@@ -119,7 +134,7 @@
         android:layout_marginEnd="87dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
-        app:layout_constraintGuide_percent="0.1925"
+        app:layout_constraintGuide_percent="0.19"
         app:layout_constraintStart_toEndOf="@+id/guideline11" />
 
     <android.support.constraint.Guideline

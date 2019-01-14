@@ -25,7 +25,6 @@
         <activity android:name=".Shop" android:screenOrientation="landscape"/>
         <activity android:name=".Adventure" android:screenOrientation="landscape"/>
         <activity android:name=".Spells" android:screenOrientation="landscape"/>
-        <activity android:name=".CharacterCustomization" android:screenOrientation="landscape"/>
     </application>
 
 </manifest>
