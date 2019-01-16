@@ -1,4 +1,0 @@
-#Wed Oct 24 13:36:46 CEST 2018
-base.0=C\:\\Users\\jacob\\Documents\\GitHub\\CubeIT\\Code\\Login_Register_CubeIt\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\8
-renamed.0=classes.dex
-path.0=classes.dex
