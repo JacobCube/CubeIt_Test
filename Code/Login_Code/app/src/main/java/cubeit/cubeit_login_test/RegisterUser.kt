@@ -4,66 +4,58 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
-import io.realm.ObjectServerError
-import io.realm.Realm
-import io.realm.SyncCredentials
-import io.realm.SyncUser
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.*
 import kotlinx.android.synthetic.main.activity_register.*
-import java.util.regex.Pattern
-// Code by CubeIt / Max | 2019
-
-/*
-    To Olda: keep out!
-    If you aren't Olda: contact me at fassinger[at]protonmail[dot]com I could use your help in securing this game, thanks :D
- */
 
 class RegisterUser : AppCompatActivity() {
-
-    val authURL: String = "https://cubeit-test.de1a.cloud.realm.io/auth" //static URL of Realm server (In final build this should be in a separate file)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        Realm.init(this) // Initialize realm
         var Auth = FirebaseAuth.getInstance(); // Initialize Firebase
 
         var userEmail: String
         var userPassword: String
 
+        fun showNotification(titleInput: String, textInput: String){
+            val builder = AlertDialog.Builder(this@RegisterUser)
+            builder.setTitle(titleInput)
+            builder.setMessage(textInput)
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
+        }
+
+        fun registerUser(emailInput: String, passwordInput: String){
+
+            Auth.createUserWithEmailAndPassword(emailInput, passwordInput).addOnCompleteListener { task: Task<AuthResult> ->
+                if (task.isSuccessful) {
+                    val user = Auth!!.currentUser
+                    user!!.sendEmailVerification()
+                    showNotification("Alert", "A confirmation email was sent!")
+                }
+                else {
+                    showNotification("Error", "There was an error processing your request")
+                }
+            }
+        }
+
         registerButton.setOnClickListener { view ->
             userEmail = userEmailText.text.toString()
 
-            if (userPasswordText.text.toString().equals(userPasswordTextConfirm.text.toString()) && TOSCheckbox.isChecked == true) // Check if passwords match
-            {
+            if (userPasswordText.text.toString() != "" && userPasswordTextConfirm.text.toString() != "" && userPasswordText.text.toString() == userPasswordTextConfirm.text.toString()){
                 userPassword = userPasswordText.text.toString()
-                Auth.createUserWithEmailAndPassword(userEmail, userPassword)
-
-                val user = Auth!!.currentUser
-                user!!.sendEmailVerification()
-
-                val builder = AlertDialog.Builder(this@RegisterUser)
-                builder.setTitle("Alert")
-                builder.setMessage("Confirmation Email sent!")
-                val dialog: AlertDialog = builder.create()
-                dialog.show()
+                registerUser(userEmail, userPassword)
             }
 
             else {
-                val builder = AlertDialog.Builder(this@RegisterUser)
-                builder.setTitle("Oops!")
-                builder.setMessage("Please enter a valid email and/or password and agree to the terms and conditions")
-                val dialog: AlertDialog = builder.create()
-                dialog.show()
+                showNotification("Alert", "Please enter a valid email address or password")
             }
-
         }
         accountExistsButton.setOnClickListener { // Teleport to user login screen
             val intent = Intent(this, LoginUser::class.java)
             startActivity(intent)
         }
-
-        // go to main game
     }
 }
