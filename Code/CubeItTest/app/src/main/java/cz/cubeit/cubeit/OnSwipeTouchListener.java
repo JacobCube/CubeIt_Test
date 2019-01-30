@@ -27,6 +27,24 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
             return true;
         }
 
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            onClick();
+            return super.onSingleTapUp(e);
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            onDoubleClick();
+            return super.onDoubleTap(e);
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            onLongClick();
+            super.onLongPress(e);
+        }
+
         // Determines the fling velocity and then fires the appropriate swipe event accordingly
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
@@ -58,15 +76,27 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
         }
     }
 
-    public void onSwipeRight() {
+    private void onSwipeRight() {
     }
 
-    public void onSwipeLeft() {
+    private void onSwipeLeft() {
     }
 
     public void onSwipeUp() {
     }
 
     public void onSwipeDown() {
+    }
+
+    public void onClick() {
+
+    }
+
+    public void onDoubleClick() {
+
+    }
+
+    private void onLongClick() {
+
     }
 }

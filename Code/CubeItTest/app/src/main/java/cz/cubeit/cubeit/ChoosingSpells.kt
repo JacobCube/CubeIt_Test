@@ -1,9 +1,9 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -92,11 +92,11 @@ class ChoosingSpells : Fragment(){
         }
 
         view.chosen_listView.adapter = ChosenSpellsView(player)
-        view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy)
+        view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)
         return view
     }
 
-    private class LearnedSpellsView(var textViewInfoSpells: TextView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int) : BaseAdapter() { //listview of player's learned spells
+    private class LearnedSpellsView(var textViewInfoSpells: TextView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int, private val context:Context) : BaseAdapter() { //listview of player's learned spells
 
         override fun getCount(): Int {
             return (player.learnedSpells.size/2+1)
@@ -110,7 +110,7 @@ class ChoosingSpells : Fragment(){
             return "TEST STRING"
         }
 
-        @SuppressLint("SetTextI18n")
+        @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
@@ -126,8 +126,6 @@ class ChoosingSpells : Fragment(){
             val index:Int = if(position == 0) 0 else{
                 position*2
             }
-            val handler = Handler()
-            var clicks = 0
 
             for(i in 0..1){
                 val tempSpell = when(i){
@@ -148,91 +146,85 @@ class ChoosingSpells : Fragment(){
                     tempSpell.setBackgroundResource(0)
                 }
             }
-            fun getClicked(){
 
-            }
-
-                viewHolder.button1.setOnClickListener {
-                    ++clicks
-                    if(clicks>=2){
-                        requiredEnergy = 0
-                        for (i in 0..19){
-                            if (player.chosenSpellsDefense[i] == null) {
-                                if(requiredEnergy + player.learnedSpells[index]!!.energy <= (player.energy+25*i)){
-                                    errorTextView.visibility = View.INVISIBLE
-                                    player.chosenSpellsDefense[i] = player.learnedSpells[index]
-                                    chosen_listView.notifyDataSetChanged()
-                                    break
-                                }else{
-                                    errorTextView.visibility = View.VISIBLE
-                                    errorTextView.text = "You would be too exhausted this round"
-                                    break
-                                }
-                            }else{
-                                requiredEnergy += player.chosenSpellsDefense[i]!!.energy
-                            }
-                        }
-                        requiredEnergy = 0
-                        for(j in 0..19){
-                            if(player.chosenSpellsDefense[j]!=null){
-                                if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
-                                    player.chosenSpellsDefense[j]=null
-                                }else{
-                                    if(player.chosenSpellsDefense[j]!=null) {
-                                        requiredEnergy += player.chosenSpellsDefense[j]!!.energy
-                                    }
-                                }
-                            }
-                        }
-                        handler.removeCallbacksAndMessages(null)
-                    }else if(clicks == 1){
-                        textViewInfoSpells.text = spellStats(player.learnedSpells[index])
-                    }
-                    handler.postDelayed({
-                        clicks = 0
-                    }, 250)
+            viewHolder.button1.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
+                    textViewInfoSpells.text = player.learnedSpells[index]?.getStats()
                 }
 
-                viewHolder.button2.setOnClickListener {
-                    ++clicks
-                    if(clicks>=2){                                          //DOUBLE CLICK
-                        requiredEnergy = 0
-                        for (i in 0..19){
-                            if (player.chosenSpellsDefense[i] == null) {
-                                if(requiredEnergy + player.learnedSpells[index+1]!!.energy <= (player.energy+25*i)){
-                                    errorTextView.visibility = View.INVISIBLE
-                                    player.chosenSpellsDefense[i] = player.learnedSpells[index+1]
-                                    chosen_listView.notifyDataSetChanged()
-                                    break
-                                }else{
-                                    errorTextView.visibility = View.VISIBLE
-                                    break
-                                }
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    requiredEnergy = 0
+                    for (i in 0..19){
+                        if (player.chosenSpellsDefense[i] == null) {
+                            if(requiredEnergy + player.learnedSpells[index]!!.energy <= (player.energy+25*i)){
+                                errorTextView.visibility = View.INVISIBLE
+                                player.chosenSpellsDefense[i] = player.learnedSpells[index]
+                                chosen_listView.notifyDataSetChanged()
+                                break
                             }else{
-                                requiredEnergy += player.chosenSpellsDefense[i]!!.energy
+                                errorTextView.visibility = View.VISIBLE
+                                errorTextView.text = "You would be too exhausted this round"
+                                break
                             }
+                        }else{
+                            requiredEnergy += player.chosenSpellsDefense[i]!!.energy
                         }
-                        requiredEnergy = 0
-                        for(j in 0..19){
-                            if(player.chosenSpellsDefense[j]!=null){
-                                if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
-                                    player.chosenSpellsDefense[j]=null
-                                }else{
-                                    if(player.chosenSpellsDefense[j]!=null) {
-                                        requiredEnergy += player.chosenSpellsDefense[j]!!.energy
-                                    }
+                    }
+                    requiredEnergy = 0
+                    for(j in 0..19){
+                        if(player.chosenSpellsDefense[j]!=null){
+                            if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
+                                player.chosenSpellsDefense[j]=null
+                            }else{
+                                if(player.chosenSpellsDefense[j]!=null) {
+                                    requiredEnergy += player.chosenSpellsDefense[j]!!.energy
                                 }
                             }
                         }
-                        handler.removeCallbacksAndMessages(null)
-                    }else if(clicks==1){            // single click
-                        textViewInfoSpells.text = spellStats(player.learnedSpells[index+1])
                     }
-                    handler.postDelayed({
-                        clicks = 0
-
-                    }, 250)
                 }
+            })
+
+            viewHolder.button2.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
+                    textViewInfoSpells.text = player.learnedSpells[index+1]?.getStats()
+                }
+
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    requiredEnergy = 0
+                    for (i in 0..19){
+                        if (player.chosenSpellsDefense[i] == null) {
+                            if(requiredEnergy + player.learnedSpells[index+1]!!.energy <= (player.energy+25*i)){
+                                errorTextView.visibility = View.INVISIBLE
+                                player.chosenSpellsDefense[i] = player.learnedSpells[index+1]
+                                chosen_listView.notifyDataSetChanged()
+                                break
+                            }else{
+                                errorTextView.visibility = View.VISIBLE
+                                break
+                            }
+                        }else{
+                            requiredEnergy += player.chosenSpellsDefense[i]!!.energy
+                        }
+                    }
+                    requiredEnergy = 0
+                    for(j in 0..19){
+                        if(player.chosenSpellsDefense[j]!=null){
+                            if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
+                                player.chosenSpellsDefense[j]=null
+                            }else{
+                                if(player.chosenSpellsDefense[j]!=null) {
+                                    requiredEnergy += player.chosenSpellsDefense[j]!!.energy
+                                }
+                            }
+                        }
+                    }
+                }
+            })
 
             return rowMain
         }
@@ -266,6 +258,20 @@ class ChoosingSpells : Fragment(){
                 rowMain = convertView
             }
             val viewHolder = rowMain.tag as ViewHolder
+
+            if(position<player.chosenSpellsDefense.size){
+                if(player.chosenSpellsDefense[position]!=null){
+                    viewHolder.button1.setImageResource(player.chosenSpellsDefense[position]!!.drawable)
+                    viewHolder.button1.isEnabled = true
+                }else{
+                    viewHolder.button1.setImageResource(0)
+                    viewHolder.button1.isEnabled = false
+                }
+            }else{
+                viewHolder.button1.isEnabled = false
+                viewHolder.button1.setBackgroundResource(0)
+            }
+
             try{
                 viewHolder.button1.setBackgroundResource(player.chosenSpellsDefense[position]!!.drawable)
             }catch(e:Exception){
@@ -289,14 +295,6 @@ class ChoosingSpells : Fragment(){
             }
             return rowMain
         }
-        private class ViewHolder(val button1: TextView, val textViewEnergy:TextView)
-    }
-    companion object {
-        private fun spellStats(spell:Spell?):String{
-            var text = "${spell!!.name}\n${spell.description}\nLevel: ${spell.level}\nEnergy: ${spell.energy}\nPower: ${spell.power}"
-            if(spell.fire!=0)text+="\nFire: ${spell.fire}"
-            if(spell.poison!=0)text+="\nPoison: ${spell.poison}"
-            return text
-        }
+        private class ViewHolder(val button1: ImageView, val textViewEnergy:TextView)
     }
 }

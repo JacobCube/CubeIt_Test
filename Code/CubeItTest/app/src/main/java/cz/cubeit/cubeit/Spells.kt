@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import kotlinx.android.synthetic.main.activity_spells.*
-import kotlinx.android.synthetic.main.fragment_choosing_spells.*
 
 class Spells: AppCompatActivity(){
 
@@ -29,8 +28,7 @@ class Spells: AppCompatActivity(){
 
         viewPagerSpells.offscreenPageLimit = 2
         if (viewPagerSpells != null) {
-            val adapter =
-                    ViewPagerSpells(supportFragmentManager)
+            val adapter = ViewPagerSpells(supportFragmentManager)
             viewPagerSpells.adapter = adapter
         }
     }
@@ -38,13 +36,11 @@ class Spells: AppCompatActivity(){
 class ViewPagerSpells internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
-        var fragment: Fragment? = null
-        when (position) {
-            0 -> fragment = SpellManagement()
-            1 -> fragment = ChoosingSpells()
+        return when (position) {
+            0 -> SpellManagement()
+            1 -> ChoosingSpells()
+            else -> null
         }
-
-        return fragment
     }
 
     override fun getCount(): Int {
@@ -52,6 +48,10 @@ class ViewPagerSpells internal constructor(fm: FragmentManager) : FragmentPagerA
     }
 
     override fun getPageTitle(position: Int): CharSequence? {
-        return "Surface " + (position + 1)
+        return when (position) {
+            0 -> "Attack"
+            1 -> "Defense"
+            else -> null
+        }
     }
 }

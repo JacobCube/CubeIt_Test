@@ -1,12 +1,10 @@
 package cz.cubeit.cubeit
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_settings.*
 
 class Settings : AppCompatActivity(){
@@ -21,79 +19,67 @@ class Settings : AppCompatActivity(){
         this.overridePendingTransition(0,0)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+
+        if(!player.notifications)switchNotifications.isChecked = false
+        switchSounds.isChecked = music
 
         val animUp: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_up)
         val animDown: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_down)
 
-        settingsMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeDown() {
-                if(!folded) {
-                    imageViewMenuSettings.startAnimation(animDown)
-                    buttonFightSettings.isClickable = false
-                    buttonDefenceSettings.isClickable = false
-                    buttonCharacterSettings.isClickable = false
-                    buttonShopSettings.isClickable = false
-                    buttonAdventureSettings.isClickable = false
-                    folded = true
-                }
+        switchSounds.setOnCheckedChangeListener { _, isChecked ->
+            val svc = Intent(this, BackgroundSoundService::class.java)
+            if(isChecked){
+                startService(svc)
+                music = true
+            }else{
+                music = false
+                stopService(svc)
+                BackgroundSoundService().onPause()
             }
-        })
-        imageViewMenuSettings.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        }
+
+        settingsLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeDown() {
                 if(!folded){
-                    imageViewMenuSettings.startAnimation(animDown)
-                    buttonFightSettings.isClickable = false
-                    buttonDefenceSettings.isClickable = false
-                    buttonCharacterSettings.isClickable = false
-                    buttonShopSettings.isClickable = false
-                    buttonAdventureSettings.isClickable = false
+                    imageViewSettings.startAnimation(animDown)
+                    buttonFightSettings.startAnimation(animDown)
+                    buttonDefenceSettings.startAnimation(animDown)
+                    buttonCharacterSettings.startAnimation(animDown)
+                    buttonSettingsSettings.startAnimation(animDown)
+                    buttonAdventureSettings.startAnimation(animDown)
+                    buttonShopSettings.startAnimation(animDown)
+                    buttonFightSettings.isEnabled = false
+                    buttonDefenceSettings.isEnabled = false
+                    buttonCharacterSettings.isEnabled = false
+                    buttonShopSettings.isEnabled = false
+                    buttonAdventureSettings.isEnabled = false
                     folded = true
                 }
             }
             override fun onSwipeUp() {
                 if(folded){
-                    imageViewMenuSettings.startAnimation(animUp)
-                    buttonFightSettings.isClickable = true
-                    buttonDefenceSettings.isClickable = true
-                    buttonCharacterSettings.isClickable = true
-                    buttonShopSettings.isClickable = true
-                    buttonAdventureSettings.isClickable = true
+                    imageViewSettings.startAnimation(animUp)
+                    buttonFightSettings.startAnimation(animUp)
+                    buttonDefenceSettings.startAnimation(animUp)
+                    buttonCharacterSettings.startAnimation(animUp)
+                    buttonSettingsSettings.startAnimation(animUp)
+                    buttonAdventureSettings.startAnimation(animUp)
+                    buttonShopSettings.startAnimation(animUp)
+                    buttonFightSettings.isEnabled = true
+                    buttonDefenceSettings.isEnabled = true
+                    buttonCharacterSettings.isEnabled = true
+                    buttonShopSettings.isEnabled = true
+                    buttonAdventureSettings.isEnabled = true
                     folded = false
                 }
             }
         })
 
-        animUp.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                imageViewMenuSettings.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                imageViewMenuSettings.isEnabled = false
-            }
-        })
-        animDown.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                settingsMenuSwipe.isEnabled = true
-                imageViewMenuSettings.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                settingsMenuSwipe.isEnabled = false
-                imageViewMenuSettings.isEnabled = false
-            }
-        })
 
         buttonFightSettings.setOnClickListener{
             val intent = Intent(this, FightSystem::class.java)
@@ -125,18 +111,5 @@ class Settings : AppCompatActivity(){
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-
-        seekBarSounds?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean){
-                textViewSounds.text = progress.toString()
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
-
-            @SuppressLint("SetTextI18n")
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-            }
-        })
     }
 }

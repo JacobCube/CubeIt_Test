@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
+    android:background="@drawable/background3"
     android:screenOrientation="landscape">
 
 
@@ -22,7 +23,7 @@
             android:id="@+id/pager_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"></android.support.v4.view.PagerTabStrip>
+            android:background="@android:color/transparent" />
     </android.support.v4.view.ViewPager>
 
 

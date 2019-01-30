@@ -5,7 +5,7 @@
     android:layout_width="400dp"
     android:layout_height="wrap_content"
     android:minHeight="200dp"
-    android:background="@drawable/emptyslot">
+    android:background="@drawable/adventure_window">
 
     <TextView
         android:id="@+id/textViewDescription"

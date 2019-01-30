@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
-    android:screenOrientation="landscape">
+    android:background="@drawable/background3"
+    android:screenOrientation="landscape"
+    tools:context=".FightSystem">
 
     <ImageView
         android:clickable="true"
@@ -29,6 +31,7 @@
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/basicattack"
+        android:onClick="testClick"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toStartOf="parent"
@@ -87,19 +90,6 @@
         app:layout_constraintTop_toTopOf="@+id/guideline31"
         tools:ignore="HardcodedText" />
 
-    <ImageView
-        android:clickable="true"
-        android:focusable="true"
-        android:id="@+id/buttonSpell5"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintStart_toEndOf="@+id/buttonSpell4"
-        app:layout_constraintTop_toTopOf="@+id/guideline31"
-        tools:ignore="HardcodedText" />
-
     <TextView
         android:id="@+id/textPlayer"
         android:layout_width="0dp"
@@ -136,6 +126,19 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline31"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/buttonSpell5"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/buttonSpell4"
+        app:layout_constraintTop_toTopOf="@+id/guideline31"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/energyTextView"

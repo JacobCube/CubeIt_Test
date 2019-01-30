@@ -17,27 +17,21 @@ import android.view.animation.AnimationUtils
 
 open class Quest(val name:String, val description:String, val level:Int, val experience:Int, val money:Int)
 open class Surface(val background:Int, val quests:Array<Quest>, val completedQuests:Array<Int?>)
-val questsSurface0:Array<Quest> = arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 1*25, 1*10),
+
+private var folded = false
+
+val surfaces:Array<Surface> = arrayOf(Surface(R.drawable.map0, arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 1*25, 1*10),
         Quest("Quest 2", "Description of quest 2", 2, 2*25, 2*10),
         Quest("Quest 3", "Description of quest 3", 3, 3*25, 3*10),
         Quest("Quest 4", "Description of quest 4", 4, 4*25, 4*10),
         Quest("Quest 5", "Description of quest 5", 5, 5*25, 5*10),
         Quest("Quest 6", "Description of quest 6", 6, 6*25, 6*10),
-        Quest("Quest 7", "Description of quest 7", 7, 7*25, 7*10))
-val questsSurface1:Array<Quest> = arrayOf()
-val questsSurface2:Array<Quest> = arrayOf()
-val questsSurface3:Array<Quest> = arrayOf()
-val questsSurface4:Array<Quest> = arrayOf()
-val questsSurface5:Array<Quest> = arrayOf()
-
-private var folded = false
-
-val surfaces:Array<Surface> = arrayOf(Surface(R.drawable.map0, questsSurface0, arrayOfNulls(questsSurface0.size)),
-        Surface(R.drawable.background0, questsSurface1, arrayOfNulls(questsSurface1.size)),
-        Surface(R.drawable.background1, questsSurface2, arrayOfNulls(questsSurface2.size)),
-        Surface(R.drawable.background2, questsSurface3, arrayOfNulls(questsSurface3.size)),
-        Surface(R.drawable.background3, questsSurface4, arrayOfNulls(questsSurface4.size)),
-        Surface(R.drawable.map0, questsSurface5, arrayOfNulls(questsSurface5.size)))
+        Quest("Quest 7", "Description of quest 7", 7, 7*25, 7*10)), arrayOfNulls(7)),
+        Surface(R.drawable.background0, arrayOf(), arrayOfNulls(0)),
+        Surface(R.drawable.background1, arrayOf(), arrayOfNulls(0)),
+        Surface(R.drawable.background2, arrayOf(), arrayOfNulls(0)),
+        Surface(R.drawable.background3, arrayOf(), arrayOfNulls(0)),
+        Surface(R.drawable.map0, arrayOf(), arrayOfNulls(0)))
 
 class Adventure : AppCompatActivity() {
     override fun onBackPressed() {
@@ -48,11 +42,9 @@ class Adventure : AppCompatActivity() {
         this.overridePendingTransition(0,0)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_adventure)
 
-        viewPager.offscreenPageLimit = 6
         if (viewPager != null) {
             val adapter =
                     ViewPagerAdapter(supportFragmentManager)
@@ -64,23 +56,16 @@ class Adventure : AppCompatActivity() {
         val animDown: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_down)
 
-            adventureMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(this) {
-                override fun onSwipeDown() {
-                    if(!folded) {
-                        imageViewAdventure.startAnimation(animDown)
-                        buttonFightAdventure.isClickable = false
-                        buttonDefenceAdventure.isClickable = false
-                        buttonCharacterAdventure.isClickable = false
-                        buttonSettingsAdventure.isClickable = false
-                        buttonShopAdventure.isClickable = false
-                        folded = true
-                    }
-                }
-            })
-        imageViewAdventure.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        viewPager.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeDown() {
                 if(!folded){
                     imageViewAdventure.startAnimation(animDown)
+                    buttonFightAdventure.startAnimation(animDown)
+                    buttonDefenceAdventure.startAnimation(animDown)
+                    buttonCharacterAdventure.startAnimation(animDown)
+                    buttonSettingsAdventure.startAnimation(animDown)
+                    buttonAdventureAdventure.startAnimation(animDown)
+                    buttonShopAdventure.startAnimation(animDown)
                     buttonFightAdventure.isClickable = false
                     buttonDefenceAdventure.isClickable = false
                     buttonCharacterAdventure.isClickable = false
@@ -92,6 +77,12 @@ class Adventure : AppCompatActivity() {
             override fun onSwipeUp() {
                 if(folded){
                     imageViewAdventure.startAnimation(animUp)
+                    buttonFightAdventure.startAnimation(animUp)
+                    buttonDefenceAdventure.startAnimation(animUp)
+                    buttonCharacterAdventure.startAnimation(animUp)
+                    buttonSettingsAdventure.startAnimation(animUp)
+                    buttonAdventureAdventure.startAnimation(animUp)
+                    buttonShopAdventure.startAnimation(animUp)
                     buttonFightAdventure.isClickable = true
                     buttonDefenceAdventure.isClickable = true
                     buttonCharacterAdventure.isClickable = true
@@ -99,33 +90,6 @@ class Adventure : AppCompatActivity() {
                     buttonShopAdventure.isClickable = true
                     folded = false
                 }
-            }
-        })
-
-        animUp.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                imageViewAdventure.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                imageViewAdventure.isEnabled = false
-            }
-        })
-        animDown.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                adventureMenuSwipe.isEnabled = true
-                imageViewAdventure.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                adventureMenuSwipe.isEnabled = false
-                imageViewAdventure.isEnabled = false
             }
         })
 
@@ -195,17 +159,15 @@ class Adventure : AppCompatActivity() {
 class ViewPagerAdapter internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
-        var fragment: Fragment? = null
-        when (position) {
-            0 -> fragment = FirstFragment()
-            1 -> fragment = SecondFragment()
-            2 -> fragment = ThirdFragment()
-            3 -> fragment = FourthFragment()
-            4 -> fragment = FifthFragment()
-            5 -> fragment = SixthFragment()
+        return when(position) {
+            0 -> FirstFragment()
+            1 -> SecondFragment()
+            2 -> ThirdFragment()
+            3 -> FourthFragment()
+            4 -> FifthFragment()
+            5 -> SixthFragment()
+            else -> null
         }
-
-        return fragment
     }
 
     override fun getCount(): Int {

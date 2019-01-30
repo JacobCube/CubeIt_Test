@@ -40,23 +40,17 @@ class Shop : AppCompatActivity(){
         val animDown: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_down)
 
-        shopMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeDown() {
-                if(!folded) {
-                    imageViewMenuShop.startAnimation(animDown)
-                    buttonFightShop.isEnabled = false
-                    buttonDefenceShop.isEnabled = false
-                    buttonCharacterShop.isEnabled = false
-                    buttonSettingsShop.isEnabled = false
-                    buttonAdventureShop.isEnabled = false
-                    folded = true
-                }
-            }
-        })
-        imageViewMenuShop.setOnTouchListener(object : OnSwipeTouchListener(this) {
+
+        shopLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeDown() {
                 if(!folded){
                     imageViewMenuShop.startAnimation(animDown)
+                    buttonFightShop.startAnimation(animDown)
+                    buttonDefenceShop.startAnimation(animDown)
+                    buttonCharacterShop.startAnimation(animDown)
+                    buttonSettingsShop.startAnimation(animDown)
+                    buttonAdventureShop.startAnimation(animDown)
+                    buttonShopShop.startAnimation(animDown)
                     buttonFightShop.isEnabled = false
                     buttonDefenceShop.isEnabled = false
                     buttonCharacterShop.isEnabled = false
@@ -68,6 +62,12 @@ class Shop : AppCompatActivity(){
             override fun onSwipeUp() {
                 if(folded){
                     imageViewMenuShop.startAnimation(animUp)
+                    buttonFightShop.startAnimation(animUp)
+                    buttonDefenceShop.startAnimation(animUp)
+                    buttonCharacterShop.startAnimation(animUp)
+                    buttonSettingsShop.startAnimation(animUp)
+                    buttonAdventureShop.startAnimation(animUp)
+                    buttonShopShop.startAnimation(animUp)
                     buttonFightShop.isEnabled = true
                     buttonDefenceShop.isEnabled = true
                     buttonCharacterShop.isEnabled = true
@@ -75,33 +75,6 @@ class Shop : AppCompatActivity(){
                     buttonAdventureShop.isEnabled = true
                     folded = false
                 }
-            }
-        })
-
-        animUp.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                imageViewMenuShop.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                imageViewMenuShop.isEnabled = false
-            }
-        })
-        animDown.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                shopMenuSwipe.isEnabled = true
-                imageViewMenuShop.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                shopMenuSwipe.isEnabled = false
-                imageViewMenuShop.isEnabled = false
             }
         })
 
@@ -141,7 +114,7 @@ class Shop : AppCompatActivity(){
         }
 
         listViewInventoryShop.adapter = ShopInventory(player, lastClicked, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewInventoryShop, textViewMoney)
-        listViewShop.adapter = ShopOffer(player, lastClicked, textViewInfoItem, errorShop, listViewInventoryShop.adapter as ShopInventory)
+        listViewShop.adapter = ShopOffer(player, lastClicked, textViewInfoItem, errorShop, listViewInventoryShop.adapter as ShopInventory, this)
 
         shopOfferRefresh.setOnClickListener {
             for(i in 0 until player.shopOffer.size){
@@ -164,7 +137,7 @@ class Shop : AppCompatActivity(){
             return "TEST STRING"
         }
 
-        @SuppressLint("SetTextI18n")
+        @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
@@ -179,8 +152,6 @@ class Shop : AppCompatActivity(){
             val index:Int = if(position == 0) 0 else{
                 position*4
             }
-            val handler = Handler()
-            var clicks = 0
 
             for(i in 0..3){
                 val tempSpell = when(i){
@@ -204,68 +175,76 @@ class Shop : AppCompatActivity(){
                 }
             }
 
-            viewHolder.buttonInventory1.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="inventory0$position"){
-                    getDoubleClick(index, context, viewInflater, viewHolder.buttonInventory1,listView, player, handler, textViewMoney, textViewInfoItem)
-                }else if(clicks==1){
+            viewHolder.buttonInventory1.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory0$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="inventory0$position"
                     textViewInfoItem.text = player.inventory[index]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
 
-            viewHolder.buttonInventory2.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="inventory1$position"){
-                    getDoubleClick(index+1, context, viewInflater, viewHolder.buttonInventory2, listView,player, handler, textViewMoney, textViewInfoItem)
-                }else if(clicks==1){
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="inventory0$position"){
+                        getDoubleClick(index, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                    }
+                }
+            })
+
+            viewHolder.buttonInventory2.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory1$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="inventory1$position"
                     textViewInfoItem.text = player.inventory[index+1]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
 
-            viewHolder.buttonInventory3.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="inventory2$position"){
-                    getDoubleClick(index+2, context, viewInflater, viewHolder.buttonInventory3, listView, player, handler, textViewMoney, textViewInfoItem)
-                }else if(clicks==1){
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="inventory1$position"){
+                        getDoubleClick(index+1, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                    }
+                }
+            })
+
+            viewHolder.buttonInventory3.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory2$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="inventory2$position"
                     textViewInfoItem.text = player.inventory[index+2]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
 
-            viewHolder.buttonInventory4.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="inventory3$position"){
-                    getDoubleClick(index+3, context, viewInflater, viewHolder.buttonInventory4, listView, player, handler, textViewMoney, textViewInfoItem)
-                }else if(clicks==1){
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="inventory2$position"){
+                        getDoubleClick(index+2, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                    }
+                }
+            })
+
+            viewHolder.buttonInventory4.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory3$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="inventory3$position"
                     textViewInfoItem.text = player.inventory[index+3]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
+
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="inventory3$position"){
+                        getDoubleClick(index+3, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                    }
+                }
+            })
 
             return rowMain
         }
         private class ViewHolder(val buttonInventory1:ImageView, val buttonInventory2:ImageView, val buttonInventory3:ImageView, val buttonInventory4:ImageView)
     }
 
-    private class ShopOffer(val player:Player, var lastClicked:String, val textViewInfoItem: TextView, val errorShop:TextView, val InventoryShop:BaseAdapter) : BaseAdapter() {
+    private class ShopOffer(val player:Player, var lastClicked:String, val textViewInfoItem: TextView, val errorShop:TextView, val InventoryShop:BaseAdapter, private val context:Context) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 2
@@ -279,7 +258,7 @@ class Shop : AppCompatActivity(){
             return "TEST STRING"
         }
 
-        @SuppressLint("SetTextI18n")
+        @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
@@ -295,8 +274,6 @@ class Shop : AppCompatActivity(){
                 position*4
             }
 
-            val handler = Handler()
-            var clicks = 0
 
             for(i in 0..3){
                 when(i){
@@ -308,73 +285,78 @@ class Shop : AppCompatActivity(){
                 }.setImageResource(player.shopOffer[index+i]!!.drawable)
             }
 
-            viewHolder.buttonOffer1.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="offer0$position"){                                                  //DOUBLE CLICK
-                    getDoubleClickOffer(index, player, errorShop, textViewInfoItem)
-                    notifyDataSetChanged()
-                    InventoryShop.notifyDataSetChanged()
-                    handler.removeCallbacksAndMessages(null)
-                }else if(clicks==1){
+
+            viewHolder.buttonOffer1.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer0$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="offer0$position"
                     textViewInfoItem.text = player.shopOffer[index]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
 
-            viewHolder.buttonOffer2.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="offer1$position"){
-                    getDoubleClickOffer(index+1, player, errorShop, textViewInfoItem)
-                    notifyDataSetChanged()
-                    InventoryShop.notifyDataSetChanged()
-                    handler.removeCallbacksAndMessages(null)
-                }else if(clicks==1){
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="offer0$position"){
+                        getDoubleClickOffer(index, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
+                    }
+                }
+            })
+
+            viewHolder.buttonOffer2.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer1$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="offer1$position"
                     textViewInfoItem.text = player.shopOffer[index+1]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
 
-            viewHolder.buttonOffer3.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="offer2$position"){
-                    getDoubleClickOffer(index+2, player, errorShop, textViewInfoItem)
-                    notifyDataSetChanged()
-                    InventoryShop.notifyDataSetChanged()
-                    handler.removeCallbacksAndMessages(null)
-                }else if(clicks==1){
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="offer1$position"){
+                        getDoubleClickOffer(index+1, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
+                    }
+                }
+            })
+
+            viewHolder.buttonOffer3.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer2$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="offer2$position"
                     textViewInfoItem.text = player.shopOffer[index+2]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
 
-            viewHolder.buttonOffer4.setOnClickListener {
-                ++clicks
-                if(clicks==2&&lastClicked=="offer3$position"){
-                    getDoubleClickOffer(index+3, player, errorShop, textViewInfoItem)
-                    notifyDataSetChanged()
-                    InventoryShop.notifyDataSetChanged()
-                    handler.removeCallbacksAndMessages(null)
-                }else if(clicks==1){
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="offer2$position"){
+                        getDoubleClickOffer(index+2, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
+                    }
+                }
+            })
+
+            viewHolder.buttonOffer4.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
                     if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="offer3$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
                     lastClicked="offer3$position"
                     textViewInfoItem.text = player.shopOffer[index+3]?.getStats()
                 }
-                handler.postDelayed({
-                    clicks=0
-                }, 250)
-            }
+
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    if(lastClicked=="offer3$position"){
+                        getDoubleClickOffer(index+3, player, errorShop, textViewInfoItem)
+                        notifyDataSetChanged()
+                        InventoryShop.notifyDataSetChanged()
+                    }
+                }
+            })
 
             return rowMain
         }
@@ -382,11 +364,11 @@ class Shop : AppCompatActivity(){
     }
 
     companion object {
-        private fun getDoubleClick(index:Int, context:Context, view:View, button:ImageView, listViewInventoryShop:ListView, player:Player, handler:Handler, textViewMoney:TextView, textViewInfoItem:TextView){
+        private fun getDoubleClick(index:Int, context:Context, view:View, button:ImageView, listViewInventoryShop:ListView, player:Player, textViewMoney:TextView, textViewInfoItem:TextView){
             val window = PopupWindow(context)
             window.contentView = view
             val buttonYes:Button = view.findViewById(R.id.buttonYes)
-            val buttonNo:Button = view.findViewById(R.id.buttonNo)
+            val buttonNo:Button = view.findViewById(R.id.buttonClose)
             val info:TextView = view.findViewById(R.id.textViewInfo)
             window.isOutsideTouchable = false
             window.isFocusable = true
@@ -394,7 +376,6 @@ class Shop : AppCompatActivity(){
                 player.money+=1
                 player.inventory[index]=null
                 (listViewInventoryShop.adapter as ShopInventory).notifyDataSetChanged()
-                handler.removeCallbacksAndMessages(null)
                 textViewMoney.text = player.money.toString()
                 textViewInfoItem.visibility = View.INVISIBLE
                 window.dismiss()
@@ -429,6 +410,12 @@ class Shop : AppCompatActivity(){
                     arrayTemp.add(player.classItems()[i])
                 }
             }
+            for(i:Int in 0 until itemsUniversal.size){
+                if(itemsUniversal[i]!!.levelRq in player.level-50..player.level){
+                    arrayTemp.add(itemsUniversal[i])
+                }
+            }
+
             return arrayTemp
         }
 
@@ -441,7 +428,7 @@ class Shop : AppCompatActivity(){
             val tempArray:MutableList<Item?> = returnItem(player)
             val itemReturned = tempArray[nextInt(0, tempArray.size)]
             val itemTemp:Item? = when(itemReturned){
-                is Weapon->Weapon(itemReturned!!.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
+                is Weapon->Weapon(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
                 is Wearable->Wearable(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
                 is Runes->Runes(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
                 else -> Item(itemReturned!!.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)

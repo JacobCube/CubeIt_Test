@@ -3,6 +3,7 @@ package cz.cubeit.cubeit
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipDescription
+import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Color
@@ -33,7 +34,6 @@ private var draggedItem:Item? = null
 private var ClipDataIndex:Int? = null
 
 
-
 val spellsClass1:Array<Spell> = arrayOf(
         Spell(R.drawable.basicattack, "Basic attack", 0, 10, 0, 0, 1,"")
         ,Spell(R.drawable.shield, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
@@ -61,7 +61,7 @@ val itemsClass1:Array<Item?> = arrayOf(
 val itemsClass2:Array<Item?> = arrayOf(
         Weapon("Sword", R.drawable.basicattack, 1, 2, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
         ,Weapon("Shield", R.drawable.shield, 1, 2, "Blocks 8  0% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", R.drawable.belt, 1, 2, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)//arrayOf("Belt", "@drawable/belt","1","0","0","description")
+        ,Wearable("Belt", R.drawable.belt, 1,2, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)//arrayOf("Belt", "@drawable/belt","1","0","0","description")
         ,Wearable("Overall", R.drawable.overall, 1, 2, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
         ,Wearable("Boots", R.drawable.boots, 1, 2, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
         ,Wearable("Trousers", R.drawable.trousers, 1, 2, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
@@ -72,11 +72,17 @@ val itemsClass2:Array<Item?> = arrayOf(
 var player:Player = Player("MexxFM", arrayOf(0,0,0,0,0,0,0,0,0,0), 10, 1, 40, 0, 0.0, 0, 0, 1050.0, 100, 1,
         10, mutableListOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5]), arrayOf(null, null, null, null, null, null, null, null, null, null),
         arrayOfNulls(2),mutableListOf(spellsClass1[0],spellsClass1[1],spellsClass1[2],spellsClass1[3],spellsClass1[4]) , mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null),
-        arrayOf(spellsClass1[2],spellsClass1[3],spellsClass1[4], null), 100, arrayOfNulls(8))
+        arrayOf(spellsClass1[2],spellsClass1[3],spellsClass1[4], null), 100, arrayOfNulls(8), true)
+
+fun MutableList<Item?>.addItem(item:Item?){     //unused yet
+    if(this.contains(null)){
+        this[this.indexOf(null)] = item
+    }
+}
 
 data class Player(val name:String, var look:Array<Int>, var level:Int, val charClass:Int, var power:Int, var armor:Int, var block:Double, var poison:Int, var bleed:Int, var health:Double, var energy:Int,
                   var adventureSpeed:Int, var inventorySlots:Int, var inventory:MutableList<Item?>, var equip: Array<Item?>, var backpackRunes: Array<Runes?>,
-                  var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:Array<Spell?>, var money:Int, var shopOffer:Array<Item?>){
+                  var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:Array<Spell?>, var money:Int, var shopOffer:Array<Item?>, var notifications:Boolean){
     fun classItems():Array<Item?>{
         return when(this.charClass){
             1-> itemsClass1
@@ -89,6 +95,9 @@ data class Player(val name:String, var look:Array<Int>, var level:Int, val charC
             1-> spellsClass1
             else-> spellsClass1
         }
+    }
+    fun sync(){
+
     }
     fun syncStats():String{
         var health = 1050.0
@@ -112,6 +121,20 @@ data class Player(val name:String, var look:Array<Int>, var level:Int, val charC
                 inventorySlots += this.equip[i]!!.inventorySlots
             }
         }
+        for(i in 0 until this.backpackRunes.size){
+            if(this.backpackRunes[i]!=null) {
+                health += this.backpackRunes[i]!!.health
+                armor += this.backpackRunes[i]!!.armor
+                block += this.backpackRunes[i]!!.block
+                power += this.backpackRunes[i]!!.power
+                poison += this.backpackRunes[i]!!.poison
+                bleed += this.backpackRunes[i]!!.bleed
+                adventureSpeed += this.backpackRunes[i]!!.adventureSpeed
+                inventorySlots += this.backpackRunes[i]!!.inventorySlots
+            }
+        }
+
+
         this.health = health
         this.armor = armor
         this.block = block
@@ -126,7 +149,7 @@ data class Player(val name:String, var look:Array<Int>, var level:Int, val charC
 
 
 open class Spell(var drawable: Int, var name:String, var energy:Int, var power:Int, var fire:Int, var poison:Int, var level:Int, var description:String){
-    fun spellStats():String{
+    fun getStats():String{
         var text = "${this.name}\nLevel: ${this.level}\nEnergy: ${this.energy}\nPower: ${this.power}"
         if(this.fire!=0)text+="\nFire: ${this.fire}"
         if(this.poison!=0)text+="\nPoison: ${this.poison}"
@@ -151,16 +174,8 @@ open class Item(name:String, drawable:Int, levelRq:Int, charClass:Int, descripti
     open val slot: Int = 0
     open val price:Int = 0
 
-    private fun charClass():String{
-        return when(charClass){
-            1 -> "Warrior"
-            2 -> "Magician"
-            3 -> "Vampire"
-            else -> "All classes"
-        }
-    }
     fun getStats():String{
-        var textView = "${this.name}\nLevel: ${this.levelRq}\n${this.charClass()}\n${this.description}"
+        var textView = "${this.name}\nLevel: ${this.levelRq}\n${this.charClass}\n${this.description}"
         if(this.power!=0) textView+="\nPower: ${this.power}"
         if(this.armor!=0) textView+="\nArmor: ${this.armor}"
         if(this.block!=0) textView+="\nBlock/dodge: ${this.block}"
@@ -205,23 +220,16 @@ class Character : AppCompatActivity() {
         val animDown: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_down)
 
-        characterMenuSwipe.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeDown() {
-                if(!folded) {
-                    imageViewMenuCharacter.startAnimation(animDown)
-                    buttonFightCharacter.isEnabled = false
-                    buttonDefenceCharacter.isEnabled = false
-                    buttonAdventureCharacter.isEnabled = false
-                    buttonSettingsCharacter.isEnabled = false
-                    buttonShopCharacter.isEnabled = false
-                    folded = true
-                }
-            }
-        })
-        imageViewMenuCharacter.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        characterLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeDown() {
                 if(!folded){
                     imageViewMenuCharacter.startAnimation(animDown)
+                    buttonFightCharacter.startAnimation(animDown)
+                    buttonDefenceCharacter.startAnimation(animDown)
+                    buttonCharacterCharacter.startAnimation(animDown)
+                    buttonSettingsCharacter.startAnimation(animDown)
+                    buttonAdventureCharacter.startAnimation(animDown)
+                    buttonShopCharacter.startAnimation(animDown)
                     buttonFightCharacter.isEnabled = false
                     buttonDefenceCharacter.isEnabled = false
                     buttonAdventureCharacter.isEnabled = false
@@ -233,6 +241,12 @@ class Character : AppCompatActivity() {
             override fun onSwipeUp() {
                 if(folded){
                     imageViewMenuCharacter.startAnimation(animUp)
+                    buttonFightCharacter.startAnimation(animUp)
+                    buttonDefenceCharacter.startAnimation(animUp)
+                    buttonCharacterCharacter.startAnimation(animUp)
+                    buttonSettingsCharacter.startAnimation(animUp)
+                    buttonAdventureCharacter.startAnimation(animUp)
+                    buttonShopCharacter.startAnimation(animUp)
                     buttonFightCharacter.isEnabled = true
                     buttonDefenceCharacter.isEnabled = true
                     buttonAdventureCharacter.isEnabled = true
@@ -243,32 +257,6 @@ class Character : AppCompatActivity() {
             }
         })
 
-        animUp.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                imageViewMenuCharacter.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                imageViewMenuCharacter.isEnabled = false
-            }
-        })
-        animDown.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                characterMenuSwipe.isEnabled = true
-                imageViewMenuCharacter.isEnabled = true
-            }
-
-            override fun onAnimationStart(animation: Animation?) {
-                characterMenuSwipe.isEnabled = false
-                imageViewMenuCharacter.isEnabled = false
-            }
-        })
 
         buttonFightCharacter.setOnClickListener{
             val intent = Intent(this, FightSystem::class.java)
@@ -556,7 +544,7 @@ class Character : AppCompatActivity() {
         inventoryListView.setOnDragListener(inventoryDragListener)
 
         inventoryListView.adapter = InventoryView(player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, textViewInfoCharacter, equipDragListener, runesDragListener, bagView,equipView,
-                equipItem0, equipItem1, equipItem2, equipItem3, equipItem4, equipItem5, equipItem6, equipItem7, equipItem8, equipItem9)
+                equipItem0, equipItem1, equipItem2, equipItem3, equipItem4, equipItem5, equipItem6, equipItem7, equipItem8, equipItem9, this)
 
         for(i in 0 until 10) {
             val itemEquip: ImageView = findViewById(this.resources.getIdentifier("equipItem$i", "id", this.packageName))
@@ -568,49 +556,47 @@ class Character : AppCompatActivity() {
             }
         }
 
-        if(player.backpackRunes[0]!=null)buttonBag0.setImageResource(player.backpackRunes[0]!!.drawable) else buttonBag0.setImageResource(R.drawable.emptyslot)
-        if(player.backpackRunes[1]!=null)buttonBag1.setImageResource(player.backpackRunes[1]!!.drawable) else buttonBag1.setImageResource(R.drawable.emptyslot)
-
-        buttonBag0.setOnClickListener {
-            if(lastClicked!="runes0")handler.removeCallbacksAndMessages(null)
-            ++clicks
-            if (player.backpackRunes[0] != null) {
-                try {
-                    if (clicks == 2&&lastClicked == "runes0"){
-                        for (i in 0..player.inventory.size) {
-                            if (player.inventory[i] == null) {
-                                buttonBag0.setImageResource(R.drawable.emptyslot)
-                                player.inventory[i] = player.backpackRunes[0]
-                                player.backpackRunes[0] = null
-                                buttonBag0.isEnabled = false
-                                textViewInfoCharacter.text = player.syncStats()
-                                (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
-                                handler.removeCallbacksAndMessages(null)
-                                break
-                            } else {
-                            }
-                        }
-                        handler.removeCallbacksAndMessages(null)
-                    } else if (clicks == 1) {                                            //SINGLE CLICK
-                        if (textViewInfoItem.visibility == View.VISIBLE && lastClicked == "runes0") {
-                            textViewInfoItem.visibility = View.INVISIBLE
-                        } else {
-                            textViewInfoItem.visibility = View.VISIBLE
-                        }
-                        lastClicked = "runes0"
-                        textViewInfoItem.text = player.backpackRunes[0]?.getStats()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
-                }
-                handler.postDelayed({
-                    clicks = 0
-                }, 250)
-            }else{
-                buttonBag0.isEnabled = false
-            }
+        if(player.backpackRunes[0]!=null){
+            buttonBag0.setImageResource(player.backpackRunes[0]!!.drawable)
+            buttonBag0.isEnabled = true
+        }else{
+            buttonBag0.setImageResource(R.drawable.emptyslot)
+            buttonBag0.isEnabled = false
         }
-        buttonBag0.setOnLongClickListener { v: View ->
+        if(player.backpackRunes[1]!=null){
+            buttonBag1.setImageResource(player.backpackRunes[1]!!.drawable)
+            buttonBag0.isEnabled = true
+        } else{
+            buttonBag1.setImageResource(R.drawable.emptyslot)
+            buttonBag0.isEnabled = false
+        }
+
+        buttonBag0.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onClick() {
+                super.onClick()
+                if (textViewInfoItem.visibility == View.VISIBLE && lastClicked == "runes0") {
+                    textViewInfoItem.visibility = View.INVISIBLE
+                } else {
+                    textViewInfoItem.visibility = View.VISIBLE
+                }
+                lastClicked = "runes0"
+                textViewInfoItem.text = player.backpackRunes[0]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if(player.inventory.contains(null)){
+                    buttonBag0.setImageResource(R.drawable.emptyslot)
+                    player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
+                    player.backpackRunes[0] = null
+                    buttonBag0.isEnabled = false
+                    textViewInfoCharacter.text = player.syncStats()
+                    (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
+                }
+            }
+        })
+
+        buttonBag0.setOnLongClickListener{ v: View ->
             buttonBag0.tag = "Runes0"
 
             val item = ClipData.Item("Runes0")
@@ -630,45 +616,32 @@ class Character : AppCompatActivity() {
                     0           // flags (not currently used, set to 0)
             )
         }
-        buttonBag1.setOnClickListener {
-            if(lastClicked!="runes1")handler.removeCallbacksAndMessages(null)
-            ++clicks
-            if (player.backpackRunes[1] != null) {
-                try {
-                    if (clicks == 2&&lastClicked == "runes1") {
-                        for (i in 0..player.inventory.size) {
-                            if (player.inventory[i] == null) {
-                                buttonBag1.setImageResource(R.drawable.emptyslot)
-                                player.inventory[i] = player.backpackRunes[1]
-                                player.backpackRunes[1] = null
-                                buttonBag1.isEnabled = false
-                                textViewInfoCharacter.text = player.syncStats()
-                                (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
-                                handler.removeCallbacksAndMessages(null)
-                                break
-                            } else {
-                            }
-                        }
-                        handler.removeCallbacksAndMessages(null)
-                    } else if (clicks == 1) {                                            //SINGLE CLICK
-                        if (textViewInfoItem.visibility == View.VISIBLE && lastClicked == "runes1") {
-                            textViewInfoItem.visibility = View.INVISIBLE
-                        } else {
-                            textViewInfoItem.visibility = View.VISIBLE
-                        }
-                        lastClicked = "runes1"
-                        textViewInfoItem.text = player.backpackRunes[1]?.getStats()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
+
+        buttonBag1.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onClick() {
+                super.onClick()
+                if (textViewInfoItem.visibility == View.VISIBLE && lastClicked == "runes1") {
+                    textViewInfoItem.visibility = View.INVISIBLE
+                } else {
+                    textViewInfoItem.visibility = View.VISIBLE
                 }
-                handler.postDelayed({
-                    clicks = 0
-                }, 250)
-            }else{
-                buttonBag0.isEnabled = false
+                lastClicked = "runes1"
+                textViewInfoItem.text = player.backpackRunes[1]?.getStats()
             }
-        }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if(player.inventory.contains(null)){
+                    buttonBag1.setImageResource(R.drawable.emptyslot)
+                    player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[1]
+                    player.backpackRunes[1] = null
+                    buttonBag1.isEnabled = false
+                    textViewInfoCharacter.text = player.syncStats()
+                    (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
+                }
+            }
+        })
+
         buttonBag1.setOnLongClickListener { v: View ->
             buttonBag1.tag = "Runes1"
 
@@ -696,7 +669,7 @@ class Character : AppCompatActivity() {
     }
 
     private class InventoryView(var player:Player, val textViewInfoItem: TextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val textViewInfoCharacter:TextView, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View,val equipView:ImageView,
-                                val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView) : BaseAdapter() {
+                                val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView, private val context: Context) : BaseAdapter() {
 
         override fun getCount(): Int {
             return player.inventory.size/4+1
@@ -710,7 +683,7 @@ class Character : AppCompatActivity() {
             return "TEST STRING"
         }
 
-        @SuppressLint("SetTextI18n")
+        @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
@@ -725,7 +698,6 @@ class Character : AppCompatActivity() {
             val index:Int = if(position == 0) 0 else{
                 position*4
             }
-            val handler = Handler()
 
             val equipDragListener = View.OnDragListener { v, event ->
                 when (event.action) {
@@ -942,74 +914,69 @@ class Character : AppCompatActivity() {
                 )
             }
 
-                viewHolder.buttonInventory1.setOnClickListener {
-                    if(lastClicked!="inventory0$position")handler.removeCallbacksAndMessages(null)
-                    ++clicks
-                    if(clicks==2&&lastClicked=="inventory0$position"){
-                        getDoubleClick(index, player)
-
-                        textViewInfoCharacter.text = player.syncStats()
-                        handler.removeCallbacksAndMessages(null)
-                    }else if(clicks==1){
-                        if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory0$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
-                        lastClicked="inventory0$position"
-                        textViewInfoItem.text = player.inventory[index]?.getStats()
-                    }
-                    handler.postDelayed({
-                        clicks=0
-                    }, 250)
+            viewHolder.buttonInventory1.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
+                    if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory0$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
+                    lastClicked="inventory0$position"
+                    textViewInfoItem.text = player.inventory[index]?.getStats()
                 }
 
-                viewHolder.buttonInventory2.setOnClickListener {
-                    if(lastClicked!="inventory1$position")handler.removeCallbacksAndMessages(null)
-                    ++clicks
-                    if(clicks==2&&lastClicked=="inventory1$position"){
-                        getDoubleClick(index+1, player)
-                        textViewInfoCharacter.text = player.syncStats()
-                        handler.removeCallbacksAndMessages(null)
-                    }else if(clicks==1){
-                        if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory1$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
-                        lastClicked="inventory1$position"
-                        textViewInfoItem.text = player.inventory[index+1]?.getStats()
-                    }
-                    handler.postDelayed({
-                        clicks=0
-                    }, 250)
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    getDoubleClick(index, player)
+                    textViewInfoCharacter.text = player.syncStats()
+                    textViewInfoItem.text = player.inventory[index]?.getStats() //not sure about this line
+                }
+            })
+
+            viewHolder.buttonInventory2.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
+                    if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory1$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
+                    lastClicked="inventory1$position"
+                    textViewInfoItem.text = player.inventory[index+1]?.getStats()
                 }
 
-            viewHolder.buttonInventory3.setOnClickListener {
-                    if(lastClicked!="inventory2$position")handler.removeCallbacksAndMessages(null)
-                    ++clicks
-                    if(clicks==2&&lastClicked=="inventory2$position"){
-                        getDoubleClick(index+2, player)
-                        textViewInfoCharacter.text = player.syncStats()
-                        handler.removeCallbacksAndMessages(null)
-                    }else if(clicks==1){
-                        if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory2$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
-                        lastClicked="inventory2$position"
-                        textViewInfoItem.text = player.inventory[index+2]?.getStats()
-                    }
-                    handler.postDelayed({
-                        clicks=0
-                    }, 250)
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    getDoubleClick(index+1, player)
+                    textViewInfoCharacter.text = player.syncStats()
+                    textViewInfoItem.text = player.inventory[index+1]?.getStats() //not sure about this line
+                }
+            })
+
+            viewHolder.buttonInventory3.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
+                    if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory2$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
+                    lastClicked="inventory2$position"
+                    textViewInfoItem.text = player.inventory[index+2]?.getStats()
                 }
 
-            viewHolder.buttonInventory4.setOnClickListener {
-                    if(lastClicked!="inventory3$position")handler.removeCallbacksAndMessages(null)
-                    ++clicks
-                    if(clicks==2&&lastClicked=="inventory3$position"){
-                        getDoubleClick(index+3,player)
-                        textViewInfoCharacter.text = player.syncStats()
-                        handler.removeCallbacksAndMessages(null)
-                    }else if(clicks==1){
-                        if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory3$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
-                        lastClicked="inventory3$position"
-                        textViewInfoItem.text = player.inventory[index+3]?.getStats()
-                    }
-                    handler.postDelayed({
-                        clicks=0
-                    }, 250)
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    getDoubleClick(index+2, player)
+                    textViewInfoCharacter.text = player.syncStats()
+                    textViewInfoItem.text = player.inventory[index+2]?.getStats() //not sure about this line
                 }
+            })
+
+            viewHolder.buttonInventory4.setOnTouchListener(object : OnSwipeTouchListener(context) {
+                override fun onClick() {
+                    super.onClick()
+                    if(textViewInfoItem.visibility == View.VISIBLE&&lastClicked=="inventory3$position"){textViewInfoItem.visibility = View.INVISIBLE}else{textViewInfoItem.visibility = View.VISIBLE}
+                    lastClicked="inventory3$position"
+                    textViewInfoItem.text = player.inventory[index+3]?.getStats()
+                }
+
+                override fun onDoubleClick() {
+                    super.onDoubleClick()
+                    getDoubleClick(index+3, player)
+                    textViewInfoCharacter.text = player.syncStats()
+                    textViewInfoItem.text = player.inventory[index+3]?.getStats() //not sure about this line
+                }
+            })
 
             return rowMain
         }
@@ -1065,40 +1032,26 @@ class Character : AppCompatActivity() {
     }
     fun onUnEquip(view:View){
         val index = view.tag.toString().toInt()
-        if(player.equip[index]!=null) {
             ++clicks
-            try {
-                if (clicks == 2&&lastClicked=="equip$index") {
-                    for (i in 0..player.inventory.size) {
-                        if (player.inventory[i] == null) {
-                            textViewInfoCharacter.text = player.syncStats()
-                            player.inventory[i] = player.equip[index]
-                            player.equip[index] = null
-                            view.isEnabled = false
-                            textViewInfoItem.visibility = View.VISIBLE
-                            (view as ImageView).setImageResource(R.drawable.emptyslot)
-                            (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
-                            break
-                        } else {
-                        }
-                    }
+            if (clicks == 2&&lastClicked=="equip$index"&& player.inventory.contains(null)) {
+                    textViewInfoCharacter.text = player.syncStats()
+                    player.inventory[player.inventory.indexOf(null)] = player.equip[index]
+                    player.equip[index] = null
+                    view.isEnabled = false
+                    textViewInfoItem.visibility = View.VISIBLE
+                    (view as ImageView).setImageResource(R.drawable.emptyslot)
+                    (inventoryListView.adapter as InventoryView).notifyDataSetChanged()
                     handler.removeCallbacksAndMessages(null)
-                } else if (clicks == 1) {                                            //SINGLE CLICK
-                    if(textViewInfoItem.visibility == View.VISIBLE && lastClicked=="equip$index"){textViewInfoItem.visibility = View.INVISIBLE}else{
-                        textViewInfoItem.visibility = View.VISIBLE
-                    }
-                    lastClicked="equip$index"
-                    textViewInfoItem.text = player.equip[index]?.getStats()
+            } else if (clicks == 1) {                                            //SINGLE CLICK
+                if(textViewInfoItem.visibility == View.VISIBLE && lastClicked=="equip$index"){textViewInfoItem.visibility = View.INVISIBLE}else{
+                    textViewInfoItem.visibility = View.VISIBLE
                 }
-            }catch(e:Exception){
-                if(player.inventory[0]!=null)Toast.makeText(this, "Inventory's full!", Toast.LENGTH_SHORT).show()
+                lastClicked="equip$index"
+                textViewInfoItem.text = player.equip[index]?.getStats()
             }
             handler.postDelayed({
                 clicks=0
             }, 250)
-        }else{
-            view.isEnabled = false
-        }
     }
 }
 private class MyDragShadowBuilder(v: View) : View.DragShadowBuilder(v) {
