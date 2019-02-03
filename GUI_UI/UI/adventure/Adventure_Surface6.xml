@@ -10,36 +10,9 @@
     <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/orange_map"
+            android:src="@drawable/red_map"
             android:scaleType="fitXY"
-            android:id="@+id/mapa" tools:layout_editor_absoluteY="0dp" tools:layout_editor_absoluteX="0dp"/>
-    <ImageButton
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintLeft_toLeftOf="@+id/guideline1"
-            app:layout_constraintRight_toLeftOf="@+id/guideline2"
-            app:layout_constraintTop_toTopOf="@+id/LRguideline1"
-            app:layout_constraintBottom_toTopOf="@+id/LRguideline2"
-            android:src="@drawable/vykricnik"
-            android:background="@null"
-            android:scaleType="fitXY"
-            android:id="@+id/imageButton1" />
-    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                          android:id="@+id/guideline1"
-                                          android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.64"/>
-    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                          android:id="@+id/guideline2"
-                                          android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.68"/>
-    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                          android:id="@+id/LRguideline1"
-                                          android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.42"/>
-    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                          android:id="@+id/LRguideline2"
-                                          android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.49"/>
+            android:id="@+id/surface6" tools:layout_editor_absoluteY="0dp" tools:layout_editor_absoluteX="0dp"/>
     <ImageButton
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -50,24 +23,24 @@
             android:src="@drawable/vykricnik"
             android:background="@null"
             android:scaleType="fitXY"
-            android:id="@+id/imageButton2" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="0.0"/>
+            android:id="@+id/surface6_question1" app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="1.0"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline3"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.23"/>
+                                          app:layout_constraintGuide_percent="0.31"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline4"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.27"/>
+                                          app:layout_constraintGuide_percent="0.35"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline3"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.35"/>
+                                          app:layout_constraintGuide_percent="0.1"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline4"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.42"/>
+                                          app:layout_constraintGuide_percent="0.17"/>
     <ImageButton
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -78,24 +51,24 @@
             android:src="@drawable/vykricnik"
             android:background="@null"
             android:scaleType="fitXY"
-            android:id="@+id/imageButton3" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="1.0"/>
+            android:id="@+id/surface6_question2" app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="0.0"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline5"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.37"/>
+                                          app:layout_constraintGuide_percent="0.12"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline6"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.41"/>
+                                          app:layout_constraintGuide_percent="0.16"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline5"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.59"/>
+                                          app:layout_constraintGuide_percent="0.78"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline6"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.66"/>
+                                          app:layout_constraintGuide_percent="0.85"/>
     <ImageButton
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -106,24 +79,24 @@
             android:src="@drawable/vykricnik"
             android:background="@null"
             android:scaleType="fitXY"
-            android:id="@+id/imageButton4" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="1.0"/>
+            android:id="@+id/surface6_question3" app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="0.0"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline7"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.46"/>
+                                          app:layout_constraintGuide_percent="0.37"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline8"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.5"/>
+                                          app:layout_constraintGuide_percent="0.41"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline7"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.6"/>
+                                          app:layout_constraintGuide_percent="0.49"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline8"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.67"/>
+                                          app:layout_constraintGuide_percent="0.57"/>
     <ImageButton
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -134,24 +107,52 @@
             android:src="@drawable/vykricnik"
             android:background="@null"
             android:scaleType="fitXY"
-            android:id="@+id/imageButton5" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="1.0"/>
+            android:id="@+id/surface6_question4" app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="0.0"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline9"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.56"/>
+                                          app:layout_constraintGuide_percent="0.48"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline10"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.6"/>
+                                          app:layout_constraintGuide_percent="0.52"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline9"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.62"/>
+                                          app:layout_constraintGuide_percent="0.31"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline10"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.69"/>
+                                          app:layout_constraintGuide_percent="0.38"/>
+    <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintLeft_toLeftOf="@+id/guideline1"
+            app:layout_constraintRight_toLeftOf="@+id/guideline2"
+            app:layout_constraintTop_toTopOf="@+id/LRguideline1"
+            app:layout_constraintBottom_toTopOf="@+id/LRguideline2"
+            android:src="@drawable/vykricnik"
+            android:background="@null"
+            android:scaleType="fitXY"
+            android:id="@+id/surface6_question6" app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintVertical_bias="0.0"/>
+    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                          android:id="@+id/guideline1"
+                                          android:orientation="vertical"
+                                          app:layout_constraintGuide_percent="0.8"/>
+    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                          android:id="@+id/guideline2"
+                                          android:orientation="vertical"
+                                          app:layout_constraintGuide_percent="0.84"/>
+    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                          android:id="@+id/LRguideline1"
+                                          android:orientation="horizontal"
+                                          app:layout_constraintGuide_percent="0.08"/>
+    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                          android:id="@+id/LRguideline2"
+                                          android:orientation="horizontal"
+                                          app:layout_constraintGuide_percent="0.15"/>
     <ImageButton
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -162,24 +163,24 @@
             android:src="@drawable/vykricnik"
             android:background="@null"
             android:scaleType="fitXY"
-            android:id="@+id/imageButton6" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="1.0"/>
+            android:id="@+id/surface6_question5" app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintVertical_bias="0.0"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline11"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.61"/>
+                                          app:layout_constraintGuide_percent="0.93"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline12"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.65"/>
+                                          app:layout_constraintGuide_percent="0.97"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline11"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.58"/>
+                                          app:layout_constraintGuide_percent="0.15"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline12"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.65"/>
+                                          app:layout_constraintGuide_percent="0.23"/>
     <ImageButton
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -190,22 +191,22 @@
             android:src="@drawable/vykricnik"
             android:background="@null"
             android:scaleType="fitXY"
-            android:id="@+id/imageButton7" app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintVertical_bias="1.0"/>
+            android:id="@+id/surface6_question7" app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintVertical_bias="0.0"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline13"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.72"/>
+                                          app:layout_constraintGuide_percent="0.78"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/guideline14"
                                           android:orientation="vertical"
-                                          app:layout_constraintGuide_percent="0.76"/>
+                                          app:layout_constraintGuide_percent="0.82"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline13"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.57"/>
+                                          app:layout_constraintGuide_percent="0.67"/>
     <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
                                           android:id="@+id/LRguideline14"
                                           android:orientation="horizontal"
-                                          app:layout_constraintGuide_percent="0.64"/>
+                                          app:layout_constraintGuide_percent="0.74"/>
 </android.support.constraint.ConstraintLayout>
