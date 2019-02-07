@@ -8,6 +8,8 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
@@ -91,6 +93,50 @@ class ChoosingSpells : Fragment(){
             activity!!.overridePendingTransition(0,0)
         }
 
+        val animUp: Animation = AnimationUtils.loadAnimation(view.context,
+                R.anim.animation_adventure_up)
+        val animDown: Animation = AnimationUtils.loadAnimation(view.context,
+                R.anim.animation_adventure_down)
+
+        view.choosingSpellsLayout.setOnTouchListener(object : OnSwipeTouchListener(view.context) {
+            override fun onSwipeDown() {
+                if(!folded){
+                    view.imageViewMenuSpells.startAnimation(animDown)
+                    view.buttonFightSpells.startAnimation(animDown)
+                    view.buttonDefenceSpells.startAnimation(animDown)
+                    view.buttonCharacterSpells.startAnimation(animDown)
+                    view.buttonSettingsSpells.startAnimation(animDown)
+                    view.buttonAdventureSpells.startAnimation(animDown)
+                    view.buttonShopSpells.startAnimation(animDown)
+                    view.buttonFightSpells.isEnabled = false
+                    view.buttonDefenceSpells.isEnabled = false
+                    view.buttonCharacterSpells.isEnabled = false
+                    view.buttonSettingsSpells.isEnabled = false
+                    view.buttonShopSpells.isEnabled = false
+                    view.buttonAdventureSpells.isEnabled = false
+                    folded = true
+                }
+            }
+            override fun onSwipeUp() {
+                if(folded){
+                    view.imageViewMenuSpells.startAnimation(animUp)
+                    view.buttonFightSpells.startAnimation(animUp)
+                    view.buttonDefenceSpells.startAnimation(animUp)
+                    view.buttonCharacterSpells.startAnimation(animUp)
+                    view.buttonSettingsSpells.startAnimation(animUp)
+                    view.buttonAdventureSpells.startAnimation(animUp)
+                    view.buttonShopSpells.startAnimation(animUp)
+                    view.buttonFightSpells.isEnabled = true
+                    view.buttonAdventureSpells.isEnabled = true
+                    view.buttonDefenceSpells.isEnabled = true
+                    view.buttonCharacterSpells.isEnabled = true
+                    view.buttonSettingsSpells.isEnabled = true
+                    view.buttonShopSpells.isEnabled = true
+                    folded = false
+                }
+            }
+        })
+
         view.chosen_listView.adapter = ChosenSpellsView(player)
         view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)
         return view
@@ -114,6 +160,10 @@ class ChoosingSpells : Fragment(){
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
+            val index:Int = if(position == 0) 0 else{
+                position*2
+            }
+
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
                 rowMain = layoutInflater.inflate(R.layout.row_choosingspells, viewGroup, false)
@@ -123,9 +173,6 @@ class ChoosingSpells : Fragment(){
                 rowMain = convertView
             }
             val viewHolder = rowMain.tag as ViewHolder
-            val index:Int = if(position == 0) 0 else{
-                position*2
-            }
 
             for(i in 0..1){
                 val tempSpell = when(i){
@@ -270,12 +317,6 @@ class ChoosingSpells : Fragment(){
             }else{
                 viewHolder.button1.isEnabled = false
                 viewHolder.button1.setBackgroundResource(0)
-            }
-
-            try{
-                viewHolder.button1.setBackgroundResource(player.chosenSpellsDefense[position]!!.drawable)
-            }catch(e:Exception){
-                viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
             }
 
             var requiredEnergy = 0

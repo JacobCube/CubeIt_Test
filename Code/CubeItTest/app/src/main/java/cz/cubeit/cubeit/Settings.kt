@@ -1,11 +1,21 @@
 package cz.cubeit.cubeit
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.BaseAdapter
+import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_settings.*
+import kotlinx.android.synthetic.main.row_song_adapter.view.*
+import kotlin.random.Random.Default.nextInt
 
 class Settings : AppCompatActivity(){
 
@@ -25,6 +35,7 @@ class Settings : AppCompatActivity(){
 
         if(!player.notifications)switchNotifications.isChecked = false
         switchSounds.isChecked = music
+        songAdapter.adapter = SongAdapter( this)
 
         val animUp: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_up)
@@ -32,7 +43,7 @@ class Settings : AppCompatActivity(){
                 R.anim.animation_adventure_down)
 
         switchSounds.setOnCheckedChangeListener { _, isChecked ->
-            val svc = Intent(this, BackgroundSoundService::class.java)
+            val svc = Intent(this, BackgroundSoundService(playedSong)::class.java)
             if(isChecked){
                 startService(svc)
                 music = true
@@ -58,6 +69,7 @@ class Settings : AppCompatActivity(){
                     buttonCharacterSettings.isEnabled = false
                     buttonShopSettings.isEnabled = false
                     buttonAdventureSettings.isEnabled = false
+                    imageViewSettings.visibility = View.GONE
                     folded = true
                 }
             }
@@ -112,4 +124,53 @@ class Settings : AppCompatActivity(){
             this.overridePendingTransition(0,0)
         }
     }
+}
+
+private class SongAdapter(private val context: Context) : BaseAdapter() {
+
+    override fun getCount(): Int {
+        return songs.size
+    }
+
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    override fun getItem(position: Int): Any {
+        return "TEST STRING"
+    }
+
+    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
+        val rowMain: View
+
+        if (convertView == null) {
+            val layoutInflater = LayoutInflater.from(viewGroup!!.context)
+            rowMain = layoutInflater.inflate(R.layout.row_song_adapter, viewGroup, false)
+            val viewHolder = ViewHolder(rowMain.textSong)
+            rowMain.tag = viewHolder
+
+            viewHolder.song.setBackgroundColor(Color.argb(255, nextInt(255), nextInt(255), nextInt(255)))
+            viewHolder.song.text = songs[position].description
+        } else rowMain = convertView
+        val viewHolder = rowMain.tag as ViewHolder
+
+
+
+        viewHolder.song.setOnClickListener {
+            if(music){
+                val svc = Intent(context, BackgroundSoundService(playedSong)::class.java)
+                context.stopService(svc)
+                BackgroundSoundService().onPause()
+                playedSong = songs[position].songRaw
+                context.startService(svc)
+            }else{
+                playedSong = songs[position].songRaw
+            }
+            Log.d("asd", playedSong.toString())
+        }
+
+        return rowMain
+    }
+
+    private class ViewHolder(val song:TextView)
 }

@@ -80,6 +80,7 @@ fun MutableList<Item?>.addItem(item:Item?){     //unused yet
     }
 }
 
+
 data class Player(val name:String, var look:Array<Int>, var level:Int, val charClass:Int, var power:Int, var armor:Int, var block:Double, var poison:Int, var bleed:Int, var health:Double, var energy:Int,
                   var adventureSpeed:Int, var inventorySlots:Int, var inventory:MutableList<Item?>, var equip: Array<Item?>, var backpackRunes: Array<Runes?>,
                   var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:Array<Spell?>, var money:Int, var shopOffer:Array<Item?>, var notifications:Boolean){
@@ -95,9 +96,6 @@ data class Player(val name:String, var look:Array<Int>, var level:Int, val charC
             1-> spellsClass1
             else-> spellsClass1
         }
-    }
-    fun sync(){
-
     }
     fun syncStats():String{
         var health = 1050.0
@@ -687,16 +685,39 @@ class Character : AppCompatActivity() {
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
+            val index:Int = if(position == 0) 0 else{
+                position*4
+            }
+
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
                 rowMain = layoutInflater.inflate(R.layout.row_character_inventory, viewGroup, false)
                 val viewHolder = ViewHolder(rowMain.itemInventory1,rowMain.itemInventory2,rowMain.itemInventory3,rowMain.itemInventory4)
                 rowMain.tag = viewHolder
+
             } else rowMain = convertView
             val viewHolder = rowMain.tag as ViewHolder
 
-            val index:Int = if(position == 0) 0 else{
-                position*4
+            for(i in 0..3){
+                val tempSpell = when(i){
+                    0->viewHolder.buttonInventory1
+                    1->viewHolder.buttonInventory2
+                    2->viewHolder.buttonInventory3
+                    3->viewHolder.buttonInventory4
+                    else->viewHolder.buttonInventory1
+                }
+                if(index+i<player.inventory.size){
+                    if(player.inventory[index+i]!=null){
+                        tempSpell.setImageResource(player.inventory[index+i]!!.drawable)
+                        tempSpell.isEnabled = true
+                    }else{
+                        tempSpell.setImageResource(0)
+                        tempSpell.isEnabled = false
+                    }
+                }else{
+                    tempSpell.isEnabled = false
+                    tempSpell.setBackgroundResource(0)
+                }
             }
 
             val equipDragListener = View.OnDragListener { v, event ->
@@ -782,29 +803,6 @@ class Character : AppCompatActivity() {
                     }
                 }
             }
-
-            for(i in 0..3){
-                val tempSpell = when(i){
-                    0->viewHolder.buttonInventory1
-                    1->viewHolder.buttonInventory2
-                    2->viewHolder.buttonInventory3
-                    3->viewHolder.buttonInventory4
-                    else->viewHolder.buttonInventory1
-                }
-                if(index+i<player.inventory.size){
-                    if(player.inventory[index+i]!=null){
-                        tempSpell.setImageResource(player.inventory[index+i]!!.drawable)
-                        tempSpell.isEnabled = true
-                    }else{
-                        tempSpell.setImageResource(0)
-                        tempSpell.isEnabled = false
-                    }
-                }else{
-                    tempSpell.isEnabled = false
-                    tempSpell.setBackgroundResource(0)
-                }
-            }
-
 
             viewHolder.buttonInventory1.setOnLongClickListener { v: View ->
                 viewHolder.buttonInventory1.tag = "$index"

@@ -27,11 +27,46 @@ val surfaces:Array<Surface> = arrayOf(Surface(R.drawable.map0, arrayOf(Quest("Ru
         Quest("Quest 5", "Description of quest 5", 5, 5*25, 5*10),
         Quest("Quest 6", "Description of quest 6", 6, 6*25, 6*10),
         Quest("Quest 7", "Description of quest 7", 7, 7*25, 7*10)), arrayOfNulls(7)),
-        Surface(R.drawable.background0, arrayOf(), arrayOfNulls(0)),
-        Surface(R.drawable.background1, arrayOf(), arrayOfNulls(0)),
-        Surface(R.drawable.background2, arrayOf(), arrayOfNulls(0)),
-        Surface(R.drawable.background3, arrayOf(), arrayOfNulls(0)),
-        Surface(R.drawable.map0, arrayOf(), arrayOfNulls(0)))
+
+        Surface(R.drawable.map1, arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 8*25, 1*10),
+                Quest("Quest 9", "Description of quest 2", 2, 9*25, 2*10),
+                Quest("Quest 10", "Description of quest 3", 3, 10*25, 3*10),
+                Quest("Quest 11", "Description of quest 4", 4, 11*25, 4*10),
+                Quest("Quest 12", "Description of quest 5", 5, 12*25, 5*10),
+                Quest("Quest 13", "Description of quest 6", 6, 13*25, 6*10),
+                Quest("Quest 14", "Description of quest 7", 7, 14*25, 7*10)), arrayOfNulls(7)),
+
+        Surface(R.drawable.map2, arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 15*25, 1*10),
+                Quest("Quest 16", "Description of quest 2", 2, 16*25, 2*10),
+                Quest("Quest 17", "Description of quest 3", 3, 18*25, 3*10),
+                Quest("Quest 18", "Description of quest 4", 4, 19*25, 4*10),
+                Quest("Quest 19", "Description of quest 5", 5, 20*25, 5*10),
+                Quest("Quest 20", "Description of quest 6", 6, 21*25, 6*10),
+                Quest("Quest 21", "Description of quest 7", 7, 22*25, 7*10)), arrayOfNulls(7)),
+
+        Surface(R.drawable.map3, arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 23*25, 1*10),
+                Quest("Quest 23", "Description of quest 2", 2, 24*25, 2*10),
+                Quest("Quest 24", "Description of quest 3", 3, 25*25, 3*10),
+                Quest("Quest 25", "Description of quest 4", 4, 26*25, 4*10),
+                Quest("Quest 26", "Description of quest 5", 5, 27*25, 5*10),
+                Quest("Quest 27", "Description of quest 6", 6, 28*25, 6*10),
+                Quest("Quest 28", "Description of quest 7", 7, 29*25, 7*10)), arrayOfNulls(7)),
+
+        Surface(R.drawable.map4, arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 30*25, 1*10),
+                Quest("Quest 30", "Description of quest 2", 2, 31*25, 2*10),
+                Quest("Quest 31", "Description of quest 3", 3, 32*25, 3*10),
+                Quest("Quest 32", "Description of quest 4", 4, 33*25, 4*10),
+                Quest("Quest 33", "Description of quest 5", 5, 34*25, 5*10),
+                Quest("Quest 34", "Description of quest 6", 6, 35*25, 6*10),
+                Quest("Quest 35", "Description of quest 7", 7, 36*25, 7*10)), arrayOfNulls(7)),
+
+        Surface(R.drawable.map5, arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 37*25, 1*10),
+                Quest("Quest 37", "Description of quest 2", 2, 38*25, 2*10),
+                Quest("Quest 38", "Description of quest 3", 3, 39*25, 3*10),
+                Quest("Quest 39", "Description of quest 4", 4, 40*25, 4*10),
+                Quest("Quest 40", "Description of quest 5", 5, 41*25, 5*10),
+                Quest("Quest 41", "Description of quest 6", 6, 42*25, 6*10),
+                Quest("Quest 42", "Description of quest 7", 7, 43*25, 7*10)), arrayOfNulls(7)))
 
 class Adventure : AppCompatActivity() {
     override fun onBackPressed() {
@@ -41,6 +76,7 @@ class Adventure : AppCompatActivity() {
         startActivity(intent)
         this.overridePendingTransition(0,0)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_adventure)
@@ -125,7 +161,8 @@ class Adventure : AppCompatActivity() {
         }
     }
     fun onClickQuest(view: View){
-        val index = view.toString()[view.toString().length - 2].toString().toInt()
+        val index = view.toString()[view.toString().length - 2].toString().toInt()-1
+        val surface = view.toString()[view.toString().length - 8].toString().toInt()
         val viewPop:View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
         val window = PopupWindow(this)
         window.contentView = viewPop
@@ -137,22 +174,22 @@ class Adventure : AppCompatActivity() {
         val buttonAccept: Button = viewPop.findViewById(R.id.buttonAccept)
         val buttonClose: Button = viewPop.findViewById(R.id.buttonClose)
 
-        textViewName.text = surfaces[0].quests[index].name
-        textViewDescription.text = surfaces[0].quests[index].description
-        textViewLevel.text = getString(R.string.level_adventure, surfaces[0].quests[index].level)
-        textViewMoney.text = getString(R.string.money_adventure, surfaces[0].quests[index].money)
-        textViewExperience.text = getString(R.string.experience_adventure, surfaces[0].quests[index].experience)
+        textViewName.text = surfaces[surface].quests[index].name
+        textViewDescription.text = surfaces[surface].quests[index].description
+        textViewLevel.text = getString(R.string.level_adventure, surfaces[surface].quests[index].level)
+        textViewMoney.text = getString(R.string.money_adventure, surfaces[surface].quests[index].money)
+        textViewExperience.text = getString(R.string.experience_adventure, surfaces[surface].quests[index].experience)
 
         window.isOutsideTouchable = false
         window.isFocusable = true
-        if(surfaces[0].completedQuests[index] == null)buttonAccept.visibility = View.GONE
         buttonAccept.setOnClickListener {
-            surfaces[0].completedQuests[index] = 1
+            surfaces[surface].completedQuests[index] = 1
             window.dismiss()
         }
         buttonClose.setOnClickListener {
             window.dismiss()
         }
+        if(surfaces[surface].completedQuests[index] == 1)buttonAccept.visibility = View.GONE
         window.showAsDropDown(view)
     }
 }

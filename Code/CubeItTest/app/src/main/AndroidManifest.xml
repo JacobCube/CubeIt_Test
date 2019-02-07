@@ -13,20 +13,37 @@
         android:roundIcon="@mipmap/game_icon"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Home" android:screenOrientation="landscape">
+        <activity
+            android:name=".Home"
+            android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Character" android:screenOrientation="landscape"/>
-        <activity android:name=".FightSystem" android:screenOrientation="landscape"/>
-        <activity android:name=".Settings" android:screenOrientation="landscape"/>
-        <activity android:name=".Shop" android:screenOrientation="landscape"/>
-        <activity android:name=".Adventure" android:screenOrientation="landscape"/>
-        <activity android:name=".Spells" android:screenOrientation="landscape"/>
-        <service android:enabled="true" android:name=".BackgroundSoundService" />
+        <activity
+            android:name=".Character"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".FightSystem"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".Settings"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".Shop"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".Adventure"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".Spells"
+            android:screenOrientation="landscape" />
+
+        <service
+            android:name=".BackgroundSoundService"
+            android:enabled="true" />
     </application>
 
 </manifest>

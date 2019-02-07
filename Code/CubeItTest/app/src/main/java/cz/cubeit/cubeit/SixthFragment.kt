@@ -14,8 +14,8 @@ class SixthFragment : Fragment() {
         val view:View = inflater.inflate(R.layout.sixth_fragment_adventure, container, false)
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.background0, opts)
-        view.imageViewSixth.setImageBitmap(bitmap)
+        val bitmap = BitmapFactory.decodeResource(resources, surfaces[5].background, opts)
+        view.surface6.setImageBitmap(bitmap)
         return view
     }
 }

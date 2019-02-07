@@ -14,8 +14,8 @@ class ThirdFragment : Fragment() {
         val view:View = inflater.inflate(R.layout.third_fragment_adventure, container, false)
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.background1, opts)
-        view.imageViewThird.setImageBitmap(bitmap)
+        val bitmap = BitmapFactory.decodeResource(resources, surfaces[2].background, opts)
+        view.surface3.setImageBitmap(bitmap)
         return view
     }
 }

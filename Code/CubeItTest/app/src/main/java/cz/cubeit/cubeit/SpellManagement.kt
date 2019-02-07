@@ -70,18 +70,16 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
                 rowMain = layoutInflater.inflate(R.layout.row_spells_managment, viewGroup, false)
                 val viewHolder = ViewHolder(rowMain.buttonSpellsManagment1,rowMain.buttonSpellsManagment2,rowMain.buttonSpellsManagment3,rowMain.buttonSpellsManagment4,rowMain.buttonSpellsManagment5)
                 rowMain.tag = viewHolder
-            } else rowMain = convertView
-            val viewHolder = rowMain.tag as ViewHolder
 
-            for(i in 0..4){
-                val tempSpell = when(i){
-                    0->viewHolder.buttonSpellsManagement1
-                    1->viewHolder.buttonSpellsManagement2
-                    2->viewHolder.buttonSpellsManagement3
-                    3->viewHolder.buttonSpellsManagement4
-                    4->viewHolder.buttonSpellsManagement5
-                    else->viewHolder.buttonSpellsManagement1
-                }
+                for(i in 0..4){
+                    val tempSpell = when(i){
+                        0->viewHolder.buttonSpellsManagement1
+                        1->viewHolder.buttonSpellsManagement2
+                        2->viewHolder.buttonSpellsManagement3
+                        3->viewHolder.buttonSpellsManagement4
+                        4->viewHolder.buttonSpellsManagement5
+                        else->viewHolder.buttonSpellsManagement1
+                    }
                     if((index + i) < player.learnedSpells.size){
                         tempSpell.setImageResource(player.learnedSpells[index+i]!!.drawable)
                         tempSpell.isEnabled = true
@@ -89,7 +87,10 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
                         tempSpell.isEnabled = false
                         tempSpell.setBackgroundResource(0)
                     }
-            }
+                }
+            } else rowMain = convertView
+            val viewHolder = rowMain.tag as ViewHolder
+
 
             viewHolder.buttonSpellsManagement1.setOnTouchListener(object : OnSwipeTouchListener(context) {
                 override fun onClick() {

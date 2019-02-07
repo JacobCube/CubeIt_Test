@@ -16,8 +16,8 @@ class FirstFragment : Fragment() {
         val view:View = inflater.inflate(R.layout.first_fragment_adventure, container, false)
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.map0, opts)
-        view.imageViewFirst.setImageBitmap(bitmap)
+        val bitmap = BitmapFactory.decodeResource(resources, surfaces[0].background, opts)
+        view.surface1.setImageBitmap(bitmap)
 
         return view
     }

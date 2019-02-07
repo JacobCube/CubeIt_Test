@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
@@ -262,6 +261,10 @@ class Shop : AppCompatActivity(){
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
+            val index:Int = if(position == 0) 0 else{
+                position*4
+            }
+
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
                 rowMain = layoutInflater.inflate(R.layout.row_shop_offer, viewGroup, false)
@@ -269,11 +272,6 @@ class Shop : AppCompatActivity(){
                 rowMain.tag = viewHolder
             } else rowMain = convertView
             val viewHolder = rowMain.tag as ViewHolder
-
-            val index:Int = if(position == 0) 0 else{
-                position*4
-            }
-
 
             for(i in 0..3){
                 when(i){
@@ -284,7 +282,6 @@ class Shop : AppCompatActivity(){
                     else->viewHolder.buttonOffer1
                 }.setImageResource(player.shopOffer[index+i]!!.drawable)
             }
-
 
             viewHolder.buttonOffer1.setOnTouchListener(object : OnSwipeTouchListener(context) {
                 override fun onClick() {

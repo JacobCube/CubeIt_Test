@@ -9,6 +9,58 @@
     android:screenOrientation="landscape">
 
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline36"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.30" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline32"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.39" />
+
+    <Switch
+        android:id="@+id/switchNotifications"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Notifications"
+        app:layout_constraintStart_toEndOf="@+id/songAdapter"
+        app:layout_constraintTop_toBottomOf="@+id/switchSounds"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchSounds"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Sounds"
+        app:layout_constraintStart_toEndOf="@+id/songAdapter"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:checked="true" />
+
+    <ListView
+        android:id="@+id/songAdapter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/imageViewSettings"
         android:layout_width="0dp"
@@ -16,10 +68,10 @@
         android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:layout_constraintVertical_bias="1.0"
+        app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/menu" />
 
     <Button
@@ -73,6 +125,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
+        android:clickable="false"
         android:background="@drawable/settings"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -137,7 +190,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
+        app:layout_constraintGuide_percent="0.505" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline35"
@@ -176,9 +229,9 @@
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline16"
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         app:layout_constraintGuide_percent="0.97" />
 
 
@@ -188,51 +241,5 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.33" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline36"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.30" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline32"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.39" />
-
-    <Switch
-        android:id="@+id/switchNotifications"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:checked="true"
-        android:fontFamily="sans-serif-medium"
-        android:text="Notifications"
-        app:layout_constraintBottom_toTopOf="@+id/guideline32"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:checked="true" />
-
-    <Switch
-        android:id="@+id/switchSounds"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:checked="true"
-        android:fontFamily="sans-serif-medium"
-        android:text="Sounds"
-        app:layout_constraintBottom_toTopOf="@+id/switchNotifications"
-        app:layout_constraintStart_toStartOf="@+id/switchNotifications"
-        tools:checked="true" />
-
-    <ListView
-        android:layout_width="153dp"
-        android:layout_height="80dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/switchSounds"
-        app:layout_constraintStart_toEndOf="@+id/switchSounds"
-        app:layout_constraintTop_toTopOf="@+id/switchSounds" />
 
 </android.support.constraint.ConstraintLayout>
