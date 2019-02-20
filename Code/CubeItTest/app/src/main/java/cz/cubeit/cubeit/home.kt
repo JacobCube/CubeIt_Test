@@ -72,7 +72,6 @@ class BackgroundSoundService(private val raw:Int = R.raw.song2) : Service() {
 
 class Home : AppCompatActivity() {
 
-    private var folded = false
     private var exit = false
     private val handler = Handler()
 
@@ -105,10 +104,8 @@ class Home : AppCompatActivity() {
             startService(svc)
         }
 
-        val fightSystem = FightSystem(player)
-
         Hatch.setOnClickListener{
-            val intent = Intent(this, cz.cubeit.cubeit.FightSystem::class.java)//FightSystem::class.java)
+            val intent = Intent(this, cz.cubeit.cubeit.FightSystem::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }

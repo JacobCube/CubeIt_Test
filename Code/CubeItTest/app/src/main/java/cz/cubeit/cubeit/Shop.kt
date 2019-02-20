@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -185,7 +186,7 @@ class Shop : AppCompatActivity(){
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     if(lastClicked=="inventory0$position"){
-                        getDoubleClick(index, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                        getDoubleClick(index, context, viewInflater,listView, player, textViewMoney, textViewInfoItem)
                     }
                 }
             })
@@ -201,7 +202,7 @@ class Shop : AppCompatActivity(){
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     if(lastClicked=="inventory1$position"){
-                        getDoubleClick(index+1, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                        getDoubleClick(index+1, context, viewInflater, listView, player, textViewMoney, textViewInfoItem)
                     }
                 }
             })
@@ -217,7 +218,7 @@ class Shop : AppCompatActivity(){
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     if(lastClicked=="inventory2$position"){
-                        getDoubleClick(index+2, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                        getDoubleClick(index+2, context, viewInflater, listView, player, textViewMoney, textViewInfoItem)
                     }
                 }
             })
@@ -233,7 +234,7 @@ class Shop : AppCompatActivity(){
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     if(lastClicked=="inventory3$position"){
-                        getDoubleClick(index+3, context, viewInflater, viewHolder.buttonInventory1,listView, player, textViewMoney, textViewInfoItem)
+                        getDoubleClick(index+3, context, viewInflater, listView, player, textViewMoney, textViewInfoItem)
                     }
                 }
             })
@@ -361,12 +362,13 @@ class Shop : AppCompatActivity(){
     }
 
     companion object {
-        private fun getDoubleClick(index:Int, context:Context, view:View, button:ImageView, listViewInventoryShop:ListView, player:Player, textViewMoney:TextView, textViewInfoItem:TextView){
+        private fun getDoubleClick(index:Int, context:Context, view:View, listViewInventoryShop:ListView, player:Player, textViewMoney:TextView, textViewInfoItem:TextView){
             val window = PopupWindow(context)
             window.contentView = view
             val buttonYes:Button = view.findViewById(R.id.buttonYes)
             val buttonNo:Button = view.findViewById(R.id.buttonClose)
             val info:TextView = view.findViewById(R.id.textViewInfo)
+            info.text = "Are you sure you want to sell ${player.inventory[index]?.name} ?"
             window.isOutsideTouchable = false
             window.isFocusable = true
             buttonYes.setOnClickListener {
@@ -380,7 +382,7 @@ class Shop : AppCompatActivity(){
             buttonNo.setOnClickListener {
                 window.dismiss()
             }
-            window.showAsDropDown(button)
+            window.showAtLocation(view, Gravity.CENTER,0,0)
         }
 
         private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, textViewInfoItem:TextView){

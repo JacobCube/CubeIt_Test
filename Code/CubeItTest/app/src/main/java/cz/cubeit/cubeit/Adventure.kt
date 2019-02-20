@@ -1,11 +1,13 @@
 package cz.cubeit.cubeit
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
+import android.view.Gravity
 import android.view.View
 import android.view.animation.Animation
 import android.widget.Button
@@ -163,8 +165,11 @@ class Adventure : AppCompatActivity() {
     fun onClickQuest(view: View){
         val index = view.toString()[view.toString().length - 2].toString().toInt()-1
         val surface = view.toString()[view.toString().length - 8].toString().toInt()
-        val viewPop:View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
         val window = PopupWindow(this)
+        val viewPop:View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
+        if(Build.VERSION.SDK_INT>=21){
+            window.elevation = 0.0f
+        }
         window.contentView = viewPop
         val textViewName: TextView = viewPop.findViewById(R.id.textViewName)
         val textViewDescription: TextView = viewPop.findViewById(R.id.textViewDescription)
@@ -190,7 +195,7 @@ class Adventure : AppCompatActivity() {
             window.dismiss()
         }
         if(surfaces[surface].completedQuests[index] == 1)buttonAccept.visibility = View.GONE
-        window.showAsDropDown(view)
+        window.showAtLocation(view, Gravity.CENTER,0,0)
     }
 }
 class ViewPagerAdapter internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
