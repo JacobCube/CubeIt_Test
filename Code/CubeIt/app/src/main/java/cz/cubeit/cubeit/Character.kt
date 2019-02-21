@@ -8,9 +8,7 @@ import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Point
-import android.graphics.drawable.ClipDrawable
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
@@ -23,9 +21,8 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_character.*
-import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
-import kotlinx.android.synthetic.main.row_shop_inventory.view.*
+import cz.cubeit.cubeit.R
 
 private val handler = Handler()
 private var clicks = 0
