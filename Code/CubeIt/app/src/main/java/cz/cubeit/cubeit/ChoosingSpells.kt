@@ -108,6 +108,10 @@ class ChoosingSpells : Fragment(){
                     view.buttonSettingsSpells.startAnimation(animDown)
                     view.buttonAdventureSpells.startAnimation(animDown)
                     view.buttonShopSpells.startAnimation(animDown)
+                    view.buttonCharacterSpells.isClickable = false
+                    view.buttonAdventureSpells.isClickable = false
+                    view.buttonShopSpells.isClickable = false
+                    view.buttonSettingsSpells.isClickable = false
                     view.buttonFightSpells.isEnabled = false
                     view.buttonDefenceSpells.isEnabled = false
                     view.buttonCharacterSpells.isEnabled = false
@@ -126,6 +130,10 @@ class ChoosingSpells : Fragment(){
                     view.buttonSettingsSpells.startAnimation(animUp)
                     view.buttonAdventureSpells.startAnimation(animUp)
                     view.buttonShopSpells.startAnimation(animUp)
+                    view.buttonCharacterSpells.isClickable = true
+                    view.buttonAdventureSpells.isClickable = true
+                    view.buttonShopSpells.isClickable = true
+                    view.buttonSettingsSpells.isClickable = true
                     view.buttonFightSpells.isEnabled = true
                     view.buttonAdventureSpells.isEnabled = true
                     view.buttonDefenceSpells.isEnabled = true

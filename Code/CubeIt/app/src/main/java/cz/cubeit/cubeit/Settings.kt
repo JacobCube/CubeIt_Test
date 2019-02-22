@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,6 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.row_song_adapter.view.*
-import kotlin.random.Random.Default.nextInt
 
 class Settings : AppCompatActivity(){
 
@@ -64,6 +62,7 @@ class Settings : AppCompatActivity(){
                     buttonSettingsSettings.startAnimation(animDown)
                     buttonAdventureSettings.startAnimation(animDown)
                     buttonShopSettings.startAnimation(animDown)
+                    buttonCharacterSettings.isClickable = false
                     buttonFightSettings.isEnabled = false
                     buttonDefenceSettings.isEnabled = false
                     buttonCharacterSettings.isEnabled = false
@@ -82,6 +81,7 @@ class Settings : AppCompatActivity(){
                     buttonSettingsSettings.startAnimation(animUp)
                     buttonAdventureSettings.startAnimation(animUp)
                     buttonShopSettings.startAnimation(animUp)
+                    buttonCharacterSettings.isClickable = true
                     buttonFightSettings.isEnabled = true
                     buttonDefenceSettings.isEnabled = true
                     buttonCharacterSettings.isEnabled = true
@@ -149,12 +149,13 @@ private class SongAdapter(private val context: Context) : BaseAdapter() {
             val viewHolder = ViewHolder(rowMain.textSong)
             rowMain.tag = viewHolder
 
-            viewHolder.song.setBackgroundColor(Color.argb(255, nextInt(255), nextInt(255), nextInt(255)))
             viewHolder.song.text = songs[position].description
         } else rowMain = convertView
+
         val viewHolder = rowMain.tag as ViewHolder
-
-
+        if(playedSong == songs[position].songRaw){
+            viewHolder.song.setBackgroundColor(Color.BLUE)
+        } else viewHolder.song.setBackgroundColor(Color.WHITE)
 
         viewHolder.song.setOnClickListener {
             if(music){
@@ -166,7 +167,8 @@ private class SongAdapter(private val context: Context) : BaseAdapter() {
             }else{
                 playedSong = songs[position].songRaw
             }
-            Log.d("asd", playedSong.toString())
+            notifyDataSetChanged()
+            viewHolder.song.setBackgroundColor(Color.BLUE)
         }
 
         return rowMain

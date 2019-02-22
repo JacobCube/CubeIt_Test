@@ -20,6 +20,15 @@
 
 
     <ImageView
+        android:id="@+id/sideQuestsBackground"
+        android:layout_width="184dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/side_nav_bar" />
+
+    <ImageView
         android:id="@+id/imageViewAdventure"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -46,6 +55,14 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline35"
         app:layout_constraintStart_toStartOf="@+id/guideline7"
         app:layout_constraintTop_toTopOf="@+id/guideline9" />
+
+    <ImageView
+        android:id="@+id/sideQuestsIcon"
+        android:layout_width="52dp"
+        android:layout_height="66dp"
+        app:layout_constraintEnd_toStartOf="@+id/sideQuestsBackground"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/exit" />
 
     <Button
         android:id="@+id/buttonCharacterAdventure"

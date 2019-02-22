@@ -6,6 +6,8 @@
     android:versionName="PreAlpha"
     tools:ignore="GradleOverrides">
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
     <application
         android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/game_icon"

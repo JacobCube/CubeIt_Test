@@ -8,6 +8,24 @@
     android:configChanges="orientation"
     android:screenOrientation="landscape">
 
+    <ListView
+        android:id="@+id/listViewInventoryShop"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="8dp"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline3">
+
+    </ListView>
+
     <ImageView
         android:id="@+id/imageViewMenuShop"
         android:layout_width="0dp"
@@ -202,23 +220,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.505" />
-
-    <ListView
-        android:id="@+id/listViewInventoryShop"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:divider="@null"
-        android:dividerHeight="0dp"
-        android:scrollbars="none"
-        app:layout_constraintBottom_toTopOf="@+id/guideline9"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline3">
-
-    </ListView>
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline3"

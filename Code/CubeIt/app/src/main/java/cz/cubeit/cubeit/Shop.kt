@@ -51,6 +51,11 @@ class Shop : AppCompatActivity(){
                     buttonSettingsShop.startAnimation(animDown)
                     buttonAdventureShop.startAnimation(animDown)
                     buttonShopShop.startAnimation(animDown)
+                    buttonFightShop.isClickable = false
+                    buttonDefenceShop.isClickable = false
+                    buttonCharacterShop.isClickable = false
+                    buttonSettingsShop.isClickable= false
+                    buttonAdventureShop.isClickable = false
                     buttonFightShop.isEnabled = false
                     buttonDefenceShop.isEnabled = false
                     buttonCharacterShop.isEnabled = false
@@ -68,6 +73,11 @@ class Shop : AppCompatActivity(){
                     buttonSettingsShop.startAnimation(animUp)
                     buttonAdventureShop.startAnimation(animUp)
                     buttonShopShop.startAnimation(animUp)
+                    buttonFightShop.isClickable = true
+                    buttonDefenceShop.isClickable = true
+                    buttonCharacterShop.isClickable = true
+                    buttonSettingsShop.isClickable= true
+                    buttonAdventureShop.isClickable = true
                     buttonFightShop.isEnabled = true
                     buttonDefenceShop.isEnabled = true
                     buttonCharacterShop.isEnabled = true
