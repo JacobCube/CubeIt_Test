@@ -40,6 +40,7 @@
         <activity
             android:name=".Spells"
             android:screenOrientation="landscape" />
+        <activity android:name=".LoginUser" />
 
         <service
             android:name=".BackgroundSoundService"

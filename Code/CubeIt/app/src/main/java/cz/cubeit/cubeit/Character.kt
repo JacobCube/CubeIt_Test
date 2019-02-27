@@ -20,15 +20,21 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_character.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
 import cz.cubeit.cubeit.R
+
 
 private val handler = Handler()
 private var clicks = 0
 private var folded = false
 private var draggedItem:Item? = null
 private var ClipDataIndex:Int? = null
+
+
 
 
 val spellsClass1:Array<Spell> = arrayOf(
@@ -71,16 +77,21 @@ var player:Player = Player("MexxFM", arrayOf(0,0,0,0,0,0,0,0,0,0), 10, 1, 40, 0,
         arrayOfNulls(2),mutableListOf(spellsClass1[0],spellsClass1[1],spellsClass1[2],spellsClass1[3],spellsClass1[4]) , mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null),
         arrayOf(spellsClass1[2],spellsClass1[3],spellsClass1[4], null), 100, arrayOfNulls(8), true)
 
+
 fun MutableList<Item?>.addItem(item:Item?){     //unused yet
     if(this.contains(null)){
         this[this.indexOf(null)] = item
     }
 }
 
-
-data class Player(val name:String, var look:Array<Int>, var level:Int, val charClass:Int, var power:Int, var armor:Int, var block:Double, var poison:Int, var bleed:Int, var health:Double, var energy:Int,
+data class Player(var username:String, var look:Array<Int>, var level:Int, var charClass:Int, var power:Int, var armor:Int, var block:Double, var poison:Int, var bleed:Int, var health:Double, var energy:Int,
                   var adventureSpeed:Int, var inventorySlots:Int, var inventory:MutableList<Item?>, var equip: Array<Item?>, var backpackRunes: Array<Runes?>,
                   var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:Array<Spell?>, var money:Int, var shopOffer:Array<Item?>, var notifications:Boolean){
+
+    val db = FirebaseFirestore.getInstance() // Loads Firebase functions
+
+    lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
+
     fun classItems():Array<Item?>{
         return when(this.charClass){
             1-> itemsClass1
@@ -93,6 +104,115 @@ data class Player(val name:String, var look:Array<Int>, var level:Int, val charC
             1-> spellsClass1
             else-> spellsClass1
         }
+    }
+    fun createQuest(questIn: Quest){ // Creates quest document in firebase
+
+        val timestamp = com.google.firebase.firestore.FieldValue.serverTimestamp()
+
+        val questString = HashMap<String, Any?>()
+
+        questString["startTime"] = timestamp
+        questString["name"] = questIn.name
+        questString["description"] = questIn.description
+        questString["level"] = questIn.level
+        questString["experience"] = questIn.experience
+        questString["money"] = questIn.money
+
+        db.collection("users").document(username).collection("quests").document(questIn.name).set(questString)
+    }
+    fun createPlayer(){ // Call only once per player!!! Creates user document in Firebase
+
+
+        val userString = HashMap<String, Any?>()
+
+        userString["username"] = this.username
+        userString["look"] = this.look
+        userString["level"] = this.level
+        userString["charClass"] = this.charClass
+        userString["power"] = this.power
+        userString["armor"] = this.armor
+        userString["block"] = this.block
+        userString["poison"] = this.poison
+        userString["bleed"] = this.bleed
+        userString["health"] = this.health
+        userString["energy"] = this.energy
+        userString["adventureSpeed"] = this.adventureSpeed
+        userString["inventorySlots"] = this.inventorySlots
+        userString["inventory"] = this.inventory
+        userString["equip"] = this.equip
+        userString["backpackRunes"] = this.backpackRunes
+        userString["learnedSpells"] = this.learnedSpells
+        userString["chosenSpellsDefense"] = this.chosenSpellsDefense
+        userString["chosenSpellsAttack"] = this.chosenSpellsAttack
+        userString["money"] = this.money
+        userString["shopOffer"] = this.shopOffer
+        userString["notifications"] =  this.notifications
+
+
+        db.collection("users").document(username).set(userString)
+    }
+    fun loadPlayer(){ // loads the player from Firebase
+
+        val docRef = db.collection("users").document(username)
+
+        docRef.get().addOnSuccessListener { documentSnapshot ->
+            val player = documentSnapshot.toObject(Player::class.java)
+        }
+
+        this.username = player.username
+        this.look = player.look
+        this.level = player.level
+        this.charClass = player.charClass
+        this.power = player.power
+        this.armor = player.armor
+        this.block = player.block
+        this.poison = player.poison
+        this.bleed = player.bleed
+        this.health = player.health
+        this.energy = player.energy
+        this.adventureSpeed = player.adventureSpeed
+        this.inventorySlots = player.inventorySlots
+        this.inventory = player.inventory
+        this.equip = player.equip
+        this.backpackRunes = player.backpackRunes
+        this.learnedSpells = player.learnedSpells
+        this.chosenSpellsDefense = player.chosenSpellsDefense
+        this.chosenSpellsAttack = player.chosenSpellsAttack
+        this.money = player.money
+        this.shopOffer = player.shopOffer
+        this.notifications = player.notifications
+
+    }
+    fun uploadPlayer(){ // uploads player to Firebase (will need to use userSession)
+
+        val userString = HashMap<String, Any?>()
+
+        userString["username"] = this.username
+        userString["look"] = this.look
+        userString["level"] = this.level
+        userString["charClass"] = this.charClass
+        userString["power"] = this.power
+        userString["armor"] = this.armor
+        userString["block"] = this.block
+        userString["poison"] = this.poison
+        userString["bleed"] = this.bleed
+        userString["health"] = this.health
+        userString["energy"] = this.energy
+        userString["adventureSpeed"] = this.adventureSpeed
+        userString["inventorySlots"] = this.inventorySlots
+        userString["inventory"] = this.inventory
+        userString["equip"] = this.equip
+        userString["backpackRunes"] = this.backpackRunes
+        userString["learnedSpells"] = this.learnedSpells
+        userString["chosenSpellsDefense"] = this.chosenSpellsDefense
+        userString["chosenSpellsAttack"] = this.chosenSpellsAttack
+        userString["money"] = this.money
+        userString["shopOffer"] = this.shopOffer
+        userString["notifications"] =  this.notifications
+
+        db.collection("users").document(username)
+                .update(userString)
+
     }
     fun syncStats():String{
         var health = 1050.0
@@ -191,7 +311,6 @@ data class Runes(override val name:String, override val drawable:Int, override v
 
 data class Weapon(override val name:String, override val drawable:Int, override var levelRq:Int, override val charClass:Int, override val description:String, override var power:Int, override var armor:Int, override var block:Int, override var poison:Int, override var bleed:Int, override var health:Int, override var adventureSpeed:Int,
                   override var inventorySlots: Int, override val slot:Int, override val price:Int):Item(name, drawable, levelRq, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
-
 
 class Character : AppCompatActivity() {
     private var lastClicked = ""
