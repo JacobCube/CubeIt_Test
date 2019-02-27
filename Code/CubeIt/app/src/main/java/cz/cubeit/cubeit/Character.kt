@@ -344,6 +344,8 @@ class Character : AppCompatActivity() {
                     buttonSettingsCharacter.startAnimation(animDown)
                     buttonAdventureCharacter.startAnimation(animDown)
                     buttonShopCharacter.startAnimation(animDown)
+                    buttonFightCharacter.isClickable = false
+                    buttonDefenceCharacter.isClickable = false
                     buttonFightCharacter.isEnabled = false
                     buttonDefenceCharacter.isEnabled = false
                     buttonAdventureCharacter.isEnabled = false
@@ -361,6 +363,8 @@ class Character : AppCompatActivity() {
                     buttonSettingsCharacter.startAnimation(animUp)
                     buttonAdventureCharacter.startAnimation(animUp)
                     buttonShopCharacter.startAnimation(animUp)
+                    buttonFightCharacter.isClickable = true
+                    buttonDefenceCharacter.isClickable = true
                     buttonFightCharacter.isEnabled = true
                     buttonDefenceCharacter.isEnabled = true
                     buttonAdventureCharacter.isEnabled = true
