@@ -42,8 +42,18 @@
         <activity
             android:name=".Spells"
             android:screenOrientation="landscape" />
-        <activity android:name=".LoginUser" />
+        <activity
+            android:name=".LoginUser"
+            android:screenOrientation="landscape"
+            android:exported="true">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
 
+        <!--<activity android:name=".LoginUser" android:screenOrientation="landscape"/>-->
+        <activity android:name=".RegisterUser" android:screenOrientation="landscape"/>
         <service
             android:name=".BackgroundSoundService"
             android:enabled="true" />

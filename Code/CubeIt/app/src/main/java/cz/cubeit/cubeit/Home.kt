@@ -75,6 +75,7 @@ class Home : AppCompatActivity() {
     private var exit = false
     private val handler = Handler()
 
+
     override fun onBackPressed() {
         super.onBackPressed()
         if(exit)finishAffinity()

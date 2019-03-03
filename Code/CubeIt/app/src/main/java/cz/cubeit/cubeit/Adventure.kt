@@ -19,7 +19,7 @@ import android.view.animation.AnimationUtils
 
 open class Quest(val name:String, val description:String, val level:Int, val experience:Int, val money:Int)
 open class Surface(val background:Int, val quests:Array<Quest>, val completedQuests:Array<Int?>)
-
+open class activeQuest(val questName: String, val questLength: Int)
 private var folded = false
 
 val surfaces:Array<Surface> = arrayOf(Surface(R.drawable.map0, arrayOf(Quest("Run as fast as you can, boiiiii", "Hope you realise, that if you wouldn't smoke so much, it would be way easier", 1, 1*25, 1*10),
