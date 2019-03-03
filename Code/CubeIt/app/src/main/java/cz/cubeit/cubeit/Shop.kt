@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -437,14 +438,25 @@ class Shop : AppCompatActivity(){
             val tempArray:MutableList<Item?> = returnItem(player)
             val itemReturned = tempArray[nextInt(0, tempArray.size)]
             val itemTemp:Item? = when(itemReturned){
-                is Weapon->Weapon(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
-                is Wearable->Wearable(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
-                is Runes->Runes(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
-                else -> Item(itemReturned!!.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
+                is Weapon->Weapon(itemReturned.name, itemReturned.drawable, itemReturned.levelRq,itemReturned.quality, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
+                is Wearable->Wearable(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.quality, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
+                is Runes->Runes(itemReturned.name, itemReturned.drawable, itemReturned.levelRq, itemReturned.quality, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
+                else -> Item(itemReturned!!.name, itemReturned.drawable, itemReturned.levelRq,itemReturned.quality, itemReturned.charClass, itemReturned.description, itemReturned.power, itemReturned.armor, itemReturned.block, itemReturned.poison, itemReturned.bleed, itemReturned.health, itemReturned.adventureSpeed, itemReturned.inventorySlots, itemReturned.slot, itemReturned.price)
             }
             itemTemp!!.levelRq = nextInt(player.level-9, player.level)
+            itemTemp.quality = when(nextInt(0,1001)){                   //quality of an item by percentage
+                in 0..500 -> 0
+                in 501..750 -> 1
+                in 751..890 -> 2
+                in 891..940 -> 3
+                in 941..972 -> 4
+                in 973..990 -> 5
+                in 991..999 -> 6
+                1000 -> 7
+                else -> 0
+            }
             if(itemTemp.levelRq<1)itemTemp.levelRq=1
-            var points = nextInt(itemTemp.levelRq*10-itemTemp.levelRq*4, itemTemp.levelRq*10+itemTemp.levelRq*2)
+            var points = nextInt(itemTemp.levelRq*10-itemTemp.levelRq*4, itemTemp.levelRq*10+itemTemp.levelRq*2)*(itemTemp.quality+1)
             var pointsTemp:Int
             val numberOfStats = nextInt(1,9)
             for(i in 0..numberOfStats) {
@@ -475,7 +487,7 @@ class Shop : AppCompatActivity(){
                                 itemTemp.block += pointsTemp
                             }
                             2 -> {
-                                itemTemp.health += pointsTemp
+                                itemTemp.health += pointsTemp*10
                             }
                         }
                     }
@@ -491,7 +503,7 @@ class Shop : AppCompatActivity(){
                                 itemTemp.adventureSpeed += pointsTemp
                             }
                             3 -> {
-                                itemTemp.inventorySlots += pointsTemp
+                                itemTemp.inventorySlots += pointsTemp/10
                             }
                         }
                     }

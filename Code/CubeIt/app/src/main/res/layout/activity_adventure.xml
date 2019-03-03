@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:screenOrientation="landscape">
@@ -11,239 +12,52 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.429">
+        app:layout_constraintVertical_bias="0.0">
 
     </android.support.v4.view.ViewPager>
 
 
-    <ImageView
-        android:id="@+id/sideQuestsBackground"
-        android:layout_width="184dp"
+    <fragment
+        android:id="@+id/fragmentSideQuestsAdventure"
+        android:name="cz.cubeit.cubeit.FragmentSideQuestsAdventure"
+        android:layout_width="220dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/side_nav_bar" />
-
-    <ImageView
-        android:id="@+id/imageViewAdventure"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/menu" />
-
-    <Button
-        android:id="@+id/buttonFightAdventure"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/battle"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline35"
-        app:layout_constraintStart_toStartOf="@+id/guideline7"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/sideQuestsIcon"
-        android:layout_width="52dp"
-        android:layout_height="66dp"
-        app:layout_constraintEnd_toStartOf="@+id/sideQuestsBackground"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toStartOf="@+id/fragmentSideQuestsAdventure"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/exit" />
 
-    <Button
-        android:id="@+id/buttonCharacterAdventure"
+    <fragment
+        android:id="@+id/fragmentMenuBarAdventure"
+        android:name="cz.cubeit.cubeit.FragmentMenuBar"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/character"
+        android:layout_height="76dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline37"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonDefenceAdventure"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/spells"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline34"
-        app:layout_constraintStart_toStartOf="@+id/guideline13"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonSettingsAdventure"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/settings"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline16"
-        app:layout_constraintStart_toStartOf="@+id/guideline33"
-        app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <Button
-        android:id="@+id/buttonAdventureAdventure"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/adventure"
-        android:clickable="false"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline36"
-        app:layout_constraintStart_toStartOf="@+id/guideline10"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonShopAdventure"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/shop"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline15"
-        app:layout_constraintStart_toStartOf="@+id/guideline14"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <android.support.constraint.Guideline
-        android:id="@+id/guideline9"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.8" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline10"
+        android:id="@+id/guideline44"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.18" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline37"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.13" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline13"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.505" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline35"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.46" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline14"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.67" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline34"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.63" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline15"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.80" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline33"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.84" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline16"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.97" />
-
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.33" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline36"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.30" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline19"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.08" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline20"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.2" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline25"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.6" />
+        app:layout_constraintGuide_percent="1.0" />
 
 
 </android.support.constraint.ConstraintLayout>

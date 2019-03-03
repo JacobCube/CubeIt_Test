@@ -63,19 +63,22 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
                 R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use),AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_spell_use))
 
-        buttonAttack.setBackgroundResource(playerFight.learnedSpells[0]!!.drawable)
-        buttonBlock.setBackgroundResource(playerFight.learnedSpells[1]!!.drawable)
+        Spell0.setBackgroundResource(playerFight.learnedSpells[0]!!.drawable)
+        Spell1.setBackgroundResource(playerFight.learnedSpells[1]!!.drawable)
 
         for(i in 0 until playerFight.chosenSpellsAttack.size){
             val spell = when(i){
-                0->buttonSpell1
-                1->buttonSpell2
-                2->buttonSpell3
-                3->buttonSpell4
-                4->buttonSpell5
-                else->buttonSpell1
+                0->Spell2
+                1->Spell3
+                2->Spell4
+                3->Spell5
+                4->Spell6
+                5->Spell7
+                else->Spell2
             }
             if(playerFight.chosenSpellsAttack[i]!=null){
                 spell.isEnabled = true
@@ -90,20 +93,21 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
         textEnemy.text = enemyHP.toString()
 
 
-        for(i in 0..6){
+        for(i in 0..7){
             animSpellUp[i]?.setAnimationListener(object : Animation.AnimationListener {
                 override fun onAnimationRepeat(animation: Animation?) {
                 }
                 override fun onAnimationEnd(animation: Animation?) {
                     (when(i){
-                        0->buttonAttack
-                        1->buttonBlock
-                        2->buttonSpell1
-                        3->buttonSpell2
-                        4->buttonSpell3
-                        5->buttonSpell4
-                        6->buttonSpell5
-                        else -> buttonAttack
+                        0->Spell0
+                        1->Spell1
+                        2->Spell2
+                        3->Spell3
+                        4->Spell4
+                        5->Spell5
+                        6->Spell6
+                        7->Spell7
+                        else -> Spell0
                     }).clearAnimation()
                 }
                 override fun onAnimationStart(animation: Animation?) {
@@ -112,10 +116,12 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
         }
 
 
-        buttonAttack.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        Spell0.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                val imageAnimation = buttonAttack
+                val imageAnimation = Spell0
                 imageAnimation.startAnimation(animSpellUp[0])
+
+                player.look.toMutableList().toTypedArray()
 
                 if(enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
 
@@ -155,7 +161,7 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                val imageAnimation = buttonAttack
+                val imageAnimation = Spell0
                 imageAnimation.startAnimation(animSpellUp[0])
 
                 if (enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
@@ -189,9 +195,9 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
             }
         })
 
-        buttonBlock.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        Spell1.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                buttonBlock.startAnimation(animSpellUp[1])
+                Spell1.startAnimation(animSpellUp[1])
 
                 if(enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                 if (enemy.chosenSpellsDefense[roundCounter] != spellsClass1[1]) {
@@ -226,7 +232,7 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                buttonBlock.startAnimation(animSpellUp[1])
+                Spell1.startAnimation(animSpellUp[1])
                 if(enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                 if(enemy.chosenSpellsDefense[roundCounter] != spellsClass1[1]){
                     playerFightHP -= ((enemy.power.toDouble()) / 100 * 20).toInt()
@@ -254,10 +260,10 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
             }
         })
 
-        buttonSpell1.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        Spell2.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
                 useSpell(0)
-                buttonSpell1.startAnimation(animSpellUp[2])
+                Spell2.startAnimation(animSpellUp[2])
             }
 
             override fun onClick() {
@@ -268,14 +274,14 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
             override fun onDoubleClick() {
                 super.onDoubleClick()
                 useSpell(0)
-                buttonSpell1.startAnimation(animSpellUp[2])
+                Spell2.startAnimation(animSpellUp[2])
             }
         })
 
-        buttonSpell2.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        Spell3.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
                 useSpell(1)
-                buttonSpell2.startAnimation(animSpellUp[3])
+                Spell3.startAnimation(animSpellUp[3])
             }
 
             override fun onClick() {
@@ -286,14 +292,14 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
             override fun onDoubleClick() {
                 super.onDoubleClick()
                 useSpell(1)
-                buttonSpell2.startAnimation(animSpellUp[3])
+                Spell3.startAnimation(animSpellUp[3])
             }
         })
 
-        buttonSpell3.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        Spell4.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
                 useSpell(2)
-                buttonSpell3.startAnimation(animSpellUp[4])
+                Spell4.startAnimation(animSpellUp[4])
             }
 
             override fun onClick() {
@@ -304,14 +310,14 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
             override fun onDoubleClick() {
                 super.onDoubleClick()
                 useSpell(2)
-                buttonSpell3.startAnimation(animSpellUp[4])
+                Spell4.startAnimation(animSpellUp[4])
             }
         })
 
-        buttonSpell4.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        Spell5.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
                 useSpell(3)
-                buttonSpell4.startAnimation(animSpellUp[5])
+                Spell5.startAnimation(animSpellUp[5])
             }
 
             override fun onClick() {
@@ -322,14 +328,14 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
             override fun onDoubleClick() {
                 super.onDoubleClick()
                 useSpell(3)
-                buttonSpell4.startAnimation(animSpellUp[5])
+                Spell5.startAnimation(animSpellUp[5])
             }
         })
 
-        buttonSpell5.setOnTouchListener(object : OnSwipeTouchListener(this) {
+        Spell6.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
                 useSpell(4)
-                buttonSpell5.startAnimation(animSpellUp[6])
+                Spell6.startAnimation(animSpellUp[6])
             }
 
             override fun onClick() {
@@ -340,7 +346,24 @@ class FightSystem(val playerFight:Player = player, val enemy:Player = Player("En
             override fun onDoubleClick() {
                 super.onDoubleClick()
                 useSpell(4)
-                buttonSpell5.startAnimation(animSpellUp[6])
+                Spell6.startAnimation(animSpellUp[6])
+            }
+        })
+        Spell7.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                useSpell(5)
+                Spell6.startAnimation(animSpellUp[7])
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpecs.text = playerFight.chosenSpellsAttack[5]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                useSpell(4)
+                Spell6.startAnimation(animSpellUp[7])
             }
         })
     }

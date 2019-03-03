@@ -12,366 +12,22 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.util.DisplayMetrics
 import android.util.Log
-import android.view.DragEvent
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
-import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-//import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
+import kotlinx.android.synthetic.main.activity_adventure.*
 import kotlinx.android.synthetic.main.activity_character.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
-import cz.cubeit.cubeit.R
-import kotlinx.android.synthetic.main.activity_home.view.*
-
+import kotlinx.android.synthetic.main.fragment_menu_bar.*
 
 private val handler = Handler()
 private var clicks = 0
-private var folded = false
 private var draggedItem:Item? = null
 private var ClipDataIndex:Int? = null
 
-
-
-val spellsClass1:Array<Spell> = arrayOf(
-        Spell(R.drawable.basicattack, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell(R.drawable.shield, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
-)
-
-
-val itemsUniversal:Array<Item?> = arrayOf(
-        Runes("Backpack", R.drawable.backpack, 1, 0, "Why is all your stuff so heavy?!", 0, 0, 0, 0, 0, 0, 0, 0, 10, 1)
-        ,Runes("Zipper", R.drawable.zipper, 1, 0, "Helps you take enemy's loot faster", 0, 0, 0, 0, 0, 0, 0, 0, 11, 1)
-        ,Wearable("Universal item 1", R.drawable.universalitem1, 1, 0, "For everyone", 0, 0, 0, 0, 0, 0, 0, 0, 2, 1)
-        ,Wearable("Universal item 2", R.drawable.universalitem2, 1, 0, "Not for everyone", 0, 0, 0, 0, 0, 0, 0, 0, 3, 1)
-)
-val itemsClass1:Array<Item?> = arrayOf(
-        Weapon("Sword", R.drawable.basicattack, 1, 1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        , Weapon("Shield", R.drawable.shield, 1, 1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", R.drawable.belt, 1, 1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
-        ,Wearable("Overall", R.drawable.overall, 1, 1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", R.drawable.boots, 1, 1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", R.drawable.trousers, 1, 1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", R.drawable.chestplate, 1, 1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", R.drawable.helmet, 1, 1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
-)
-val itemsClass2:Array<Item?> = arrayOf(
-        Weapon("Sword", R.drawable.basicattack, 1, 2, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        ,Weapon("Shield", R.drawable.shield, 1, 2, "Blocks 8  0% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", R.drawable.belt, 1,2, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)//arrayOf("Belt", "@drawable/belt","1","0","0","description")
-        ,Wearable("Overall", R.drawable.overall, 1, 2, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", R.drawable.boots, 1, 2, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", R.drawable.trousers, 1, 2, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", R.drawable.chestplate, 1, 2, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", R.drawable.helmet, 1, 2, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
-)
-
-var player:Player = Player("MexxFM", arrayOf(0,0,0,0,0,0,0,0,0,0), 10, 1, 40, 0, 0.0, 0, 0, 1050.0, 100, 1,
-        10, mutableListOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5]), arrayOf(null, null, null, null, null, null, null, null, null, null),
-        arrayOfNulls(2),mutableListOf(spellsClass1[0],spellsClass1[1],spellsClass1[2],spellsClass1[3],spellsClass1[4]) , mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null),
-        arrayOf(spellsClass1[2],spellsClass1[3],spellsClass1[4], null), 100, arrayOfNulls(8), true)
-
-
-fun MutableList<Item?>.addItem(item:Item?){     //unused yet
-    if(this.contains(null)){
-        this[this.indexOf(null)] = item
-    }
-}
-
-fun fetchPlayer(usernameIn: String): Player{
-
-    var db = FirebaseFirestore.getInstance() // Loads Firebase functions
-
-    val docRef = db.collection("users").document(usernameIn)
-
-    var returnPlayer = Player("Null", arrayOf(0,0,0,0,0,0,0,0,0,0), 10, 1, 40, 0, 0.0, 0, 0, 1050.0, 100, 1,
-            10, mutableListOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5]), arrayOf(null, null, null, null, null, null, null, null, null, null),
-            arrayOfNulls(2),mutableListOf(spellsClass1[0],spellsClass1[1],spellsClass1[2],spellsClass1[3],spellsClass1[4]) , mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null),
-            arrayOf(spellsClass1[2],spellsClass1[3],spellsClass1[4], null), 100, arrayOfNulls(8), true)
-
-    docRef.get().addOnSuccessListener { documentSnapshot ->
-
-
-        var loadedPlayer: MutableMap<String, Any>? = documentSnapshot.getData()
-
-        returnPlayer = Player(loadedPlayer!!["username"].toString(), (loadedPlayer["look"] as MutableList<Int>).toIntArray().toTypedArray(), loadedPlayer["level"].toString().toInt(), loadedPlayer["charClass"].toString().toInt(), loadedPlayer["power"].toString().toInt(), loadedPlayer["armor"].toString().toInt(), loadedPlayer["block"].toString().toDouble(), loadedPlayer["poison"].toString().toInt(), loadedPlayer["bleed"].toString().toInt(), loadedPlayer["health"].toString().toDouble(), loadedPlayer["energy"].toString().toInt(), loadedPlayer["adventureSpeed"].toString().toInt(), loadedPlayer["inventorySlots"].toString().toInt(), loadedPlayer["inventory"] as MutableList<Item?>, (loadedPlayer!!["equip"] as MutableList<Item?>).toTypedArray(), (loadedPlayer["backpackRunes"] as MutableList<Runes?>).toTypedArray(), loadedPlayer["learnedSpells"] as MutableList<Spell?>, loadedPlayer["chosenSpellsDefense"] as MutableList<Spell?>, (loadedPlayer["chosenSpellsAttack"] as MutableList<Spell?>).toTypedArray(), loadedPlayer["money"].toString().toInt(), (loadedPlayer["shopOffer"] as MutableList<Item?>).toTypedArray(), loadedPlayer["notifications"].toString().toBoolean())
-
-    }
-
-    return returnPlayer
-
-}
-
-
-data class Player(var username:String, var look:Array<Int>, var level:Int, var charClass:Int, var power:Int, var armor:Int, var block:Double, var poison:Int, var bleed:Int, var health:Double, var energy:Int,
-                  var adventureSpeed:Int, var inventorySlots:Int, var inventory:MutableList<Item?>, var equip: Array<Item?>, var backpackRunes: Array<Runes?>,
-                  var learnedSpells:MutableList<Spell?>, var chosenSpellsDefense:MutableList<Spell?>, var chosenSpellsAttack:Array<Spell?>, var money:Int, var shopOffer:Array<Item?>, var notifications:Boolean){
-
-    lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
-    var db = FirebaseFirestore.getInstance() // Loads Firebase functions
-
-    fun classItems():Array<Item?>{
-        return when(this.charClass){
-            1-> itemsClass1
-            2-> itemsClass2
-            else-> itemsUniversal
-        }
-    }
-    fun classSpells():Array<Spell>{
-        return when(this.charClass){
-            1-> spellsClass1
-            else-> spellsClass1
-        }
-    }
-    fun createQuest(userIdIn: String, usernameIn: String, questIn: Quest){ // Creates quest document in firebase
-
-        val timestamp1 = com.google.firebase.firestore.FieldValue.serverTimestamp()
-        val timestamp2 = com.google.firebase.firestore.FieldValue.serverTimestamp()
-
-        val questString = HashMap<String, Any?>()
-
-        questString["startTime"] = timestamp1
-        questString["lastCheckedTime"] = timestamp2
-        questString["name"] = questIn.name
-        questString["userId"] = userIdIn
-        questString["description"] = questIn.description
-        questString["level"] = questIn.level
-        questString["experience"] = questIn.experience
-        questString["money"] = questIn.money
-
-        db.collection("users").document(usernameIn).collection("quests").document(questIn.name).set(questString)
-    }
-    fun returnServerTime(): FieldValue {
-        return com.google.firebase.firestore.FieldValue.serverTimestamp()
-    }
-    fun calculateTime(usernameIn: String, questNameIn: String){
-
-        val docRef = db.collection("users").document(usernameIn).collection("quests").document(questNameIn)
-
-        val updates = HashMap<String, Any>()
-        updates["lastCheckedTime"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
-
-        docRef.update(updates).addOnCompleteListener { }
-
-
-    }
-    fun createPlayer(inUserId: String){ // Call only once per player!!! Creates user document in Firebase
-
-
-        val userString = HashMap<String, Any?>()
-
-
-        userString["username"] = this.username
-        userString["userId"] = inUserId
-        userString["look"] = this.look
-        userString["level"] = this.level
-        userString["charClass"] = this.charClass
-        userString["power"] = this.power
-        userString["armor"] = this.armor
-        userString["block"] = this.block
-        userString["poison"] = this.poison
-        userString["bleed"] = this.bleed
-        userString["health"] = this.health
-        userString["energy"] = this.energy
-        userString["adventureSpeed"] = this.adventureSpeed
-        userString["inventorySlots"] = this.inventorySlots
-        userString["inventory"] = this.inventory
-        userString["equip"] = this.equip.toMutableList()
-        userString["backpackRunes"] = this.backpackRunes.toMutableList()
-        userString["learnedSpells"] = this.learnedSpells
-        userString["chosenSpellsDefense"] = this.chosenSpellsDefense
-        userString["chosenSpellsAttack"] = this.chosenSpellsAttack.toMutableList()
-        userString["money"] = this.money
-        userString["shopOffer"] = this.shopOffer.toMutableList()
-        userString["notifications"] =  this.notifications
-
-
-        db.collection("users").document(username).set(userString)
-    }
-    fun loadPlayer(usernameIn: String) { // loads the player from Firebase
-
-        val docRef = db.collection("users").document(usernameIn)
-
-
-        docRef.get().addOnSuccessListener { documentSnapshot ->
-
-
-//            var loadedPlayer: MutableMap<String, Player> = documentSnapshot.getData() as MutableMap<String, Player>
-
-//            var loadedPlayer = documentSnapshot.getData() as Player
-
-
-
-
-
-//            this.level = loadedPlayer!!["level"].toInt()
-//            this.equip = (loadedPlayer["equip"] as MutableList<Item?>).toTypedArray()
-//            this.look = (loadedPlayer["look"] as MutableList<Int>).toIntArray().toTypedArray()
-//            this.charClass = loadedPlayer["charClass"].toString().toInt()
-//            this.power =  loadedPlayer["power"].toString().toInt()
-//            this.armor = loadedPlayer["armor"].toString().toInt()
-//            this.poison = loadedPlayer["poison"].toString().toInt()
-//            this.bleed = loadedPlayer["bleed"].toString().toInt()
-//            this.poison = loadedPlayer["poison"].toString().toInt()
-//            this.energy = loadedPlayer["energy"].toString().toInt()
-//            this.adventureSpeed = loadedPlayer["adventureSpeed"].toString().toInt()
-//            this.inventorySlots = loadedPlayer["inventorySlots"].toString().toInt()
-//            this.inventory = loadedPlayer["inventory"] as MutableList<Item?>
-//            this.backpackRunes = (loadedPlayer["backpackRunes"] as MutableList<Runes?>).toTypedArray()
-//            this.learnedSpells = loadedPlayer["learnedSpells"] as MutableList<Spell?>
-//            this.chosenSpellsDefense = loadedPlayer["chosenSpellsDefense"] as MutableList<Spell?>
-//            this.chosenSpellsAttack = (loadedPlayer["chosenSpellsAttack"] as MutableList<Spell?>).toTypedArray()
-//            this.chosenSpellsAttack[0] = loadedPlayer["chosenSpellsAttack"][0] as Spell?
-//            this.money = loadedPlayer["money"].toString().toInt()
-//            this.shopOffer = (loadedPlayer["shopOffer"] as MutableList<Item?>).toTypedArray()
-//            this.notifications = loadedPlayer["notifications"].toString().toBoolean()
-
-        }
-
-
-
-
-    }
-    fun uploadPlayer(){ // uploads player to Firebase (will need to use userSession)
-
-        val userString = HashMap<String, Any?>()
-
-        userString["username"] = this.username
-        userString["look"] = this.look.toList()
-        userString["level"] = this.level
-        userString["charClass"] = this.charClass
-        userString["power"] = this.power
-        userString["armor"] = this.armor
-        userString["block"] = this.block
-        userString["poison"] = this.poison
-        userString["bleed"] = this.bleed
-        userString["health"] = this.health
-        userString["energy"] = this.energy
-        userString["adventureSpeed"] = this.adventureSpeed
-        userString["inventorySlots"] = this.inventorySlots
-        userString["inventory"] = this.inventory
-        userString["equip"] = this.equip.toList()
-        userString["backpackRunes"] = this.backpackRunes.toList()
-        userString["learnedSpells"] = this.learnedSpells
-        userString["chosenSpellsDefense"] = this.chosenSpellsDefense
-        userString["chosenSpellsAttack"] = this.chosenSpellsAttack.toList()
-        userString["money"] = this.money
-        userString["shopOffer"] = this.shopOffer.toList()
-        userString["notifications"] =  this.notifications
-
-        db.collection("users").document(username)
-                .update(userString)
-
-    }
-    fun syncStats():String{
-        var health = 1050.0
-        var armor = 0
-        var block = 0.0
-        var power = 20
-        var poison = 0
-        var bleed = 0
-        var adventureSpeed = 0
-        var inventorySlots = 20
-
-        for(i in 0 until this.equip.size){
-            if(this.equip[i]!=null) {
-                health += this.equip[i]!!.health
-                armor += this.equip[i]!!.armor
-                block += this.equip[i]!!.block
-                power += this.equip[i]!!.power
-                poison += this.equip[i]!!.poison
-                bleed += this.equip[i]!!.bleed
-                adventureSpeed += this.equip[i]!!.adventureSpeed
-                inventorySlots += this.equip[i]!!.inventorySlots
-            }
-        }
-        for(i in 0 until this.backpackRunes.size){
-            if(this.backpackRunes[i]!=null) {
-                health += this.backpackRunes[i]!!.health
-                armor += this.backpackRunes[i]!!.armor
-                block += this.backpackRunes[i]!!.block
-                power += this.backpackRunes[i]!!.power
-                poison += this.backpackRunes[i]!!.poison
-                bleed += this.backpackRunes[i]!!.bleed
-                adventureSpeed += this.backpackRunes[i]!!.adventureSpeed
-                inventorySlots += this.backpackRunes[i]!!.inventorySlots
-            }
-        }
-
-
-        this.health = health
-        this.armor = armor
-        this.block = block
-        this.power = power
-        this.poison = poison
-        this.bleed = bleed
-        this.adventureSpeed = adventureSpeed
-        this.inventorySlots = inventorySlots
-        return "HP: ${this.health}\nArmor: ${this.armor}\nBlock: ${this.block}\nPower: ${this.power}\nPoison: ${this.poison}\nBleed: ${this.bleed}\nAdventure speed: ${this.adventureSpeed}\nInventory slots: ${this.inventorySlots}"
-    }
-}
-
-
-open class Spell(var drawable: Int, var name:String, var energy:Int, var power:Int, var fire:Int, var poison:Int, var level:Int, var description:String){
-    fun getStats():String{
-        var text = "${this.name}\nLevel: ${this.level}\nEnergy: ${this.energy}\nPower: ${this.power}"
-        if(this.fire!=0)text+="\nFire: ${this.fire}"
-        if(this.poison!=0)text+="\nPoison: ${this.poison}"
-        return text
-    }
-}
-
-open class Item(name:String, drawable:Int, levelRq:Int, charClass:Int, description:String, power:Int, armor:Int, block:Int, poison:Int, bleed:Int, health:Int, adventureSpeed:Int, inventorySlots:Int, slot:Int, price:Int){
-    open val name:String = ""
-    open val drawable:Int = 0
-    open var levelRq:Int = 0
-    open val charClass:Int = 0
-    open val description:String = ""
-    open var power:Int = 0
-    open var armor:Int = 0
-    open var block:Int = 0
-    open var poison:Int = 0
-    open var bleed:Int = 0
-    open var health:Int = 0
-    open var adventureSpeed:Int = 0
-    open var inventorySlots:Int = 0
-    open val slot: Int = 0
-    open val price:Int = 0
-
-    fun getStats():String{
-        var textView = "${this.name}\nLevel: ${this.levelRq}\n${this.charClass}\n${this.description}"
-        if(this.power!=0) textView+="\nPower: ${this.power}"
-        if(this.armor!=0) textView+="\nArmor: ${this.armor}"
-        if(this.block!=0) textView+="\nBlock/dodge: ${this.block}"
-        if(this.poison!=0) textView+="\nPoison: ${this.poison}"
-        if(this.bleed!=0) textView+="\nBleed: ${this.bleed}"
-        if(this.health!=0) textView+="\nHealth: ${this.health}"
-        if(this.adventureSpeed!=0) textView+="\nAdventure speed: ${this.adventureSpeed}"
-        if(this.inventorySlots!=0) textView+="\nInventory slots: ${this.inventorySlots}"
-        return textView
-    }
-}
-
-data class Wearable(override val name:String, override val drawable:Int, override var levelRq:Int, override val charClass:Int, override val description:String, override var power:Int, override var armor:Int, override var block:Int, override var poison:Int, override var bleed:Int, override var health:Int, override var adventureSpeed:Int,
-                    override var inventorySlots: Int, override val slot:Int, override val price:Int):Item(name, drawable, levelRq, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
-
-data class Runes(override val name:String, override val drawable:Int, override var levelRq:Int, override val charClass:Int, override val description:String, override var power:Int, override var armor:Int, override var block:Int, override var poison:Int, override var bleed:Int, override var health:Int, override var adventureSpeed:Int,
-                 override var inventorySlots: Int, override val slot:Int, override val price:Int):Item(name, drawable, levelRq, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
-
-data class Weapon(override val name:String, override val drawable:Int, override var levelRq:Int, override val charClass:Int, override val description:String, override var power:Int, override var armor:Int, override var block:Int, override var poison:Int, override var bleed:Int, override var health:Int, override var adventureSpeed:Int,
-                  override var inventorySlots: Int, override val slot:Int, override val price:Int):Item(name, drawable, levelRq, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
 
 class Character : AppCompatActivity() {
     private var lastClicked = ""
@@ -379,7 +35,6 @@ class Character : AppCompatActivity() {
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        folded = false
         startActivity(intent)
         this.overridePendingTransition(0,0)
     }
@@ -389,84 +44,50 @@ class Character : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_character)
         textViewInfoCharacter.text = player.syncStats()
+        fragmentMenuBar.buttonCharacter.isEnabled = false
+
+        val dm = DisplayMetrics()
+        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.defaultDisplay.getMetrics(dm)
+        val paramsMenu = fragmentMenuBar.view?.layoutParams
+        paramsMenu?.height = (dm.heightPixels/10*1.75).toInt()
+        fragmentMenuBar.view?.layoutParams = paramsMenu
+
+        paramsMenu?.height = (dm.heightPixels/10*1.75).toInt()
+        fragmentMenuBar.view?.layoutParams = paramsMenu
 
         val animUp: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_up)
         val animDown: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_down)
 
-        characterLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeDown() {
-                if(!folded){
-                    imageViewMenuCharacter.startAnimation(animDown)
-                    buttonFightCharacter.startAnimation(animDown)
-                    buttonDefenceCharacter.startAnimation(animDown)
-                    buttonCharacterCharacter.startAnimation(animDown)
-                    buttonSettingsCharacter.startAnimation(animDown)
-                    buttonAdventureCharacter.startAnimation(animDown)
-                    buttonShopCharacter.startAnimation(animDown)
-                    buttonFightCharacter.isClickable = false
-                    buttonDefenceCharacter.isClickable = false
-                    buttonFightCharacter.isEnabled = false
-                    buttonDefenceCharacter.isEnabled = false
-                    buttonAdventureCharacter.isEnabled = false
-                    buttonSettingsCharacter.isEnabled = false
-                    buttonShopCharacter.isEnabled = false
-                    folded = true
-                }
+        animDown.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {
             }
-            override fun onSwipeUp() {
-                if(folded){
-                    imageViewMenuCharacter.startAnimation(animUp)
-                    buttonFightCharacter.startAnimation(animUp)
-                    buttonDefenceCharacter.startAnimation(animUp)
-                    buttonCharacterCharacter.startAnimation(animUp)
-                    buttonSettingsCharacter.startAnimation(animUp)
-                    buttonAdventureCharacter.startAnimation(animUp)
-                    buttonShopCharacter.startAnimation(animUp)
-                    buttonFightCharacter.isClickable = true
-                    buttonDefenceCharacter.isClickable = true
-                    buttonFightCharacter.isEnabled = true
-                    buttonDefenceCharacter.isEnabled = true
-                    buttonAdventureCharacter.isEnabled = true
-                    buttonSettingsCharacter.isEnabled = true
-                    buttonShopCharacter.isEnabled = true
-                    folded = false
-                }
+
+            override fun onAnimationEnd(animation: Animation) {
+                paramsMenu?.height = 0
+                fragmentMenuBar.view?.layoutParams = paramsMenu
+            }
+
+            override fun onAnimationRepeat(animation: Animation) {
             }
         })
 
-
-        buttonFightCharacter.setOnClickListener{
-            val intent = Intent(this, FightSystem::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        buttonDefenceCharacter.setOnClickListener{
-            val intent = Intent(this, Spells::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        buttonSettingsCharacter.setOnClickListener{
-            val intent = Intent(this, Settings::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        buttonShopCharacter.setOnClickListener {
-            val intent = Intent(this, Shop::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        buttonAdventureCharacter.setOnClickListener{
-            val intent = Intent(this, Adventure::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
+        characterLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeDown() {
+                if(paramsMenu!!.height>0){
+                    fragmentMenuBar.view?.startAnimation(animDown)
+                }
+            }
+            override fun onSwipeUp() {
+                if(paramsMenu!!.height==0){
+                    fragmentMenuBar.view?.startAnimation(animUp)
+                    paramsMenu.height = (dm.heightPixels/10*1.75).toInt()
+                    fragmentMenuBar.view?.layoutParams = paramsMenu
+                }
+            }
+        })
 
         val equipDragListener = View.OnDragListener { v, event ->
             when (event.action) {

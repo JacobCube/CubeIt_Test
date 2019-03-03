@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
 import kotlinx.android.synthetic.main.activity_register.*
-import cz.cubeit.cubeit.R
 
 class RegisterUser : AppCompatActivity() {
 
@@ -20,7 +19,7 @@ class RegisterUser : AppCompatActivity() {
         var userEmail: String
         var userPassword: String
 
-        fun showNotification(titleInput: String, textInput: String) {
+        fun showPopUp(titleInput: String, textInput: String) {
             val builder = AlertDialog.Builder(this@RegisterUser)
             builder.setTitle(titleInput)
             builder.setMessage(textInput)
@@ -34,11 +33,11 @@ class RegisterUser : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val user = Auth!!.currentUser
                     user!!.sendEmailVerification()
-                    showNotification("Alert", "A confirmation email was sent!")
-                    val player = player
+                    showPopUp("Alert", "A confirmation email was sent!")
+                    //player.createPlayer()
 
                 } else {
-                    showNotification("Error", "There was an error processing your request")
+                    showPopUp("Error", "There was an error processing your request")
                 }
             }
         }
@@ -50,7 +49,7 @@ class RegisterUser : AppCompatActivity() {
                 userPassword = userPasswordText.text.toString()
                 registerUser(userEmail, userPassword)
             } else {
-                showNotification("Alert", "Please enter a valid email address or password")
+                showPopUp("Alert", "Please enter a valid email address or password")
             }
         }
         accountExistsButton.setOnClickListener {

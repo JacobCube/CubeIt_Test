@@ -3,12 +3,16 @@ package cz.cubeit.cubeit
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.Handler
 import android.support.v7.app.AppCompatActivity
-import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_home.*
 import android.os.IBinder
 import android.app.Service
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.LifecycleObserver
+import android.arch.lifecycle.OnLifecycleEvent
+import android.arch.lifecycle.ProcessLifecycleOwner
+import android.content.Context
+import android.view.Window
 
 
 var music = true
@@ -22,11 +26,30 @@ var songs = arrayOf(
         Song(R.raw.song7, "Bohemian Rhapsody"),
         Song(R.raw.song8, "Kudasai")
         )
-var playedSong = R.raw.song8
+var playedSong = R.raw.song1
 
 class Song(songRawIn:Int = R.raw.song1, descriptionIn:String = "Shrek"){
     val songRaw = songRawIn
     val description = descriptionIn
+}
+
+class SampleLifecycleListener(val context: Context) : LifecycleObserver {
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onMoveToForeground() {
+        context.stopService(Intent(context, CubeItHeadService::class.java))
+        if(!BackgroundSoundService().mediaPlayer.isPlaying&& music){
+            val svc = Intent(context, BackgroundSoundService(playedSong)::class.java)
+            context.startService(svc)
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onMoveToBackground() {
+        context.startService(Intent(context, CubeItHeadService::class.java))
+        val svc = Intent(context, BackgroundSoundService(playedSong)::class.java)
+        context.stopService(svc)
+    }
 }
 
 class BackgroundSoundService(private val raw:Int = R.raw.song2) : Service() {
@@ -45,7 +68,7 @@ class BackgroundSoundService(private val raw:Int = R.raw.song2) : Service() {
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         mediaPlayer.start()
-        return Service.START_STICKY
+        return START_STICKY
     }
 
     override fun onStart(intent: Intent, startId: Int) {
@@ -72,20 +95,17 @@ class BackgroundSoundService(private val raw:Int = R.raw.song2) : Service() {
 
 class Home : AppCompatActivity() {
 
-    private var exit = false
-    private val handler = Handler()
+    private val lifecycleListener: SampleLifecycleListener by lazy{
+        SampleLifecycleListener(this)
+    }
 
+    private fun setupLifecycleListener() {
+        ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleListener)
+    }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        if(exit)finishAffinity()
-        else{
-            Toast.makeText(this,"Back press to EXIT",Toast.LENGTH_SHORT).show()
-            exit = true
-        }
-        handler.postDelayed({
-            exit=false
-        }, 500)
+    override fun onDestroy() {
+        super.onDestroy()
+        stopService(Intent(this, CubeItHeadService::class.java))
     }
 
     override fun onRestart() {
@@ -99,19 +119,16 @@ class Home : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+        setupLifecycleListener()
 
-        if(!BackgroundSoundService().mediaPlayer.isPlaying&& music){
-            val svc = Intent(this, BackgroundSoundService(playedSong)::class.java)
-            startService(svc)
-        }
 
         Hatch.setOnClickListener{
-            val intent = Intent(this, cz.cubeit.cubeit.FightSystem::class.java)
+            val intent = Intent(this, FightSystem::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         Skills.setOnClickListener{
-            val intent = Intent(this, cz.cubeit.cubeit.Spells()::class.java)
+            val intent = Intent(this, Spells()::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
@@ -122,7 +139,7 @@ class Home : AppCompatActivity() {
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-        Settings.setOnClickListener{
+        SettingsHome.setOnClickListener{
             val intent = Intent(this, cz.cubeit.cubeit.Settings::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
@@ -140,11 +157,5 @@ class Home : AppCompatActivity() {
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
-
-        homeLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeLeft() {
-                super.onSwipeLeft()
-            }
-        })
     }
 }

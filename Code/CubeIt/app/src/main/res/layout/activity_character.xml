@@ -1,113 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/characterLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background1"
     android:screenOrientation="landscape">
 
-    <ImageView
-        android:id="@+id/imageViewMenuCharacter"
+    <View
+        android:id="@+id/bagView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/menu" />
-
-    <Button
-        android:id="@+id/buttonFightCharacter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/battle"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline35"
-        app:layout_constraintStart_toStartOf="@+id/guideline7"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonCharacterCharacter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/character"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline37"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonDefenceCharacter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/spells"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline34"
-        app:layout_constraintStart_toStartOf="@+id/guideline13"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonSettingsCharacter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/settings"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline16"
-        app:layout_constraintStart_toStartOf="@+id/guideline33"
-        app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <Button
-        android:id="@+id/buttonAdventureCharacter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/adventure"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline36"
-        app:layout_constraintStart_toStartOf="@+id/guideline10"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <Button
-        android:id="@+id/buttonShopCharacter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/shop"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline15"
-        app:layout_constraintStart_toStartOf="@+id/guideline14"
-        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+        app:layout_constraintStart_toStartOf="@+id/guideline6"
+        app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline9"
@@ -116,69 +24,6 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.8" />
 
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline10"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.18" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline37"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.13" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline13"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.505" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline35"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.46" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline14"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.67" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline34"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.63" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline15"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.80" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline33"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.84" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline16"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.97" />
-
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline7"
@@ -186,13 +31,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.33" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline36"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.30" />
 
 
     <ImageView
@@ -306,7 +144,7 @@
         android:divider="@null"
         android:dividerHeight="0dp"
         android:scrollbars="none"
-        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline7"
         app:layout_constraintTop_toTopOf="@+id/guideline5" />
@@ -350,36 +188,28 @@
         app:layout_constraintTop_toTopOf="@+id/equipItem5"
         app:layout_constraintVertical_bias="0.0" />
 
-    <View
-        android:id="@+id/bagView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline9"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline6"
-        app:layout_constraintTop_toTopOf="@+id/guideline5" />
-
 
     <ImageView
         android:id="@+id/buttonBag0"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintBottom_toBottomOf="@+id/bagView"
-        app:layout_constraintEnd_toEndOf="@+id/bagView" />
+        app:layout_constraintBottom_toTopOf="@+id/buttonBag1"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageView
         android:id="@+id/buttonBag1"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintBottom_toTopOf="@+id/buttonBag0"
-        app:layout_constraintEnd_toEndOf="@+id/bagView" />
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageView
         android:id="@+id/equipItem1"
@@ -438,5 +268,15 @@
         app:layout_constraintEnd_toStartOf="@+id/textViewInfoItem"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <fragment
+        android:id="@+id/fragmentMenuBar"
+        android:name="cz.cubeit.cubeit.FragmentMenuBar"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
