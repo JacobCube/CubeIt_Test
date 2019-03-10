@@ -1,0 +1,36 @@
+Podmínky
+	- Hráè mùže používat Market/Aukce až od urèitého levlu
+Danì
+	- z prodané vìci dostane 90% 
+	- nakoupená vìc bude o 10% drazší
+(Podobnì jako na steam marketu - Zadáte kolik z toho chcete dostat a ukáže se vám cena za kolik se to bude prodávat.)
+
+
+Klasický Buy/Sell
+	- Podobnì jako na Steam Marketu
+	- Hráè si bude moct koupit itemy které chce a nechce se mu èekat než mu je RNG dá.
+	- Hráè bude moct prodávat aby si mohl mít peníze na nìco co chce víc.
+	- Na vše budou platit danì
+	- Po pùl roce by se to zrušilo a item bude èekat uživatele v emailu (aby pak nebyl problém v tom když má uživatel plný inventáø)
+	- Koupené itemy si vybere v Emailu 
+>( Nebo... Je možnost aby v Emailu byla záložka "CubaZon"/"Cub-Ex" kde by si mohl uživatel vyzvednout vìci.)
+(Možná mùžeme udìlat i možnost Tradování mezi hracema.)
+
+
+Aukce
+	- Aukce nìjákého special/rare itemu s dobrýma statama
+	- To co jen tak nezískáte
+	- Možnost platit mìnou která se kupuje za reálné peníze?
+	- Žádné danì
+	- Item tam zùstane do konce aukce a dostane ho ten který nabídl nejvíc
+	- Zakoupený pøedmìt bude uživatele èekat na Emailu nebo na speciální záložce stejnì jako Buy & Sell.
+
+Na Dluh?
+	- Uživatel si bude moct pùjèit peníze
+	- Všechny peníze které vydìlá pùjdou hned do dluhu do té doby než to uživatel splatí
+	- Možnost splacení penìzi které uživatel ještì má.
+	- Když bude dlužit dlouho ostatní hráèi budou dostávat peníze za poražení tohoto hráèe (Bounty)
+
+
+
+	
