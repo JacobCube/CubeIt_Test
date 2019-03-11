@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="cz.cubeit.cubeit"
+    android:versionCode="2"
+    android:versionName="PreAlpha"
+    tools:ignore="GradleOverrides">
+
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <application
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:icon="@mipmap/game_icon"
+        android:label="CubeIt"
+        android:roundIcon="@mipmap/game_icon"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning"
+        android:allowBackup="true">
+        <activity
+            android:name=".Home"
+            android:screenOrientation="landscape">
+        </activity>
+        <activity
+            android:name=".Character"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".FightSystem"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".Activity_Settings"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".Shop"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".Adventure"
+            android:screenOrientation="landscape"/>
+        <activity
+            android:name=".Spells"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".RegisterUser"
+            android:screenOrientation="landscape"/>
+
+
+        <activity
+            android:name=".LoginUser"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+        <service
+            android:name=".BackgroundSoundService"
+            android:enabled="true" />
+        <service
+            android:name=".CubeItHeadService"
+            android:enabled="true" />
+    </application>
+
+</manifest>
