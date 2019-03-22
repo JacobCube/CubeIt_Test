@@ -1,1 +1,0 @@
-Status: working, code needs clean up (remove realm dependencies, move to non testing Firebase instance - my fault for not thinking ahead) In prep for moving to Firebase and combining the main app and login system, I will re-do the project for scratch to insure stability. Also need to limit users.
