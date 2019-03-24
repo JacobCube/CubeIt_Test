@@ -11,8 +11,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.provider.Settings
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.*
-import java.util.concurrent.atomic.LongAdder
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextInt
 
@@ -35,9 +36,6 @@ var drawableStorage = hashMapOf(         //bug: whenever project directory chang
         ,"00115" to R.drawable.backpack
         ,"00116" to R.drawable.basicattack_spell
 )
-
-var playerListReturn: Array<Player>? = null
-
 
 fun <K, V> getKey(map: Map<K, V>, value: V): K? {
     for ((key, value1) in map) {
@@ -153,34 +151,6 @@ fun getPlayerByUsername(usernameIn:String) {
     }
 }
 
-fun returnPlayerList(pageNumber:Int){ // each p
-
-    val db = FirebaseFirestore.getInstance()
-
-    val docRef = db.collection("users").orderBy("fame", Query.Direction.DESCENDING)
-
-    val upperPlayerRange = pageNumber*50
-    val lowerplayerRange = upperPlayerRange - 50
-
-    docRef.get().addOnSuccessListener { querySnapshot ->
-
-        val playerList: MutableList<out LoadedPlayer> = querySnapshot.toObjects(LoadedPlayer()::class.java)
-
-        val returnPlayerList = playerList.subList(lowerplayerRange, upperPlayerRange)
-
-        var tempList: MutableList<Player>? = null
-
-        for (loadedPlayer in returnPlayerList)
-        {
-            tempList?.add(loadedPlayer.toPlayer())
-        }
-
-        var returnArray = tempList as Array<Player>
-
-        playerListReturn = returnArray
-    }
-}
-
 fun returnUsernameHelper(input: String): Player{
 
     val returnPlayer = Player(username = input)
@@ -226,8 +196,7 @@ data class LoadedPlayer(
                 ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
                 ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
                 ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
-                ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))),
-        var fame: Int = player.fame
+                ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007")))
 ){
     lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
     var db = FirebaseFirestore.getInstance() // Loads Firebase functions
@@ -300,47 +269,13 @@ data class LoadedPlayer(
 
         db.collection("users").document(username).set(userString)
     }
-
-    fun toPlayer(): Player{
-
-        val tempPlayer = Player()
-
-        tempPlayer.username = this.username
-        tempPlayer.look = this.look.toTypedArray()
-        tempPlayer.level = this.level
-        tempPlayer.charClass = this.charClass
-        tempPlayer.power = this.power
-        tempPlayer.armor = this.armor
-        tempPlayer.block = this.block
-        tempPlayer.poison = this.poison
-        tempPlayer.bleed = this.bleed
-        tempPlayer.health = this.health
-        tempPlayer.energy = this.energy
-        tempPlayer.adventureSpeed = this.adventureSpeed
-        tempPlayer.inventorySlots = this.inventorySlots
-        tempPlayer.inventory = (this.inventory.toMutableList() as MutableList<Item?>)
-        tempPlayer.equip = (this.equip.toTypedArray() as Array<Item?>)
-        tempPlayer.backpackRunes = (this.backpackRunes as Array<Runes?>)
-        tempPlayer.learnedSpells = this.learnedSpells as MutableList<Spell?>
-        tempPlayer.chosenSpellsDefense = this.chosenSpellsDefense as MutableList<Spell?>
-        tempPlayer.chosenSpellsAttack = this.chosenSpellsAttack as Array<Spell?>
-        tempPlayer.money = this.money
-        tempPlayer.shopOffer = this.shopOffer as Array<Item?>
-        tempPlayer.notifications = this.notifications
-        tempPlayer.music = this.music
-        tempPlayer.appearOnTop = this.appearOnTop
-        tempPlayer.currentSurfaces = this.currentSurfaces as Array<Array<Quest>>
-
-        return tempPlayer
-
-    }
 }
 
 data class Player(
         var username:String = "player",
         var look:Array<Int> = arrayOf(0,0,0,0,0,0,0,0,0,0),
         var level:Int = 10,
-        var charClass:Int = 1,
+        val charClass:Int = 1,
         var power:Int = 40,
         var armor:Int = 0,
         var block:Double = 0.0,
@@ -367,8 +302,7 @@ data class Player(
                 ,arrayOf(surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!)
                 ,arrayOf(surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!)
                 ,arrayOf(surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!)
-                ,arrayOf(surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!)),
-        var fame:Int = 0
+                ,arrayOf(surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!))
 ){
 
 
@@ -395,7 +329,6 @@ data class Player(
         tempLoadedPlayer.music = this.music
         tempLoadedPlayer.money = this.money
         tempLoadedPlayer.appearOnTop = this.appearOnTop
-        tempLoadedPlayer.fame = this.fame
 
         tempLoadedPlayer.inventory.clear()
         for(i in 0 until this.inventory.size){
@@ -515,8 +448,6 @@ data class Player(
             this.money = loadedPlayer.money
             this.notifications = loadedPlayer.notifications
             this.music = loadedPlayer.music
-            this.fame = loadedPlayer.fame
-
 
             for(i in 0 until loadedPlayer.chosenSpellsAttack.size){
                 this.chosenSpellsAttack[i] = if(loadedPlayer.chosenSpellsAttack[i]!=null)loadedPlayer.chosenSpellsAttack[i]!!.toSpell() else null
