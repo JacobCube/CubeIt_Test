@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutSettings"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:configChanges="orientation"
+    android:screenOrientation="landscape">
+
+
+    <Switch
+        android:id="@+id/switchNotifications"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Notifications"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchSounds"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchAppearOnTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Appear on top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchNotifications"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchSounds"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Sounds"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:checked="true" />
+
+    <fragment
+        android:id="@+id/fragmentMenuBarSettings"
+        android:name="cz.cubeit.cubeit.Fragment_Menu_Bar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</android.support.constraint.ConstraintLayout>
