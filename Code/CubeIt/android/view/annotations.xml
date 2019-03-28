@@ -1,5 +1,0 @@
-<root>
-    <item name='android.view.View T findViewById(int)'>
-        <annotation name='java.lang.Deprecated' />
-    </item>
-</root>
