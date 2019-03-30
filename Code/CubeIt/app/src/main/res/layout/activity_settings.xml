@@ -9,60 +9,44 @@
     android:screenOrientation="landscape">
 
 
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline32"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.39" />
-
     <Switch
         android:id="@+id/switchNotifications"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
         android:checked="true"
         android:fontFamily="sans-serif-medium"
         android:text="Notifications"
-        app:layout_constraintStart_toEndOf="@+id/songAdapter"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/switchSounds"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchAppearOnTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Appear on top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchNotifications"
         tools:checked="true" />
 
     <Switch
         android:id="@+id/switchSounds"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
         android:checked="true"
         android:fontFamily="sans-serif-medium"
         android:text="Sounds"
-        app:layout_constraintStart_toEndOf="@+id/songAdapter"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:checked="true" />
-
-    <ListView
-        android:id="@+id/songAdapter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:divider="@null"
-        android:dividerHeight="0dp"
-        android:scrollbars="none"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline10"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline10"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.18" />
 
     <fragment
         android:id="@+id/fragmentMenuBarSettings"

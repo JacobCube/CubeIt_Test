@@ -8,7 +8,7 @@ class ActivityStory: AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auction_menu)
+        //setContentView(R.layout.activity_auction_menu)
 
 
     }

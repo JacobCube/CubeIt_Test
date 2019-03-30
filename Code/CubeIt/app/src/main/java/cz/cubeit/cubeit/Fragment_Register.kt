@@ -1,5 +1,8 @@
 package cz.cubeit.cubeit
 
+import android.app.Activity
+import android.app.ProgressDialog
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
+import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_register.*
 import kotlinx.android.synthetic.main.fragment_register.view.*
 
@@ -34,8 +38,15 @@ class Fragment_Register : Fragment() {
             dialog.show()
         }
 
+        val progress = ProgressDialog(view.context)
+        progress.setTitle("Loading")
+        progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for interruption")
+        progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
+
         fun registerUser(passwordInput: String) {
             val tempPlayer = Player()
+
+            progress.show()
 
             Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), passwordInput).addOnCompleteListener { task: Task<AuthResult> ->
                 if (task.isSuccessful) {
@@ -44,16 +55,24 @@ class Fragment_Register : Fragment() {
                     Toast.makeText(view.context, "A confirmation email was sent!", Toast.LENGTH_SHORT).show()
 
                     tempPlayer.username = view.inputUsernameReg.text.toString()
-                    tempPlayer.toLoadPlayer().createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString())
 
-                    view.arrowAccExists1.performClick()
+                    tempPlayer.toLoadPlayer().createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnCompleteListener {
+                        player.username = view.inputUsernameReg.text.toString()
+                        player.loadPlayer().addOnCompleteListener {
+                            val intent = Intent(view.context, Activity_Character_Customization(view.inputUsernameReg.text.toString(), view.inputUsernameReg.text.toString())::class.java)
+                            startActivity(intent)
+                            Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
+                        }
+                    }
+
                 } else {
                     showPopUp("Error", "There was an error processing your request")
                 }
+                progress.dismiss()
             }
         }
 
-        view.buttonRegister.setOnClickListener { _ ->
+        view.buttonRegister.setOnClickListener {
 
             if (view.inputPassReg.text.toString() != "" && view.inputRePassReg.text.toString() != "" && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString()) {
                 userPassword = view.inputPassReg.text.toString()

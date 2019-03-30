@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.graphics.BitmapFactory
-import kotlinx.android.synthetic.main.activity_adventure.view.*
 import kotlinx.android.synthetic.main.first_fragment_adventure.view.*
 
 

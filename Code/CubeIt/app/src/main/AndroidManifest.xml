@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="cz.cubeit.cubeit"
-    android:versionCode="011"
+    android:versionCode="015"
     android:versionName="Alpha"
     tools:ignore="GradleOverrides">
 
@@ -24,6 +24,9 @@
             android:name=".Character"
             android:screenOrientation="landscape"/>
         <activity
+            android:name=".ActivityFightBoard"
+            android:screenOrientation="landscape"/>
+        <activity
             android:name=".FightSystem"
             android:screenOrientation="landscape" />
         <activity
@@ -41,6 +44,9 @@
         <activity
             android:name=".ActivityAuctionMenu"
             android:screenOrientation="landscape"/>
+        <activity
+            android:name=".Activity_Character_Customization"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".ActivityStory"
             android:screenOrientation="landscape"/>

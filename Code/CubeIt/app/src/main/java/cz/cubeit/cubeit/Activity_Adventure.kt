@@ -2,6 +2,7 @@ package cz.cubeit.cubeit
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.Fragment
@@ -23,6 +24,7 @@ import android.view.animation.AnimationUtils
 
 var viewPagerSideQ:ViewPager? = null
 var viewPopQuest:View? = null
+var resourcesAdventure: Resources? = null
 
 class Adventure : AppCompatActivity() {
 
@@ -51,8 +53,9 @@ class Adventure : AppCompatActivity() {
         hideSystemUI()
         setContentView(R.layout.activity_adventure)
         this.fragmentMenuBarAdventure.buttonAdventure.isClickable = false
+        resourcesAdventure = resources
 
-        viewPagerSideQ = findViewById(R.id.viewPager)
+        viewPagerSideQ = findViewById(R.id.viewPagerAdventure)
         viewPopQuest = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
 
         val dm = DisplayMetrics()
@@ -149,11 +152,10 @@ class Adventure : AppCompatActivity() {
             }
         })
 
-        val adapter = ViewPagerAdapterAdventure(supportFragmentManager)
-        viewPagerSideQ!!.adapter = adapter
+        viewPagerSideQ!!.adapter = ViewPagerAdapterAdventure(supportFragmentManager)
         viewPagerSideQ!!.offscreenPageLimit = 6
 
-        viewPager.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+        viewPagerAdventure.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeDown() {
                 if(paramsMenu!!.height>0){
                     fragmentMenuBarAdventure.view?.startAnimation(animDown)
@@ -183,21 +185,13 @@ class Adventure : AppCompatActivity() {
         val viewPop:View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
         window.elevation = 0.0f
         window.contentView = viewPop
-        val textViewName: TextView = viewPop.findViewById(R.id.textViewName)
-        val textViewDescription: TextView = viewPop.findViewById(R.id.textViewDescription)
-        val textViewLevel: TextView = viewPop.findViewById(R.id.textViewLevel)
-        val textViewMoney: TextView = viewPop.findViewById(R.id.textViewMoney)
-        val textViewExperience: TextView = viewPop.findViewById(R.id.textViewExperience)
+        val textViewQuest: TextView = viewPop.findViewById(R.id.textViewQuest)
         val buttonAccept: Button = viewPop.findViewById(R.id.buttonAccept)
         val buttonClose: Button = viewPop.findViewById(R.id.buttonClose)
 
         val quest:Quest = player.currentSurfaces[surface][index]
 
-        textViewName.text = quest.name
-        textViewDescription.text = quest.description
-        textViewLevel.text = getString(R.string.level_adventure, quest.level)
-        textViewMoney.text = getString(R.string.money_adventure, quest.money)
-        textViewExperience.text = getString(R.string.experience_adventure, quest.experience)
+        textViewQuest.text = quest.getStats(resourcesAdventure!!)
 
         window.isOutsideTouchable = false
         window.isFocusable = true
@@ -215,29 +209,13 @@ class Adventure : AppCompatActivity() {
         val window = PopupWindow(context)
         window.elevation = 0.0f
         window.contentView = viewPopQuest
-        val textViewName: TextView = viewPopQuest!!.findViewById(R.id.textViewName)
-        val textViewDescription: TextView = viewPopQuest!!.findViewById(R.id.textViewDescription)
-        val textViewLevel: TextView = viewPopQuest!!.findViewById(R.id.textViewLevel)
-        val textViewMoney: TextView = viewPopQuest!!.findViewById(R.id.textViewMoney)
-        val textViewExperience: TextView = viewPopQuest!!.findViewById(R.id.textViewExperience)
+        val textViewQuest: TextView = viewPopQuest!!.findViewById(R.id.textViewQuest)
         val buttonAccept: Button = viewPopQuest!!.findViewById(R.id.buttonAccept)
         val buttonClose: Button = viewPopQuest!!.findViewById(R.id.buttonClose)
 
         val quest:Quest = player.currentSurfaces[surface][index]
 
-        textViewName.text = quest.name
-        textViewDescription.text = quest.description
-        textViewLevel.text = when(quest.level){
-            1 -> "Easy"
-            2 -> "Medium rare-"
-            3 -> "Medium"
-            4 -> "Hard rare"
-            5 -> "Hard"
-            6 -> "Evil"
-            else -> "Error: Collection out of its bounds! \n report this to the support, please."
-        }
-        textViewMoney.text = quest.money.toString()
-        textViewExperience.text = quest.experience.toString()
+        textViewQuest.text = quest.getStats(resourcesAdventure!!)
 
         window.isOutsideTouchable = false
         window.isFocusable = true

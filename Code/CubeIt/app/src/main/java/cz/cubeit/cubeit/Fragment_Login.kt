@@ -2,12 +2,13 @@ package cz.cubeit.cubeit
 
 
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,9 @@ class ActivityLogin : Fragment()  {
         opts.inScaled = false
         view.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
 
+        view.inputUsernameLogin.setText(arguments?.getString("loginUsername"))
+        view.inputEmailLogin.setText(arguments?.getString("loginEmail"))
+
         val auth = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
 
@@ -41,7 +45,13 @@ class ActivityLogin : Fragment()  {
         }
 
 
-        view.buttonLogin.setOnClickListener { _ ->
+        view.buttonLogin.setOnClickListener {
+            val progress = ProgressDialog(view.context)
+            progress.setTitle("Loading")
+            progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for interruption")
+            progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
+            progress.show()
+
             userEmail = view.inputEmailLogin.text.toString()
             userPassword = view.inputPassLogin.text.toString()
 
@@ -56,22 +66,28 @@ class ActivityLogin : Fragment()  {
 
                                 player.username = view.inputUsernameLogin.text.toString()
 
-                                player.loadPlayer()
-
-
-                                val intent = Intent(view.context, Home::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                                startActivity(intent)
-                                //.overridePendingTransition(0,0)
+                                player.loadPlayer().addOnCompleteListener {
+                                    if(player.newPlayer){
+                                        val intent = Intent(view.context, Activity_Character_Customization::class.java)
+                                        startActivity(intent)
+                                    }else {
+                                        player.online = true
+                                        player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
+                                            val intent = Intent(view.context, Home::class.java)
+                                            startActivity(intent)
+                                        }
+                                    }
+                                }
 
                             } else {
                                 showNotification("Oops", "Please enter a valid email or password")
                             }
                         }
+                progress.dismiss()
             }
         }
 
-        view.resetPass.setOnClickListener { _ ->
+        view.resetPass.setOnClickListener {
             userEmail = view.inputEmailLogin.text.toString()
 
             if (userEmail.isNotEmpty()){

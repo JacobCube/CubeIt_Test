@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.view.*
@@ -169,56 +168,56 @@ class ActivityShop : AppCompatActivity(){
             viewHolder.buttonInventory1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory0$position"
                     textViewInfoItem.text = playerS.inventory[index]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClick(index, context, viewInflater,listView, playerS, textViewMoney, textViewInfoItem)
+                    getDoubleClick(index, context, viewInflater,listView, playerS, textViewMoney, textViewInfoItem)
                 }
             })
 
             viewHolder.buttonInventory2.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory1$position"
                     textViewInfoItem.text = playerS.inventory[index+1]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClick(index+1, context, viewInflater, listView, playerS, textViewMoney, textViewInfoItem)
+                    getDoubleClick(index+1, context, viewInflater, listView, playerS, textViewMoney, textViewInfoItem)
                 }
             })
 
             viewHolder.buttonInventory3.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory2$position"
                     textViewInfoItem.text = playerS.inventory[index+2]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClick(index+2, context, viewInflater, listView, playerS, textViewMoney, textViewInfoItem)
+                    getDoubleClick(index+2, context, viewInflater, listView, playerS, textViewMoney, textViewInfoItem)
                 }
             })
 
             viewHolder.buttonInventory4.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory3$position"
                     textViewInfoItem.text = playerS.inventory[index+3]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClick(index+3, context, viewInflater, listView, playerS, textViewMoney, textViewInfoItem)
+                    getDoubleClick(index+3, context, viewInflater, listView, playerS, textViewMoney, textViewInfoItem)
                 }
             })
 
@@ -271,64 +270,64 @@ class ActivityShop : AppCompatActivity(){
             viewHolder.buttonOffer1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="offer0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="offer0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer0$position"
                     textViewInfoItem.text = player.shopOffer[index]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClickOffer(index, player, bubleDialogShop, textViewInfoItem)
-                        notifyDataSetChanged()
-                        InventoryShop.notifyDataSetChanged()
+                    getDoubleClickOffer(index, player, bubleDialogShop, textViewInfoItem)
+                    notifyDataSetChanged()
+                    InventoryShop.notifyDataSetChanged()
                 }
             })
 
             viewHolder.buttonOffer2.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="offer1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="offer1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer1$position"
                     textViewInfoItem.text = player.shopOffer[index+1]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClickOffer(index+1, player, bubleDialogShop, textViewInfoItem)
-                        notifyDataSetChanged()
-                        InventoryShop.notifyDataSetChanged()
+                    getDoubleClickOffer(index+1, player, bubleDialogShop, textViewInfoItem)
+                    notifyDataSetChanged()
+                    InventoryShop.notifyDataSetChanged()
                 }
             })
 
             viewHolder.buttonOffer3.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="offer2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="offer2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer2$position"
                     textViewInfoItem.text = player.shopOffer[index+2]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClickOffer(index+2, player, bubleDialogShop, textViewInfoItem)
-                        notifyDataSetChanged()
-                        InventoryShop.notifyDataSetChanged()
+                    getDoubleClickOffer(index+2, player, bubleDialogShop, textViewInfoItem)
+                    notifyDataSetChanged()
+                    InventoryShop.notifyDataSetChanged()
                 }
             })
 
             viewHolder.buttonOffer4.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="offer3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked==="offer3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer3$position"
                     textViewInfoItem.text = player.shopOffer[index+3]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                        getDoubleClickOffer(index+3, player, bubleDialogShop, textViewInfoItem)
-                        notifyDataSetChanged()
-                        InventoryShop.notifyDataSetChanged()
+                    getDoubleClickOffer(index+3, player, bubleDialogShop, textViewInfoItem)
+                    notifyDataSetChanged()
+                    InventoryShop.notifyDataSetChanged()
                 }
             })
 

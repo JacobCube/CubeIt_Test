@@ -17,7 +17,6 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.fragment_menu_bar.*
-import kotlinx.android.synthetic.main.row_song_adapter.view.*
 
 class ActivitySettings : AppCompatActivity(){
 
@@ -49,7 +48,7 @@ class ActivitySettings : AppCompatActivity(){
 
         switchNotifications.isChecked = player.notifications
         switchSounds.isChecked = player.music
-        songAdapter.adapter = SongAdapter( this)
+        switchAppearOnTop.isChecked = player.appearOnTop
 
         val animUp: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_adventure_up)
@@ -82,7 +81,7 @@ class ActivitySettings : AppCompatActivity(){
         }
 
         switchSounds.setOnCheckedChangeListener { _, isChecked ->
-            val svc = Intent(this, BackgroundSoundService(playedSong)::class.java)
+            val svc = Intent(this, BackgroundSoundService()::class.java)
             if(isChecked){
                 startService(svc)
             }else{
@@ -94,6 +93,10 @@ class ActivitySettings : AppCompatActivity(){
 
         switchNotifications.setOnCheckedChangeListener { _, isChecked ->
             player.notifications = isChecked
+        }
+
+        switchAppearOnTop.setOnCheckedChangeListener { _, isChecked ->
+            player.appearOnTop = isChecked
         }
 
         layoutSettings.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
@@ -113,6 +116,7 @@ class ActivitySettings : AppCompatActivity(){
     }
 }
 
+/*
 private class SongAdapter(private val context: Context) : BaseAdapter() {
 
     override fun getCount(): Int {
@@ -162,4 +166,4 @@ private class SongAdapter(private val context: Context) : BaseAdapter() {
     }
 
     private class ViewHolder(val song:TextView)
-}
+}*/

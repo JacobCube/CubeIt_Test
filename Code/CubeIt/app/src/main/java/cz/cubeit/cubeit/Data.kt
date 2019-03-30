@@ -6,16 +6,22 @@ import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.media.MediaPlayer
-import android.os.Handler
 import android.os.IBinder
 import android.provider.Settings
+import android.support.v4.app.Fragment
+import android.util.Log
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextInt
+import com.google.firebase.firestore.*
+
+var playerListReturn: Array<Player>? = null
 
 var drawableStorage = hashMapOf(         //bug: whenever project directory changes in drawables, stored drawable IDs are not equal to the drawables anymore, so it changes their final image
         "00100" to R.drawable.trousers
@@ -46,38 +52,63 @@ fun <K, V> getKey(map: Map<K, V>, value: V): K? {
     return null
 }
 
+fun getPlayerList(pageNumber:Int): Task<QuerySnapshot> { // each p
+
+    val db = FirebaseFirestore.getInstance()
+
+    val docRef = db.collection("users").orderBy("fame", Query.Direction.DESCENDING)
+
+    val upperPlayerRange = pageNumber*50
+    val lowerPlayerRange =if(pageNumber==0)0 else  upperPlayerRange - 50
+
+    return docRef.get().addOnSuccessListener { querySnapshot ->
+
+        val playerList: MutableList<out LoadPlayer> = querySnapshot.toObjects(LoadPlayer()::class.java)
+
+        docRef.get()
+
+        val returnPlayerList = playerList.subList(lowerPlayerRange, if(upperPlayerRange<playerList.size)playerList.size else upperPlayerRange)
+
+        val tempList: MutableList<Player> = mutableListOf()
+
+        for (loadedPlayer in returnPlayerList)
+        {
+            tempList.add(loadedPlayer.toPlayer())
+        }
+
+        playerListReturn = tempList.toTypedArray()
+    }
+}
+
 class SampleLifecycleListener(val context: Context) : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onMoveToForeground() {
         context.stopService(Intent(context, ClassCubeItHeadService::class.java))
-        val handler = Handler()
-
-        handler.postDelayed({
-            if(!BackgroundSoundService().mediaPlayer.isPlaying && player.music){
-                val svc = Intent(context, BackgroundSoundService(playedSong)::class.java)
-                context.startService(svc)
-                player.syncStats()
-            }
-        }, 1000)            //temporarily in order to wait for Player.loadPlayer()
+        player.syncStats()
+        if(!BackgroundSoundService().mediaPlayer.isPlaying && player.music){
+            val svc = Intent(context, BackgroundSoundService()::class.java)
+            context.startService(svc)
+        }
+        player.online = true
+        player.toLoadPlayer().uploadSingleItem("online")
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onMoveToBackground() {
-        val svc = Intent(context, BackgroundSoundService(playedSong)::class.java)
+        val svc = Intent(context, BackgroundSoundService()::class.java)
         context.stopService(svc)
+        player.online = false
         player.toLoadPlayer().uploadPlayer()
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M&&appearOnTop){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && player.appearOnTop){
             if(Settings.canDrawOverlays(context)){
                 context.startService(Intent(context, ClassCubeItHeadService::class.java))
             }
-        }else{
-            context.startService(Intent(context, ClassCubeItHeadService::class.java))
         }
     }
 }
 
-class BackgroundSoundService(private val raw:Int = R.raw.song2) : Service() {
+class BackgroundSoundService : Service() {
     var mediaPlayer = MediaPlayer()
     override fun onBind(arg0: Intent): IBinder? {
         return null
@@ -123,7 +154,7 @@ fun getRandomPlayer() {
 
     docRef.get().addOnSuccessListener { querySnapshot ->
 
-        val playerList: MutableList<out LoadedPlayer> = querySnapshot.toObjects(LoadedPlayer()::class.java)
+        val playerList: MutableList<out LoadPlayer> = querySnapshot.toObjects(LoadPlayer()::class.java)
 
         val document: DocumentSnapshot = querySnapshot.documents[randomInt]
 
@@ -160,12 +191,12 @@ fun returnUsernameHelper(input: String): Player{
     return returnPlayer
 }
 
-data class loadSurface(
+data class LoadSurface(
     var quests:MutableList<String> = mutableListOf("0001")
 )
 
-data class LoadedPlayer(
-        var username:String = player.username,
+data class LoadPlayer(
+        var username:String = "loadPlayer",
         val UserId:String = "",
         var look:MutableList<Int> = player.look.toMutableList(),
         var level:Int = player.level,
@@ -189,21 +220,158 @@ data class LoadedPlayer(
         var shopOffer:MutableList<LoadItem?> = mutableListOf(itemsClass1[0]!!.toLoadItem(), itemsClass1[0]!!.toLoadItem(), itemsClass1[0]!!.toLoadItem(), itemsClass1[0]!!.toLoadItem(), itemsClass1[0]!!.toLoadItem(), itemsClass1[0]!!.toLoadItem(), itemsClass1[0]!!.toLoadItem(), itemsClass1[0]!!.toLoadItem()),
         var notifications:Boolean = player.notifications,
         var music:Boolean = player.music,
-        var appearOnTop:Boolean = true,
-        var currentSurfaces:MutableList<loadSurface> = mutableListOf(
-                loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
-                ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
-                ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
-                ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
-                ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
-                ,loadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007")))
+        var appearOnTop:Boolean = false,
+        var online:Boolean = true,
+        var experience: Int = 0,
+        var fame:Int = 0,
+        var newPlayer:Boolean = true,
+        var description: String = "",
+        var currentSurfaces:MutableList<LoadSurface> = mutableListOf(
+                LoadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
+                ,LoadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
+                ,LoadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
+                ,LoadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
+                ,LoadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007"))
+                ,LoadSurface(mutableListOf("0001","0002","0003","0004","0005","0006","0007")))
 ){
-    lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
-    var db = FirebaseFirestore.getInstance() // Loads Firebase functions
+    var db = FirebaseFirestore.getInstance() // Loads FireBase functions
 
-    fun uploadPlayer(){ // uploads player to Firebase (will need to use userSession)
+    fun toPlayer(): Player{
+
+        val tempPlayer = Player()
+
+        tempPlayer.username = this.username
+        tempPlayer.level = this.level
+        tempPlayer.charClass = this.charClass
+        tempPlayer.power = this.power
+        tempPlayer.armor = this.armor
+        tempPlayer.block = this.block
+        tempPlayer.poison = this.poison
+        tempPlayer.bleed = this.bleed
+        tempPlayer.health = this.health
+        tempPlayer.energy = this.energy
+        tempPlayer.adventureSpeed = this.adventureSpeed
+        tempPlayer.inventorySlots = this.inventorySlots
+        tempPlayer.money = this.money
+        tempPlayer.notifications =  this.notifications
+        tempPlayer.music =  this.music
+        tempPlayer.appearOnTop = this.appearOnTop
+        tempPlayer.online = this.online
+        tempPlayer.experience = this.experience
+        tempPlayer.fame = this.fame
+        tempPlayer.newPlayer = this.newPlayer
+        tempPlayer.description = this.description
+
+
+        for(i in 0 until this.chosenSpellsAttack.size){
+            tempPlayer.chosenSpellsAttack[i] = if(this.chosenSpellsAttack[i]!=null)this.chosenSpellsAttack[i]!!.toSpell() else null
+        }
+
+        for(i in 0 until this.chosenSpellsDefense.size){
+            tempPlayer.chosenSpellsDefense[i] = if(this.chosenSpellsDefense[i]!=null)this.chosenSpellsDefense[i]!!.toSpell() else null
+        }
+
+        for(i in 0 until this.learnedSpells.size){
+            tempPlayer.learnedSpells[i] = if(this.learnedSpells[i]!=null)this.learnedSpells[i]!!.toSpell() else null
+        }
+
+        tempPlayer.inventory = arrayOfNulls<Item?>(tempPlayer.inventorySlots).toMutableList()
+        for(i in 0 until this.inventory.size){
+            tempPlayer.inventory[i] = when(this.inventory[i]?.type){
+                "Wearable" -> (this.inventory[i])!!.toItem().toWearable()
+                "Weapon" -> (this.inventory[i])!!.toItem().toWeapon()
+                "Runes" -> (this.inventory[i])!!.toItem().toRune()
+                "Item" -> (this.inventory[i] as LoadItem).toItem()
+                else -> null
+            }
+        }
+
+        tempPlayer.equip = arrayOfNulls(this.equip.size)
+        for(i in 0 until this.equip.size){
+            tempPlayer.equip[i] = when(this.equip[i]?.type){
+                "Wearable" -> (this.equip[i])!!.toItem().toWearable()
+                "Weapon" -> (this.equip[i])!!.toItem().toWeapon()
+                "Runes" -> (this.equip[i])!!.toItem().toRune()
+                "Item" -> (this.equip[i] as LoadItem).toItem()
+                else -> null
+            }
+        }
+
+        for(i in 0 until this.shopOffer.size){
+            tempPlayer.shopOffer[i] = when(this.shopOffer[i]?.type){
+                "Wearable" -> (this.shopOffer[i])!!.toItem().toWearable()
+                "Weapon" -> (this.shopOffer[i])!!.toItem().toWeapon()
+                "Runes" -> (this.shopOffer[i])!!.toItem().toRune()
+                "Item" -> (this.shopOffer[i] as LoadItem).toItem()
+                else -> null
+            }
+        }
+
+        for(i in 0 until this.backpackRunes.size){
+            tempPlayer.backpackRunes[i] = when(this.backpackRunes[i]?.type){
+                "Runes" -> (this.backpackRunes[i])!!.toItem().toRune()
+                else -> null
+            }
+        }
+
+        for(i in 0 until this.currentSurfaces.size){
+            for(j in 0 until this.currentSurfaces[i].quests.size){
+                tempPlayer.currentSurfaces[i][j] = surfaces[i].quests[this.currentSurfaces[i].quests[j]]!!
+            }
+        }
+        return tempPlayer
+
+    }
+
+    fun uploadSingleItem(item:String): Task<Void>{
+        val userStringHelper:HashMap<String, Any?> = hashMapOf(
+                "username" to this.username,
+                "look" to this.look,
+                "level" to this.level,
+                "charClass" to this.charClass,
+                "power" to this.power,
+                "armor" to this.armor,
+                "block" to this.block,
+                "poison" to this.poison,
+                "bleed" to this.bleed,
+                "health" to this.health,
+                "energy" to this.energy,
+                "adventureSpeed" to this.adventureSpeed,
+                "inventorySlots" to this.inventorySlots,
+                "inventory" to this.inventory,
+                "equip" to this.equip,
+                "backpackRunes" to this.backpackRunes,
+                "learnedSpells" to this.learnedSpells,
+                "chosenSpellsDefense" to this.chosenSpellsDefense,
+                "chosenSpellsAttack" to this.chosenSpellsAttack,
+                "money" to this.money,
+                "shopOffer" to this.shopOffer,
+                "notifications" to  this.notifications,
+                "music" to  this.music,
+                "currentSurfaces" to this.currentSurfaces,
+                "appearOnTop" to this.appearOnTop,
+                "experience" to this.experience,
+                "fame" to this.fame,
+                "online" to this.online,
+                "newPlayer" to this.newPlayer,
+                "description" to this.description,
+                "lastLogin" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+        )
 
         val userString = HashMap<String, Any?>()
+        userString[item] = userStringHelper[item]
+
+        return db.collection("users").document(this.username)
+                .update(userString)
+    }
+
+    fun uploadPlayer(): Task<Void> { // uploads player to Firebase (will need to use userSession)
+
+        val userString = HashMap<String, Any?>()
+
+        if(this.chosenSpellsDefense[0] == null){
+            this.chosenSpellsDefense[0] = this.toPlayer().classSpells()[0].toLoadSpell()
+        }
 
         userString["username"] = this.username
         userString["look"] = this.look
@@ -230,13 +398,19 @@ data class LoadedPlayer(
         userString["music"] =  this.music
         userString["currentSurfaces"] = this.currentSurfaces
         userString["appearOnTop"] = this.appearOnTop
+        userString["experience"] = this.experience
+        userString["fame"] = this.fame
+        userString["online"] = this.online
+        userString["newPlayer"] = this.newPlayer
+        userString["description"] = this.description
+        userString["lastLogin"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
 
-        db.collection("users").document(this.username)
+        return db.collection("users").document(this.username)
                 .update(userString)
 
     }
 
-    fun createPlayer(inUserId: String, username:String){ // Call only once per player!!! Creates user document in Firebase
+    fun createPlayer(inUserId: String, username:String): Task<Void> { // Call only once per player!!! Creates user document in Firebase
 
         val userString = HashMap<String, Any?>()
 
@@ -266,8 +440,13 @@ data class LoadedPlayer(
         userString["music"] =  this.music
         userString["currentSurfaces"] = this.currentSurfaces
         userString["appearOnTop"] = this.appearOnTop
+        userString["experience"] = this.experience
+        userString["fame"] = this.fame
+        userString["description"] = this.description
+        userString["newPlayer"] = this.newPlayer
+        userString["lastLogin"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
 
-        db.collection("users").document(username).set(userString)
+        return db.collection("users").document(username).set(userString)
     }
 }
 
@@ -275,7 +454,7 @@ data class Player(
         var username:String = "player",
         var look:Array<Int> = arrayOf(0,0,0,0,0,0,0,0,0,0),
         var level:Int = 10,
-        val charClass:Int = 1,
+        var charClass:Int = 1,
         var power:Int = 40,
         var armor:Int = 0,
         var block:Double = 0.0,
@@ -285,7 +464,7 @@ data class Player(
         var energy:Int = 100,
         var adventureSpeed:Int = 1,
         var inventorySlots:Int = 8,
-        var inventory:MutableList<Item?> = mutableListOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5]),
+        var inventory:MutableList<Item?> = mutableListOf(),
         var equip: Array<Item?> = arrayOfNulls(10),
         var backpackRunes: Array<Runes?> = arrayOfNulls(2),
         var learnedSpells:MutableList<Spell?> = mutableListOf(spellsClass1[0],spellsClass1[1],spellsClass1[2],spellsClass1[3],spellsClass1[4]),
@@ -295,7 +474,12 @@ data class Player(
         var shopOffer:Array<Item?> = arrayOf(itemsClass1[0], itemsClass1[1], itemsClass1[2], itemsClass1[3], itemsClass1[4], itemsClass1[5],itemsClass1[5],itemsClass1[5]),
         var notifications:Boolean = true,
         var music:Boolean = true,
-        var appearOnTop:Boolean = true,
+        var experience: Int = 0,
+        var appearOnTop:Boolean = false,
+        var online:Boolean = true,
+        var fame:Int = 0,
+        var newPlayer:Boolean = true,
+        var description: String = "",
         var currentSurfaces:Array<Array<Quest>> = arrayOf(
                 arrayOf(surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!)
                 ,arrayOf(surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!)
@@ -309,8 +493,23 @@ data class Player(
     lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
     var db = FirebaseFirestore.getInstance() // Loads Firebase functions
 
-    fun toLoadPlayer():LoadedPlayer{
-        val tempLoadedPlayer = LoadedPlayer()
+    fun characterInfo():String{
+        return "${when(this.charClass){
+            0 -> "everyone"
+            1 -> "Vampire"
+            2 -> "Dwarf"
+            3 -> "Archer"
+            4 -> "Wizard"
+            5 -> "Sniper"
+            6 -> "Mermaid"
+            7 -> "Elf"
+            8 -> "Warrior"
+            else -> "unspecified"
+        }}\n lvl: ${this.level} \n xp: ${this.experience}"
+    }
+
+    fun toLoadPlayer():LoadPlayer{
+        val tempLoadedPlayer = LoadPlayer()
 
         tempLoadedPlayer.username = this.username
         tempLoadedPlayer.look = this.look.toMutableList()
@@ -329,6 +528,11 @@ data class Player(
         tempLoadedPlayer.music = this.music
         tempLoadedPlayer.money = this.money
         tempLoadedPlayer.appearOnTop = this.appearOnTop
+        tempLoadedPlayer.online = this.online
+        tempLoadedPlayer.experience = this.experience
+        tempLoadedPlayer.newPlayer = this.newPlayer
+        tempLoadedPlayer.fame = this.fame
+        tempLoadedPlayer.description = this.description
 
         tempLoadedPlayer.inventory.clear()
         for(i in 0 until this.inventory.size){
@@ -344,7 +548,9 @@ data class Player(
         }
         tempLoadedPlayer.learnedSpells.clear()
         for(i in 0 until this.learnedSpells.size){
-            tempLoadedPlayer.learnedSpells.add(if(this.learnedSpells[i]!=null)this.learnedSpells[i]!!.toLoadSpell() else null)
+            tempLoadedPlayer.learnedSpells.add(if(this.learnedSpells[i]!=null){
+                this.learnedSpells[i]!!.toLoadSpell()
+            }else null)
         }
         tempLoadedPlayer.chosenSpellsDefense.clear()
         for(i in 0 until this.chosenSpellsDefense.size){
@@ -427,13 +633,13 @@ data class Player(
         docRef.update(updates).addOnCompleteListener { }
     }
 
-    fun loadPlayer() { // loads the player from Firebase
+    fun loadPlayer(): Task<DocumentSnapshot> { // loads the player from Firebase
 
         val playerRef = db.collection("users").document(this.username)
 
-        playerRef.get().addOnSuccessListener { documentSnapshot ->
+        return playerRef.get().addOnSuccessListener { documentSnapshot ->
 
-            val loadedPlayer: LoadedPlayer? = documentSnapshot.toObject(LoadedPlayer()::class.java) // documentSnapshot.data!![this.username] as LoadedPlayer?
+            val loadedPlayer: LoadPlayer? = documentSnapshot.toObject(LoadPlayer()::class.java) // documentSnapshot.data!![this.username] as LoadPlayer?
 
             this.level = loadedPlayer!!.level
             this.power = loadedPlayer.power
@@ -448,6 +654,13 @@ data class Player(
             this.money = loadedPlayer.money
             this.notifications = loadedPlayer.notifications
             this.music = loadedPlayer.music
+            this.appearOnTop = loadedPlayer.appearOnTop
+            this.experience = loadedPlayer.experience
+            this.fame = loadedPlayer.fame
+            this.newPlayer = loadedPlayer.newPlayer
+            this.description = loadedPlayer.description
+            this.charClass = loadedPlayer.charClass
+
 
             for(i in 0 until loadedPlayer.chosenSpellsAttack.size){
                 this.chosenSpellsAttack[i] = if(loadedPlayer.chosenSpellsAttack[i]!=null)loadedPlayer.chosenSpellsAttack[i]!!.toSpell() else null
@@ -640,38 +853,38 @@ data class Player(
 
 
 class LoadSpell(
-        val ID:String = "0003",
-        val drawable: String = "00001",
+        var drawable: String = "00001",
         var name:String = "",
         var energy:Int = 0,
         var power:Int = 0,
         var fire:Int = 0,
         var poison:Int = 0,
         var level:Int = 0,
-        var description:String = ""
+        var description:String = "",
+        var ID:String = "0001"
 ){
     fun toSpell():Spell{
-        return Spell(this.ID, drawableStorage[this.drawable]!!, this.name, this.energy, this.power, this.fire, this.poison, this.level, this.description)
+        return Spell(ID = this.ID, drawable = drawableStorage[this.drawable]!!,name =  this.name,energy =  this.energy,power =  this.power,fire =  this.fire,poison =  this.poison,level =  this.level,description =  this.description)
     }
 }
 
 class Spell(
-        val ID:String = "0003",
-        val drawable: Int = 0,
+        var drawable: Int = 0,
         var name:String = "",
         var energy:Int = 0,
         var power:Int = 0,
         var fire:Int = 0,
         var poison:Int = 0,
         var level:Int = 0,
-        var description:String = ""
+        var description:String = "",
+        var ID:String = "0001"
 ){
     fun toLoadSpell():LoadSpell{
-        return LoadSpell(this.ID, getKey(drawableStorage,this.drawable)!!, this.name, this.energy, this.power, this.fire, this.poison, this.level, this.description)
+        return LoadSpell(ID = this.ID,drawable =  getKey(drawableStorage,this.drawable)!!,name =  this.name,energy =  this.energy, power =  this.power, fire =  this.fire, poison =  this.poison, level = this.level, description = this.description)
     }
 
     fun getStats():String{
-        var text = "${this.name}\nLevel: ${this.level}\n ${this.description}\nEnergy: ${this.energy}\nPower: ${this.power}"
+        var text = "\n${this.name}\nLevel: ${this.level}\n ${this.description}\nEnergy: ${this.energy}\nPower: ${this.power}"
         if(this.fire!=0)text+="\nFire: ${this.fire}"
         if(this.poison!=0)text+="\nPoison: ${this.poison}"
         return text
@@ -679,13 +892,13 @@ class Spell(
 }
 
 data class LoadItem(
-        val name:String = "",
-        val type:String = "",
-        val drawableID:String = "00001",
+        var name:String = "",
+        var type:String = "",
+        var drawableID:String = "00001",
         var levelRq:Int = 0,
         var quality:Int = 0,
-        val charClass:Int = 0,
-        val description:String = "",
+        var charClass:Int = 0,
+        var description:String = "",
         var power:Int = 0,
         var armor:Int = 0,
         var block:Int = 0,
@@ -694,8 +907,8 @@ data class LoadItem(
         var health:Int = 0,
         var adventureSpeed:Int = 0,
         var inventorySlots: Int = 0,
-        val slot:Int = 0,
-        val price:Int = 0
+        var slot:Int = 0,
+        var price:Int = 0
 ){
     fun toItem():Item{
         return Item(this.name, this.type, drawableStorage[this.drawableID]!!, this.levelRq, this.quality, this.charClass, this.description, this.power, this.armor, this.block, this.poison, this.bleed, this.health, this.adventureSpeed, this.inventorySlots, this.slot, this.price)
@@ -721,13 +934,13 @@ open class Item(
         inSlot:Int = 0,
         inPrice:Int = 0
 ){
-    open val name:String = inName
-    open val type = inType
-    open val drawable:Int = inDrawable
+    open var name:String = inName
+    open var type = inType
+    open var drawable:Int = inDrawable
     open var levelRq:Int = inLevelRq
     open var quality:Int = inQuality
-    open val charClass:Int = inCharClass
-    open val description:String = inDescription
+    open var charClass:Int = inCharClass
+    open var description:String = inDescription
     open var power:Int = inPower
     open var armor:Int = inArmor
     open var block:Int = inBlock
@@ -736,8 +949,8 @@ open class Item(
     open var health:Int = inHealth
     open var adventureSpeed:Int = inAdventureSpeed
     open var inventorySlots:Int = inInventorySlots
-    open val slot: Int = inSlot
-    open val price:Int = inPrice
+    open var slot: Int = inSlot
+    open var price:Int = inPrice
 
     fun toLoadItem():LoadItem{
         return LoadItem(this.name, this.type, getKey(drawableStorage, this.drawable)!!, this.levelRq, this.quality, this.charClass, this.description, this.power, this.armor, this.block, this.poison, this.bleed, this.health, this.adventureSpeed, this.inventorySlots, this.slot, this.price)
@@ -893,14 +1106,14 @@ fun generateItem(player:Player, inQuality: Int? = null):Item?{
 }
 
 data class Reward(
-        val inType:Int? = null
+        var inType:Int? = null
 ){
         var experience: Int = 0
         var money:Int = 0
         var type = inType
         var item: Item? = null
 
-    fun generateReward(inPlayer:Player){
+    fun generateReward(inPlayer:Player = player){
         if(type == null){
             type = when(nextInt(0,10001)){                   //quality of an item by percentage
                 in 0 until 3903 -> 0        //39,03%
@@ -934,7 +1147,7 @@ data class Reward(
                 }
             }
         }
-        if(nextInt(0,100)==((type!!+1)*10)){
+        if(nextInt(0,100)<=((type!!+1)*10)){
             item = generateItem(inPlayer, type)
         }
         money = 5 * player.level * (type!! +1)
@@ -943,13 +1156,13 @@ data class Reward(
 }
 
 data class Wearable(
-        override val name:String = "",
-        override val type:String = "",
-        override val drawable:Int = 0,
+        override var name:String = "",
+        override var type:String = "",
+        override var drawable:Int = 0,
         override var levelRq:Int = 0,
         override var quality:Int = 0,
-        override val charClass:Int = 0,
-        override val description:String = "",
+        override var charClass:Int = 0,
+        override var description:String = "",
         override var power:Int = 0,
         override var armor:Int = 0,
         override var block:Int = 0,
@@ -958,18 +1171,18 @@ data class Wearable(
         override var health:Int = 0,
         override var adventureSpeed:Int = 0,
         override var inventorySlots: Int = 0,
-        override val slot:Int = 0,
-        override val price:Int = 0
+        override var slot:Int = 0,
+        override var price:Int = 0
 ):Item(name, type, drawable, levelRq, quality, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
 
 data class Runes(
-        override val name:String = "",
-        override val type:String = "",
-        override val drawable:Int = 0,
+        override var name:String = "",
+        override var type:String = "",
+        override var drawable:Int = 0,
         override var levelRq:Int = 0,
         override var quality:Int = 0,
-        override val charClass:Int = 0,
-        override val description:String = "",
+        override var charClass:Int = 0,
+        override var description:String = "",
         override var power:Int = 0,
         override var armor:Int = 0,
         override var block:Int = 0,
@@ -978,18 +1191,18 @@ data class Runes(
         override var health:Int = 0,
         override var adventureSpeed:Int = 0,
         override var inventorySlots: Int = 0,
-        override val slot:Int = 0,
-        override val price:Int = 0
+        override var slot:Int = 0,
+        override var price:Int = 0
 ):Item(name, type, drawable, levelRq, quality, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
 
 data class Weapon(
-        override val name:String = "",
-        override val type:String = "",
-        override val drawable:Int = 0,
+        override var name:String = "",
+        override var type:String = "",
+        override var drawable:Int = 0,
         override var levelRq:Int = 0,
         override var quality:Int = 0,
-        override val charClass:Int = 0,
-        override val description:String = "",
+        override var charClass:Int = 0,
+        override var description:String = "",
         override var power:Int = 0,
         override var armor:Int = 0,
         override var block:Int = 0,
@@ -998,131 +1211,182 @@ data class Weapon(
         override var health:Int = 0,
         override var adventureSpeed:Int = 0,
         override var inventorySlots: Int = 0,
-        override val slot:Int = 0,
-        override val price:Int = 0
+        override var slot:Int = 0,
+        override var price:Int = 0
 ):Item(name, type, drawable, levelRq, quality, charClass, description, power, armor, block, poison, bleed, health, adventureSpeed, inventorySlots, slot, price)
 
-open class Quest(val ID: String, val name:String = "", val description:String = "", val level:Int = 0, val experience:Int = 0, val money:Int = 0, val surface:Int = 0)
-open class Surface(val background:Int = 0, val quests:HashMap<String, Quest>)
+class StoryQuest(
+    val ID: String = "0001",
+    val name:String = "",
+    val description: String = "",
+    level:Int = 0,
+    val experience: Int = 0,
+    val money:Int = 0,
+    val chapter:Int = 0,
+    var completed:Boolean = false,
+    val slides:Array<Fragment> = arrayOf()
+){
+    val reward = Reward(level)
+}
 
-val xd = hashMapOf<Int, String>()
+class Quest(
+        val ID: String = "0001",
+        var name:String = "",
+        var description:String = "",
+        var level:Int = 0,
+        var experience:Int = 0,
+        var money:Int = 0,
+        val surface:Int = 0
+){
+    fun createQuest(difficulty:Int? = null){
+        val reward = difficulty?.let { Reward(it) } ?: Reward()
+        reward.generateReward()
+        val randQuest = surfaces[surface].quests.values.toTypedArray()[nextInt(0,surfaces[surface].quests.values.size)]
+
+        this.name = randQuest.name
+        this.description = randQuest.description
+        this.level = reward.type!!
+        this.experience = reward.experience
+        this.money = reward.money
+    }
+
+    fun getStats(resources:Resources):String{
+        return "${resources.getString(R.string.quest_title, this.name)}\n${resources.getString(R.string.quest_generic, this.description)}\ndifficulty: " +
+                resources.getString(R.string.quest_generic, when(this.level){
+            0 -> "Peaceful"
+            1 -> "Easy"
+            2 -> "Medium rare-"
+            3 -> "Medium"
+            4 -> "Well done"
+            5 -> "Hard rare"
+            6 -> "Hard"
+            7 -> "Evil"
+            else -> "Error: Collection out of its bounds! \n report this to the support, please."
+        }) + "\nexperience: ${resources.getString(R.string.quest_number,this.experience)}\n${resources.getString(R.string.quest_number,this.money)}"
+    }
+}
+open class Surface(
+        val background:Int = 0,
+        val quests:HashMap<String, Quest>
+)
+
 val surfaces:Array<Surface> = arrayOf(Surface(R.drawable.map0, hashMapOf(
         "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 0),
-        "0002" to Quest("0001","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 0),
-        "0003" to Quest("0001","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 0),
-        "0004" to Quest("0001","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 0),
-        "0005" to Quest("0001","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 0),
-        "0006" to Quest("0001","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 0),
-        "0007" to Quest("0001","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 0))),
+        "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 0),
+        "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 0),
+        "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 0),
+        "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 0),
+        "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 0),
+        "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 0))),
 
         Surface(R.drawable.map1, hashMapOf(
                 "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 1),
-                "0002" to Quest("0001","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 1),
-                "0003" to Quest("0001","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 1),
-                "0004" to Quest("0001","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 1),
-                "0005" to Quest("0001","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 1),
-                "0006" to Quest("0001","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 1),
-                "0007" to Quest("0001","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 1))),
+                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 1),
+                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 1),
+                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 1),
+                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 1),
+                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 1),
+                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 1))),
 
         Surface(R.drawable.map2, hashMapOf(
                 "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 2),
-                "0002" to Quest("0001","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 2),
-                "0003" to Quest("0001","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 2),
-                "0004" to Quest("0001","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 2),
-                "0005" to Quest("0001","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 2),
-                "0006" to Quest("0001","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 2),
-                "0007" to Quest("0001","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 2))),
+                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 2),
+                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 2),
+                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 2),
+                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 2),
+                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 2),
+                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 2))),
 
         Surface(R.drawable.map3, hashMapOf(
                 "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 3),
-                "0002" to Quest("0001","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 3),
-                "0003" to Quest("0001","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 3),
-                "0004" to Quest("0001","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 3),
-                "0005" to Quest("0001","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 3),
-                "0006" to Quest("0001","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 3),
-                "0007" to Quest("0001","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 3))),
+                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 3),
+                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 3),
+                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 3),
+                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 3),
+                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 3),
+                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 3))),
 
         Surface(R.drawable.map4, hashMapOf(
                 "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 4),
-                "0002" to Quest("0001","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 4),
-                "0003" to Quest("0001","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 4),
-                "0004" to Quest("0001","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 4),
-                "0005" to Quest("0001","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 4),
-                "0006" to Quest("0001","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 4),
-                "0007" to Quest("0001","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 4))),
+                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 4),
+                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 4),
+                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 4),
+                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 4),
+                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 4),
+                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 4))),
 
         Surface(R.drawable.map5, hashMapOf(
                 "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 5),
-                "0002" to Quest("0001","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 5),
-                "0003" to Quest("0001","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 5),
-                "0004" to Quest("0001","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 5),
-                "0005" to Quest("0001","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 5),
-                "0006" to Quest("0001","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 5),
-                "0007" to Quest("0001","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 5))))
+                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 5),
+                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 5),
+                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 5),
+                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 5),
+                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 5),
+                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 5))))
 
 
 val spellsClass0:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass1:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass2:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass3:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass4:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass5:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass6:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass7:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 val spellsClass8:Array<Spell> = arrayOf(
-        Spell("0001",R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"")
-        ,Spell("0000",R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack")
-        ,Spell("0002",R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"")
-        ,Spell("0003",R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"")
-        ,Spell("0004",R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"")
+        Spell(R.drawable.basicattack_spell, "Basic attack", 0, 10, 0, 0, 1,"","0001")
+        ,Spell(R.drawable.shield_spell, "Block", 0, 0, 0, 0, 1,"Blocks 80% of next enemy attack","0000")
+        ,Spell(R.drawable.firespell, "Fire ball", 50, 20, 1, 0, 1,"","0002")
+        ,Spell(R.drawable.icespell, "Freezing touch", 75, 30, 0, 0, 1,"","0003")
+        ,Spell(R.drawable.windspell, "Wind hug", 125, 40, 0, 0, 1,"","0004")
 )
 
 val itemsClass0:Array<Item?> = arrayOf(
@@ -1153,65 +1417,65 @@ val itemsClass2:Array<Item?> = arrayOf(
 )
 
 val itemsClass3:Array<Item?> = arrayOf(
-        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
-        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
+        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,3, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,3, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,3, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
+        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,3, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,3, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,3, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,3, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,3, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )
 
 val itemsClass4:Array<Item?> = arrayOf(
-        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
-        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
+        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,4, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,4, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,4, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
+        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,4, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,4, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,4, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,4, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,4, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )
 
 val itemsClass5:Array<Item?> = arrayOf(
-        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
-        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
+        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,5, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,5, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,5, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
+        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,5, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,5, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,5, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,5, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,5, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )
 
 val itemsClass6:Array<Item?> = arrayOf(
-        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
-        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
+        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,6, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,6, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,6, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
+        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,6, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,6, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,6, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,6, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,6, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )
 val itemsClass7:Array<Item?> = arrayOf(
-        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
-        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
+        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,7, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,7, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,7, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
+        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,7, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,7, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,7, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,7, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,7, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )
 val itemsClass8:Array<Item?> = arrayOf(
-        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,1, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,1, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
-        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,1, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
-        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,1, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
-        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,1, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
-        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,1, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
-        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,1, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
-        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,1, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
+        Weapon("Sword", "Runes", R.drawable.basicattack, 1, 0,8, "The most sold weapon on black market", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        , Weapon("Shield", "Runes", R.drawable.shield, 1, 0,8, "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        ,Wearable("Belt", "Runes", R.drawable.belt, 1, 0,8, "I can't breath", 0, 0, 0, 0, 0, 0, 0, 0, 4, 1)
+        ,Wearable("Overall", "Runes", R.drawable.overall, 1, 0,8, "What is that smell?", 0, 0, 0, 0, 0, 0, 0, 0, 5, 1)
+        ,Wearable("Boots", "Runes", R.drawable.boots, 1, 0,8, "Can't carry it anymore", 0, 0, 0, 0, 0, 0, 0, 0, 6, 1)
+        ,Wearable("Trousers", "Runes", R.drawable.trousers, 1, 0,8, "Tight not high", 0, 0, 0, 0, 0, 0, 0, 0, 7, 1)
+        ,Wearable("Chestplate", "Runes", R.drawable.chestplate, 1, 0,8, "Chestplate protects!", 0, 0, 0, 0, 0, 0, 0, 0, 8, 1)
+        ,Wearable("Helmet", "Runes", R.drawable.helmet, 1, 0,8, "This doesn't make you any more clever", 0, 0, 0, 0, 0, 0, 0, 0, 9, 1)
 )

@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Point
@@ -12,6 +13,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
@@ -20,6 +22,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_character.*
+import kotlinx.android.synthetic.main.fragment_character_profile.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
 import kotlinx.android.synthetic.main.fragment_menu_bar.*
 import kotlin.math.abs
@@ -66,18 +69,9 @@ class Character : AppCompatActivity() {
         textViewInfoCharacter.text = player.syncStats()
         fragmentMenuBar.buttonCharacter.isEnabled = false
 
-        Log.d("CHARCLASS","${player.charClass}")
-        characterView.setImageResource(when(player.charClass){
-            1 -> R.drawable.character2
-            2 -> R.drawable.character3
-            3 -> R.drawable.character1
-            4 -> R.drawable.character5
-            5 -> R.drawable.character4
-            6 -> R.drawable.character0
-            7 -> R.drawable.character6
-            8 -> R.drawable.character7
-            else -> R.drawable.character0
-        })
+        val opts = BitmapFactory.Options()
+        opts.inScaled = false
+        imageViewActivityCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_bg, opts))
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -136,16 +130,6 @@ class Character : AppCompatActivity() {
 
         val bagViewV = findViewById<View>(R.id.bagView)
 
-        for(i in 0 until 10) {
-            val itemEquip: ImageView = findViewById(this.resources.getIdentifier("equipItem$i", "id", this.packageName))
-            if(player.equip[i]!=null){
-                itemEquip.setImageResource(player.equip[i]!!.drawable)
-                itemEquip.isEnabled = true
-            } else {
-                itemEquip.setImageResource(R.drawable.emptyslot)
-            }
-        }
-
         if(player.backpackRunes[0]!=null){
             buttonBag0.setImageResource(player.backpackRunes[0]!!.drawable)
             buttonBag0.isEnabled = true
@@ -167,14 +151,14 @@ class Character : AppCompatActivity() {
                     if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
 
                         v.invalidate()
-                        characterView.setBackgroundColor(Color.BLUE)
+                        //fragmentCharacter.setBackgroundColor(Color.BLUE)
                         true
                     } else {
                         false
                     }
                 }
                 DragEvent.ACTION_DRAG_ENTERED -> {
-                    characterView.setBackgroundColor(Color.GREEN)
+                    //fragmentCharacter.view!!.setBackgroundColor(Color.GREEN)
                     v.invalidate()
                     true
                 }
@@ -190,24 +174,24 @@ class Character : AppCompatActivity() {
                 DragEvent.ACTION_DRAG_ENDED -> {
 
                     v.invalidate()
-                    characterView.setBackgroundColor(Color.TRANSPARENT)
+                    //fragmentCharacter.view!!.setBackgroundColor(Color.TRANSPARENT)
 
                     val index = ClipDataIndex
 
                     if(index!=null){
 
                         val button: ImageView = when (player.inventory[index]?.slot) {
-                            0 -> equipItem0
-                            1 -> equipItem1
-                            2 -> equipItem2
-                            3 -> equipItem3
-                            4 -> equipItem4
-                            5 -> equipItem5
-                            6 -> equipItem6
-                            7 -> equipItem7
-                            8 -> equipItem8
-                            9 -> equipItem9
-                            else -> equipItem0
+                            0 -> fragmentCharacter.profile_EquipItem0
+                            1 -> fragmentCharacter.profile_EquipItem1
+                            2 -> fragmentCharacter.profile_EquipItem2
+                            3 -> fragmentCharacter.profile_EquipItem3
+                            4 -> fragmentCharacter.profile_EquipItem4
+                            5 -> fragmentCharacter.profile_EquipItem5
+                            6 -> fragmentCharacter.profile_EquipItem6
+                            7 -> fragmentCharacter.profile_EquipItem7
+                            8 -> fragmentCharacter.profile_EquipItem8
+                            9 -> fragmentCharacter.profile_EquipItem9
+                            else -> fragmentCharacter.profile_EquipItem0
                         }
                         when (event.result) {
                             true -> {
@@ -300,7 +284,7 @@ class Character : AppCompatActivity() {
                         val button: ImageView = when (player.inventory[index]!!.slot) {
                             10 -> buttonBag0
                             11 -> buttonBag1
-                            else -> equipItem0
+                            else -> buttonBag0
                         }
 
                         when (event.result) {
@@ -386,7 +370,7 @@ class Character : AppCompatActivity() {
 
                     // Invalidate the view to force a redraw in the new tint
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        characterView.cancelDragAndDrop()
+                        fragmentCharacter.view!!.cancelDragAndDrop()
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         bagViewV.cancelDragAndDrop()
@@ -421,34 +405,43 @@ class Character : AppCompatActivity() {
                     when (event.result) {
                         true -> {
                             if(sourceOfDrag!="inventory") {
-                            when (draggedItem) {
-                                is Weapon, is Wearable -> {
+                                when (draggedItem) {
+                                    is Weapon, is Wearable -> {
 
-                                }
-                                is Runes -> {
-                                    val buttonBag = when (index) {
-                                        0 -> buttonBag0
-                                        1 -> buttonBag1
-                                        else -> buttonBag0
                                     }
-                                    if (player.backpackRunes[index!!] != null) {
-                                        if(player.backpackRunes[0]!!.inventorySlots > 0){
-                                            var tempEmptySpaces = 0
-                                            for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
-                                                if(player.inventory[i] == null){
-                                                    tempEmptySpaces++
-                                                }
-                                            }
-                                            if(tempEmptySpaces > player.backpackRunes[0]!!.inventorySlots){
-                                                if(player.inventory.contains(null)){
-                                                    for(i in (player.inventory.size-1-player.backpackRunes[0]!!.inventorySlots) until player.inventory.size){
-                                                        if(player.inventory[i]!=null){
-                                                            val tempItem = player.inventory[i]
-                                                            player.inventory[i] = null
-                                                            player.inventory[player.inventory.indexOf(null)] = tempItem
-                                                        }
+                                    is Runes -> {
+                                        val buttonBag = when (index) {
+                                            0 -> buttonBag0
+                                            1 -> buttonBag1
+                                            else -> buttonBag0
+                                        }
+                                        if (player.backpackRunes[index!!] != null) {
+                                            if(player.backpackRunes[0]!!.inventorySlots > 0){
+                                                var tempEmptySpaces = 0
+                                                for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
+                                                    if(player.inventory[i] == null){
+                                                        tempEmptySpaces++
                                                     }
+                                                }
+                                                if(tempEmptySpaces > player.backpackRunes[0]!!.inventorySlots){
+                                                    if(player.inventory.contains(null)){
+                                                        for(i in (player.inventory.size-1-player.backpackRunes[0]!!.inventorySlots) until player.inventory.size){
+                                                            if(player.inventory[i]!=null){
+                                                                val tempItem = player.inventory[i]
+                                                                player.inventory[i] = null
+                                                                player.inventory[player.inventory.indexOf(null)] = tempItem
+                                                            }
+                                                        }
 
+                                                        buttonBag0.setImageResource(R.drawable.emptyslot)
+                                                        player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
+                                                        player.backpackRunes[0] = null
+                                                        buttonBag0.isEnabled = false
+                                                        (inventoryListView.adapter as InventoryView).dragItemSync()
+                                                    }
+                                                }
+                                            }else{
+                                                if(player.inventory.contains(null)){
                                                     buttonBag0.setImageResource(R.drawable.emptyslot)
                                                     player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
                                                     player.backpackRunes[0] = null
@@ -456,19 +449,10 @@ class Character : AppCompatActivity() {
                                                     (inventoryListView.adapter as InventoryView).dragItemSync()
                                                 }
                                             }
-                                        }else{
-                                            if(player.inventory.contains(null)){
-                                                buttonBag0.setImageResource(R.drawable.emptyslot)
-                                                player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
-                                                player.backpackRunes[0] = null
-                                                buttonBag0.isEnabled = false
-                                                (inventoryListView.adapter as InventoryView).dragItemSync()
-                                            }
                                         }
                                     }
                                 }
                             }
-                        }
                         }
                         else -> null
                     }
@@ -512,7 +496,7 @@ class Character : AppCompatActivity() {
         buttonBag0.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onClick() {
                 super.onClick()
-                if(!hidden && lastClicked=="runes0"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                //if(!hidden && lastClicked=="runes0"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                 lastClicked = "runes0"
                 textViewInfoItem.text = player.backpackRunes[0]?.getStats()
             }
@@ -583,7 +567,7 @@ class Character : AppCompatActivity() {
         buttonBag1.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onClick() {
                 super.onClick()
-                if(!hidden && lastClicked=="runes1"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                //if(!hidden && lastClicked=="runes1"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                 lastClicked = "runes1"
                 textViewInfoItem.text = player.backpackRunes[1]?.getStats()
             }
@@ -654,11 +638,11 @@ class Character : AppCompatActivity() {
                 )
             }
         })
-        inventoryListView.adapter = InventoryView(hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, textViewInfoCharacter, equipDragListener, runesDragListener, bagViewV,characterView,
-                equipItem0, equipItem1, equipItem2, equipItem3, equipItem4, equipItem5, equipItem6, equipItem7, equipItem8, equipItem9, this)
+        inventoryListView.adapter = InventoryView(hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, textViewInfoCharacter, equipDragListener, runesDragListener, bagViewV,fragmentCharacter.view!!,
+                fragmentCharacter.profile_EquipItem0, fragmentCharacter.profile_EquipItem1, fragmentCharacter.profile_EquipItem2, fragmentCharacter.profile_EquipItem3, fragmentCharacter.profile_EquipItem4, fragmentCharacter.profile_EquipItem5, fragmentCharacter.profile_EquipItem6, fragmentCharacter.profile_EquipItem7, fragmentCharacter.profile_EquipItem8, fragmentCharacter.profile_EquipItem9, this)
     }
 
-    private class InventoryView(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: TextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val textViewInfoCharacter:TextView, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View,val equipView:ImageView,
+    private class InventoryView(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: TextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val textViewInfoCharacter:TextView, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
                                 val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView, private val context: Context) : BaseAdapter() {
 
         override fun getCount(): Int {
@@ -723,7 +707,7 @@ class Character : AppCompatActivity() {
             viewHolder.buttonInventory1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked=="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory0$position"
                     textViewInfoItem.text = playerC.inventory[index]?.getStats()
                 }
@@ -778,7 +762,7 @@ class Character : AppCompatActivity() {
             viewHolder.buttonInventory2.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked=="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory1$position"
                     textViewInfoItem.text = playerC.inventory[index+1]?.getStats()
                 }
@@ -833,7 +817,7 @@ class Character : AppCompatActivity() {
             viewHolder.buttonInventory3.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked=="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory2$position"
                     textViewInfoItem.text = playerC.inventory[index+2]?.getStats()
                 }
@@ -888,7 +872,7 @@ class Character : AppCompatActivity() {
             viewHolder.buttonInventory4.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    if(!hidden && lastClicked=="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                    //if(!hidden && lastClicked=="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory3$position"
                     textViewInfoItem.text = playerC.inventory[index+3]?.getStats()
                 }
@@ -1035,7 +1019,7 @@ class Character : AppCompatActivity() {
             (inventoryListView.adapter as InventoryView).dragItemSync()
             handler.removeCallbacksAndMessages(null)
         } else if (clicks == 1) {                                            //SINGLE CLICK
-            if(!hidden && lastClicked=="equip$index"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+            //if(!hidden && lastClicked=="equip$index"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
             lastClicked="equip$index"
             textViewInfoItem.text = player.equip[index]?.getStats()
         }

@@ -15,24 +15,7 @@ import android.os.Handler
 import android.util.Log
 import android.view.View
 
-var appearOnTop = true
-var firstLoad:Boolean = true
-var songs = arrayOf(
-        Song(R.raw.song1, "Shrek"),
-        Song(R.raw.song2, "Country roads"),
-        Song(R.raw.song3, "Kero Kero Bonito - Flamingo"),
-        Song(R.raw.song4, "Bite your soul"),
-        Song(R.raw.song5, "Népal - Fugu"),
-        Song(R.raw.song6, "Lonepsi - freestyle"),
-        Song(R.raw.song7, "Bohemian Rhapsody"),
-        Song(R.raw.song8, "Kudasai")
-)
-var playedSong = R.raw.song1
-
-class Song(songRawIn:Int = R.raw.song1, descriptionIn:String = "Shrek"){
-    val songRaw = songRawIn
-    val description = descriptionIn
-}
+var playedSong = R.raw.playedsong
 
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -66,14 +49,6 @@ class Home : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        if(!BackgroundSoundService().mediaPlayer.isPlaying&& player.music){
-            val svc = Intent(this, BackgroundSoundService(playedSong)::class.java)
-            startService(svc)
-        }
-    }
-
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
@@ -84,19 +59,8 @@ class Home : AppCompatActivity() {
         null
     }
 
-    /*override fun onResume() {
-        super.onResume()
-        player.uploadPlayer()
-    }*/
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /*if(firstLoad){
-            player.loadPlayer()
-            firstLoad = false
-        }else{
-            player.uploadPlayer()
-        }*/
         hideSystemUI()
         setContentView(R.layout.activity_home)
 
@@ -105,11 +69,7 @@ class Home : AppCompatActivity() {
         layoutHome.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.homebackground, opts))
 
 
-        /*if (player.username == "Player_1"){ getPlayerByUsername("Player_2")}
-        else { getPlayerByUsername("Player_1") }*/
-
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& appearOnTop) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& player.appearOnTop) {
                 //If the draw over permission is not available open the settings screen
                 //to grant the permission.
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -126,16 +86,19 @@ class Home : AppCompatActivity() {
         }
 
         imageViewExit.setOnClickListener {
-            val handler = Handler()
-            handler.postDelayed({ player.toLoadPlayer().uploadPlayer() }, 1000)
-            val intent = Intent(this, cz.cubeit.cubeit.ActivityLoginRegister::class.java)
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
+            player.online = false
+            player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
+                val svc = Intent(this, BackgroundSoundService()::class.java)
+                stopService(svc)
+
+                val intent = Intent(this, cz.cubeit.cubeit.ActivityLoginRegister()::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
         }
 
-
         Hatch.setOnClickListener{
-            val intent = Intent(this, cz.cubeit.cubeit.FightSystem::class.java)
+            val intent = Intent(this, cz.cubeit.cubeit.ActivityFightBoard::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }

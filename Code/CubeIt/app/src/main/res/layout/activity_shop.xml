@@ -87,6 +87,13 @@
         app:layout_constraintGuide_percent="0.555" />
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline71"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.61" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline52"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -122,7 +129,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/emptyslot"
-        android:gravity="center"
+        android:gravity="center_horizontal"
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -132,14 +139,13 @@
         android:id="@+id/textViewInfoItem"
         android:layout_width="0dp"
         android:layout_height="186dp"
-        android:layout_marginStart="40dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/emptyslot"
+        android:gravity="center_horizontal"
         android:textSize="18sp"
-        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@+id/guideline49"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline34"
+        app:layout_constraintStart_toStartOf="@+id/guideline71"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
@@ -168,7 +174,6 @@
         android:id="@+id/bubleDialogShop"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
         android:background="@drawable/bubledialogshop"
         android:text="Error ocurred"
         android:textColor="@android:color/holo_red_light"

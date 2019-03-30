@@ -5,9 +5,18 @@
     android:id="@+id/layoutCharacter"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/character_bg"
     android:screenOrientation="landscape">
 
+
+    <ImageView
+        android:id="@+id/imageViewActivityCharacter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline7"
@@ -17,117 +26,15 @@
         app:layout_constraintGuide_percent="0.365" />
 
 
-    <ImageView
-        android:id="@+id/equipItem2"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="2"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
-
-    <ImageView
-        android:id="@+id/equipItem3"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="3"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem2"
-        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
-
-    <ImageView
-        android:id="@+id/equipItem4"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="4"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem3"
-        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
-
-    <ImageView
-        android:id="@+id/equipItem5"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="5"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem4"
-        app:layout_constraintEnd_toStartOf="@+id/guideline7" />
-
-    <ImageView
-        android:id="@+id/equipItem6"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="6"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:id="@+id/equipItem7"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="7"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem6"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:id="@+id/equipItem8"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="8"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem7"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:id="@+id/equipItem9"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="9"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem8"
-        app:layout_constraintStart_toStartOf="parent" />
+    <fragment
+        android:id="@+id/fragmentCharacter"
+        android:name="cz.cubeit.cubeit.Fragment_Character_Profile"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/fragmentMenuBar"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
         android:id="@+id/inventoryListView"
@@ -146,8 +53,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/emptyslot"
+        android:gravity="center_horizontal"
         android:minHeight="50dp"
-        android:gravity="center"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/guideline5"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
@@ -170,17 +77,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <ImageView
-        android:id="@+id/characterView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/equipItem0"
-        app:layout_constraintEnd_toStartOf="@+id/equipItem4"
-        app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintStart_toEndOf="@+id/equipItem8"
-        app:layout_constraintTop_toTopOf="@+id/equipItem5"
-        app:layout_constraintVertical_bias="0.0" />
-
 
     <ImageView
         android:id="@+id/buttonBag0"
@@ -201,37 +97,6 @@
         android:focusable="true"
         app:layout_constraintBottom_toTopOf="@+id/guideline59"
         app:layout_constraintStart_toStartOf="@+id/guideline" />
-
-    <ImageView
-        android:id="@+id/equipItem1"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onUnEquip"
-        android:tag="1"
-        app:layout_constraintBottom_toTopOf="@+id/guideline59"
-        app:layout_constraintEnd_toStartOf="@+id/equipItem2"
-        app:layout_constraintStart_toEndOf="@+id/equipItem0" />
-
-    <ImageView
-        android:id="@+id/equipItem0"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="2dp"
-        android:background="@drawable/emptyslot"
-        android:clickable="true"
-        android:focusable="true"
-        android:longClickable="true"
-        android:onClick="onUnEquip"
-        android:tag="0"
-        app:layout_constraintBottom_toTopOf="@+id/guideline59"
-        app:layout_constraintEnd_toStartOf="@+id/equipItem1"
-        app:layout_constraintStart_toEndOf="@+id/equipItem6" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline5"
@@ -267,21 +132,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.97" />
-
-    <TextView
-        android:id="@+id/textViewCharacterInfo"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/characterView"
-        app:layout_constraintEnd_toStartOf="@+id/textViewInfoItem"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
 
     <fragment
         android:id="@+id/fragmentMenuBar"

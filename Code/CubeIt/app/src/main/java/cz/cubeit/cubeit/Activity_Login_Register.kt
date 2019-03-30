@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.activity_login_register.*
 
 val handler = Handler()
 
-class ActivityLoginRegister:AppCompatActivity(){
+class ActivityLoginRegister(private val loginUsername: String = "", private val loginEmail:String = ""):AppCompatActivity(){
 
     fun onClickArrowLoginRegister(v:View){
         when(v.toString()[v.toString().lastIndex-1]){
@@ -38,6 +38,11 @@ class ActivityLoginRegister:AppCompatActivity(){
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_login_register)
+
+        val args = Bundle()
+        args.putString("loginUsername", loginUsername)
+        args.putString("loginEmail", loginEmail)
+        ActivityLogin().arguments = args
 
         val adapter = ViewPagerAdapterLoginRegister(supportFragmentManager)
         viewPagerLoginRegister!!.adapter = adapter

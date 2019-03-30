@@ -20,7 +20,7 @@ class Fragment_Menu_Bar : Fragment() {
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonFight.setOnClickListener {
-                val intent = Intent(view.context, FightSystem::class.java)
+                val intent = Intent(view.context, ActivityFightBoard::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)

@@ -1,19 +1,18 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import kotlinx.android.synthetic.*
-import kotlinx.android.synthetic.main.activity_spells.*
 import kotlinx.android.synthetic.main.fragment_defense.view.*
 import kotlinx.android.synthetic.main.row_choosingspells.view.*
 import kotlinx.android.synthetic.main.row_chosen_spells.view.*
@@ -60,7 +59,10 @@ class FragmentDefense : Fragment(){
         view.imageViewBarDefense.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbardefense, opts))
 
         view.buttonSet.setOnClickListener {
-            FightSystem(player, inputEnemy =  player)
+            val intent = Intent(view.context, FightSystem(player)::class.java)
+            intent.putExtra("enemy", player.username)
+            startActivity(intent)
+            Activity().overridePendingTransition(0,0)
         }
 
         view.chosen_listView.adapter = ChosenSpellsView(player)

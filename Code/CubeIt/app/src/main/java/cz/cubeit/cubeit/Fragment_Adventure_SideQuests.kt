@@ -4,14 +4,12 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.Fragment
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import kotlinx.android.synthetic.main.fragment_sidequests_adventure.view.*
 import kotlinx.android.synthetic.main.row_sidequests.view.*
-import kotlin.random.Random.Default.nextInt
 
 class FragmentSideQuestsAdventure : Fragment() {
 
@@ -52,12 +50,14 @@ private class SideQuests(private var sideQuestsAdventure: Array<Quest>, val cont
 
         viewHolder.textViewName.text = sideQuestsAdventure[position].name
         viewHolder.textViewDifficulty.text = when(sideQuestsAdventure[position].level){
+            0 -> "Peaceful"
             1 -> "Easy"
             2 -> "Medium rare-"
             3 -> "Medium"
-            4 -> "Hard rare"
-            5 -> "Hard"
-            6 -> "Evil"
+            4 -> "Well done"
+            5 -> "Hard rare"
+            6 -> "Hard"
+            7 -> "Evil"
             else -> "Error: Collection out of its bounds! \n report this to the support, please."
         }
 
