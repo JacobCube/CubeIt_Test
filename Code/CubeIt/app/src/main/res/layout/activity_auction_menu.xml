@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/auctionMenu"
+    android:screenOrientation="sensorLandscape">
+
+
+    <fragment
+        android:id="@+id/fragmentMenuBarAuctionMenu"
+        android:name="cz.cubeit.cubeit.Fragment_Menu_Bar"
+        android:layout_width="0dp"
+        android:layout_height="76dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline62"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline63"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <ImageView
+        android:id="@+id/imageViewAuction"
+        android:layout_width="170dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="75dp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline63"
+        app:layout_constraintTop_toTopOf="@+id/guideline62"
+
+ android:src="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewMarket"
+        android:layout_width="170dp"
+        android:layout_height="51dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintStart_toStartOf="@+id/guideline63"
+        app:layout_constraintTop_toTopOf="@+id/guideline62"
+
+ android:src="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewAuctionInventory"
+        android:layout_width="65dp"
+        android:layout_height="54dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+ android:src="@color/colorSecondary" />
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">help</string>
+    <string name="no_image">No Image</string>
+    <string name="developed_by">Developed by CubeIt.cz</string>
+    <string name="first_fragment">First Fragment</string>
+    <string name="second_fragment">Second Fragment</string>
+    <string name="third_fragment">Third Fragment</string>
+    <string name="experience_adventure">You will receive: %1$d experience</string>
+    <string name="settings_sounds">Sounds: %1$d </string>
+    <string name="title_activity_test_menu">test_activity_menu</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="quest_title"><big><font face="normal" color="#C0B02D">%1$s</font></big></string>
+    <string name="quest_number"><font face="normal" color="#C0B02D">%1$d</font></string>
+    <string name="quest_generic"><font face="normal" color="#161B42">%1$s</font></string>
+</resources>
