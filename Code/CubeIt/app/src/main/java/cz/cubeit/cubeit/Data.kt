@@ -32,6 +32,8 @@ import java.time.LocalDateTime
 var playerListReturn: Array<Player>? = null
 //returned list of players in order to show them in fight board Base adapter(list)
 
+var returnUsername: String = ""
+
 var drawableStorage = hashMapOf(
 //fixes bug: whenever project directory changes in drawables,
 // stored drawable IDs are not equal to the drawables anymore, so it changes their final image
@@ -206,6 +208,20 @@ fun getRandomPlayer() {
 
         returnUsernameHelper(tempUsername)
     }
+}
+
+fun exceptionFormatter(errorIn:String):String{
+
+    if (errorIn.contains("com.google.firebase.auth")){
+
+        val regex: Regex = Regex("com.google.firebase.auth.\\w+\\: ")
+        return errorIn.replace(regex, "Error: ")
+    }
+    else {
+        Log.d("ExceptionFormatterError", "Failed to format exception, falling back to source")
+        return errorIn
+    }
+
 }
 
 fun getPlayerByUsername(usernameIn:String) {

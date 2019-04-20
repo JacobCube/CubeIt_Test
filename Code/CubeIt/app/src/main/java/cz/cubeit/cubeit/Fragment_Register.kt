@@ -1,11 +1,12 @@
 package cz.cubeit.cubeit
 
-import android.app.Activity
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
@@ -14,7 +15,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
-import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_register.*
 import kotlinx.android.synthetic.main.fragment_register.view.*
 
@@ -30,7 +30,7 @@ class Fragment_Register : Fragment() {
         val Auth = FirebaseAuth.getInstance()                                       // Initialize Firebase
         var userPassword: String
 
-        fun showPopUp(titleInput: String, textInput: String) {
+        fun showNotification(titleInput: String, textInput: String) {
             val builder = AlertDialog.Builder(view.context)
             builder.setTitle(titleInput)
             builder.setMessage(textInput)
@@ -41,11 +41,15 @@ class Fragment_Register : Fragment() {
         val progress = ProgressDialog(view.context)
         progress.setTitle("Loading")
         progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for interruption")
-        progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
+        progress.setCancelable(false) // disable dismiss by tapping outside of the dialogv
 
         fun registerUser(passwordInput: String) {
             val tempPlayer = Player()
             progress.show()
+
+            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
             Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), passwordInput).addOnCompleteListener { task: Task<AuthResult> ->
                 if (task.isSuccessful) {
@@ -64,8 +68,12 @@ class Fragment_Register : Fragment() {
                         }
                     }
 
-                } else {
-                    showPopUp("Error", "There was an error processing your request")
+                }
+                if (!isConnected){
+                    showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")
+                }
+                else {
+                    showNotification("Oops", "${exceptionFormatter(task.result.toString())}")
                 }
                 progress.dismiss()
             }
@@ -76,9 +84,18 @@ class Fragment_Register : Fragment() {
             if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString()) {
                 userPassword = view.inputPassReg.text.toString()
                 registerUser(userPassword)
-            } else {
-                showPopUp("Alert", "Please enter a valid email address or password")
             }
+            else {
+
+                if (inputPassReg.text.toString() != inputRePassReg.text.toString()){
+                    showNotification("Oops", "Passwords must match")
+                }
+                else {
+                    showNotification("Oops", "Please enter a valid email address or password")
+                }
+            }
+
+
         }
 
         return view

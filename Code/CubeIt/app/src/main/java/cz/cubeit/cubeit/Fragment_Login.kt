@@ -4,8 +4,11 @@ package cz.cubeit.cubeit
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
@@ -51,13 +54,17 @@ class FragmentLogin : Fragment()  {
         view.buttonLogin.setOnClickListener {
             val progress = ProgressDialog(view.context)
             progress.setTitle("Loading")
-            progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for interruption")
+            progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for the interruption")
             progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
 
             userEmail = view.inputEmailLogin.text.toString()
             userPassword = view.inputPassLogin.text.toString()
 
-            if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && inputUsernameLogin.text.isNotEmpty()){
+            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+
+            if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && inputUsernameLogin.text.isNotEmpty() && isConnected){
                 progress.show()
                 auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener{ task ->
                             if (task.isSuccessful) {
@@ -66,7 +73,11 @@ class FragmentLogin : Fragment()  {
 
                                 player.userSession = user!!
 
-                                player.username = view.inputUsernameLogin.text.toString()
+                                player.username = inputUsernameLogin.text.toString()
+
+                                player.username = returnUsername!!
+
+                                Log.d("username", "Username: ${player.username}")
 
                                 player.loadPlayer().addOnCompleteListener {
                                     progress.dismiss()
@@ -83,9 +94,16 @@ class FragmentLogin : Fragment()  {
                                 }
                             } else {
                                 progress.dismiss()
-                                showNotification("Oops", "Please enter a valid email or password")
+                                showNotification("Oops", "${exceptionFormatter(task.exception.toString())}")
+                                Log.d("Debug", "${task.exception.toString()}")
                             }
                         }
+            }
+            if (userEmail.isEmpty() || userPassword.isEmpty() || inputUsernameLogin.text.isEmpty()) {
+                showNotification("Error", "Please fill out all fields.")
+            }
+            if (!isConnected){
+                showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")
             }
         }
 
