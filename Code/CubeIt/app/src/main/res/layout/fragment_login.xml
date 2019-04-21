@@ -74,8 +74,10 @@
         android:textColor="@color/colorGrey"
         app:layout_constraintBottom_toTopOf="@+id/Texguideline7"
         app:layout_constraintEnd_toStartOf="@+id/guideline13"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
+        app:layout_constraintTop_toTopOf="@+id/Texguideline4"
+        app:layout_constraintVertical_bias="0.0" />
 
     <android.support.constraint.Guideline
         android:id="@+id/Texguideline7"
@@ -170,32 +172,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.96" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:text="Username"
-        android:textColor="@color/colorSecondary"
-        app:layout_constraintBottom_toTopOf="@+id/Texguideline3"
-        app:layout_constraintEnd_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
-
-    <EditText
-        android:id="@+id/inputUsernameLogin"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:textColor="@color/colorGrey"
-        app:layout_constraintBottom_toTopOf="@+id/Texguideline3"
-        app:layout_constraintEnd_toStartOf="@+id/guideline13"
-        app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
 
     <ImageView
         android:id="@+id/buttonLogin"

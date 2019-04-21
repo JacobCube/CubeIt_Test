@@ -18,12 +18,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_login.view.*
+import java.lang.IndexOutOfBoundsException
 
 var player:Player = Player()
-
 class FragmentLogin : Fragment()  {
 
     @SuppressLint("SetTextI18n")
@@ -36,7 +37,7 @@ class FragmentLogin : Fragment()  {
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
-        view.inputUsernameLogin.setText(arguments?.getString("loginUsername"))
+//        view.inputUsernameLogin.setText(arguments?.getString("loginUsername"))
         view.inputEmailLogin.setText(arguments?.getString("loginEmail"))
 
         val auth = FirebaseAuth.getInstance()
@@ -54,7 +55,7 @@ class FragmentLogin : Fragment()  {
         view.buttonLogin.setOnClickListener {
             val progress = ProgressDialog(view.context)
             progress.setTitle("Loading")
-            progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for the interruption")
+            progress.setMessage("We're checking if you're subscribed to PewDiePie, just a moment...")
             progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
 
             userEmail = view.inputEmailLogin.text.toString()
@@ -64,7 +65,7 @@ class FragmentLogin : Fragment()  {
             val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
             val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
-            if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && inputUsernameLogin.text.isNotEmpty() && isConnected){
+            if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && isConnected){
                 progress.show()
                 auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener{ task ->
                             if (task.isSuccessful) {
@@ -73,25 +74,44 @@ class FragmentLogin : Fragment()  {
 
                                 player.userSession = user!!
 
-                                player.username = inputUsernameLogin.text.toString()
+//                                getUserByUID(user.uid)
 
-                                player.username = returnUsername!!
 
-                                Log.d("username", "Username: ${player.username}")
+                                val db = FirebaseFirestore.getInstance()
 
-                                player.loadPlayer().addOnCompleteListener {
-                                    progress.dismiss()
-                                    if(player.newPlayer){
-                                        val intent = Intent(view.context, Activity_Character_Customization::class.java)
-                                        startActivity(intent)
-                                    }else {
-                                        player.online = true
-                                        player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
-                                                val intent = Intent(view.context, Home::class.java)
-                                                startActivity(intent)
+                                var debugString = ""
+
+                                val docRef = db.collection("users").whereEqualTo("userId", user.uid).limit(1)
+                                        .get()
+                                        .addOnSuccessListener { querySnapshot ->
+                                            try {
+                                                val document: DocumentSnapshot = querySnapshot.documents[0]
+                                                Log.d("LoadPlayerByUID_DEBUG", "Loaded user: ${document.getString("username")}")
+
+                                                player.username = document.getString("username")!!
+
+
+                                                player.loadPlayer().addOnCompleteListener {
+                                                    progress.dismiss()
+                                                    if(player.newPlayer){
+                                                        val intent = Intent(view.context, Activity_Character_Customization::class.java)
+                                                        startActivity(intent)
+                                                    }else {
+                                                        player.online = true
+                                                        player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
+                                                            val intent = Intent(view.context, Home::class.java)
+                                                            startActivity(intent)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            catch (e:IndexOutOfBoundsException){
+                                                showNotification("Oops", "We're unable to find you in our database. Are you sure you have an account?")
+                                                progress.dismiss()
+                                            }
+
                                         }
-                                    }
-                                }
+
                             } else {
                                 progress.dismiss()
                                 showNotification("Oops", "${exceptionFormatter(task.exception.toString())}")
@@ -99,11 +119,11 @@ class FragmentLogin : Fragment()  {
                             }
                         }
             }
-            if (userEmail.isEmpty() || userPassword.isEmpty() || inputUsernameLogin.text.isEmpty()) {
-                showNotification("Error", "Please fill out all fields.")
+            if (userEmail.isEmpty() || userPassword.isEmpty()) {
+                showNotification("Oops", "Please fill out all of the fields.")
             }
             if (!isConnected){
-                showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")
+                showNotification("Oops", "Your device isn't connected to the internet. Please check your connection and try again.")
             }
         }
 
@@ -112,10 +132,10 @@ class FragmentLogin : Fragment()  {
 
             if (userEmail.isNotEmpty()){
                 auth!!.sendPasswordResetEmail(userEmail)
-                showNotification("Alert", "A password reset link was sent to the above email account")
+                showNotification("Alert", "An email with a password recovery link has been sent to the above email address.")
             }
             else {
-                showNotification("Oops", "Please enter an email above")
+                showNotification("Oops", "Please enter your email above, then click reset password.")
             }
         }
         return view

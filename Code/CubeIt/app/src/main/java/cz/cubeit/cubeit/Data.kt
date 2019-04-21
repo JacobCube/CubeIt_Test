@@ -26,13 +26,15 @@ import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
+import org.w3c.dom.Document
 import java.text.DateFormat
 import java.time.LocalDateTime
 
 var playerListReturn: Array<Player>? = null
+
 //returned list of players in order to show them in fight board Base adapter(list)
 
-var returnUsername: String = ""
+//var returnUsername: String = "player"
 
 var drawableStorage = hashMapOf(
 //fixes bug: whenever project directory changes in drawables,

@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
 import kotlinx.android.synthetic.main.fragment_register.*
 import kotlinx.android.synthetic.main.fragment_register.view.*
+import java.lang.Exception
 
 class Fragment_Register : Fragment() {
 
@@ -27,7 +28,7 @@ class Fragment_Register : Fragment() {
         opts.inScaled = false
         view.layoutRegister.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.register_bg, opts))
 
-        val Auth = FirebaseAuth.getInstance()                                       // Initialize Firebase
+        val Auth = FirebaseAuth.getInstance()
         var userPassword: String
 
         fun showNotification(titleInput: String, textInput: String) {
@@ -40,7 +41,7 @@ class Fragment_Register : Fragment() {
 
         val progress = ProgressDialog(view.context)
         progress.setTitle("Loading")
-        progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for interruption")
+        progress.setMessage("We're checking if you're subscribed to PewDiePie, just a moment...")
         progress.setCancelable(false) // disable dismiss by tapping outside of the dialogv
 
         fun registerUser(passwordInput: String) {
@@ -55,7 +56,7 @@ class Fragment_Register : Fragment() {
                 if (task.isSuccessful) {
                     val user = Auth!!.currentUser
                     user!!.sendEmailVerification()
-                    Toast.makeText(view.context, "A confirmation email was sent!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(view.context, "Please confirm your account by clicking on the link sent to your email address!", Toast.LENGTH_SHORT).show()
 
                     tempPlayer.username = view.inputUsernameReg.text.toString()
 
@@ -70,10 +71,18 @@ class Fragment_Register : Fragment() {
 
                 }
                 if (!isConnected){
-                    showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")
+                    showNotification("Error", "Your device isn't connected to the internet. Please check your connection and try again.")
+                }
+                if (!task.isSuccessful){
+                    try {
+                        showNotification("Oops", "${exceptionFormatter(task.result.toString())}")
+                    }
+                    catch (e:Exception){
+                        showNotification("Oops", "An account with this email already exists!")
+                    }
                 }
                 else {
-                    showNotification("Oops", "${exceptionFormatter(task.result.toString())}")
+//                    showNotification("Oops", "An unknown error has occurred, please try again later or contact support.")
                 }
                 progress.dismiss()
             }
@@ -86,7 +95,6 @@ class Fragment_Register : Fragment() {
                 registerUser(userPassword)
             }
             else {
-
                 if (inputPassReg.text.toString() != inputRePassReg.text.toString()){
                     showNotification("Oops", "Passwords must match")
                 }
@@ -94,7 +102,6 @@ class Fragment_Register : Fragment() {
                     showNotification("Oops", "Please enter a valid email address or password")
                 }
             }
-
 
         }
 
