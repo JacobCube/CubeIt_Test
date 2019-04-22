@@ -66,6 +66,7 @@ class Home : AppCompatActivity() {
         hideSystemUI()
         setContentView(R.layout.activity_home)
 
+        player.returnServerTime()
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false

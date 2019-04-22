@@ -29,6 +29,7 @@ import com.google.firebase.firestore.*
 import org.w3c.dom.Document
 import java.text.DateFormat
 import java.time.LocalDateTime
+import java.util.*
 
 var playerListReturn: Array<Player>? = null
 
@@ -192,7 +193,6 @@ class BackgroundSoundService : Service() {
     }
 }
 
-
 fun getRandomPlayer() {
     val db = FirebaseFirestore.getInstance() // Loads Firebase functions
 
@@ -202,7 +202,6 @@ fun getRandomPlayer() {
 
     docRef.get().addOnSuccessListener { querySnapshot ->
 
-        val playerList: MutableList<out LoadPlayer> = querySnapshot.toObjects(LoadPlayer()::class.java)
 
         val document: DocumentSnapshot = querySnapshot.documents[randomInt]
 
@@ -602,37 +601,48 @@ data class Player(
         return tempLoadedPlayer
     }
 
-    fun startQuest(userIdIn: String, usernameIn: String, questIn: Quest){ // Starts quest document in firebase
+    fun returnServerTime(){ // PERMISSIONS ISSUE - FOLLOW UP
 
-        val timestamp1 = com.google.firebase.firestore.FieldValue.serverTimestamp()
-        val timestamp2 = com.google.firebase.firestore.FieldValue.serverTimestamp()
-
-        val questString = HashMap<String, Any?>()
-
-        questString["startTime"] = timestamp1
-        questString["lastCheckedTime"] = timestamp2
-        questString["name"] = questIn.name
-        questString["userId"] = userIdIn
-        questString["description"] = questIn.description
-        questString["level"] = questIn.level
-        questString["experience"] = questIn.experience
-        questString["money"] = questIn.money
-
-        db.collection("users").document(usernameIn).collection("quests").document(questIn.name).set(questString)
-    }
-    fun returnServerTime(): FieldValue {
-        return com.google.firebase.firestore.FieldValue.serverTimestamp()
-    }
-    fun calculateTime(usernameIn: String, questNameIn: String){
-
-        val docRef = db.collection("users").document(usernameIn).collection("quests").document(questNameIn)
+        val docRef = db.collection("users").document(username).collection("dateCalculation").document("tempDate")
 
         val updates = HashMap<String, Any>()
         updates["lastCheckedTime"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
 
-        docRef.update(updates).addOnCompleteListener { }
+        docRef.set(updates).addOnCompleteListener { }
+
+        Log.d("returnServerTime", "Function Fired")
     }
 
+
+    fun setActiveQuest(QuestIn:Quest){
+
+        val docRef = db.collection("users").document(username).collection("surfaces").document("activeQuest")
+
+        docRef.get().addOnSuccessListener { documentSnapshot ->
+
+            if (documentSnapshot.exists()){
+            }
+            else {
+                db.collection("users").document(username).collection("surfaces").document("activeQuest").set(QuestIn)
+            }
+
+        }
+
+    }
+    fun removeActiveQuest(){
+
+        val docRef = db.collection("users").document(username).collection("surfaces").document("activeQuest")
+
+        docRef.get().addOnSuccessListener { documentSnapshot ->
+
+            if (documentSnapshot.exists()){
+                db.collection("users").document(username).collection("surfaces").document("activeQuest").delete()
+            }
+            else {
+                Log.d("QuestRemoveDebug", "Not active quest found")
+            }
+        }
+    }
     fun loadPlayer(): Task<DocumentSnapshot> { // loads the player from Firebase
 
         val playerRef = db.collection("users").document(this.username)
