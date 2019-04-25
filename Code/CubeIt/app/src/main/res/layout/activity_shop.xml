@@ -154,6 +154,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/emptyslot"
         android:focusable="false"
+        android:scrollbars="vertical"
         android:gravity="center_horizontal"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline49"
@@ -197,15 +198,6 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline53"
         app:layout_constraintStart_toStartOf="@+id/guideline52"
         app:layout_constraintTop_toTopOf="@+id/guideline51" />
-
-    <fragment
-        android:id="@+id/fragmentMenuBarShop"
-        android:name="cz.cubeit.cubeit.Fragment_Menu_Bar"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/homeButtonBackShop"

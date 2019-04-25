@@ -106,103 +106,8 @@ class Adventure : AppCompatActivity() {
         viewPagerSideQ!!.adapter = ViewPagerAdapterAdventure(supportFragmentManager)
         viewPagerSideQ!!.offscreenPageLimit = 6
 
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuAdventure, Fragment_Menu_Bar()).commitNow()
-        var eventType = 0
-        var initialTouchY = 0f
-        var initialTouchX = 0f
-        var originalY = homeButtonBackAdventure.y
+        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuAdventure, Fragment_Menu_Bar.newInstance(R.id.viewPagerAdventure, R.id.frameLayoutMenuAdventure, R.id.homeButtonBackAdventure)).commitNow()
 
-        var menuAnimator = ValueAnimator()
-        var iconAnimator = ValueAnimator()
-        frameLayoutMenuAdventure.layoutParams.height = (displayY / 10 * 1.75).toInt()
-        var originalYMenu = (displayY / 10 * 8.25).toFloat()
-
-        homeButtonBackAdventure.layoutParams.height = (displayY / 10 * 1.8).toInt()
-        homeButtonBackAdventure.layoutParams.width = (displayY / 10 * 1.8).toInt()
-        homeButtonBackAdventure.y = -(displayY / 10 * 1.8).toFloat()
-
-        viewPagerAdventure.setOnTouchListener(object: Class_OnSwipeDragListener(this) {
-
-            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        originalYMenu = frameLayoutMenuAdventure.y
-                        originalY = homeButtonBackAdventure.y
-
-                        homeButtonBackAdventure.alpha = 1f
-                        //get the touch location
-                        initialTouchY = motionEvent.rawY
-                        initialTouchX = motionEvent.rawX
-
-                        eventType = if (motionEvent.rawY <= displayY / 10 * 3.5) {
-                            if(iconAnimator.isRunning)iconAnimator.pause()
-                            1
-                        } else {
-                            if(menuAnimator.isRunning)menuAnimator.pause()
-                            2
-                        }
-
-                        return false
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        when (eventType) {
-                            1 -> {
-                                if ((originalY + (motionEvent.rawY - initialTouchY).toInt()) < (displayY / 10*4)) {
-                                    iconAnimator = ValueAnimator.ofFloat(homeButtonBackAdventure.y, -(displayY / 10 * 1.8).toFloat()).apply{
-                                        duration = 400
-                                        addUpdateListener {
-                                            homeButtonBackAdventure.y = it.animatedValue as Float
-                                        }
-                                        start()
-                                    }
-                                } else {
-                                    val intent = Intent(this@Adventure, Home::class.java)
-                                    startActivity(intent)
-                                }
-                            }
-                            2 -> {
-                                if (frameLayoutMenuAdventure.y < (displayY / 10 * 8.25)) {
-                                    menuAnimator = ValueAnimator.ofFloat(frameLayoutMenuAdventure.y, (displayY / 10 * 8.25).toFloat()).apply {
-                                        duration = 400
-                                        addUpdateListener {
-                                            frameLayoutMenuAdventure.y = it.animatedValue as Float
-                                        }
-                                        start()
-                                    }
-                                }
-                            }
-                        }
-                        return false
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
-                            when(eventType) {
-                                1 -> {
-                                    homeButtonBackAdventure.y = ((originalY + (motionEvent.rawY - initialTouchY)) / 4)
-                                    homeButtonBackAdventure.alpha = (((originalY + (motionEvent.rawY - initialTouchY).toInt()) / (displayY / 100) / 100) * 3).toFloat()
-                                    homeButtonBackAdventure.rotation = (0.9 * (originalY + (initialTouchY - motionEvent.rawY).toInt() / ((displayY / 2) / 100))).toFloat()
-                                    homeButtonBackAdventure.drawable.setColorFilter(Color.rgb(255, 255, (2.55 * abs((originalY + (motionEvent.rawY - initialTouchY)).toInt() / ((displayY / 10 * 5) / 100) - 100)).toInt()), PorterDuff.Mode.MULTIPLY)
-                                    homeButtonBackAdventure.requestLayout()
-                                }
-                                2 -> {
-                                    if(frameLayoutMenuAdventure.y <= displayY){
-                                        frameLayoutMenuAdventure.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
-                                    }else{
-                                        if(initialTouchY > motionEvent.rawY){
-                                            frameLayoutMenuAdventure.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        return false
-                    }
-                }
-
-                return super.onTouch(view, motionEvent)
-            }
-        })
     }
 
     fun changeSurface(surfaceIndex:Int){
@@ -234,7 +139,7 @@ class Adventure : AppCompatActivity() {
 
         window.setOnDismissListener {
             window.dismiss()
-            player.currentSurfaces[surface].quests[index].rewriteQuest()
+            player.currentSurfaces[surface].quests[index].generateQuest()
         }
         buttonAccept.setOnClickListener {
             window.dismiss()
@@ -262,7 +167,7 @@ class Adventure : AppCompatActivity() {
 
         window.setOnDismissListener {
             window.dismiss()
-            player.currentSurfaces[surface].quests[index].rewriteQuest()
+            player.currentSurfaces[surface].quests[index].generateQuest()
         }
 
         window.isOutsideTouchable = false

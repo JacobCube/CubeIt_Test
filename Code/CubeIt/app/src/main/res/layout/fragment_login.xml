@@ -13,22 +13,17 @@
         android:src="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/Texguideline3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.53" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <android.support.constraint.Guideline
         android:id="@+id/Texguideline4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.56" />
+        app:layout_constraintGuide_percent="0.465" />
 
     <TextView
         android:id="@+id/TextEmail"
@@ -50,13 +45,6 @@
         app:layout_constraintGuide_percent="0.275" />
 
     <android.support.constraint.Guideline
-        android:id="@+id/guideline3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.4" />
-
-    <android.support.constraint.Guideline
         android:id="@+id/guideline68"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,29 +57,29 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:hint="e-mail"
+        android:textColorHint="@color/colorGrey"
         android:inputType="textEmailAddress"
         android:nextFocusForward="@id/inputPassLogin"
         android:textColor="@color/colorGrey"
         app:layout_constraintBottom_toTopOf="@+id/Texguideline7"
         app:layout_constraintEnd_toStartOf="@+id/guideline13"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toTopOf="@+id/Texguideline4"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
 
     <android.support.constraint.Guideline
         android:id="@+id/Texguideline7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.69" />
+        app:layout_constraintGuide_percent="0.592" />
 
     <android.support.constraint.Guideline
         android:id="@+id/Texguideline8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.719" />
+        app:layout_constraintGuide_percent="0.623" />
 
     <TextView
         android:id="@+id/textPassword"
@@ -110,7 +98,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.848" />
+        app:layout_constraintGuide_percent="0.75" />
 
     <EditText
         android:id="@+id/inputPassLogin"
@@ -118,6 +106,8 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:hint="password"
+        android:textColorHint="@color/colorGrey"
         android:inputType="textPassword"
         android:nextFocusForward="@id/resetPass"
         android:selectAllOnFocus="false"
@@ -171,7 +161,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.96" />
+        app:layout_constraintGuide_percent="0.862" />
 
     <ImageView
         android:id="@+id/buttonLogin"

@@ -7,18 +7,15 @@ import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
+import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import android.support.v4.app.Fragment
-import android.support.v4.text.HtmlCompat
-import android.text.Html
-import android.text.Spanned
 import android.util.Log
-import android.view.animation.Animation
-import android.widget.TextView
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -26,17 +23,16 @@ import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
-import org.w3c.dom.Document
-import java.text.DateFormat
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
 var playerListReturn: Array<Player>? = null
-
 //returned list of players in order to show them in fight board Base adapter(list)
 
-//var returnUsername: String = "player"
+var appVersion:Int = 0
+
+var loadedLogin = LoginStatus.LOGGING
 
 var drawableStorage = hashMapOf(
 //fixes bug: whenever project directory changes in drawables,
@@ -75,8 +71,23 @@ var drawableStorage = hashMapOf(
         ,"00406" to R.drawable.belt
         ,"00407" to R.drawable.basicattack
 
-
 )
+
+class LoadSpells(
+        val ID:String = "0",
+        val spells:MutableList<Spell> = mutableListOf()
+)
+class LoadItems(
+        val ID:String = "0",
+        val items:MutableList<Item> = mutableListOf()
+)
+
+var spellClasses:MutableList<LoadSpells> = mutableListOf()
+
+var itemClasses:MutableList<LoadItems> = mutableListOf()
+
+var charClasses: MutableList<CharClass> = mutableListOf()
+
 
 fun <K, V> getKey(map: Map<K, V>, value: V): K? {           //hashmap helper - get key by its value
     for ((key, value1) in map) {
@@ -87,12 +98,85 @@ fun <K, V> getKey(map: Map<K, V>, value: V): K? {           //hashmap helper - g
     return null
 }
 
-fun String.toSpanned(): Spanned {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        return Html.fromHtml(this, Html.FROM_HTML_MODE_LEGACY)
-    } else {
-        @Suppress("DEPRECATION")
-        return Html.fromHtml(this)
+fun loadGlobalData(): Task<QuerySnapshot> {
+    val db = FirebaseFirestore.getInstance()
+
+    val storyRef = db.collection("story")
+    val charClassesRef = db.collection("charclasses")
+    val spellsRef = db.collection("spells")
+    val itemsRef = db.collection("items")
+    val npcsRef = db.collection("npcs")
+    val versionPath = db.collection("app_Generic_Info").document("reqversion")
+
+    versionPath.get().addOnSuccessListener { documentSnapshot ->
+        appVersion = (documentSnapshot.get("version") as Long).toInt()
+    }
+
+    return storyRef.get().addOnSuccessListener { itStory: QuerySnapshot ->
+        storyQuests = itStory.toObjects(StoryQuest::class.java)
+    }.continueWithTask{
+        charClassesRef.get().addOnSuccessListener { itCharClass: QuerySnapshot ->
+            charClasses = itCharClass.toObjects(CharClass::class.java)
+        }
+    }.continueWithTask{
+        spellsRef.get().addOnSuccessListener { itSpells: QuerySnapshot ->
+            spellClasses = itSpells.toObjects(LoadSpells::class.java)
+        }
+    }.continueWithTask{
+        itemsRef.get().addOnSuccessListener { itItems: QuerySnapshot ->
+            itemClasses = itItems.toObjects(LoadItems::class.java)
+            Log.d("ItemClasses", itemClasses.size.toString())
+            Log.d("ItemClasses", itemClasses[0].items.size.toString())
+        }
+    }.continueWithTask{
+        npcsRef.get().addOnSuccessListener { itNpcs: QuerySnapshot ->
+            npcs = itNpcs.toObjects(NPC::class.java)
+        }
+    }
+}
+
+fun uploadAllGlobalData() {
+    val db = FirebaseFirestore.getInstance()
+
+    for(i in 0 until storyQuests.size){
+        db.collection("story").document(storyQuests[i].ID)
+                .set(hashMapOf<String, Any?>(storyQuests[i].ID to storyQuests[i])).addOnSuccessListener {
+                    Log.d("COMPLETED story", "$i")
+                }.addOnFailureListener {
+                    Log.d("story", "${it.cause}")
+                }
+    }
+    for(i in 0 until charClasses.size){
+        db.collection("charclasses").document(charClasses[i].ID.toString())
+                .set(hashMapOf<String, Any?>(charClasses[i].ID.toString() to charClasses[i])).addOnSuccessListener {
+                    Log.d("COMPLETED charclasses", "$i")
+                }.addOnFailureListener {
+                    Log.d("charclasses", "${it.cause}")
+                }
+    }
+    for(i in 0 until spellClasses.size){
+        db.collection("spells").document(spellClasses[i].ID)
+                .set(hashMapOf<String, Any?>(spellClasses[i].ID to spellClasses[i])).addOnSuccessListener {
+                    Log.d("COMPLETED spellclasses", "$i")
+                }.addOnFailureListener {
+                    Log.d("spellclasses", "${it.cause}")
+                }
+    }
+    for(i in 0 until itemClasses.size){
+        db.collection("items").document(itemClasses[i].ID)
+                .set(hashMapOf<String, Any?>(itemClasses[i].ID to itemClasses[i])).addOnSuccessListener {
+                    Log.d("COMPLETED itemclasses", "$i")
+                }.addOnFailureListener {
+                    Log.d("itemclasses", "${it.cause}")
+                }
+    }
+    for(i in 0 until npcs.size){
+        db.collection("npcs").document(npcs[i].ID)
+                .set(hashMapOf<String, Any?>(npcs[i].ID to npcs[i])).addOnSuccessListener {
+                    Log.d("COMPLETED npcs", "$i")
+                }.addOnFailureListener {
+                    Log.d("npcs", "${it.cause}")
+                }
     }
 }
 
@@ -124,6 +208,17 @@ fun getPlayerList(pageNumber:Int): Task<QuerySnapshot> { // returns each page
     }
 }
 
+class CharacterQuest(
+){
+    val description: String = "Default description"
+    val reward:Reward = Reward().generateReward(player)
+    val rewardText: String = reward.money.toString()
+
+    fun generateQuest(){
+
+    }
+}
+
 class SampleLifecycleListener(val context: Context) : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
@@ -146,7 +241,7 @@ class SampleLifecycleListener(val context: Context) : LifecycleObserver {
         }
         player.online = false
         player.toLoadPlayer().uploadPlayer()
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && player.appearOnTop){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && player.appearOnTop){
             if(Settings.canDrawOverlays(context)){
                 context.startService(Intent(context, ClassCubeItHeadService::class.java))
             }
@@ -157,6 +252,13 @@ class SampleLifecycleListener(val context: Context) : LifecycleObserver {
 data class CurrentSurface(
         var quests:MutableList<Quest> = mutableListOf()
 )
+
+enum class LoginStatus{
+    LOGGED,
+    UNLOGGED,
+    LOGGING,
+    CLOSELOADING
+}
 
 class BackgroundSoundService : Service() {
     var mediaPlayer = MediaPlayer()
@@ -194,6 +296,7 @@ class BackgroundSoundService : Service() {
     }
 }
 
+
 fun getRandomPlayer() {
     val db = FirebaseFirestore.getInstance() // Loads Firebase functions
 
@@ -203,6 +306,7 @@ fun getRandomPlayer() {
 
     docRef.get().addOnSuccessListener { querySnapshot ->
 
+        val playerList: MutableList<out LoadPlayer> = querySnapshot.toObjects(LoadPlayer()::class.java)
 
         val document: DocumentSnapshot = querySnapshot.documents[randomInt]
 
@@ -210,20 +314,6 @@ fun getRandomPlayer() {
 
         returnUsernameHelper(tempUsername)
     }
-}
-
-fun exceptionFormatter(errorIn:String):String{
-
-    if (errorIn.contains("com.google.firebase.auth")){
-
-        val regex: Regex = Regex("com.google.firebase.auth.\\w+\\: ")
-        return errorIn.replace(regex, "Error: ")
-    }
-    else {
-        Log.d("ExceptionFormatterError", "Failed to format exception, falling back to source")
-        return errorIn
-    }
-
 }
 
 fun getPlayerByUsername(usernameIn:String) {
@@ -243,6 +333,18 @@ fun getPlayerByUsername(usernameIn:String) {
     }
 }
 
+fun exceptionFormatter(errorIn:String):String{
+
+    return if (errorIn.contains("com.google.firebase.auth")){
+
+        val regex: Regex = Regex("com.google.firebase.auth.\\w+\\: ")
+        errorIn.replace(regex, "Error: ")
+    } else {
+        Log.d("ExceptionFormatterError", "Failed to format exception, falling back to source")
+        errorIn
+    }
+}
+
 fun returnUsernameHelper(input: String): Player{
 
     val returnPlayer = Player(username = input)
@@ -253,38 +355,40 @@ fun returnUsernameHelper(input: String): Player{
 }
 
 data class LoadPlayer(
-        var username:String = "loadPlayer",
-        val UserId:String = "",
-        var look:MutableList<Int> = player.look.toMutableList(),
-        var level:Int = player.level,
         var charClass:Int = player.charClass.ID,
-        var power:Int = player.power,
-        var armor:Int = player.armor,
-        var block:Double = player.block,
-        var dmgOverTime:Int = player.dmgOverTime,
-        var lifeSteal:Int = player.lifeSteal,
-        var health:Double = player.health,
-        var energy:Int = player.energy,
-        var adventureSpeed:Int = player.adventureSpeed,
-        var inventorySlots:Int = player.inventorySlots,
-        var inventory:MutableList<Item?> = mutableListOf(),
-        var equip: MutableList<Item?> = arrayOfNulls<Item?>(10).toMutableList(),
-        var backpackRunes: MutableList<Item?> = arrayOfNulls<Item?>(2).toMutableList(),
-        var learnedSpells:MutableList<Spell?> = mutableListOf(),
-        var chosenSpellsDefense:MutableList<Spell?> = mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null),
-        var chosenSpellsAttack:MutableList<Spell?> = arrayOfNulls<Spell?>(6).toMutableList(),
-        var money:Int = player.money,
-        var shopOffer:MutableList<Item?> = mutableListOf(),
-        var notifications:Boolean = player.notifications,
-        var music:Boolean = player.music,
-        var appearOnTop:Boolean = false,
-        var online:Boolean = true,
-        var experience: Int = 0,
-        var fame:Int = 0,
-        var newPlayer:Boolean = true,
-        var description: String = "",
-        var currentSurfaces:MutableList<CurrentSurface> = player.currentSurfaces
+        var username:String = "loadPlayer",
+        var level:Int = player.level,
+        val UserId:String = ""
 ){
+    var look:MutableList<Int> = player.look.toMutableList()
+    var power:Int = player.power
+    var armor:Int = player.armor
+    var block:Double = player.block
+    var dmgOverTime:Int = player.dmgOverTime
+    var lifeSteal:Int = player.lifeSteal
+    var health:Double = player.health
+    var energy:Int = player.energy
+    var adventureSpeed:Int = player.adventureSpeed
+    var inventorySlots:Int = player.inventorySlots
+    var inventory:MutableList<Item?> = mutableListOf()
+    var equip: MutableList<Item?> = arrayOfNulls<Item?>(10).toMutableList()
+    var backpackRunes: MutableList<Item?> = arrayOfNulls<Item?>(2).toMutableList()
+    var learnedSpells:MutableList<Spell?> = mutableListOf()
+    var chosenSpellsDefense:MutableList<Spell?> = mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+    var chosenSpellsAttack:MutableList<Spell?> = arrayOfNulls<Spell?>(6).toMutableList()
+    var money:Int = player.money
+    var shopOffer:MutableList<Item?> = mutableListOf()
+    var notifications:Boolean = player.notifications
+    var music:Boolean = player.music
+    var appearOnTop:Boolean = false
+    var online:Boolean = true
+    var experience: Int = 0
+    var fame:Int = 0
+    var newPlayer:Boolean = true
+    var description: String = ""
+    var currentSurfaces:MutableList<CurrentSurface> = player.currentSurfaces
+    var inbox:MutableList<InboxCategory> = player.inbox
+
     var db = FirebaseFirestore.getInstance() // Loads FireBase functions
 
     fun toPlayer(): Player{                                 //HAS TO BE LOADED AFTER LOADING ALL THE GLOBAL DATA (AS CHARCLASSES ETC.) !!
@@ -293,7 +397,7 @@ data class LoadPlayer(
 
         tempPlayer.username = this.username
         tempPlayer.level = this.level
-        tempPlayer.charClass = charClasses[this.charClass]
+        tempPlayer.charClassIndex = this.charClass
         tempPlayer.power = this.power
         tempPlayer.armor = this.armor
         tempPlayer.block = this.block
@@ -402,7 +506,7 @@ data class LoadPlayer(
                 "online" to this.online,
                 "newPlayer" to this.newPlayer,
                 "description" to this.description,
-                "lastLogin" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+                "lastLogin" to FieldValue.serverTimestamp()
         )
 
         val userString = HashMap<String, Any?>()
@@ -450,7 +554,7 @@ data class LoadPlayer(
         userString["online"] = this.online
         userString["newPlayer"] = this.newPlayer
         userString["description"] = this.description
-        userString["lastLogin"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
+        userString["lastLogin"] = FieldValue.serverTimestamp()
 
         return db.collection("users").document(this.username)
                 .update(userString)
@@ -491,54 +595,59 @@ data class LoadPlayer(
         userString["fame"] = this.fame
         userString["description"] = this.description
         userString["newPlayer"] = this.newPlayer
-        userString["lastLogin"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
+        userString["lastLogin"] = FieldValue.serverTimestamp()
 
         return db.collection("users").document(username).set(userString)
     }
 }
 
-data class Player(
+open class Player(
+        var charClassIndex: Int = 1,
         var username:String = "player",
-        var look:Array<Int> = arrayOf(0,0,0,0,0,0,0,0,0,0),
-        var level:Int = 10,
-        var charClass:CharClass = charClasses[1],
-        var power:Int = 40,
-        var armor:Int = 0,
-        var block:Double = 0.0,
-        var dmgOverTime:Int = 0,
-        var lifeSteal:Int = 0,
-        var health:Double = 175.0,
-        var energy:Int = 100,
-        var adventureSpeed:Int = 1,
-        var inventorySlots:Int = 8,
-        var inventory:MutableList<Item?> = arrayOfNulls<Item?>(8).toMutableList(),
-        var equip: Array<Item?> = arrayOfNulls(10),
-        var backpackRunes: Array<Runes?> = arrayOfNulls(2),
-        var learnedSpells:MutableList<Spell?> = mutableListOf(charClass.spellList[0], charClass.spellList[1], charClass.spellList[2], charClass.spellList[3], charClass.spellList[4]),
-        var chosenSpellsDefense:MutableList<Spell?> = mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null),
-        var chosenSpellsAttack:Array<Spell?> = arrayOfNulls(6),
-        var money:Int = 100,
-        var shopOffer:Array<Item?> = arrayOf(charClass.itemList[0], charClass.itemList[1], charClass.itemList[2], charClass.itemList[3], charClass.itemList[4], charClass.itemList[5], charClass.itemList[5], charClass.itemList[5]),
-        var notifications:Boolean = true,
-        var music:Boolean = true,
-        var experience: Int = 0,
-        var appearOnTop:Boolean = false,
-        var online:Boolean = true,
-        var fame:Int = 0,
-        var newPlayer:Boolean = true,
-        var description: String = "",
-        var currentSurfaces:MutableList<CurrentSurface> = mutableListOf(
-                CurrentSurface(mutableListOf(surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!))
-                ,CurrentSurface(mutableListOf(surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!))
-                ,CurrentSurface(mutableListOf(surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!))
-                ,CurrentSurface(mutableListOf(surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!))
-                ,CurrentSurface(mutableListOf(surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!))
-                ,CurrentSurface(mutableListOf(surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!)))
+        var level:Int = 10
 ){
-
-
+    val charClass: CharClass
+        get() = charClasses[charClassIndex]
+    var look:Array<Int> = arrayOf(0,0,0,0,0,0,0,0,0,0)
+    var inventory:MutableList<Item?> = arrayOfNulls<Item?>(8).toMutableList()
+    var equip: Array<Item?> = arrayOfNulls(10)
+    var backpackRunes: Array<Runes?> = arrayOfNulls(2)
+    var learnedSpells:MutableList<Spell?> = mutableListOf(Spell(), Spell(), Spell(), Spell(), Spell())
+    var chosenSpellsDefense:MutableList<Spell?> = mutableListOf(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+    var chosenSpellsAttack:Array<Spell?> = arrayOfNulls(6)
+    var money:Int = 100
+    var shopOffer:Array<Item?> = arrayOf(Item(),Item(),Item(),Item(),Item(),Item(),Item(),Item())
+    var notifications:Boolean = true
+    var music:Boolean = true
+    var experience: Int = 0
+    var appearOnTop:Boolean = false
+    var description: String = ""
+    var currentSurfaces:MutableList<CurrentSurface> = mutableListOf(
+            CurrentSurface(mutableListOf(surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!))
+            ,CurrentSurface(mutableListOf(surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!))
+            ,CurrentSurface(mutableListOf(surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!))
+            ,CurrentSurface(mutableListOf(surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!))
+            ,CurrentSurface(mutableListOf(surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!))
+            ,CurrentSurface(mutableListOf(surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!))
+    )
+    var power:Int = 40
+    var armor:Int = 0
+    var block:Double = 0.0
+    var dmgOverTime:Int = 0
+    var lifeSteal:Int = 0
+    var health:Double = 175.0
+    var energy:Int = 100
+    var adventureSpeed:Int = 1
+    var inventorySlots:Int = 8
+    var fame:Int = 0
+    var newPlayer:Boolean = true
+    var online:Boolean = true
     lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
     var db = FirebaseFirestore.getInstance() // Loads Firebase functions
+    val inbox = mutableListOf(InboxCategory(name = "General", color = Color.WHITE, ID = "0001", messages = mutableListOf(InboxMessage(), InboxMessage(), InboxMessage(), InboxMessage())),
+            InboxCategory(name = "Newsletter", color = Color.WHITE, ID = "0002", messages = mutableListOf(InboxMessage(), InboxMessage(), InboxMessage(), InboxMessage())),
+            InboxCategory(name = "Important", color = Color.WHITE, ID = "0003", messages = mutableListOf(InboxMessage(), InboxMessage(), InboxMessage(), InboxMessage())),
+            InboxCategory(name = "Spam", color = Color.WHITE, ID = "0004", messages = mutableListOf(InboxMessage(), InboxMessage(), InboxMessage(), InboxMessage())))
 
     fun toLoadPlayer():LoadPlayer{
         val tempLoadedPlayer = LoadPlayer()
@@ -610,44 +719,36 @@ data class Player(
 
     fun returnServerTime(){
 
-        val docRef = db.collection("users").document(username).collection("dateCalculation").document("tempDate")
+        val timestamp1 = FieldValue.serverTimestamp()
+        val timestamp2 = FieldValue.serverTimestamp()
 
-        val updates = HashMap<String, Any>()
-        updates["lastCheckedTime"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
+        val questString = HashMap<String, Any?>()
 
         docRef.set(updates).addOnCompleteListener { }
+        questString["startTime"] = timestamp1
+        questString["lastCheckedTime"] = timestamp2
+        questString["name"] = questIn.name
+        questString["userId"] = userIdIn
+        questString["description"] = questIn.description
+        questString["level"] = questIn.level
+        questString["experience"] = questIn.experience
+        questString["money"] = questIn.money
+
+        db.collection("users").document(usernameIn).collection("quests").document(questIn.name).set(questString)
+    }
+    fun returnServerTime(): FieldValue {
+        return FieldValue.serverTimestamp()
+    }
+    fun calculateTime(usernameIn: String, questNameIn: String){
+
+        val docRef = db.collection("users").document(usernameIn).collection("quests").document(questNameIn)
+
+        val updates = HashMap<String, Any>()
+        updates["lastCheckedTime"] = FieldValue.serverTimestamp()
+
+        docRef.update(updates).addOnCompleteListener { }
     }
 
-
-    fun setActiveQuest(QuestIn:Quest){
-
-        val docRef = db.collection("users").document(username).collection("surfaces").document("activeQuest")
-
-        docRef.get().addOnSuccessListener { documentSnapshot ->
-
-            if (documentSnapshot.exists()){
-            }
-            else {
-                db.collection("users").document(username).collection("surfaces").document("activeQuest").set(QuestIn)
-            }
-
-        }
-
-    }
-    fun removeActiveQuest(){
-
-        val docRef = db.collection("users").document(username).collection("surfaces").document("activeQuest")
-
-        docRef.get().addOnSuccessListener { documentSnapshot ->
-
-            if (documentSnapshot.exists()){
-                db.collection("users").document(username).collection("surfaces").document("activeQuest").delete()
-            }
-            else {
-                Log.d("QuestRemoveDebug", "Not active quest found")
-            }
-        }
-    }
     fun loadPlayer(): Task<DocumentSnapshot> { // loads the player from Firebase
 
         val playerRef = db.collection("users").document(this.username)
@@ -657,6 +758,7 @@ data class Player(
             val loadedPlayer: LoadPlayer? = documentSnapshot.toObject(LoadPlayer()::class.java)
 
             if(loadedPlayer!=null){
+
                 this.inventorySlots = loadedPlayer.inventorySlots
                 this.level = loadedPlayer.level
                 this.power = loadedPlayer.power
@@ -675,7 +777,7 @@ data class Player(
                 this.fame = loadedPlayer.fame
                 this.newPlayer = loadedPlayer.newPlayer
                 this.description = loadedPlayer.description
-                this.charClass = charClasses[loadedPlayer.charClass]
+                this.charClassIndex = loadedPlayer.charClass
 
 
                 for(i in 0 until loadedPlayer.chosenSpellsAttack.size){
@@ -686,14 +788,12 @@ data class Player(
                     this.chosenSpellsDefense[i] = if(loadedPlayer.chosenSpellsDefense[i]!=null)loadedPlayer.chosenSpellsDefense[i]!! else null
                 }
 
+                this.learnedSpells = arrayOfNulls<Spell?>(loadedPlayer.learnedSpells.size).toMutableList()
                 for(i in 0 until loadedPlayer.learnedSpells.size){
                     this.learnedSpells[i] = if(loadedPlayer.learnedSpells[i]!=null)loadedPlayer.learnedSpells[i]!! else null
                 }
 
                 this.inventory = arrayOfNulls<Item?>(loadedPlayer.inventorySlots).toMutableList()
-                Log.d("LOADING ITEM SLOTS: ", this.inventorySlots.toString())
-                Log.d("LOADING ITEMS: ", this.inventory.size.toString())
-                Log.d("LOADING ITEMS loaded: ", loadedPlayer.inventory.size.toString())
                 for(i in 0 until loadedPlayer.inventory.size){
                     this.inventory[i] = when(loadedPlayer.inventory[i]?.type){
                         "Wearable" -> (loadedPlayer.inventory[i])!!.toWearable()
@@ -779,8 +879,8 @@ data class Player(
         this.armor = (armor * this.charClass.armorRatio / (this.level*2)).toInt()
         this.block = (block * this.charClass.blockRatio / (this.level*2)).toInt().toDouble()
         this.power = (power * this.charClass.dmgRatio).toInt()
-        this.energy = (energy * this.charClass.staminaRatio).toInt()
-        this.dmgOverTime = dmgOverTime
+        this.energy = ((energy * this.charClass.staminaRatio)/this.level/2).toInt()
+        this.dmgOverTime = (dmgOverTime * this.charClass.dmgRatio).toInt()
         this.lifeSteal = (lifeSteal / (this.level*2))
         this.adventureSpeed = adventureSpeed
         this.inventorySlots = inventorySlots
@@ -817,13 +917,14 @@ class Spell(
         var energy:Int = 0,
         var power:Int = 0,
         var stun:Int = 0,
-        var dmgOverTime:DamageOverTime = DamageOverTime(0,0.0,0),
+        val dmgOverTime:DamageOverTime = DamageOverTime(0,0.0,0),
         var level:Int = 0,
         var description:String = "",
         var lifeSteal: Int = 0,
         var ID:String = "0001",
         var block:Double = 1.0,
-        var grade:Int = 1
+        var grade:Int = 1,
+        var animation:Int = 0
 ){
     val drawable:Int
         get() = drawableStorage[inDrawable]!!
@@ -846,20 +947,29 @@ class CharClass(
         var armorRatio:Double = 0.0,
         var lifeSteal:Boolean = false,
         var inDrawable:String = "00200",
-        var itemList:List<Item?> = listOf(),
-        var spellList:List<Spell?> = listOf(),
+        var itemListIndex:Int = ID,
+        var spellListIndex: Int = ID,
         var name:String = "",
         var description:String = "",
         var description2:String = "",
-        var itemlistUniversal:List<Item?> = listOf(),
-        var spellListUniversal:List<Spell?> = listOf()
+        var itemlistUniversalIndex: Int = 0,
+        var spellListUniversalIndex: Int = 0
 
 ) {
     val drawable: Int
         get() = drawableStorage[inDrawable]!!
+    val itemList: MutableList<Item>
+        get() = itemClasses[itemListIndex].items
+    val spellList: MutableList<Spell>
+        get() = spellClasses[spellListIndex].spells
+    val itemListUniversal: MutableList<Item>
+        get() = itemClasses[itemlistUniversalIndex].items
+    val spellListUniversal: MutableList<Spell>
+        get() = spellClasses[spellListUniversalIndex].spells
 }
 
 open class Item(
+        inID:String = "",
         inName:String = "",
         inType:String = "",
         inDrawable:String = "00101",
@@ -880,6 +990,7 @@ open class Item(
         inSlot:Int = 0,
         inPrice:Int = 0
 ){
+    open var ID:String = inID
     open var name:String = inName
     open var type = inType
     open var drawableIn:String = inDrawable
@@ -899,11 +1010,11 @@ open class Item(
     open var inventorySlots:Int = inInventorySlots
     open var slot: Int = inSlot
     open var price:Int = inPrice
-    var drawable:Int = 0
+    val drawable:Int
         get() = drawableStorage[drawableIn]!!
 
     fun getStats():String{
-        var textView = "${this.name}<br/>${when(this.quality){
+        var textView = "${this.name}    ${this.price}<br/>${when(this.quality){
             0 -> "<font color='grey'>Poor</font>"
             1 -> "<font color='olive'>Common</font>"
             2 -> "<font color='green'>Uncommon</font>"
@@ -926,17 +1037,106 @@ open class Item(
             8 -> "Warrior"
             else -> "unspecified"
         }}<br/>${this.description}"
+
+
         if(this.power!=0) textView+="<br/>Power: ${this.power}"
         if(this.armor!=0) textView+="<br/>Armor: ${this.armor}"
         if(this.block!=0) textView+="<br/>Block/dodge: ${this.block}"
         if(this.dmgOverTime!=0) textView+="<br/>DMG over time: ${this.dmgOverTime}"
-        if(this.lifeSteal!=0) textView+="<br/>Lifesteal: ${this.lifeSteal}%"
+        if(this.lifeSteal!=0) textView+="<br/>Lifesteal: ${this.lifeSteal}"
         if(this.health!=0) textView+="<br/>Health: ${this.health}"
         if(this.energy!=0) textView+="<br/>Energy: ${this.energy}"
         if(this.adventureSpeed!=0) textView+="<br/>Adventure speed: ${this.adventureSpeed}"
         if(this.inventorySlots!=0) textView+="<br/>Inventory slots: ${this.inventorySlots}"
+
         return textView
     }
+
+    fun getStatsCompare():String{
+        var textView = "${this.name}    ${this.price}<br/>${when(this.quality){
+            0 -> "<font color='grey'>Poor</font>"
+            1 -> "<font color='olive'>Common</font>"
+            2 -> "<font color='green'>Uncommon</font>"
+            3 -> "<font color=#ADD8E6>Rare</font>"
+            4 -> "<font color=#0000A0>Very rare</font>"
+            5 -> "<font color='blue'>Epic gamer item</font>"
+            6 -> "<font color='orange'>Legendary</font>"
+            7 -> "<font color='cyan'>Heirloom</font>"
+            else -> "unspecified"
+        }
+        }<br/>${when(this.charClass){
+            0 -> "everyone"
+            1 -> "Vampire"
+            2 -> "Dwarf"
+            3 -> "Archer"
+            4 -> "Wizard"
+            5 -> "Sniper"
+            6 -> "Mermaid"
+            7 -> "Elf"
+            8 -> "Warrior"
+            else -> "unspecified"
+        }}<br/>${this.description}"
+
+        var tempItem:Item? = null
+        when(this){
+            is Runes -> {
+                tempItem = player.backpackRunes[this.slot-10]
+            }
+            is Wearable, is Weapon -> {
+                tempItem = player.equip[this.slot]
+            }
+        }
+
+        if(tempItem!=null){
+            if(tempItem.power!=0 || this.power!=0) textView+= if(tempItem.power <= this.power){
+                "<br/>power: <font color='lime'> +${this.power - tempItem.power}</font>"
+            }else "<br/>power: <font color='red'> ${this.power - tempItem.power}</font>"
+
+            if(tempItem.armor!=0 || this.armor!=0) textView+= if(tempItem.armor <= this.armor){
+                "<br/>armor: <font color='lime'> +${this.armor - tempItem.armor}</font>"
+            }else "<br/>armor: <font color='red'> ${this.armor - tempItem.armor}</font>"
+
+            if(tempItem.block!=0 || this.block!=0) textView+= if(tempItem.block <= this.block){
+                "<br/>block: <font color='lime'> +${this.block - tempItem.block}</font>"
+            }else "<br/>block: <font color='red'> ${this.block - tempItem.block}</font>"
+
+            if(tempItem.dmgOverTime!=0 || this.dmgOverTime!=0) textView+= if(tempItem.dmgOverTime <= this.dmgOverTime){
+                "<br/>dmg over time: <font color='lime'> +${this.dmgOverTime - tempItem.dmgOverTime}</font>"
+            }else "<br/>dmg over time: <font color='red'> ${this.dmgOverTime - tempItem.dmgOverTime}</font>"
+
+            if(tempItem.lifeSteal!=0 || this.lifeSteal!=0) textView+= if(tempItem.lifeSteal <= this.lifeSteal){
+                "<br/>life steal: <font color='lime'> +${this.lifeSteal - tempItem.lifeSteal}</font>"
+            }else "<br/>life steal: <font color='red'> ${this.lifeSteal - tempItem.lifeSteal}</font>"
+
+            if(tempItem.health!=0 || this.health!=0) textView+= if(tempItem.health <= this.health){
+                "<br/>health: <font color='lime'> +${this.health - tempItem.health}</font>"
+            }else "<br/>health: <font color='red'> ${this.health - tempItem.health}</font>"
+
+            if(tempItem.energy!=0 || this.energy!=0) textView+= if(tempItem.energy <= this.energy){
+                "<br/>energy: <font color='lime'> +${this.energy - tempItem.energy}</font>"
+            }else "<br/>energy: <font color='red'> ${this.energy - tempItem.energy}</font>"
+
+            if(tempItem.adventureSpeed!=0 || this.adventureSpeed!=0) textView+= if(tempItem.adventureSpeed <= this.adventureSpeed){
+                "<br/>adventure speed: <font color='lime'> +${this.adventureSpeed - tempItem.adventureSpeed}</font>"
+            }else "<br/>adventure speed: <font color='red'> ${this.adventureSpeed - tempItem.adventureSpeed}</font>"
+
+            if(tempItem.inventorySlots!=0 || this.inventorySlots!=0) textView+= if(tempItem.inventorySlots <= this.inventorySlots){
+                "<br/>inventory slots: <font color='lime'> +${this.inventorySlots - tempItem.inventorySlots}</font>"
+            }else "<br/>inventory slots: <font color='red'> ${this.inventorySlots - tempItem.inventorySlots}</font>"
+        }else{
+            if(this.power!=0) textView+="<br/>Power: ${this.power}"
+            if(this.armor!=0) textView+="<br/>Armor: ${this.armor}"
+            if(this.block!=0) textView+="<br/>Block/dodge: ${this.block}"
+            if(this.dmgOverTime!=0) textView+="<br/>DMG over time: ${this.dmgOverTime}"
+            if(this.lifeSteal!=0) textView+="<br/>Lifesteal: ${this.lifeSteal}"
+            if(this.health!=0) textView+="<br/>Health: ${this.health}"
+            if(this.energy!=0) textView+="<br/>Energy: ${this.energy}"
+            if(this.adventureSpeed!=0) textView+="<br/>Adventure speed: ${this.adventureSpeed}"
+            if(this.inventorySlots!=0) textView+="<br/>Inventory slots: ${this.inventorySlots}"
+        }
+        return textView
+    }
+
     fun toWearable(): Wearable {
         return Wearable(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
                 armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price)
@@ -955,12 +1155,12 @@ fun returnItem(player:Player): MutableList<Item?> {
     val arrayTemp:MutableList<Item?> = mutableListOf()
 
     for(i in player.charClass.itemList){
-        if(i!!.levelRq in player.level-50..player.level){
+        if(i.levelRq in player.level-50..player.level){
             arrayTemp.add(i)
         }
     }
-    for(i in player.charClass.itemlistUniversal){
-        if(i!!.levelRq in player.level-50..player.level){
+    for(i in player.charClass.itemListUniversal){
+        if(i.levelRq in player.level-50..player.level){
             arrayTemp.add(i)
         }
     }
@@ -970,8 +1170,7 @@ fun returnItem(player:Player): MutableList<Item?> {
 fun generateItem(player:Player, inQuality: Int? = null):Item?{
 
     val tempArray:MutableList<Item?> = returnItem(player)
-    val itemReturned = tempArray[nextInt(0, tempArray.size)]
-    val itemTemp:Item? = when(itemReturned){
+    val itemTemp:Item? = when(val itemReturned = tempArray[nextInt(0, tempArray.size)]){
         is Weapon->Weapon(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
         is Wearable->Wearable(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
         is Runes->Runes(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
@@ -1064,7 +1263,7 @@ data class Reward(
     var type = inType
     var item: Item? = null
 
-    fun generateReward(inPlayer:Player = player){
+    fun generateReward(inPlayer:Player = player):Reward{
         if(type == null){
             type = when(nextInt(0,10001)){                   //quality of an item by percentage
                 in 0 until 3903 -> 0        //39,03%
@@ -1103,6 +1302,8 @@ data class Reward(
         }
         money = 5 * player.level * (type!! +1)
         experience = 10 * player.level * (type!! +1)
+
+        return this
     }
     fun getStats():String{
         return "experience  ${this.experience}\nCubeIt coins  ${this.money}"
@@ -1110,6 +1311,7 @@ data class Reward(
 }
 
 data class Wearable(
+        override var ID: String = "",
         override var name:String = "",
         override var type:String = "",
         override var drawableIn:String = "",
@@ -1129,9 +1331,10 @@ data class Wearable(
         override var inventorySlots: Int = 0,
         override var slot:Int = 0,
         override var price:Int = 0
-):Item(name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
+):Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
 
 data class Runes(
+        override var ID: String = "",
         override var name:String = "",
         override var type:String = "",
         override var drawableIn:String = "",
@@ -1151,9 +1354,10 @@ data class Runes(
         override var inventorySlots: Int = 0,
         override var slot:Int = 0,
         override var price:Int = 0
-):Item(name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
+):Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
 
 data class Weapon(
+        override var ID: String = "",
         override var name:String = "",
         override var type:String = "",
         override var drawableIn:String = "",
@@ -1173,33 +1377,36 @@ data class Weapon(
         override var inventorySlots: Int = 0,
         override var slot:Int = 0,
         override var price:Int = 0
-):Item(name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
+):Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
 
 class StoryQuest(
         val ID: String = "0001",
         val name:String = "",
         val description: String = "",
         difficulty:Int = 0,
-        val experience: Int = 0,
-        val money:Int = 0,
         val chapter:Int = 0,
         val completed:Boolean = false,
         var progress:Int = 0,
         val slides:MutableList<StorySlide> = mutableListOf()
 ){
     val reward = Reward(difficulty)
+    val experience: Int = 0
+    val money:Int = 0
 }
 
 class StorySlide(
         val textContent:String = "",
         val fragment:Fragment = Fragment(),
-        val images:MutableList<StoryImage> = mutableListOf()
-)
+        val images:MutableList<StoryImage> = mutableListOf(),
+        val difficulty: Int
+){
+    val enemy:NPC = NPC().generateNPC()
+}
 
 class StoryImage(
         val imageID:String = "",
-        val animIn: Animation,
-        val animOut: Animation
+        val animIn: Int = 0,
+        val animOut: Int = 0
 
         ){
     val drawable:Int
@@ -1220,11 +1427,26 @@ class marketOffer(
 }
 
 class NPC(
+        var ID: String = "",
         var name:String = "",
         var difficulty: Int = 0,
         var description: String = "",
-        var levelAppearance:Int = 0
-)
+        var levelAppearance:Int = 0,
+        var level:Int = 0,
+        var chosenSpellsDefense: MutableList<Spell?> = mutableListOf(),
+        var power:Int = 40,
+        var armor:Int = 0,
+        var block:Double = 0.0,
+        var dmgOverTime:Int = 0,
+        var lifeSteal:Int = 0,
+        var health:Double = 175.0,
+        var energy:Int = 100
+){
+    fun generateNPC(): NPC {
+        this.level = levelAppearance
+        return this
+    }
+}
 
 class Quest(
         val ID: String = "0001",
@@ -1235,9 +1457,8 @@ class Quest(
         var money:Int = 0,
         val surface:Int = 0
 ){
-    fun rewriteQuest(difficulty:Int? = null){
-        val reward = difficulty?.let { Reward(it) } ?: Reward()
-        reward.generateReward()
+    fun generateQuest(difficulty:Int? = null):Quest{
+        val reward = difficulty?.let { Reward(it).generateReward(player) } ?: Reward().generateReward(player)
         val randQuest = surfaces[surface].quests.values.toTypedArray()[nextInt(0,surfaces[surface].quests.values.size)]
 
         this.name = randQuest.name
@@ -1245,6 +1466,8 @@ class Quest(
         this.level = reward.type!!
         this.experience = reward.experience
         this.money = reward.money
+
+        return this
     }
 
     fun getStats(resources:Resources): String {
@@ -1262,12 +1485,49 @@ class Quest(
                 }) + "<br/>experience: ${resources.getString(R.string.quest_number,this.experience)}<br/>${resources.getString(R.string.quest_number,this.money)}"
     }
 }
-open class Surface(
+
+class InboxCategory(
+        var name: String = "My category",
+        var color:Int = Color.BLUE,
+        val ID:String = "0001",
+        var messages: MutableList<InboxMessage> = mutableListOf()
+)
+
+class InboxMessage(
+        val priority:Int = 1,
+        val sender:String = "Newsletter",
+        val reciever:String = "Reciever",
+        val content:String = "Content",
+        var objectMessage:String = "object",
+        val ID:String = "0001"
+){
+    var deleteTime:FieldValue? = null
+    var status:MessageStatus = MessageStatus.New
+    set(value){
+        if(value == MessageStatus.Deleted)deleteTime = FieldValue.serverTimestamp()
+        field = value
+    }
+}
+
+enum class MessageStatus{
+    Read,
+    Deleted,
+    New,
+    Spam
+}
+
+class Surface(
         val background:Int = 0,
         val quests:HashMap<String, Quest>
 )
 
-val surfaces:List<Surface> = listOf(Surface(R.drawable.map0, hashMapOf(         //should be cloud saved
+var storyQuests: MutableList<StoryQuest> = mutableListOf(
+        StoryQuest(ID = "0001", name = "Story quest template", description = "Template story quest description", difficulty = 1)
+)
+
+var npcs = mutableListOf(NPC(ID = "0"), NPC(ID = "1"))
+
+var surfaces:List<Surface> = listOf(Surface(R.drawable.map0, hashMapOf(         //should be cloud saved
         "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 0),
         "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 0),
         "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 0),
@@ -1320,327 +1580,3 @@ val surfaces:List<Surface> = listOf(Surface(R.drawable.map0, hashMapOf(         
                 "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 5),
                 "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 5),
                 "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 5))))
-
-
-class LoadSpells(
-        val spells:List<Spell> = listOf()
-)
-class LoadItems(
-        val items:List<Item> = listOf()
-)
-
-val spellClasses:List<LoadSpells> = listOf(             //should be cloud saved
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        )),
-        LoadSpells(listOf(
-                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
-                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
-                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
-                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
-                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
-        ))
-)
-
-val itemClasses:List<LoadItems> = listOf(                   //should be cloud saved
-        LoadItems(listOf(
-                Runes(name = "Backpack", type = "Runes", drawableIn =  "00303", levelRq =  1, quality =  0, charClass =  0, description =  "Why is all your stuff so heavy?!", slot = 10, price = 1)
-                ,Runes(name = "Zipper", type = "Runes", drawableIn =  "00300", levelRq =  1, quality =  0, charClass =  0, description =  "Helps you take enemy's loot faster", slot = 11, price = 1)
-                ,Wearable(name = "Universal item 1", type =  "Wearable", drawableIn = "00301", levelRq =  1, quality =  0, charClass = 0, description =  "For everyone", slot = 2, price = 1)
-                ,Wearable(name ="Universal item 2", type =  "Wearable", drawableIn =  "00302", levelRq =  1, quality = 0, charClass =  0, description =  "Not for everyone", slot =  3, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 1, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 1, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 1, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 1, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 1, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 1, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 1, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 1, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 2, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 2, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 2, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 2, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 2, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 2, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 2, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 2, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 3, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 3, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 3, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 3, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 3, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 3, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 3, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 3, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 4, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 4, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 4, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 4, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 4, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 4, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 4, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 4, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 5, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 5, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 5, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 5, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 5, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 5, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 5, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 5, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 6, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 6, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 6, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 6, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 6, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 6, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 6, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 6, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 7, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 7, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 7, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 7, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 7, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 7, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 7, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 7, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        )),
-        LoadItems(listOf(
-                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 8, description = "The most sold weapon on black market", slot = 0, price = 1)
-                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 8, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
-                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 8, description = "I can't breath", slot = 4, price = 1)
-                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 8, description = "What is that smell?", slot = 5, price = 1)
-                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 8, description = "Can't carry it anymore", slot = 6, price = 1)
-                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 8, description = "Tight not high", slot = 7, price = 1)
-                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 8, description = "Chestplate protects!", slot = 8, price = 1)
-                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 8, description = "This doesn't make you any more clever", slot = 9, price = 1)
-        ))
-)
-
-
-val charClasses: Array<CharClass>                       //should be cloud saved
-        = arrayOf(
-        //global list of characters, that are currently in the game, all of them have their IDs, by whom they're recognized in code, in database is loaded only the ID,
-        // in order to have separated data and not having everything saved only in player's account, which may cause a weak points of code and cheating
-
-        CharClass(
-                ID = 0,
-                dmgRatio = 10.0,
-                armorRatio = 1.0,
-                blockRatio = 0.0,
-                hpRatio = 175.0,
-                lifeSteal = false,
-                staminaRatio = 100.0,
-                inDrawable = "00200",
-                itemList = itemClasses[0].items,
-                spellList = spellClasses[0].spells,
-                name = "everyone",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),    //for counting stats - basically universal
-        CharClass(
-                ID = 1,
-                dmgRatio = 0.75,
-                armorRatio = 1.0,
-                blockRatio = 20.0,
-                hpRatio = 1.42,
-                lifeSteal = true,
-                staminaRatio = 2.0,
-                inDrawable = "00200",
-                itemList = itemClasses[1].items,
-                spellList = spellClasses[1].spells,
-                name = "vampire",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),
-        CharClass(
-                ID = 2,
-                dmgRatio = 1.5,
-                armorRatio = 0.6,
-                blockRatio = 15.0,
-                hpRatio = 1.14,
-                lifeSteal = false,
-                staminaRatio = 1.0,
-                inDrawable = "00201",
-                itemList = itemClasses[2].items,
-                spellList = spellClasses[2].spells,
-                name = "dwarf",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),
-        CharClass(
-                ID = 3,
-                dmgRatio = 1.0,
-                armorRatio = 1.0,
-                blockRatio = 20.0,
-                hpRatio = 1.71,
-                lifeSteal = false,
-                staminaRatio = 1.2,
-                inDrawable = "00202",
-                itemList = itemClasses[3].items,
-                spellList = spellClasses[3].spells,
-                name = "archer",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),
-        CharClass(
-                ID = 4,
-                dmgRatio = 1.25,
-                armorRatio = 0.9,
-                blockRatio = 10.0,
-                hpRatio = 1.71,
-                lifeSteal = false,
-                staminaRatio = 1.0,
-                inDrawable = "00203",
-                itemList = itemClasses[4].items,
-                spellList = spellClasses[4].spells,
-                name = "wizard",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),
-        CharClass(
-                ID = 5,
-                dmgRatio = 1.25,
-                armorRatio = 1.0,
-                blockRatio = 5.0,
-                hpRatio = 1.14,
-                lifeSteal = false,
-                staminaRatio = 1.5,
-                inDrawable = "00204",
-                itemList = itemClasses[5].items,
-                spellList = spellClasses[5].spells,
-                name = "sniper",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),
-        CharClass(
-                ID = 6,
-                dmgRatio = 1.0,
-                armorRatio = 0.95,
-                blockRatio = 45.0,
-                hpRatio = 1.57,
-                lifeSteal = false,
-                staminaRatio = 1.5,
-                inDrawable = "00205",
-                itemList = itemClasses[6].items,
-                spellList = spellClasses[6].spells,
-                name = "mermaid",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),
-        CharClass(
-                ID = 7,
-                dmgRatio = 0.75,
-                armorRatio = 0.9,
-                blockRatio = 25.0,
-                hpRatio = 1.0,
-                lifeSteal = false,
-                staminaRatio = 1.5,
-                inDrawable = "00206",
-                itemList = itemClasses[7].items,
-                spellList = spellClasses[7].spells,
-                name = "elf",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        ),
-        CharClass(
-                ID = 8,
-                dmgRatio = 1.25,
-                armorRatio = 0.8,
-                blockRatio = 0.0,
-                hpRatio = 2.85,
-                lifeSteal = false,
-                staminaRatio = 0.6,
-                inDrawable = "00207",
-                itemList = itemClasses[8].items,
-                spellList = spellClasses[8].spells,
-                name = "warrior",
-                description = "",
-                description2 = "",
-                itemlistUniversal = itemClasses[0].items,
-                spellListUniversal = spellClasses[0].spells
-        )
-)

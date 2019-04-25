@@ -11,6 +11,7 @@ import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_character_customization.*
 
 
@@ -40,6 +41,8 @@ class Activity_Character_Customization(private val inputUsername:String = "", pr
             }
         }
 
+        textViewCurrentCharacter.text = "Vampire"
+
         viewPagerCharacterCustomization.offscreenPageLimit = 8
         viewPagerCharacterCustomization.setCurrentItem(3, true)
 
@@ -55,22 +58,16 @@ class Activity_Character_Customization(private val inputUsername:String = "", pr
             }
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-
+                viewPagerPosition = viewPagerCharacterCustomization.currentItem
             }
             override fun onPageSelected(position: Int) {
                 viewPagerPosition = position
-                textViewCurrentCharacter.text = when(position+1){
-                    0 -> "everyone"
-                    1 -> "Vampire"
-                    2 -> "Dwarf"
-                    3 -> "Archer"
-                    4 -> "Wizard"
-                    5 -> "Sniper"
-                    6 -> "Mermaid"
-                    7 -> "Elf"
-                    8 -> "Warrior"
-                    else -> "unspecified"
-                }
+                viewPagerPosition = viewPagerCharacterCustomization.currentItem
+
+                textViewCurrentCharacter.text = charClasses[viewPagerPosition+1].name
+                textViewStatsCustomization.text = getString(R.string.character_ratio, (charClasses[position+1].dmgRatio*100).toString() + "%",(charClasses[position+1].armorRatio*100).toString() + "%", (charClasses[position+1].blockRatio*100).toString() + "%", (charClasses[position+1].hpRatio*100).toString() + "%", (charClasses[position+1].staminaRatio*100).toString() + "%", charClasses[position+1].lifeSteal.toString())
+                textViewCharacterDescription.text = charClasses[position+1].description
+                Toast.makeText(this@Activity_Character_Customization, position.toString(), Toast.LENGTH_LONG).show()
             }
         })
 
@@ -93,18 +90,14 @@ class Activity_Character_Customization(private val inputUsername:String = "", pr
         })
 
         buttonContinueCustomization.setOnClickListener {
-            val progress = ProgressDialog(this)
-            progress.setTitle("Saving...")
-            progress.setMessage("We are checking your changes, sorry for interruption")
-            progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
-            progress.show()
-            player.charClass = charClasses[viewPagerPosition+1]
+            val intent = Intent(this, Activity_Splash_Screen::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+
+            player.charClassIndex = viewPagerPosition+1
             player.newPlayer = false
             player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
-                    progress.dismiss()
-                    val intent = Intent(this, Home::class.java)
-                    startActivity(intent)
-                    this.overridePendingTransition(0,0)
+                loadedLogin = LoginStatus.LOGGED
             }
         }
 

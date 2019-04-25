@@ -12,8 +12,8 @@
         android:id="@+id/imageViewActivityFightBoard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@color/loginColor"
         android:scaleType="fitXY"
+        android:src="@color/loginColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -31,17 +31,6 @@
         app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
-
-    <ImageView
-        android:id="@+id/changeFragmentProfile"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:src="@drawable/setting3rows"
-        android:tint="@color/colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline77"
-        app:layout_constraintStart_toStartOf="@+id/guideline81" />
 
     <ListView
         android:id="@+id/listViewPlayers"
@@ -120,6 +109,31 @@
         app:layout_constraintStart_toStartOf="parent"
 
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewLoadingBoard"
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="2dp"
+        android:alpha="0.5"
+        android:src="@drawable/icon_app"
+        android:tint="@color/colorGrey"
+        android:tintMode="multiply"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <ImageView
+        android:id="@+id/changeFragmentProfile"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/setting3rows"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline77"
+        app:layout_constraintStart_toStartOf="@+id/guideline81" />
 
     <FrameLayout
         android:id="@+id/frameLayoutMenuBoard"

@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Html
+import android.text.method.ScrollingMovementMethod
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.animation.Animation
@@ -55,7 +56,7 @@ class ActivityShop : AppCompatActivity(){
         player.syncStats()
         setContentView(R.layout.activity_shop)
         textViewMoney.text = player.money.toString()
-        this.fragmentMenuBarShop.buttonShop.isClickable = false
+        textViewInfoItem.movementMethod = ScrollingMovementMethod()
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -72,106 +73,8 @@ class ActivityShop : AppCompatActivity(){
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
 
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuShop, Fragment_Menu_Bar()).commitNow()
-        var eventType = 0
-        var initialTouchY = 0f
-        var initialTouchX = 0f
-        var originalY = homeButtonBackShop.y
-
-        var menuAnimator = ValueAnimator()
-        var iconAnimator = ValueAnimator()
-        val displayY = dm.heightPixels.toDouble()
-        frameLayoutMenuShop.layoutParams.height = (displayY / 10 * 1.75).toInt()
-        frameLayoutMenuShop.y = (displayY/10*1.75).toFloat()
-        var originalYMenu = (displayY / 10 * 8.25).toFloat()
-
-        homeButtonBackShop.layoutParams.height = (displayY / 10 * 1.8).toInt()
-        homeButtonBackShop.layoutParams.width = (displayY / 10 * 1.8).toInt()
-        homeButtonBackShop.y = -(displayY / 10 * 1.8).toFloat()
-
-        imageViewActivityShop.setOnTouchListener(object: Class_OnSwipeDragListener(this) {
-
-            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-                if(menuAnimator.isRunning)menuAnimator.pause()
-
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        originalYMenu = frameLayoutMenuShop.y
-                        originalY = homeButtonBackShop.y
-
-                        homeButtonBackShop.alpha = 1f
-                        //get the touch location
-                        initialTouchY = motionEvent.rawY
-                        initialTouchX = motionEvent.rawX
-
-                        eventType = if (motionEvent.rawY <= displayY / 10 * 3.5) {
-                            if(iconAnimator.isRunning)iconAnimator.pause()
-                            1
-                        } else {
-                            if(menuAnimator.isRunning)menuAnimator.pause()
-                            2
-                        }
-
-                        return true
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        when (eventType) {
-                            1 -> {
-                                if ((originalY + (motionEvent.rawY - initialTouchY).toInt()) < (displayY / 10*4)) {
-                                    iconAnimator = ValueAnimator.ofFloat(homeButtonBackShop.y, -(displayY / 10 * 1.8).toFloat()).apply{
-                                        duration = 400
-                                        addUpdateListener {
-                                            homeButtonBackShop.y = it.animatedValue as Float
-                                        }
-                                        start()
-                                    }
-                                } else {
-                                    val intent = Intent(this@ActivityShop, Home::class.java)
-                                    startActivity(intent)
-                                }
-                            }
-                            2 -> {
-                                if (frameLayoutMenuShop.y < (displayY / 10 * 8.25)) {
-                                    menuAnimator = ValueAnimator.ofFloat(frameLayoutMenuShop.y, (displayY / 10 * 8.25).toFloat()).apply {
-                                        duration = 400
-                                        addUpdateListener {
-                                            frameLayoutMenuShop.y = it.animatedValue as Float
-                                        }
-                                        start()
-                                    }
-                                }
-                            }
-                        }
-                        return true
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
-                            when(eventType) {
-                                1 -> {
-                                    homeButtonBackShop.y = ((originalY + (motionEvent.rawY - initialTouchY)) / 4)
-                                    homeButtonBackShop.alpha = (((originalY + (motionEvent.rawY - initialTouchY).toInt()) / (displayY / 100) / 100) * 3).toFloat()
-                                    homeButtonBackShop.rotation = (0.9 * (originalY + (initialTouchY - motionEvent.rawY).toInt() / ((displayY / 2) / 100))).toFloat()
-                                    homeButtonBackShop.drawable.setColorFilter(Color.rgb(255, 255, (2.55 * abs((originalY + (motionEvent.rawY - initialTouchY)).toInt() / ((displayY / 10 * 5) / 100) - 100)).toInt()), PorterDuff.Mode.MULTIPLY)
-                                    homeButtonBackShop.requestLayout()
-                                }
-                                2 -> {
-                                    if(frameLayoutMenuShop.y <= displayY){
-                                        frameLayoutMenuShop.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
-                                    }else{
-                                        if(initialTouchY > motionEvent.rawY){
-                                            frameLayoutMenuShop.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        return true
-                    }
-                }
-
-                return super.onTouch(view, motionEvent)
-            }
-        })
+        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuShop, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityShop, R.id.frameLayoutMenuShop, R.id.homeButtonBackShop)).commitNow()
+        frameLayoutMenuShop.y = dm.heightPixels.toFloat()
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
@@ -181,7 +84,7 @@ class ActivityShop : AppCompatActivity(){
 
 
         listViewInventoryShop.adapter = ShopInventory(hidden, animUpText, animDownText, player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewInventoryShop, textViewMoney)
-        listViewShop.adapter = ShopOffer(hidden, animUpText, animDownText, player, textViewInfoItem, bubleDialogShop, listViewInventoryShop.adapter as ShopInventory, this)
+        listViewShop.adapter = ShopOffer(hidden, animUpText, animDownText, player, textViewInfoItem, bubleDialogShop, listViewInventoryShop.adapter as ShopInventory, this, textViewMoney)
 
         shopOfferRefresh.setOnClickListener {
             for(i in 0 until player.shopOffer.size){
@@ -251,9 +154,9 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory0$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
@@ -269,9 +172,9 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory1$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+1]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+1]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+1]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+1]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
@@ -287,9 +190,9 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory2$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+2]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+2]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+2]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+2]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
@@ -305,9 +208,9 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory3$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+3]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+3]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+3]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerS.inventory[index+3]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
@@ -322,7 +225,7 @@ class ActivityShop : AppCompatActivity(){
         private class ViewHolder(val buttonInventory1:ImageView, val buttonInventory2:ImageView, val buttonInventory3:ImageView, val buttonInventory4:ImageView)
     }
 
-    private class ShopOffer(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, val player:Player, val textViewInfoItem: TextView, val bubleDialogShop:TextView, val InventoryShop:BaseAdapter, private val context:Context) : BaseAdapter() {
+    private class ShopOffer(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, val player:Player, val textViewInfoItem: TextView, val bubleDialogShop:TextView, val InventoryShop:BaseAdapter, private val context:Context, val textViewMoney: TextView) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 2
@@ -369,15 +272,15 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="offer0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer0$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index, player, bubleDialogShop, textViewInfoItem)
+                    getDoubleClickOffer(index, player, bubleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -389,15 +292,15 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="offer1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer1$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+1]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+1]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+1]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+1]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+1, player, bubleDialogShop, textViewInfoItem)
+                    getDoubleClickOffer(index+1, player, bubleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -409,15 +312,15 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="offer2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer2$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+2]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+2]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+2]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+2]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+2, player, bubleDialogShop, textViewInfoItem)
+                    getDoubleClickOffer(index+2, player, bubleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -429,15 +332,15 @@ class ActivityShop : AppCompatActivity(){
                     //if(!hidden && lastClicked==="offer3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer3$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+3]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+3]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+3]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(player.shopOffer[index+3]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+3, player, bubleDialogShop, textViewInfoItem)
+                    getDoubleClickOffer(index+3, player, bubleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -459,7 +362,7 @@ class ActivityShop : AppCompatActivity(){
             window.isOutsideTouchable = false
             window.isFocusable = true
             buttonYes.setOnClickListener {
-                player.money+=player.inventory[index]!!.price/2
+                player.money+=player.inventory[index]!!.price
                 player.inventory[index]=null
                 (listViewInventoryShop.adapter as ShopInventory).notifyDataSetChanged()
                 textViewMoney.text = player.money.toString()
@@ -472,11 +375,13 @@ class ActivityShop : AppCompatActivity(){
             window.showAtLocation(view, Gravity.CENTER,0,0)
         }
 
-        private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, textViewInfoItem:TextView){
+        private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, textViewInfoItem:TextView, textViewMoney: TextView){
             if(player.money>=player.shopOffer[index]!!.price){
                 if(player.inventory.contains(null)){
                     error.visibility = View.INVISIBLE
                     player.money-=player.shopOffer[index]!!.price
+                    textViewMoney.text = player.money.toString()
+                    player.shopOffer[index]!!.price/=2
                     player.inventory[player.inventory.indexOf(null)] = player.shopOffer[index]
                     player.shopOffer[index] = generateItem(player)
                     textViewInfoItem.visibility = View.INVISIBLE

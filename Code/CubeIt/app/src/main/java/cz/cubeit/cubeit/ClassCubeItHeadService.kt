@@ -123,18 +123,15 @@ class ClassCubeItHeadService : Service() {
 
                         if (lastAction == MotionEvent.ACTION_DOWN) {
                             //Open the chat conversation click.
-                            val intent = Intent(this@ClassCubeItHeadService, Home::class.java)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
-                            Home().overridePendingTransition(R.anim.animation_zoom_in_cubeithead,R.anim.animation_zoom_out_cubeithead)
 
-                            val progress = ProgressDialog(this@ClassCubeItHeadService)
-                            progress.setTitle("Loading")
-                            progress.setMessage("We are checking if you're subscribed to PewDiePie or not, sorry for interruption")
-                            progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
-                            progress.show()
+                            val intentSplash = Intent(this@ClassCubeItHeadService, Activity_Splash_Screen::class.java)
+                            intentSplash.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            loadedLogin = LoginStatus.LOGGING
+                            startActivity(intentSplash)
+
+
                             player.loadPlayer().addOnCompleteListener {
-                                progress.dismiss()
+                                loadedLogin = LoginStatus.LOGGED
                             }
 
 

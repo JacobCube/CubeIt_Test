@@ -7,17 +7,6 @@
     android:background="@color/auctionMenu"
     android:screenOrientation="sensorLandscape">
 
-
-    <fragment
-        android:id="@+id/fragmentMenuBarAuctionMenu"
-        android:name="cz.cubeit.cubeit.Fragment_Menu_Bar"
-        android:layout_width="0dp"
-        android:layout_height="76dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <android.support.constraint.Guideline
         android:id="@+id/guideline62"
         android:layout_width="wrap_content"

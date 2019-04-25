@@ -11,12 +11,12 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitXY"
+        android:src="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
 
- android:src="@color/colorSecondary" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline69"
@@ -43,8 +43,11 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:hint="username"
         android:inputType="text"
+        android:nextFocusForward="@+id/inputEmailReg"
         android:textColor="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
         app:layout_constraintBottom_toTopOf="@+id/guideline7"
         app:layout_constraintEnd_toStartOf="@+id/guideline17"
         app:layout_constraintStart_toStartOf="@+id/guideline9"
@@ -75,6 +78,8 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:hint="e-mail"
+        android:textColorHint="@color/colorGrey"
         android:inputType="textEmailAddress"
         android:nextFocusLeft="@id/inputPassReg"
         android:nextFocusRight="@id/inputPassReg"
@@ -118,6 +123,8 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:hint="password"
+        android:textColorHint="@color/colorGrey"
         android:inputType="textPassword"
         android:nextFocusLeft="@id/inputRePassReg"
         android:nextFocusRight="@id/inputRePassReg"
@@ -196,6 +203,8 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:hint="repeat"
+        android:textColorHint="@color/colorGrey"
         android:inputType="textPassword"
         android:selectAllOnFocus="false"
         android:textColor="@color/colorGrey"

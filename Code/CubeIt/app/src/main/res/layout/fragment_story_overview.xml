@@ -2,30 +2,33 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layoutCharacterCustomization"
+    android:id="@+id/layoutFragmentCharacterStats"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
 
-    <android.support.design.widget.TabLayout
-        android:id="@+id/tabLayoutStoryOverview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPagerStoryQuests"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorGrey"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
     </android.support.v4.view.ViewPager>
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tabLayoutStoryOverview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDarker"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabTextColor="@color/colorSecondary" />
 
 
 </android.support.constraint.ConstraintLayout>

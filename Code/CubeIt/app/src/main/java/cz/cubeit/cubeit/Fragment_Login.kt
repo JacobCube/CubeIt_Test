@@ -20,11 +20,12 @@ import android.view.ViewGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_login.view.*
-import java.lang.IndexOutOfBoundsException
 
 var player:Player = Player()
+
 class FragmentLogin : Fragment()  {
 
     @SuppressLint("SetTextI18n")
@@ -37,12 +38,9 @@ class FragmentLogin : Fragment()  {
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
-//        view.inputUsernameLogin.setText(arguments?.getString("loginUsername"))
         view.inputEmailLogin.setText(arguments?.getString("loginEmail"))
 
         val auth = FirebaseAuth.getInstance()
-        var userEmail: String
-        var userPassword: String
 
         fun showNotification(titleInput: String, textInput: String){
             val builder = AlertDialog.Builder(view.context)
@@ -53,91 +51,86 @@ class FragmentLogin : Fragment()  {
         }
 
         view.buttonLogin.setOnClickListener {
-            val progress = ProgressDialog(view.context)
-            progress.setTitle("Loading")
-            progress.setMessage("We're checking if you're subscribed to PewDiePie, just a moment...")
-            progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
+            val userEmail = view.inputEmailLogin.text.toString()
+            val intentSplash = Intent(view.context, Activity_Splash_Screen::class.java)
 
-            userEmail = view.inputEmailLogin.text.toString()
-            userPassword = view.inputPassLogin.text.toString()
-
+            val userPassword = view.inputPassLogin.text.toString()
             val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
             val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
-            if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && isConnected){
-                progress.show()
-                auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener{ task ->
-                            if (task.isSuccessful) {
+            startActivity(intentSplash)
 
-                                val user = auth.currentUser
+            if (userEmail.isEmpty() || userPassword.isEmpty()) {
+                handler.postDelayed({showNotification("Error", "Please fill out all fields.")},100)
+                loadedLogin = LoginStatus.CLOSELOADING
+            }
+            if (!isConnected){
+                handler.postDelayed({showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")},100)
+                loadedLogin = LoginStatus.CLOSELOADING
+            }
 
-                                player.userSession = user!!
+            loadGlobalData().addOnSuccessListener{
 
-//                                getUserByUID(user.uid)
+                Log.d("ITEMS", player.charClass.toString())
 
+                if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && appVersion >= BuildConfig.VERSION_CODE && isConnected){
+                    auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener{ task ->
+                        if (task.isSuccessful) {
+                            val user = auth.currentUser
 
-                                val db = FirebaseFirestore.getInstance()
+                            player.userSession = user!!
 
-                                var debugString = ""
+                            val db = FirebaseFirestore.getInstance()
 
-                                val docRef = db.collection("users").whereEqualTo("userId", user.uid).limit(1)
-                                        .get()
-                                        .addOnSuccessListener { querySnapshot ->
-                                            try {
-                                                val document: DocumentSnapshot = querySnapshot.documents[0]
-                                                Log.d("LoadPlayerByUID_DEBUG", "Loaded user: ${document.getString("username")}")
+                            db.collection("users").whereEqualTo("userId", user.uid).limit(1)
+                                    .get()
+                                    .addOnSuccessListener { querySnapshot ->
+                                        try {
 
-                                                player.username = document.getString("username")!!
+                                            val document: DocumentSnapshot = querySnapshot.documents[0]
+                                            player.username = document.getString("username")!!
 
-
-                                                player.loadPlayer().addOnCompleteListener {
-                                                    progress.dismiss()
-                                                    if(player.newPlayer){
-                                                        val intent = Intent(view.context, Activity_Character_Customization::class.java)
-                                                        startActivity(intent)
-                                                    }else {
-                                                        player.online = true
-                                                        player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
-                                                            val intent = Intent(view.context, Home::class.java)
-                                                            startActivity(intent)
-                                                        }
+                                            player.loadPlayer().addOnCompleteListener {
+                                                if(player.newPlayer){
+                                                    loadedLogin = LoginStatus.CLOSELOADING
+                                                    val intent = Intent(view.context, Activity_Character_Customization::class.java)
+                                                    startActivity(intent)
+                                                }else {
+                                                    player.online = true
+                                                    player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
+                                                        loadedLogin = LoginStatus.LOGGED
                                                     }
                                                 }
                                             }
-                                            catch (e:IndexOutOfBoundsException){
-                                                showNotification("Oops", "We're unable to find you in our database. Are you sure you have an account?")
-                                                progress.dismiss()
-                                            }
 
+                                        }catch (e:IndexOutOfBoundsException){
+                                            showNotification("Oops", "We're unable to find you in our database. Are you sure you have an account?")
                                         }
-
-                            } else {
-                                progress.dismiss()
-                                showNotification("Oops", "${exceptionFormatter(task.exception.toString())}")
-                                Log.d("Debug", "${task.exception.toString()}")
-                            }
+                                    }
+                        } else {
+                            loadedLogin = LoginStatus.CLOSELOADING
+                            showNotification("Oops", exceptionFormatter(task.exception.toString()))
+                            Log.d("Debug", task.exception.toString())
                         }
-            }
-            if (userEmail.isEmpty() || userPassword.isEmpty()) {
-                showNotification("Oops", "Please fill out all of the fields.")
-            }
-            if (!isConnected){
-                showNotification("Oops", "Your device isn't connected to the internet. Please check your connection and try again.")
-            }
+                    }
+                }else loadedLogin = LoginStatus.CLOSELOADING
+           }
         }
 
         view.resetPass.setOnClickListener {
-            userEmail = view.inputEmailLogin.text.toString()
+            val userEmail = view.inputEmailLogin.text.toString()
 
             if (userEmail.isNotEmpty()){
                 auth!!.sendPasswordResetEmail(userEmail)
-                showNotification("Alert", "An email with a password recovery link has been sent to the above email address.")
+                showNotification("Alert", "A password reset link was sent to the above email account")
             }
             else {
-                showNotification("Oops", "Please enter your email above, then click reset password.")
+                showNotification("Oops", "Please enter an email above")
             }
         }
+
+
         return view
     }
 }

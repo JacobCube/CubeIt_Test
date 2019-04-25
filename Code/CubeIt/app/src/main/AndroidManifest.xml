@@ -50,6 +50,12 @@
             android:name=".ActivityStory"
             android:screenOrientation="sensorLandscape"/>
         <activity
+            android:name=".Activity_Inbox"
+            android:screenOrientation="sensorLandscape"/>
+        <activity
+            android:name=".Activity_Splash_Screen"
+            android:screenOrientation="sensorLandscape"/>
+        <activity
             android:name=".ActivityLoginRegister"
             android:screenOrientation="sensorLandscape">
             <intent-filter>

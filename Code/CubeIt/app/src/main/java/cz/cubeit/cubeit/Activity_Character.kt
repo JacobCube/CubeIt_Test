@@ -10,11 +10,13 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
 import android.text.Html
+import android.text.method.ScrollingMovementMethod
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
@@ -29,6 +31,7 @@ import kotlin.math.abs
 private var ClipDataIndex:Int? = null
 private var draggedItem:Item? = null
 private var sourceOfDrag = ""
+private var openedBagViewStats = false
 
 @Suppress("DEPRECATION")
 class Character : AppCompatActivity() {
@@ -65,15 +68,12 @@ class Character : AppCompatActivity() {
         hideSystemUI()
         player.syncStats()
         setContentView(R.layout.activity_character)
-        textViewInfoCharacter.text = player.syncStats()
+        textViewCharacterStatsHeight.text = player.syncStats()
+        textViewInfoItem.movementMethod = ScrollingMovementMethod()
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         imageViewActivityCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_bg, opts))
-
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
 
         animUpText = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_shop_text_up)
@@ -87,107 +87,14 @@ class Character : AppCompatActivity() {
             }
         }
 
+        val dm = DisplayMetrics()
+        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.defaultDisplay.getMetrics(dm)
 
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar()).commitNow()
-        var eventType = 0
-        var initialTouchY = 0f
-        var initialTouchX = 0f
-        var originalY = homeButtonBackCharacter.y
+        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityCharacter, R.id.frameLayoutMenuCharacter, R.id.homeButtonBackCharacter)).commitNow()
+        supportFragmentManager.beginTransaction().add(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitNow()
 
-        var menuAnimator = ValueAnimator()
-        var iconAnimator = ValueAnimator()
-        val displayY = dm.heightPixels.toDouble()
-        frameLayoutMenuCharacter.layoutParams.height = (displayY / 10 * 1.75).toInt()
-        var originalYMenu = (displayY / 10 * 8.25).toFloat()
-
-        homeButtonBackCharacter.layoutParams.height = (displayY / 10 * 1.8).toInt()
-        homeButtonBackCharacter.layoutParams.width = (displayY / 10 * 1.8).toInt()
-        homeButtonBackCharacter.y = -(displayY / 10 * 1.8).toFloat()
-
-        imageViewActivityCharacter.setOnTouchListener(object: Class_OnSwipeDragListener(this) {
-
-            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        originalYMenu = frameLayoutMenuCharacter.y
-                        originalY = homeButtonBackCharacter.y
-
-                        homeButtonBackCharacter.alpha = 1f
-                        //get the touch location
-                        initialTouchY = motionEvent.rawY
-                        initialTouchX = motionEvent.rawX
-
-                        eventType = if (motionEvent.rawY <= displayY / 10 * 3.5) {
-                            if(iconAnimator.isRunning)iconAnimator.pause()
-                            1
-                        } else {
-                            if(menuAnimator.isRunning)menuAnimator.pause()
-                            2
-                        }
-
-                        return true
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        when (eventType) {
-                            1 -> {
-                                if ((originalY + (motionEvent.rawY - initialTouchY).toInt()) < (displayY / 10*4)) {
-                                    iconAnimator = ValueAnimator.ofFloat(homeButtonBackCharacter.y, -(displayY / 10 * 1.8).toFloat()).apply{
-                                        duration = 400
-                                        addUpdateListener {
-                                            homeButtonBackCharacter.y = it.animatedValue as Float
-                                        }
-                                        start()
-                                    }
-                                } else {
-                                    val intent = Intent(this@Character, Home::class.java)
-                                    startActivity(intent)
-                                }
-                            }
-                            2 -> {
-                                if (frameLayoutMenuCharacter.y < (displayY / 10 * 8.25)) {
-                                    menuAnimator = ValueAnimator.ofFloat(frameLayoutMenuCharacter.y, (displayY / 10 * 8.25).toFloat()).apply {
-                                        duration = 400
-                                        addUpdateListener {
-                                            frameLayoutMenuCharacter.y = it.animatedValue as Float
-                                        }
-                                        start()
-                                    }
-                                }
-                            }
-                        }
-                        return true
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
-                            when(eventType) {
-                                1 -> {
-                                    homeButtonBackCharacter.y = ((originalY + (motionEvent.rawY - initialTouchY)) / 4)
-                                    homeButtonBackCharacter.alpha = (((originalY + (motionEvent.rawY - initialTouchY).toInt()) / (displayY / 100) / 100) * 3).toFloat()
-                                    homeButtonBackCharacter.rotation = (0.9 * (originalY + (initialTouchY - motionEvent.rawY).toInt() / ((displayY / 2) / 100))).toFloat()
-                                    homeButtonBackCharacter.drawable.setColorFilter(Color.rgb(255, 255, (2.55 * abs((originalY + (motionEvent.rawY - initialTouchY)).toInt() / ((displayY / 10 * 5) / 100) - 100)).toInt()), PorterDuff.Mode.MULTIPLY)
-                                    homeButtonBackCharacter.requestLayout()
-                                }
-                                2 -> {
-                                    if(frameLayoutMenuCharacter.y <= displayY){
-                                        frameLayoutMenuCharacter.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
-                                    }else{
-                                        if(initialTouchY > motionEvent.rawY){
-                                            frameLayoutMenuCharacter.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        return true
-                    }
-                }
-
-                return super.onTouch(view, motionEvent)
-            }
-        })
-
-        val bagViewV = findViewById<View>(R.id.bagView)
+        val bagViewV = findViewById<View>(R.id.imageViewCharacterBag)
 
         if(player.backpackRunes[0]!=null){
             buttonBag0.setImageResource(player.backpackRunes[0]!!.drawable)
@@ -208,6 +115,91 @@ class Character : AppCompatActivity() {
             buttonBag1.isClickable = false
         }
 
+
+        val statsHeight = textViewCharacterStatsHeight.y + textViewCharacterStatsHeight.height
+        var initialTouchY = 0f
+        var initialTouchX = 0f
+        var originalYBagView = imageViewCharacterBag.y
+        var bagViewAnimator = ValueAnimator()
+        val displayY = dm.heightPixels
+
+        imageViewCharacterBag.y = frameLayoutCharacterStats.y + frameLayoutCharacterStats.height
+
+        imageViewCharacterBag.setOnTouchListener(object: Class_OnSwipeDragListener(this) {
+
+            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+
+                when (motionEvent.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        initialTouchY = motionEvent.rawY
+                        initialTouchX = motionEvent.rawX
+                        originalYBagView = imageViewCharacterBag.y
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        if(imageViewCharacterBag.y - imageViewCharacterBag.height > statsHeight && !openedBagViewStats){
+                            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
+
+                            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT //ConstraintLayout.LayoutParams(oldXFrameLayout.toInt(), ConstraintLayout.LayoutParams.WRAP_CONTENT)
+                            frameLayoutCharacterStats.y = 0f
+
+                            openedBagViewStats = true
+                        }else if(imageViewCharacterBag.y - imageViewCharacterBag.height < statsHeight && openedBagViewStats){
+                            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitAllowingStateLoss()
+                            frameLayoutCharacterStats.layoutParams.height = (displayY/100 * 41.25).toInt()
+                            openedBagViewStats = false
+                        }
+
+                        if(!bagViewAnimator.isRunning){
+                            bagViewAnimator = ValueAnimator.ofFloat(imageViewCharacterBag.y, frameLayoutCharacterStats.y + frameLayoutCharacterStats.height).apply {
+                                duration = 400
+                                addUpdateListener {
+                                    imageViewCharacterBag.y = it.animatedValue as Float
+                                }
+                                start()
+                            }
+                        }
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
+                            imageViewCharacterBag.y = (originalYBagView + (motionEvent.rawY - initialTouchY))
+                        }
+                    }
+                }
+
+                return super.onTouch(view, motionEvent)
+            }
+        })
+
+        imageViewCharacterStatsChange.setOnClickListener {
+            if(openedBagViewStats){
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitAllowingStateLoss()
+                frameLayoutCharacterStats.layoutParams.height = (displayY/100 * 41.25).toInt()
+                openedBagViewStats = false
+            }else{
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
+
+                frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
+                frameLayoutCharacterStats.y = 0f
+
+                openedBagViewStats = true
+            }
+
+            if(!bagViewAnimator.isRunning){
+                bagViewAnimator = ValueAnimator.ofFloat(imageViewCharacterBag.y, frameLayoutCharacterStats.y + frameLayoutCharacterStats.height).apply {
+                    duration = 400
+                    addUpdateListener {
+                        imageViewCharacterBag.y = it.animatedValue as Float
+                    }
+                    start()
+                }
+            }
+        }
+
+
+
+
+
+        //DRAG LISTENER for player's equip
         val equipDragListener = View.OnDragListener { v, event ->
             when (event.action) {
                 DragEvent.ACTION_DRAG_STARTED -> {
@@ -709,11 +701,11 @@ class Character : AppCompatActivity() {
                 )
             }*/
         })
-        inventoryListView.adapter = InventoryView(hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, textViewInfoCharacter, equipDragListener, runesDragListener, bagViewV,fragmentCharacterProfile.view!!,
+        inventoryListView.adapter = InventoryView(frameLayoutCharacterStats, hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, supportFragmentManager, equipDragListener, runesDragListener, bagViewV,fragmentCharacterProfile.view!!,
                 fragmentCharacterProfile.profile_EquipItem0, fragmentCharacterProfile.profile_EquipItem1, fragmentCharacterProfile.profile_EquipItem2, fragmentCharacterProfile.profile_EquipItem3, fragmentCharacterProfile.profile_EquipItem4, fragmentCharacterProfile.profile_EquipItem5, fragmentCharacterProfile.profile_EquipItem6, fragmentCharacterProfile.profile_EquipItem7, fragmentCharacterProfile.profile_EquipItem8, fragmentCharacterProfile.profile_EquipItem9, this)
     }
 
-    private class InventoryView(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: TextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val textViewInfoCharacter:TextView, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
+    private class InventoryView(val frameLayoutCharacterStats: FrameLayout, var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: TextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val supportFragmentManager:FragmentManager, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
                                 val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView, private val context: Context) : BaseAdapter() {
 
         override fun getCount(): Int {
@@ -729,7 +721,11 @@ class Character : AppCompatActivity() {
         }
 
         fun dragItemSync() {
-            textViewInfoCharacter.text = playerC.syncStats()
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
+            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT //ConstraintLayout.LayoutParams(oldXFrameLayout.toInt(), ConstraintLayout.LayoutParams.WRAP_CONTENT)
+            frameLayoutCharacterStats.y = 0f
+            openedBagViewStats = true
+
             this.notifyDataSetChanged()
         }
 
@@ -781,9 +777,9 @@ class Character : AppCompatActivity() {
                     //if(!hidden && lastClicked=="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory0$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
@@ -792,9 +788,9 @@ class Character : AppCompatActivity() {
                     getDoubleClick(index, playerC, viewHolder.buttonInventory1)
                     if(playerC.inventory[index]!=null){
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                         }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStats()), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                         }
                     }
                     notifyDataSetChanged()
@@ -846,20 +842,20 @@ class Character : AppCompatActivity() {
                     //if(!hidden && lastClicked=="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory1$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     getDoubleClick(index+1, playerC, viewHolder.buttonInventory2)
-                    if(playerC.inventory[index]!=null){
+                    if(playerC.inventory[index+1]!=null){
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                         }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStats()), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                         }
                     }
                     notifyDataSetChanged()
@@ -911,20 +907,20 @@ class Character : AppCompatActivity() {
                     //if(!hidden && lastClicked=="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory2$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     getDoubleClick(index+2, playerC, viewHolder.buttonInventory3)
-                    if(playerC.inventory[index]!=null){
+                    if(playerC.inventory[index+2]!=null){
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                         }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStats()), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                         }
                     }
                     notifyDataSetChanged()
@@ -976,20 +972,20 @@ class Character : AppCompatActivity() {
                     //if(!hidden && lastClicked=="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory3$position"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                     }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStats()), TextView.BufferType.SPANNABLE)
+                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                     }
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     getDoubleClick(index+3, playerC, viewHolder.buttonInventory4)
-                    if(playerC.inventory[index]!=null){
+                    if(playerC.inventory[index+3]!=null){
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                         }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStats()), TextView.BufferType.SPANNABLE)
+                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
                         }
                     }
                     notifyDataSetChanged()
@@ -1065,7 +1061,7 @@ class Character : AppCompatActivity() {
                         playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
                         playerC.inventory[index] = null
                     } else {
-                        if(abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots) > 0){
+                        if(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots > playerC.inventory[index]!!.inventorySlots){
                             var tempEmptySpaces = 0
                             for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
                                 if(player.inventory[i] == null){
@@ -1073,7 +1069,7 @@ class Character : AppCompatActivity() {
                                 }
                             }
 
-                            if(tempEmptySpaces > abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)){
+                            if(tempEmptySpaces > playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots){
                                 for(i in (player.inventory.size-1-abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)) until player.inventory.size){
                                     if(player.inventory[i]!=null){
                                         val tempItem = player.inventory[i]
@@ -1122,20 +1118,26 @@ class Character : AppCompatActivity() {
         val index = view.tag.toString().toInt()
         ++clicks
         if (clicks == 2&&lastClicked=="equip$index"&& player.inventory.contains(null)) {
-            textViewInfoCharacter.text = player.syncStats()
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
+            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT //ConstraintLayout.LayoutParams(oldXFrameLayout.toInt(), ConstraintLayout.LayoutParams.WRAP_CONTENT)
+            frameLayoutCharacterStats.y = 0f
+            openedBagViewStats = true
+
             player.inventory[player.inventory.indexOf(null)] = player.equip[index]
             player.equip[index] = null
             view.isEnabled = false
-            (view as ImageView).setImageResource(R.drawable.emptyslot)
+            (view as ImageView).setImageResource(0)
             (inventoryListView.adapter as InventoryView).dragItemSync()
             handler.removeCallbacksAndMessages(null)
         } else if (clicks == 1) {                                            //SINGLE CLICK
             //if(!hidden && lastClicked=="equip$index"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
             lastClicked="equip$index"
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                textViewInfoItem.setText(Html.fromHtml(player.equip[index]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-            }else{
-                textViewInfoItem.setText(Html.fromHtml(player.equip[index]?.getStats()), TextView.BufferType.SPANNABLE)
+            if(player.equip[index]!=null){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    textViewInfoItem.setText(Html.fromHtml(player.equip[index]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                }else{
+                    textViewInfoItem.setText(Html.fromHtml(player.equip[index]?.getStats()), TextView.BufferType.SPANNABLE)
+                }
             }
         }
         handler.postDelayed({

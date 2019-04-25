@@ -66,7 +66,6 @@ class Home : AppCompatActivity() {
         hideSystemUI()
         setContentView(R.layout.activity_home)
 
-        player.returnServerTime()
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -89,12 +88,17 @@ class Home : AppCompatActivity() {
             }
         }
 
+        imageViewHomeInbox.setOnClickListener {
+            val intent = Intent(this, Activity_Inbox()::class.java)
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+
         imageViewExit.setOnClickListener {
-            val progress = ProgressDialog(this)
-            progress.setTitle("Loading")
-            progress.setMessage("Logging out...")
-            progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
-            progress.show()
+            val intentSplash = Intent(this, Activity_Splash_Screen::class.java)
+            intentSplash.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            loadedLogin = LoginStatus.LOGGING
+            startActivity(intentSplash)
 
             player.online = false
             player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
@@ -102,10 +106,7 @@ class Home : AppCompatActivity() {
                 stopService(svc)
                 player = Player()
 
-                progress.dismiss()
-
-                val intent = Intent(this, cz.cubeit.cubeit.ActivityLoginRegister()::class.java)
-                startActivity(intent)
+                loadedLogin = LoginStatus.UNLOGGED
                 this.overridePendingTransition(0,0)
             }
         }

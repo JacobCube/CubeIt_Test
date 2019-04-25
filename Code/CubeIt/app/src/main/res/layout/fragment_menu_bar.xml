@@ -5,11 +5,21 @@
     android:id="@+id/menuLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/menu"
     android:clickable="true"
     android:configChanges="orientation"
     android:focusable="true"
     android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewMenuBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/menu" />
 
     <ImageView
         android:id="@+id/buttonFight"
@@ -111,13 +121,13 @@
         android:layout_marginBottom="4dp"
         android:clickable="true"
         android:focusable="true"
+        android:src="@drawable/shop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline15"
         app:layout_constraintStart_toStartOf="@+id/guideline14"
-        app:layout_constraintTop_toTopOf="parent"
 
- android:src="@drawable/shop" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline10"
