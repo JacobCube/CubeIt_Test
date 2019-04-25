@@ -30,6 +30,7 @@ import org.w3c.dom.Document
 import java.text.DateFormat
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 var playerListReturn: Array<Player>? = null
 
@@ -601,7 +602,13 @@ data class Player(
         return tempLoadedPlayer
     }
 
-    fun returnServerTime(){ // PERMISSIONS ISSUE - FOLLOW UP
+    fun startTimedSync(){
+        val fixedRateTimer = fixedRateTimer(name = "Sync-Player-Timer", initialDelay = 300000, period = 300000){
+            loadPlayer() // add loading popup - noninvasive?
+        }
+    }
+
+    fun returnServerTime(){
 
         val docRef = db.collection("users").document(username).collection("dateCalculation").document("tempDate")
 
@@ -609,8 +616,6 @@ data class Player(
         updates["lastCheckedTime"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
 
         docRef.set(updates).addOnCompleteListener { }
-
-        Log.d("returnServerTime", "Function Fired")
     }
 
 
@@ -1219,9 +1224,7 @@ class NPC(
         var difficulty: Int = 0,
         var description: String = "",
         var levelAppearance:Int = 0
-){
-
-}
+)
 
 class Quest(
         val ID: String = "0001",
