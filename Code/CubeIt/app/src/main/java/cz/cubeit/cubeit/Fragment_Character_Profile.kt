@@ -1,16 +1,18 @@
 package cz.cubeit.cubeit
 
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import kotlinx.android.synthetic.main.fragment_character_profile.*
+import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_character_profile.view.*
 
-class Fragment_Character_Profile() : Fragment() {
+class Fragment_Character_Profile : Fragment() {
 
     companion object{
         fun newInstance(clickable:String = "true"):Fragment_Character_Profile{
@@ -25,21 +27,23 @@ class Fragment_Character_Profile() : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_character_profile, container, false)
 
-        val playerProfile: Player = if(arguments?.getString("key")== "notnull"){
-            view.profile_EquipItem0.isClickable = false
-            view.profile_EquipItem1.isClickable = false
-            view.profile_EquipItem2.isClickable = false
-            view.profile_EquipItem3.isClickable = false
-            view.profile_EquipItem4.isClickable = false
-            view.profile_EquipItem5.isClickable = false
-            view.profile_EquipItem6.isClickable = false
-            view.profile_EquipItem7.isClickable = false
-            view.profile_EquipItem8.isClickable = false
-            view.profile_EquipItem9.isClickable = false
-            if(pickedPlayer!=null) pickedPlayer!! else player
+        val playerProfile: Player = if(arguments?.getString("key")== "notnull" && pickedPlayer != null){
+            view.profile_EquipItem0.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem1.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem2.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem3.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem4.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem5.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem6.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem7.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem8.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_EquipItem9.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            pickedPlayer!!
         }else if(arguments?.getString("key")==null){
             player
         } else player
+
+
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -58,5 +62,18 @@ class Fragment_Character_Profile() : Fragment() {
         }
 
         return view
+    }
+
+    private fun onClickEquipItemBoard(v: View, contextView: View, chosenPlayer: Player){
+        val index = v.tag.toString().toInt()
+        if(chosenPlayer.equip[index] != null){
+            contextView.textViewCharacterProfile.setBackgroundResource(R.drawable.stats_info)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                contextView.textViewCharacterProfile.setText(Html.fromHtml(chosenPlayer.equip[index]!!.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+            }else{
+                contextView.textViewCharacterProfile.setText(Html.fromHtml(chosenPlayer.equip[index]!!.getStats()), TextView.BufferType.SPANNABLE)
+            }
+        }
     }
 }

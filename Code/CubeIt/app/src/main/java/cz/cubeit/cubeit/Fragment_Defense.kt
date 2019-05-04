@@ -61,6 +61,7 @@ class FragmentDefense : Fragment(){
         view.buttonSet.setOnClickListener {
             val intent = Intent(view.context, FightSystem(player)::class.java)
             intent.putExtra("enemy", player.username)
+            intent.putExtra("npc", false)
             startActivity(intent)
             //Activity().overridePendingTransition(0,0)
         }

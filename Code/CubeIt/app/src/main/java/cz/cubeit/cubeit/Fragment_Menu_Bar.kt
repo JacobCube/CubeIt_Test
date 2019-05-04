@@ -52,7 +52,7 @@ class Fragment_Menu_Bar : Fragment() {
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonCharacter.setOnClickListener {
-                val intent = Intent(view.context, Character::class.java)
+                val intent = Intent(view.context, Activity_Character::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
@@ -150,7 +150,7 @@ class Fragment_Menu_Bar : Fragment() {
                                 }
                             }
                             2 -> {
-                                if (rootMenu.y < (displayY / 10 * 8.25)) {
+                                if (rootMenu.y < (displayY / 10 * 9)) {
                                     menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY / 10 * 8.25).toFloat()).apply {
                                         duration = 400
                                         addUpdateListener {
@@ -158,7 +158,7 @@ class Fragment_Menu_Bar : Fragment() {
                                         }
                                         start()
                                     }
-                                }else if(rootMenu.y > (displayY / 10 * 9)){
+                                }else if(rootMenu.y >= (displayY / 10 * 9)){
                                     menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
                                         duration = 400
                                         addUpdateListener {
@@ -172,7 +172,7 @@ class Fragment_Menu_Bar : Fragment() {
                         return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
+                        if(abs(motionEvent.rawX - initialTouchX) <= abs(motionEvent.rawY - initialTouchY)){
                             when(eventType) {
                                 1 -> {
                                     rootIcon.y = ((originalY + (motionEvent.rawY - initialTouchY)) / 4)
@@ -182,7 +182,9 @@ class Fragment_Menu_Bar : Fragment() {
                                     rootIcon.requestLayout()
                                 }
                                 2 -> {
-                                    rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY) * (-1)))
+                                    if(rootMenu.y >= displayY/10*8.25 && initialTouchY >= displayY/10*1.75){
+                                        rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY) * (-1)))
+                                    }
                                 }
 
                             }
@@ -190,10 +192,19 @@ class Fragment_Menu_Bar : Fragment() {
                         return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
                     }
                 }
-
                 return super.onTouch(view, motionEvent)
             }
         })
+
+        view.imageViewControlMenu.setOnClickListener {
+            menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
+                duration = 400
+                addUpdateListener {
+                    rootMenu.y = it.animatedValue as Float
+                }
+                start()
+            }
+        }
 
         view.rootView.setOnTouchListener(object: Class_OnSwipeDragListener(rootLayout.context) {
 
@@ -218,7 +229,7 @@ class Fragment_Menu_Bar : Fragment() {
                     MotionEvent.ACTION_UP -> {
                         when (eventType) {
                             2 -> {
-                                if (rootMenu.y < (displayY / 10 * 8.25)) {
+                                if (rootMenu.y < (displayY / 10 * 9)) {
                                     menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY / 10 * 8.25).toFloat()).apply {
                                         duration = 400
                                         addUpdateListener {
@@ -226,7 +237,7 @@ class Fragment_Menu_Bar : Fragment() {
                                         }
                                         start()
                                     }
-                                }else if(rootMenu.y > (displayY / 10 * 9)){
+                                }else if(rootMenu.y >= (displayY / 10 * 9)){
                                     menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
                                         duration = 400
                                         addUpdateListener {
@@ -243,7 +254,9 @@ class Fragment_Menu_Bar : Fragment() {
                         if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
                             when(eventType) {
                                 2 -> {
-                                    rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
+                                    if(rootMenu.y >= displayY/10*8.25 && initialTouchY >= displayY/10*1.75){
+                                        rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
+                                    }
                                 }
                             }
                         }

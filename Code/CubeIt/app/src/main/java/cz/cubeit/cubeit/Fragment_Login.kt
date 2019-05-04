@@ -60,6 +60,7 @@ class FragmentLogin : Fragment()  {
             val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
             startActivity(intentSplash)
+            loadedLogin = LoginStatus.LOGGING
 
             if (userEmail.isEmpty() || userPassword.isEmpty()) {
                 handler.postDelayed({showNotification("Error", "Please fill out all fields.")},100)
@@ -70,11 +71,14 @@ class FragmentLogin : Fragment()  {
                 loadedLogin = LoginStatus.CLOSELOADING
             }
 
-            loadGlobalData().addOnSuccessListener{
+            loadGlobalData().addOnCompleteListener{
 
-                Log.d("ITEMS", player.charClass.toString())
+                if (appVersion > BuildConfig.VERSION_CODE){
+                    loadedLogin = LoginStatus.CLOSELOADING
+                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one.")},100)
+                }
 
-                if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && appVersion >= BuildConfig.VERSION_CODE && isConnected){
+                if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && appVersion <= BuildConfig.VERSION_CODE && isConnected){
                     auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener{ task ->
                         if (task.isSuccessful) {
                             val user = auth.currentUser

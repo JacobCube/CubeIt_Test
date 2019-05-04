@@ -45,7 +45,7 @@
         android:id="@+id/textViewInfoItem"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/emptyslot"
+        android:background="@drawable/stats_info"
         android:clickable="false"
         android:focusable="false"
         android:gravity="center_horizontal"
@@ -203,9 +203,9 @@
     <ImageView
         android:id="@+id/imageViewCharacterStatsChange"
         android:layout_width="0dp"
-        app:layout_constraintDimensionRatio="1:1"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline129"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/setting3rows" />

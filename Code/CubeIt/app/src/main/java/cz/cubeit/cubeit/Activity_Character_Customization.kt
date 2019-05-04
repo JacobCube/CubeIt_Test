@@ -42,9 +42,9 @@ class Activity_Character_Customization(private val inputUsername:String = "", pr
         }
 
         textViewCurrentCharacter.text = "Vampire"
-
+        textViewStatsCustomization.text = getString(R.string.character_ratio, (charClasses[1].dmgRatio*100).toString() + "%",(charClasses[1].armorRatio*100).toString() + "%", charClasses[1].blockRatio.toString() + "%", (charClasses[1].hpRatio*100).toInt().toString() + "%", (charClasses[1].staminaRatio*100).toString() + "%", charClasses[1].lifeSteal.toString())
+        textViewCharacterDescription.text = charClasses[1].description
         viewPagerCharacterCustomization.offscreenPageLimit = 8
-        viewPagerCharacterCustomization.setCurrentItem(3, true)
 
         if (viewPagerCharacterCustomization!= null) {
             viewPagerCharacterCustomization.adapter = ViewPagerCharacterCustomization(supportFragmentManager)
@@ -61,13 +61,11 @@ class Activity_Character_Customization(private val inputUsername:String = "", pr
                 viewPagerPosition = viewPagerCharacterCustomization.currentItem
             }
             override fun onPageSelected(position: Int) {
-                viewPagerPosition = position
                 viewPagerPosition = viewPagerCharacterCustomization.currentItem
 
                 textViewCurrentCharacter.text = charClasses[viewPagerPosition+1].name
-                textViewStatsCustomization.text = getString(R.string.character_ratio, (charClasses[position+1].dmgRatio*100).toString() + "%",(charClasses[position+1].armorRatio*100).toString() + "%", (charClasses[position+1].blockRatio*100).toString() + "%", (charClasses[position+1].hpRatio*100).toString() + "%", (charClasses[position+1].staminaRatio*100).toString() + "%", charClasses[position+1].lifeSteal.toString())
+                textViewStatsCustomization.text = getString(R.string.character_ratio, (charClasses[position+1].dmgRatio*100).toString() + "%",(charClasses[position+1].armorRatio*100).toString() + "%", charClasses[position+1].blockRatio.toString() + "%", (charClasses[position+1].hpRatio*100).toInt().toString() + "%", (charClasses[position+1].staminaRatio*100).toString() + "%", charClasses[position+1].lifeSteal.toString())
                 textViewCharacterDescription.text = charClasses[position+1].description
-                Toast.makeText(this@Activity_Character_Customization, position.toString(), Toast.LENGTH_LONG).show()
             }
         })
 

@@ -56,11 +56,6 @@ class ActivitySettings : AppCompatActivity(){
 
         val displayY = dm.heightPixels.toDouble()
 
-        imageViewBugIcon.layoutParams.height = (displayY/10 * 1.8).toInt()
-        imageViewBugIcon.layoutParams.width = (displayY/10 * 1.8).toInt()
-        imageViewBugIcon.y = (displayY/10).toFloat()
-        frameLayoutBugReport.y = (displayY/10).toFloat() + imageViewBugIcon.y
-
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 handler.postDelayed({hideSystemUI()},1000)
@@ -89,25 +84,26 @@ class ActivitySettings : AppCompatActivity(){
 
         imageViewBugIcon.layoutParams.height = (displayY/10 * 1.8).toInt()
         imageViewBugIcon.layoutParams.width = (displayY/10 * 1.8).toInt()
-        imageViewBugIcon.y = displayY.toFloat() - imageViewBugIcon.layoutParams.width
-        frameLayoutBugReport.y = displayY.toFloat()
+        imageViewBugIcon.y = 0f
+        frameLayoutBugReport.layoutParams.height = (displayY*0.82 - imageViewBugIcon.layoutParams.height).toInt()
+        frameLayoutBugReport.y =  0f - frameLayoutBugReport.layoutParams.height
 
         imageViewBugIcon.setOnClickListener {
-            if(imageViewBugIcon.y == (displayY/10).toFloat()){
-                ValueAnimator.ofFloat(imageViewBugIcon.y, displayY.toFloat() - imageViewBugIcon.layoutParams.width).apply{
+            if(imageViewBugIcon.y == (displayY*0.82 - imageViewBugIcon.layoutParams.height).toFloat()){
+                ValueAnimator.ofFloat(imageViewBugIcon.y, 0f    /*imageViewBugIcon.layoutParams.width.toFloat()*/).apply{
                     duration = 800
                     addUpdateListener {
-                        imageViewBugIcon.y = it.animatedValue as Float  // - imageViewBugIcon.layoutParams.width
-                        frameLayoutBugReport.y = it.animatedValue as Float + imageViewBugIcon.layoutParams.width
+                        imageViewBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width
+                        frameLayoutBugReport.y = it.animatedValue as Float - frameLayoutBugReport.layoutParams.height
                     }
                     start()
                 }
             }else{
-                ValueAnimator.ofFloat(imageViewBugIcon.y, (displayY/10).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
+                ValueAnimator.ofFloat(imageViewBugIcon.y, (displayY*0.82 - imageViewBugIcon.layoutParams.height).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
                     duration = 800
                     addUpdateListener {
-                        imageViewBugIcon.y = it.animatedValue as Float  // - imageViewBugIcon.layoutParams.width
-                        frameLayoutBugReport.y = it.animatedValue as Float + imageViewBugIcon.layoutParams.width
+                        imageViewBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width
+                        frameLayoutBugReport.y = it.animatedValue as Float - frameLayoutBugReport.layoutParams.height
                     }
                     start()
                 }
@@ -117,55 +113,3 @@ class ActivitySettings : AppCompatActivity(){
         supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuSettings, Fragment_Menu_Bar.newInstance(R.id.imageViewActivitySettings, R.id.frameLayoutMenuSettings, R.id.homeButtonBackSettings)).commitNow()
     }
 }
-
-/*
-private class SongAdapter(private val context: Context) : BaseAdapter() {
-
-    override fun getCount(): Int {
-        return songs.size
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getItem(position: Int): Any {
-        return "TEST STRING"
-    }
-
-    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
-        val rowMain: View
-
-        if (convertView == null) {
-            val layoutInflater = LayoutInflater.from(viewGroup!!.context)
-            rowMain = layoutInflater.inflate(R.layout.row_song_adapter, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.textSong)
-            rowMain.tag = viewHolder
-
-            viewHolder.song.text = songs[position].description
-        } else rowMain = convertView
-
-        val viewHolder = rowMain.tag as ViewHolder
-        if(playedSong == songs[position].songRaw){
-            viewHolder.song.setBackgroundColor(Color.BLUE)
-        } else viewHolder.song.setBackgroundColor(Color.WHITE)
-
-        viewHolder.song.setOnClickListener {
-            if(player.music){
-                val svc = Intent(context, BackgroundSoundService(playedSong)::class.java)
-                context.stopService(svc)
-                BackgroundSoundService().onPause()
-                playedSong = songs[position].songRaw
-                context.startService(svc)
-            }else{
-                playedSong = songs[position].songRaw
-            }
-            notifyDataSetChanged()
-            viewHolder.song.setBackgroundColor(Color.BLUE)
-        }
-
-        return rowMain
-    }
-
-    private class ViewHolder(val song:TextView)
-}*/

@@ -81,7 +81,7 @@
         android:id="@+id/textViewItemStats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/emptyslot"
+        android:background="@drawable/stats_info"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/imageViewAdventure"

@@ -1,7 +1,5 @@
 package cz.cubeit.cubeit
 
-import android.app.ProgressDialog
-import android.arch.lifecycle.Lifecycle
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -13,10 +11,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
-import android.os.Handler
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 
 var playedSong = R.raw.playedsong
 
@@ -35,8 +30,8 @@ class AlarmReceiver : BroadcastReceiver() {
 
 class Home : AppCompatActivity() {
 
-    private val lifecycleListener: SampleLifecycleListener by lazy{
-        SampleLifecycleListener(this)
+    private val lifecycleListener: LifecycleListener by lazy{
+        LifecycleListener(this)
     }
 
     private fun setupLifecycleListener() {
@@ -58,7 +53,6 @@ class Home : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,7 +106,7 @@ class Home : AppCompatActivity() {
         }
 
         Story.setOnClickListener {
-            val intent = Intent(this, cz.cubeit.cubeit.ActivityStory()::class.java)
+            val intent = Intent(this, ActivityStory()::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
@@ -123,13 +117,13 @@ class Home : AppCompatActivity() {
             this.overridePendingTransition(0,0)
         }
         Skills.setOnClickListener{
-            val intent = Intent(this, cz.cubeit.cubeit.Spells()::class.java)
+            val intent = Intent(this, Spells()::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         Character.setOnClickListener{
-            val intent = Intent(this, cz.cubeit.cubeit.Character::class.java)
+            val intent = Intent(this, cz.cubeit.cubeit.Activity_Character::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)

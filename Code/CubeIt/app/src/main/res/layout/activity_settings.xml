@@ -75,22 +75,22 @@
         android:id="@+id/imageViewBugIcon"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:rotation="180"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline82"
         app:srcCompat="@drawable/bug_icon"
-        tools:layout_editor_absoluteY="22dp" />
+        tools:layout_editor_absoluteY="0dp"
+        tools:ignore="MissingConstraints" />
 
     <FrameLayout
         android:id="@+id/frameLayoutBugReport"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/imageViewBugIcon"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline82"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBugIcon">
+        app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
 

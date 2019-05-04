@@ -51,6 +51,7 @@ class Fragment_Register : Fragment() {
             val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
             startActivity(intentSplash)
+            loadedLogin = LoginStatus.LOGGING
 
             if (!isConnected){
                 loadedLogin = LoginStatus.CLOSELOADING
@@ -61,8 +62,13 @@ class Fragment_Register : Fragment() {
                 handler.postDelayed({showNotification("Oops", "Passwords must match")},100)
             }
 
-            loadGlobalData().addOnSuccessListener {
-                if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && appVersion >= BuildConfig.VERSION_CODE && isConnected) {
+            loadGlobalData().addOnCompleteListener {
+                if (appVersion <= BuildConfig.VERSION_CODE){
+                    loadedLogin = LoginStatus.CLOSELOADING
+                    handler.postDelayed({showNotification("Oops", "Your version is too old, download more recent one.")},100)
+                }
+
+                if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && appVersion <= BuildConfig.VERSION_CODE && isConnected) {
                     userPassword = view.inputPassReg.text.toString()
 
                     Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener { task: Task<AuthResult> ->
@@ -74,9 +80,15 @@ class Fragment_Register : Fragment() {
                             val tempPlayer = Player()
                             tempPlayer.username = view.inputUsernameReg.text.toString()
                             val charClass = tempPlayer.charClass
-                            Log.d("charclass test", charClass.itemList.size.toString())
-                            Log.d("charclass test2", charClasses[tempPlayer.charClassIndex].itemList.size.toString())
 
+                            tempPlayer.currentSurfaces = mutableListOf(
+                                    CurrentSurface(mutableListOf(surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!))
+                                    ,CurrentSurface(mutableListOf(surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!))
+                                    ,CurrentSurface(mutableListOf(surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!))
+                                    ,CurrentSurface(mutableListOf(surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!))
+                                    ,CurrentSurface(mutableListOf(surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!))
+                                    ,CurrentSurface(mutableListOf(surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!))
+                            )
                             tempPlayer.learnedSpells = mutableListOf(charClass.spellList[0], charClass.spellList[1], charClass.spellList[2], charClass.spellList[3], charClass.spellList[4])
                             tempPlayer.shopOffer = arrayOf(charClass.itemList[0], charClass.itemList[1], charClass.itemList[2], charClass.itemList[3], charClass.itemList[4], charClass.itemList[5], charClass.itemList[5], charClass.itemList[5])
 

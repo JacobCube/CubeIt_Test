@@ -15,17 +15,15 @@ import android.provider.Settings
 import android.support.v4.app.Fragment
 import android.util.Log
 import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentSnapshot
-import kotlin.random.Random
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.concurrent.fixedRateTimer
+import kotlin.collections.HashMap
 
 var playerListReturn: Array<Player>? = null
 //returned list of players in order to show them in fight board Base adapter(list)
@@ -45,16 +43,6 @@ var drawableStorage = hashMapOf(
         ,"00003" to R.drawable.windspell
         ,"00004" to R.drawable.icespell
 
-        //characters
-        ,"00200" to R.drawable.character_0
-        ,"00201" to R.drawable.character_1
-        ,"00202" to R.drawable.character_2
-        ,"00203" to R.drawable.character_3
-        ,"00204" to R.drawable.character_4
-        ,"00205" to R.drawable.character_5
-        ,"00206" to R.drawable.character_6
-        ,"00207" to R.drawable.character_7
-
         //universal items
         ,"00300" to R.drawable.zipper
         ,"00301" to R.drawable.universalitem1
@@ -71,15 +59,58 @@ var drawableStorage = hashMapOf(
         ,"00406" to R.drawable.belt
         ,"00407" to R.drawable.basicattack
 
+        //vampire - 1
+        ,"00500" to R.drawable.charclass1_00500
+        ,"00501" to R.drawable.charclass1_00501
+        ,"00502" to R.drawable.charclass1_00502
+        ,"00503" to R.drawable.charclass1_00503
+        ,"00504" to R.drawable.charclass1_00504
+        ,"00505" to R.drawable.charclass1_00505
+        ,"00506" to R.drawable.charclass1_00506
+
+        //archer - 3
+        ,"02500" to R.drawable.charclass3_02500
+        ,"02501" to R.drawable.charclass3_02501
+        ,"02502" to R.drawable.charclass3_02502
+        ,"02503" to R.drawable.charclass3_02503
+        ,"02504" to R.drawable.charclass3_02504
+        ,"02505" to R.drawable.charclass3_02505
+
+        //warrior - 8
+        ,"07500" to R.drawable.charclass8_07500
+        ,"07501" to R.drawable.charclass8_07501
+        ,"07502" to R.drawable.charclass8_07502
+        ,"07503" to R.drawable.charclass8_07503
+        ,"07504" to R.drawable.charclass8_07504
+        ,"07505" to R.drawable.charclass8_07505
+        ,"07506" to R.drawable.charclass8_07506
+
+        //others
+        ,"90000" to R.drawable.map0
+        ,"90001" to R.drawable.map1
+        ,"90002" to R.drawable.map2
+        ,"90003" to R.drawable.map3
+        ,"90004" to R.drawable.map4
+        ,"90005" to R.drawable.map5
+
+        ,"90200" to R.drawable.character_0
+        ,"90201" to R.drawable.character_1
+        ,"90202" to R.drawable.character_2
+        ,"90203" to R.drawable.character_3
+        ,"90204" to R.drawable.character_4
+        ,"90205" to R.drawable.character_5
+        ,"90206" to R.drawable.character_6
+        ,"90207" to R.drawable.character_7
+
 )
 
 class LoadSpells(
-        val ID:String = "0",
-        val spells:MutableList<Spell> = mutableListOf()
+        var ID:String = "0",
+        var spells:MutableList<Spell> = mutableListOf()
 )
 class LoadItems(
-        val ID:String = "0",
-        val items:MutableList<Item> = mutableListOf()
+        var ID:String = "0",
+        var items:MutableList<Item> = mutableListOf()
 )
 
 var spellClasses:MutableList<LoadSpells> = mutableListOf()
@@ -87,6 +118,12 @@ var spellClasses:MutableList<LoadSpells> = mutableListOf()
 var itemClasses:MutableList<LoadItems> = mutableListOf()
 
 var charClasses: MutableList<CharClass> = mutableListOf()
+
+var storyQuests: MutableList<StoryQuest> = mutableListOf()
+
+var npcs = mutableListOf(NPC(ID = "0"), NPC(ID = "1"))
+
+var surfaces:List<Surface> = listOf()
 
 
 fun <K, V> getKey(map: Map<K, V>, value: V): K? {           //hashmap helper - get key by its value
@@ -98,87 +135,167 @@ fun <K, V> getKey(map: Map<K, V>, value: V): K? {           //hashmap helper - g
     return null
 }
 
-fun loadGlobalData(): Task<QuerySnapshot> {
+fun loadGlobalData(): Task<DocumentSnapshot> {
     val db = FirebaseFirestore.getInstance()
 
-    val storyRef = db.collection("story")
-    val charClassesRef = db.collection("charclasses")
-    val spellsRef = db.collection("spells")
-    val itemsRef = db.collection("items")
-    val npcsRef = db.collection("npcs")
-    val versionPath = db.collection("app_Generic_Info").document("reqversion")
-
-    versionPath.get().addOnSuccessListener { documentSnapshot ->
-        appVersion = (documentSnapshot.get("version") as Long).toInt()
-    }
-
-    return storyRef.get().addOnSuccessListener { itStory: QuerySnapshot ->
+    return db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
         storyQuests = itStory.toObjects(StoryQuest::class.java)
     }.continueWithTask{
-        charClassesRef.get().addOnSuccessListener { itCharClass: QuerySnapshot ->
-            charClasses = itCharClass.toObjects(CharClass::class.java)
+        db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
+            val loadItemClasses = itItems.toObjects(LoadItems::class.java)
+
+            itemClasses = mutableListOf()
+            for(i in 0 until loadItemClasses.size){
+                itemClasses.add(LoadItems())
+            }
+
+            for(i in 0 until loadItemClasses.size){
+                for(j in 0 until loadItemClasses[i].items.size){
+                    itemClasses[i].items.add(when(loadItemClasses[i].items[j].type){
+                        "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
+                        "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
+                        "Runes" -> (loadItemClasses[i].items[j]).toRune()
+                        "Item" -> loadItemClasses[i].items[j]
+                        else -> Item(inName = "Error item, report this please")
+                    })
+                }
+            }
         }
     }.continueWithTask{
-        spellsRef.get().addOnSuccessListener { itSpells: QuerySnapshot ->
-            spellClasses = itSpells.toObjects(LoadSpells::class.java)
+        db.collection("spells").get().addOnSuccessListener {
+            spellClasses = it.toObjects(LoadSpells::class.java)
         }
     }.continueWithTask{
-        itemsRef.get().addOnSuccessListener { itItems: QuerySnapshot ->
-            itemClasses = itItems.toObjects(LoadItems::class.java)
-            Log.d("ItemClasses", itemClasses.size.toString())
-            Log.d("ItemClasses", itemClasses[0].items.size.toString())
+        db.collection("charclasses").get().addOnSuccessListener {
+            charClasses = it.toObjects(CharClass::class.java)
         }
     }.continueWithTask{
-        npcsRef.get().addOnSuccessListener { itNpcs: QuerySnapshot ->
-            npcs = itNpcs.toObjects(NPC::class.java)
+        db.collection("npcs").get().addOnSuccessListener {
+            npcs = it.toObjects(NPC::class.java)
+        }
+    }.continueWithTask {
+        db.collection("surfaces").get().addOnSuccessListener {
+            surfaces = it.toObjects(Surface::class.java)
+        }
+    }.continueWithTask {
+        db.collection("app_Generic_Info").document("reqversion").get().addOnSuccessListener {
+            appVersion = (it.get("version") as Long).toInt()
         }
     }
 }
 
-fun uploadAllGlobalData() {
+fun uploadGlobalData() {
     val db = FirebaseFirestore.getInstance()
+    val storyRef = db.collection("story")
+    val charClassRef = db.collection("charclasses")
+    val spellsRef = db.collection("spells")
+    val itemsRef = db.collection("items")
+    val npcsRef = db.collection("npcs")
+    val surfacesRef = db.collection("surfaces")
 
-    for(i in 0 until storyQuests.size){
-        db.collection("story").document(storyQuests[i].ID)
-                .set(hashMapOf<String, Any?>(storyQuests[i].ID to storyQuests[i])).addOnSuccessListener {
+    for(i in 0 until storyQuests.size){                                     //stories
+        storyRef.document(storyQuests[i].ID)
+                .set(hashMapOf<String, Any?>(
+                        "ID" to storyQuests[i].ID,
+                        "name" to storyQuests[i].name,
+                        "description" to storyQuests[i].description,
+                        "chapter" to storyQuests[i].chapter,
+                        "completed" to storyQuests[i].completed,
+                        "progress" to storyQuests[i].progress,
+                        "slides" to storyQuests[i].slides,
+                        "reward" to storyQuests[i].reward,
+                        "experience" to storyQuests[i].experience,
+                        "money" to storyQuests[i].money
+                )).addOnSuccessListener {
                     Log.d("COMPLETED story", "$i")
                 }.addOnFailureListener {
                     Log.d("story", "${it.cause}")
                 }
     }
-    for(i in 0 until charClasses.size){
-        db.collection("charclasses").document(charClasses[i].ID.toString())
-                .set(hashMapOf<String, Any?>(charClasses[i].ID.toString() to charClasses[i])).addOnSuccessListener {
+    for(i in 0 until charClasses.size){                                     //charclasses
+        charClassRef.document(charClasses[i].ID.toString())
+                .set(hashMapOf<String, Any?>(
+                        "ID" to charClasses[i].ID,
+                        "dmgRatio" to charClasses[i].dmgRatio,
+                        "hpRatio" to charClasses[i].hpRatio,
+                        "staminaRatio" to charClasses[i].staminaRatio,
+                        "blockRatio" to charClasses[i].blockRatio,
+                        "armorRatio" to charClasses[i].armorRatio,
+                        "lifeSteal" to charClasses[i].lifeSteal,
+                        "inDrawable" to charClasses[i].inDrawable,
+                        "itemListIndex" to charClasses[i].itemListIndex,
+                        "spellListIndex" to charClasses[i].spellListIndex,
+                        "name" to charClasses[i].name,
+                        "description" to charClasses[i].description,
+                        "description2" to charClasses[i].description2,
+                        "itemlistUniversalIndex" to charClasses[i].itemlistUniversalIndex,
+                        "spellListUniversalIndex" to charClasses[i].spellListUniversalIndex
+                )).addOnSuccessListener {
                     Log.d("COMPLETED charclasses", "$i")
                 }.addOnFailureListener {
                     Log.d("charclasses", "${it.cause}")
                 }
     }
-    for(i in 0 until spellClasses.size){
-        db.collection("spells").document(spellClasses[i].ID)
-                .set(hashMapOf<String, Any?>(spellClasses[i].ID to spellClasses[i])).addOnSuccessListener {
+    for(i in 0 until spellClasses.size){                                     //spells
+        spellsRef.document(spellClasses[i].ID)
+                .set(hashMapOf<String, Any?>(
+                        "ID" to spellClasses[i].ID,
+                        "spells" to spellClasses[i].spells
+                )).addOnSuccessListener {
                     Log.d("COMPLETED spellclasses", "$i")
                 }.addOnFailureListener {
                     Log.d("spellclasses", "${it.cause}")
                 }
     }
-    for(i in 0 until itemClasses.size){
-        db.collection("items").document(itemClasses[i].ID)
-                .set(hashMapOf<String, Any?>(itemClasses[i].ID to itemClasses[i])).addOnSuccessListener {
+    for(i in 0 until itemClasses.size){                                     //items
+        itemsRef.document(itemClasses[i].ID)
+                .set(hashMapOf<String, Any?>(
+                        "ID" to itemClasses[i].ID,
+                        "items" to itemClasses[i].items
+                )).addOnSuccessListener {
                     Log.d("COMPLETED itemclasses", "$i")
                 }.addOnFailureListener {
                     Log.d("itemclasses", "${it.cause}")
                 }
     }
-    for(i in 0 until npcs.size){
-        db.collection("npcs").document(npcs[i].ID)
-                .set(hashMapOf<String, Any?>(npcs[i].ID to npcs[i])).addOnSuccessListener {
+    for(i in 0 until npcs.size){                                     //npcs
+        npcsRef.document(npcs[i].ID)
+                .set(hashMapOf<String, Any?>(
+                        "ID" to npcs[i].ID,
+                        "inDrawable" to npcs[i].inDrawable,
+                        "name" to npcs[i].name,
+                        "difficulty" to npcs[i].difficulty,
+                        "description" to npcs[i].description,
+                        "levelAppearance" to npcs[i].levelAppearance,
+                        "level" to npcs[i].level,
+                        "chosenSpellsDefense" to npcs[i].chosenSpellsDefense,
+                        "power" to npcs[i].power,
+                        "armor" to npcs[i].armor,
+                        "block" to npcs[i].block,
+                        "dmgOverTime" to npcs[i].dmgOverTime,
+                        "lifeSteal" to npcs[i].lifeSteal,
+                        "health" to npcs[i].health,
+                        "energy" to npcs[i].energy
+                )).addOnSuccessListener {
                     Log.d("COMPLETED npcs", "$i")
                 }.addOnFailureListener {
                     Log.d("npcs", "${it.cause}")
                 }
     }
+    for(i in 0 until surfaces.size){                                     //surfaces
+        surfacesRef.document(i.toString())
+                .set(hashMapOf(
+                        "background" to surfaces[i].inBackground,
+                        "boss" to surfaces[i].boss,
+                        "quests" to surfaces[i].quests
+                )).addOnSuccessListener {
+                    Log.d("COMPLETED surface", "$i")
+                }.addOnFailureListener {
+                    Log.d("surface", "${it.cause}")
+                }
+    }
 }
+
 
 fun getPlayerList(pageNumber:Int): Task<QuerySnapshot> { // returns each page
 
@@ -208,8 +325,7 @@ fun getPlayerList(pageNumber:Int): Task<QuerySnapshot> { // returns each page
     }
 }
 
-class CharacterQuest(
-){
+class CharacterQuest{
     val description: String = "Default description"
     val reward:Reward = Reward().generateReward(player)
     val rewardText: String = reward.money.toString()
@@ -219,7 +335,7 @@ class CharacterQuest(
     }
 }
 
-class SampleLifecycleListener(val context: Context) : LifecycleObserver {
+class LifecycleListener(val context: Context) : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onMoveToForeground() {
@@ -300,7 +416,7 @@ class BackgroundSoundService : Service() {
 fun getRandomPlayer() {
     val db = FirebaseFirestore.getInstance() // Loads Firebase functions
 
-    val randomInt = Random.nextInt(0, 3)
+    val randomInt = nextInt(0, 3)
     val docRef = db.collection("users").orderBy("username").limit(4)
 
 
@@ -337,7 +453,7 @@ fun exceptionFormatter(errorIn:String):String{
 
     return if (errorIn.contains("com.google.firebase.auth")){
 
-        val regex: Regex = Regex("com.google.firebase.auth.\\w+\\: ")
+        val regex = Regex("com.google.firebase.auth.\\w+: ")
         errorIn.replace(regex, "Error: ")
     } else {
         Log.d("ExceptionFormatterError", "Failed to format exception, falling back to source")
@@ -521,7 +637,7 @@ data class LoadPlayer(
         val userString = HashMap<String, Any?>()
 
         if(this.chosenSpellsDefense[0] == null){
-            this.chosenSpellsDefense[0] = this.toPlayer().charClass.spellList[0]!!
+            this.chosenSpellsDefense[0] = this.toPlayer().charClass.spellList[0]
         }
 
         userString["username"] = this.username
@@ -622,14 +738,7 @@ open class Player(
     var experience: Int = 0
     var appearOnTop:Boolean = false
     var description: String = ""
-    var currentSurfaces:MutableList<CurrentSurface> = mutableListOf(
-            CurrentSurface(mutableListOf(surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!))
-            ,CurrentSurface(mutableListOf(surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!))
-            ,CurrentSurface(mutableListOf(surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!))
-            ,CurrentSurface(mutableListOf(surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!))
-            ,CurrentSurface(mutableListOf(surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!))
-            ,CurrentSurface(mutableListOf(surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!))
-    )
+    var currentSurfaces:MutableList<CurrentSurface> = mutableListOf()
     var power:Int = 40
     var armor:Int = 0
     var block:Double = 0.0
@@ -717,6 +826,27 @@ open class Player(
         }
     }
 
+    fun startQuest(userIdIn: String, usernameIn: String, questIn: ActiveQuest){ // Starts quest document in firebase
+
+        val timestamp1 = FieldValue.serverTimestamp()
+        val timestamp2 = FieldValue.serverTimestamp()
+
+        val questString = HashMap<String, Any?>()
+
+        questString["startTime"] = timestamp1
+        questString["lastCheckedTime"] = timestamp2
+        questString["name"] = questIn.quest.name
+        questString["userId"] = userIdIn
+        questString["description"] = questIn.quest.description
+        questString["level"] = questIn.quest.level
+        questString["experience"] = questIn.quest.experience
+        questString["money"] = questIn.quest.money
+
+        db.collection("users").document(usernameIn).collection("quests").document().set(questString)
+    }
+    fun returnServerTime(): FieldValue {
+        return FieldValue.serverTimestamp()
+    }
     fun calculateTime(usernameIn: String, questNameIn: String){
 
         val docRef = db.collection("users").document(usernameIn).collection("quests").document(questNameIn)
@@ -883,6 +1013,15 @@ open class Player(
     }
 }
 
+class ActiveQuest(
+        val quest:Quest,
+        val startTime:FieldValue = FieldValue.serverTimestamp(),
+        val minutesLength: Int
+
+){
+    val length = 0
+}
+
 class DamageOverTime(
         var rounds:Int = 0,
         var dmg:Double = 0.0,
@@ -934,15 +1073,15 @@ class CharClass(
         var spellListUniversalIndex: Int = 0
 
 ) {
-    val drawable: Int
+    val drawable
         get() = drawableStorage[inDrawable]!!
-    val itemList: MutableList<Item>
+    val itemList
         get() = itemClasses[itemListIndex].items
-    val spellList: MutableList<Spell>
+    val spellList
         get() = spellClasses[spellListIndex].spells
-    val itemListUniversal: MutableList<Item>
+    val itemListUniversal
         get() = itemClasses[itemlistUniversalIndex].items
-    val spellListUniversal: MutableList<Spell>
+    val spellListUniversal
         get() = spellClasses[spellListUniversalIndex].spells
 }
 
@@ -1173,6 +1312,7 @@ fun generateItem(player:Player, inQuality: Int? = null):Item?{
 
     if(itemTemp.levelRq<1)itemTemp.levelRq=1
     var points = nextInt(itemTemp.levelRq*10*(itemTemp.quality+1), itemTemp.levelRq*20*(itemTemp.quality+1))
+    Log.d("points ITEM: ", points.toString())
     var pointsTemp:Int
     itemTemp.price = points
     val numberOfStats = nextInt(1,9)
@@ -1358,33 +1498,33 @@ data class Weapon(
 ):Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
 
 class StoryQuest(
-        val ID: String = "0001",
-        val name:String = "",
-        val description: String = "",
+        var ID: String = "0001",
+        var name:String = "",
+        var description: String = "",
         difficulty:Int = 0,
-        val chapter:Int = 0,
-        val completed:Boolean = false,
+        var chapter:Int = 0,
+        var completed:Boolean = false,
         var progress:Int = 0,
-        val slides:MutableList<StorySlide> = mutableListOf()
+        var slides:MutableList<StorySlide> = mutableListOf()
 ){
-    val reward = Reward(difficulty)
-    val experience: Int = 0
-    val money:Int = 0
+    var reward = Reward(difficulty)
+    var experience: Int = 0
+    var money:Int = 0
 }
 
 class StorySlide(
-        val textContent:String = "",
-        val fragment:Fragment = Fragment(),
-        val images:MutableList<StoryImage> = mutableListOf(),
-        val difficulty: Int
+        var textContent:String = "",
+        var fragment:Fragment = Fragment(),
+        var images:MutableList<StoryImage> = mutableListOf(),
+        var difficulty: Int
 ){
-    val enemy:NPC = NPC().generateNPC()
+    var enemy:NPC = NPC()
 }
 
 class StoryImage(
-        val imageID:String = "",
-        val animIn: Int = 0,
-        val animOut: Int = 0
+        var imageID:String = "",
+        var animIn: Int = 0,
+        var animOut: Int = 0
 
         ){
     val drawable:Int
@@ -1398,6 +1538,7 @@ class marketOffer(
         val expiryDate:LocalDateTime
 ){
     fun buyOffer(){
+
         deleteOffer()
     }
     fun deleteOffer(){
@@ -1406,23 +1547,32 @@ class marketOffer(
 
 class NPC(
         var ID: String = "",
+        val inDrawable: String = "00000",
         var name:String = "",
         var difficulty: Int = 0,
         var description: String = "",
-        var levelAppearance:Int = 0,
-        var level:Int = 0,
-        var chosenSpellsDefense: MutableList<Spell?> = mutableListOf(),
-        var power:Int = 40,
-        var armor:Int = 0,
-        var block:Double = 0.0,
-        var dmgOverTime:Int = 0,
-        var lifeSteal:Int = 0,
-        var health:Double = 175.0,
-        var energy:Int = 100
+        var levelAppearance:Int = 0
 ){
-    fun generateNPC(): NPC {
-        this.level = levelAppearance
-        return this
+    val drawable:Int
+    get() = drawableStorage[inDrawable]!!
+    var level:Int = 0
+    var chosenSpellsDefense: MutableList<Spell?> = mutableListOf()
+    var power:Int = 40
+    var armor:Int = 0
+    var block:Double = 0.0
+    var dmgOverTime:Int = 0
+    var lifeSteal:Int = 0
+    var health:Double = 175.0
+    var energy:Int = 100
+
+    fun generateNPC(databaseID: String? = null): Task<DocumentSnapshot> {
+        val db = FirebaseFirestore.getInstance()
+
+        val npcRef = db.collection("npcs").document(databaseID ?: nextInt(0, npcs.size).toString())
+
+        return npcRef.get().addOnSuccessListener {
+            this.level = nextInt(if(levelAppearance <= 3)1 else levelAppearance-3, levelAppearance+2)
+        }
     }
 }
 
@@ -1495,66 +1645,10 @@ enum class MessageStatus{
 }
 
 class Surface(
-        val background:Int = 0,
-        val quests:HashMap<String, Quest>
-)
-
-var storyQuests: MutableList<StoryQuest> = mutableListOf(
-        StoryQuest(ID = "0001", name = "Story quest template", description = "Template story quest description", difficulty = 1)
-)
-
-var npcs = mutableListOf(NPC(ID = "0"), NPC(ID = "1"))
-
-var surfaces:List<Surface> = listOf(Surface(R.drawable.map0, hashMapOf(         //should be cloud saved
-        "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 0),
-        "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 0),
-        "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 0),
-        "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 0),
-        "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 0),
-        "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 0),
-        "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 0))),
-
-        Surface(R.drawable.map1, hashMapOf(
-                "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 1),
-                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 1),
-                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 1),
-                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 1),
-                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 1),
-                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 1),
-                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 1))),
-
-        Surface(R.drawable.map2, hashMapOf(
-                "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 2),
-                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 2),
-                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 2),
-                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 2),
-                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 2),
-                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 2),
-                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 2))),
-
-        Surface(R.drawable.map3, hashMapOf(
-                "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 3),
-                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 3),
-                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 3),
-                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 3),
-                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 3),
-                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 3),
-                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 3))),
-
-        Surface(R.drawable.map4, hashMapOf(
-                "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 4),
-                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 4),
-                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 4),
-                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 4),
-                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 4),
-                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 4),
-                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 4))),
-
-        Surface(R.drawable.map5, hashMapOf(
-                "0001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 5),
-                "0002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 5),
-                "0003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 5),
-                "0004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 5),
-                "0005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 5),
-                "0006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 5),
-                "0007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 5))))
+        val inBackground:String = "90000",
+        val boss:NPC? = null,
+        val quests:HashMap<String, Quest> = hashMapOf()
+){
+    val background: Int
+    get() = drawableStorage[inBackground]!!
+}

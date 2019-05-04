@@ -20,7 +20,7 @@
             android:screenOrientation="sensorLandscape">
         </activity>
         <activity
-            android:name=".Character"
+            android:name=".Activity_Character"
             android:screenOrientation="sensorLandscape"/>
         <activity
             android:name=".ActivityFightBoard"

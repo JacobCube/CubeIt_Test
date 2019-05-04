@@ -34,7 +34,7 @@ private var sourceOfDrag = ""
 private var openedBagViewStats = false
 
 @Suppress("DEPRECATION")
-class Character : AppCompatActivity() {
+class Activity_Character : AppCompatActivity() {
     private var lastClicked = ""
     private var hidden = false
     private val handler = Handler()
@@ -92,7 +92,9 @@ class Character : AppCompatActivity() {
         windowManager.defaultDisplay.getMetrics(dm)
 
         supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityCharacter, R.id.frameLayoutMenuCharacter, R.id.homeButtonBackCharacter)).commitNow()
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitNow()
+        frameLayoutCharacterStats.y = 8f
+        openedBagViewStats = false
 
         val bagViewV = findViewById<View>(R.id.imageViewCharacterBag)
 
@@ -115,15 +117,12 @@ class Character : AppCompatActivity() {
             buttonBag1.isClickable = false
         }
 
-
-        val statsHeight = textViewCharacterStatsHeight.y + textViewCharacterStatsHeight.height
         var initialTouchY = 0f
         var initialTouchX = 0f
         var originalYBagView = imageViewCharacterBag.y
         var bagViewAnimator = ValueAnimator()
         val displayY = dm.heightPixels
-
-        imageViewCharacterBag.y = frameLayoutCharacterStats.y + frameLayoutCharacterStats.height
+        var statsHeight = 0
 
         imageViewCharacterBag.setOnTouchListener(object: Class_OnSwipeDragListener(this) {
 
@@ -131,19 +130,19 @@ class Character : AppCompatActivity() {
 
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {
+                        statsHeight = textViewCharacterStatsHeight.y.toInt() + textViewCharacterStatsHeight.height
                         initialTouchY = motionEvent.rawY
                         initialTouchX = motionEvent.rawX
                         originalYBagView = imageViewCharacterBag.y
                     }
                     MotionEvent.ACTION_UP -> {
-                        if(imageViewCharacterBag.y - imageViewCharacterBag.height > statsHeight && !openedBagViewStats){
+                        if(imageViewCharacterBag.y.toInt() - imageViewCharacterBag.layoutParams.height >= statsHeight && !openedBagViewStats){
                             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
-
-                            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT //ConstraintLayout.LayoutParams(oldXFrameLayout.toInt(), ConstraintLayout.LayoutParams.WRAP_CONTENT)
-                            frameLayoutCharacterStats.y = 0f
-
+                            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
+                            frameLayoutCharacterStats.y = 8f
                             openedBagViewStats = true
-                        }else if(imageViewCharacterBag.y - imageViewCharacterBag.height < statsHeight && openedBagViewStats){
+
+                        }else if(imageViewCharacterBag.y.toInt() - imageViewCharacterBag.layoutParams.height < (statsHeight) && openedBagViewStats){
                             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitAllowingStateLoss()
                             frameLayoutCharacterStats.layoutParams.height = (displayY/100 * 41.25).toInt()
                             openedBagViewStats = false
@@ -157,10 +156,12 @@ class Character : AppCompatActivity() {
                                 }
                                 start()
                             }
+                        }else{
+                            imageViewCharacterBag.y = frameLayoutCharacterStats.y + frameLayoutCharacterStats.height
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
+                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY) && imageViewCharacterBag.y.toInt() - imageViewCharacterBag.layoutParams.height >= displayY/100*20){
                             imageViewCharacterBag.y = (originalYBagView + (motionEvent.rawY - initialTouchY))
                         }
                     }
@@ -171,15 +172,15 @@ class Character : AppCompatActivity() {
         })
 
         imageViewCharacterStatsChange.setOnClickListener {
+            //frameLayoutCharacterStats.y = 8f
             if(openedBagViewStats){
                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitAllowingStateLoss()
                 frameLayoutCharacterStats.layoutParams.height = (displayY/100 * 41.25).toInt()
                 openedBagViewStats = false
             }else{
                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
-
                 frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
-                frameLayoutCharacterStats.y = 0f
+                frameLayoutCharacterStats.y = 8f
 
                 openedBagViewStats = true
             }
@@ -192,9 +193,10 @@ class Character : AppCompatActivity() {
                     }
                     start()
                 }
+            }else{
+                imageViewCharacterBag.y = frameLayoutCharacterStats.y + frameLayoutCharacterStats.height
             }
         }
-
 
 
 
@@ -1145,6 +1147,11 @@ class Character : AppCompatActivity() {
         }, 250)
     }
 }
+
+
+
+
+
 private class MyDragShadowBuilder(v: View) : View.DragShadowBuilder(v) {
 
     private val shadow = ColorDrawable(Color.LTGRAY)

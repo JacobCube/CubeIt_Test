@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_stats_profile.view.*
 
-class Fragment_Stats_Profile() : Fragment() {
+class Fragment_Stats_Profile : Fragment() {
 
     companion object{
         fun newInstance(clickable:String = "true"):Fragment_Stats_Profile{
@@ -39,6 +39,7 @@ class Fragment_Stats_Profile() : Fragment() {
 
                 val intent = Intent(view.context, FightSystem(player)::class.java)
                 intent.putExtra("enemy", playerProfile.username)
+                intent.putExtra("npc", false)
                 startActivity(intent)
             }
         }

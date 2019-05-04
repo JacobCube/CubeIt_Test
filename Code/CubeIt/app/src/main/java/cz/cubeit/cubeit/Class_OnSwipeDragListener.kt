@@ -18,7 +18,7 @@ open class Class_OnSwipeDragListener(val c: Context) : View.OnTouchListener {
         return gestureDetector.onTouchEvent(motionEvent)
     }
 
-    private inner class GestureListener() : GestureDetector.SimpleOnGestureListener() {
+    private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
 
         override fun onDown(e: MotionEvent): Boolean {
             return true

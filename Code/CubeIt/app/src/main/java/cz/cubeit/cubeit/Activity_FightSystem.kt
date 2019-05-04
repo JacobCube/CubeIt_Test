@@ -10,20 +10,16 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Html
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
-import kotlin.math.abs
 import kotlin.random.Random.Default.nextInt
 
 private var enemy = Player()
-var animSpellUp = arrayOfNulls<Animation>(7)
+private var npc = NPC()
 
 class FightSystem(val playerFight:Player = player) : AppCompatActivity() {              //In order to pass the enemy player - intent.putExtra(enemy, /username/)
     private var roundCounter = 0
@@ -57,14 +53,14 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
     fun spellValueAnimator(to:Float, imageView: ImageView){
         val from = imageView.y
         ValueAnimator.ofFloat(imageView.y, to).apply {
-            duration = 600
+            duration = 800
             addUpdateListener {
                 imageView.y = it.animatedValue as Float
             }
             start()
         }
         ValueAnimator.ofFloat(to, from).apply {
-            duration = 600
+            duration = 800
             addUpdateListener {
                 imageView.y = it.animatedValue as Float
             }
@@ -78,12 +74,17 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
         enemy.username = intent.extras!!.getString("enemy")!!
 
-        val opts = BitmapFactory.Options()
-        opts.inScaled = false
+        if(!intent.extras!!.getBoolean("npc")){
+            enemy.loadPlayer()
 
-        enemy.loadPlayer().addOnCompleteListener {
+        }else{
+            NPC().generateNPC(if(intent?.extras?.getString("npcID").isNullOrBlank())null else intent?.extras?.getString("npcID"))
+
+        }.addOnCompleteListener {
             setContentView(R.layout.activity_fight_system)
 
+            val opts = BitmapFactory.Options()
+            opts.inScaled = false
             imageViewFightBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
             imageViewFightBars.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
             imageViewEnemyChar.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.charClass.drawable, opts))
@@ -150,7 +151,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell0)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell0)
                 }
 
                 override fun onClick() {
@@ -163,7 +164,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell0)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell0)
                 }
             })
 
@@ -172,7 +173,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell1)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell1)
                 }
 
                 override fun onClick() {
@@ -185,7 +186,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell1)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell1)
                 }
             })
 
@@ -194,7 +195,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell2)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell2)
                 }
 
                 override fun onClick() {
@@ -207,7 +208,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell2)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell2)
                 }
             })
 
@@ -216,7 +217,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell3)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell3)
                 }
 
                 override fun onClick() {
@@ -229,7 +230,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell3)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell3)
                 }
             })
 
@@ -238,7 +239,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell4)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell4)
                 }
 
                 override fun onClick() {
@@ -251,7 +252,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell4)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell4)
                 }
             })
 
@@ -260,7 +261,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell5)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell5)
                 }
 
                 override fun onClick() {
@@ -273,7 +274,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell5)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell5)
                 }
             })
 
@@ -282,7 +283,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell6)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell6)
                 }
 
                 override fun onClick() {
@@ -295,7 +296,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell6)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell6)
                 }
             })
             Spell7.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
@@ -303,7 +304,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell7)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell7)
                 }
 
                 override fun onClick() {
@@ -316,12 +317,11 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
                     roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
 
-                    spellValueAnimator((displayY/10*6.5).toFloat(), Spell7)
+                    spellValueAnimator((displayY/10*6).toFloat(), Spell7)
                 }
             })
         }
     }
-
     private fun attackCalc(player:Player, enemySpell:Spell, playerSpell:Spell, enemy:Player):Double{
         var returnValue = ((playerSpell.power.toDouble() * player.power.toDouble() * enemySpell.block)/4)
         returnValue -= returnValue/100 * enemy.armor
@@ -339,7 +339,6 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             val dmgDealtPlayer = if(playerSpell.power==0)0 else nextInt((attackCalc(playerFight, enemySpell, playerSpell, enemy)*0.75).toInt(), (attackCalc(playerFight, enemySpell, playerSpell, enemy)*1.5).toInt())
             enemy.health -= dmgDealtPlayer                                                                                                 //Dealing damage to an enemy
             playerFight.health += dmgDealtPlayer/100 * (playerSpell.lifeSteal + playerFight.lifeSteal)
-            Log.d("LIFESTEAL: ", (dmgDealtPlayer/100 * (playerSpell.lifeSteal + playerFight.lifeSteal)).toString())
             ValueAnimator.ofInt(progressBarEnemyHealth.progress, enemy.health.toInt()).apply{                                        //Animating the differences in progress bar
                 duration = 400
                 addUpdateListener {
@@ -531,92 +530,93 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
         }
     }
 
-    private fun endOfFight(winner:Player, view: View){
-        if(playerFight.username == enemy.username){
+    private fun endOfFight(winner:Player, view: View) {
+        if (playerFight.username == enemy.username) {
             val endFight = Intent(this, Home::class.java)
             endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(endFight)
-            this.overridePendingTransition(0,0)
-        }
+            this.overridePendingTransition(0, 0)
+        } else {
 
-        val reward = Reward().generateReward(winner)
-        var fameGained = nextInt(0, 75)
+            val reward = Reward().generateReward(winner)
+            var fameGained = nextInt(0, 75)
 
-        if(winner.username == playerFight.username){
-            if(enemy.fame<=fameGained)fameGained = enemy.fame
-            enemy.fame -= fameGained
-        }else{
-            if(playerFight.fame<=fameGained)fameGained = playerFight.fame
-            playerFight.fame -= fameGained
-        }
-        if(winner.inventory.contains(null)&& reward.item != null){
-            winner.inventory[winner.inventory.indexOf(null)] = reward.item
-            winner.toLoadPlayer().uploadSingleItem("inventory")
-        }
-        winner.money += reward.money
-        winner.experience += reward.experience
-        winner.fame += fameGained
-
-        val loadPlayerFight = playerFight.toLoadPlayer()
-        val loadEnemy = enemy.toLoadPlayer()
-        loadPlayerFight.uploadPlayer()
-        loadEnemy.uploadPlayer()
-
-        val window = PopupWindow(this)
-        val viewPop:View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
-        window.elevation = 0.0f
-        window.contentView = viewPop
-        val textViewQuest: TextView = viewPop.textViewQuest
-        val buttonAccept: Button = viewPop.buttonAccept
-        val buttonClose: Button = viewPop.buttonClose
-        val imageItem: ImageView = viewPop.imageViewAdventure
-        val textViewStats: TextView = viewPop.textViewItemStats
-
-
-        if(reward.item != null){
-            imageItem.setImageResource(reward.item!!.drawable)
-            imageItem.isClickable = true
-            imageItem.isEnabled = true
-        }else{
-            imageItem.isClickable = false
-            imageItem.isEnabled = false
-        }
-
-        textViewQuest.text = "${winner.username} earned:\n${reward.getStats()}\n\nfame points  $fameGained"
-
-
-        window.isOutsideTouchable = false
-        window.isFocusable = true
-        window.setOnDismissListener {
-            window.dismiss()
-            val endFight = Intent(this, Home::class.java)
-            endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(endFight)
-            this.overridePendingTransition(0,0)
-        }
-        imageItem.setOnClickListener {
-            textViewStats.visibility = View.VISIBLE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                textViewStats.setText(Html.fromHtml(reward.item!!.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-            }else{
-                textViewStats.setText(Html.fromHtml(reward.item!!.getStatsCompare()), TextView.BufferType.SPANNABLE)
+            if (winner.username == playerFight.username) {
+                if (enemy.fame <= fameGained) fameGained = enemy.fame
+                enemy.fame -= fameGained
+            } else {
+                if (playerFight.fame <= fameGained) fameGained = playerFight.fame
+                playerFight.fame -= fameGained
             }
-        }
-        buttonAccept.setOnClickListener {
-            window.dismiss()
-            val endFight = Intent(this, Home::class.java)
-            endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(endFight)
-            this.overridePendingTransition(0,0)
-        }
-        buttonClose.setOnClickListener {
-            window.dismiss()
-            val endFight = Intent(this, Home::class.java)
-            endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(endFight)
-            this.overridePendingTransition(0,0)
-        }
+            if (winner.inventory.contains(null) && reward.item != null) {
+                winner.inventory[winner.inventory.indexOf(null)] = reward.item
+                winner.toLoadPlayer().uploadSingleItem("inventory")
+            }
+            winner.money += reward.money
+            winner.experience += reward.experience
+            winner.fame += fameGained
 
-        window.showAtLocation(view, Gravity.CENTER,0,0)
+            val loadPlayerFight = playerFight.toLoadPlayer()
+            val loadEnemy = enemy.toLoadPlayer()
+            loadPlayerFight.uploadPlayer()
+            loadEnemy.uploadPlayer()
+
+            val window = PopupWindow(this)
+            val viewPop: View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
+            window.elevation = 0.0f
+            window.contentView = viewPop
+            val textViewQuest: TextView = viewPop.textViewQuest
+            val buttonAccept: Button = viewPop.buttonAccept
+            val buttonClose: Button = viewPop.buttonClose
+            val imageItem: ImageView = viewPop.imageViewAdventure
+            val textViewStats: TextView = viewPop.textViewItemStats
+
+
+            if (reward.item != null) {
+                imageItem.setImageResource(reward.item!!.drawable)
+                imageItem.isClickable = true
+                imageItem.isEnabled = true
+            } else {
+                imageItem.isClickable = false
+                imageItem.isEnabled = false
+            }
+
+            textViewQuest.text = "${winner.username} earned:\n${reward.getStats()}\n\nfame points  $fameGained"
+
+
+            window.isOutsideTouchable = false
+            window.isFocusable = true
+            window.setOnDismissListener {
+                window.dismiss()
+                val endFight = Intent(this, Home::class.java)
+                endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(endFight)
+                this.overridePendingTransition(0, 0)
+            }
+            imageItem.setOnClickListener {
+                textViewStats.visibility = View.VISIBLE
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    textViewStats.setText(Html.fromHtml(reward.item!!.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
+                } else {
+                    textViewStats.setText(Html.fromHtml(reward.item!!.getStatsCompare()), TextView.BufferType.SPANNABLE)
+                }
+            }
+            buttonAccept.setOnClickListener {
+                window.dismiss()
+                val endFight = Intent(this, Home::class.java)
+                endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(endFight)
+                this.overridePendingTransition(0, 0)
+            }
+            buttonClose.setOnClickListener {
+                window.dismiss()
+                val endFight = Intent(this, Home::class.java)
+                endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(endFight)
+                this.overridePendingTransition(0, 0)
+            }
+
+            window.showAtLocation(view, Gravity.CENTER, 0, 0)
+        }
     }
 }
