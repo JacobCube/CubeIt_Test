@@ -717,28 +717,6 @@ open class Player(
         }
     }
 
-    fun returnServerTime(){
-
-        val timestamp1 = FieldValue.serverTimestamp()
-        val timestamp2 = FieldValue.serverTimestamp()
-
-        val questString = HashMap<String, Any?>()
-
-        docRef.set(updates).addOnCompleteListener { }
-        questString["startTime"] = timestamp1
-        questString["lastCheckedTime"] = timestamp2
-        questString["name"] = questIn.name
-        questString["userId"] = userIdIn
-        questString["description"] = questIn.description
-        questString["level"] = questIn.level
-        questString["experience"] = questIn.experience
-        questString["money"] = questIn.money
-
-        db.collection("users").document(usernameIn).collection("quests").document(questIn.name).set(questString)
-    }
-    fun returnServerTime(): FieldValue {
-        return FieldValue.serverTimestamp()
-    }
     fun calculateTime(usernameIn: String, questNameIn: String){
 
         val docRef = db.collection("users").document(usernameIn).collection("quests").document(questNameIn)

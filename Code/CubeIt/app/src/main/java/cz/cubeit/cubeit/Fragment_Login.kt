@@ -108,6 +108,8 @@ class FragmentLogin : Fragment()  {
                                             showNotification("Oops", "We're unable to find you in our database. Are you sure you have an account?")
                                         }
                                     }
+
+                            Log.d("CharclassesDebug", "Class name: ${charClasses[0].name.toString()}")
                         } else {
                             loadedLogin = LoginStatus.CLOSELOADING
                             showNotification("Oops", exceptionFormatter(task.exception.toString()))
@@ -117,6 +119,7 @@ class FragmentLogin : Fragment()  {
                 }else loadedLogin = LoginStatus.CLOSELOADING
            }
         }
+
 
         view.resetPass.setOnClickListener {
             val userEmail = view.inputEmailLogin.text.toString()
