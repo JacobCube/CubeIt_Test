@@ -2,8 +2,6 @@ package cz.cubeit.cubeit
 
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -20,8 +18,6 @@ import android.view.ViewGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.android.synthetic.main.activity_fight_system.*
-import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_login.view.*
 
 var player:Player = Player()
@@ -95,12 +91,15 @@ class FragmentLogin : Fragment()  {
                                             val document: DocumentSnapshot = querySnapshot.documents[0]
                                             player.username = document.getString("username")!!
 
+
                                             player.loadPlayer().addOnCompleteListener {
                                                 if(player.newPlayer){
+                                                    player.writeTimeStampToServer()
                                                     loadedLogin = LoginStatus.CLOSELOADING
                                                     val intent = Intent(view.context, Activity_Character_Customization::class.java)
                                                     startActivity(intent)
                                                 }else {
+                                                    player.writeTimeStampToServer()
                                                     player.online = true
                                                     player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
                                                         loadedLogin = LoginStatus.LOGGED

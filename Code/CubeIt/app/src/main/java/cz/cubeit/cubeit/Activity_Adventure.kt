@@ -4,11 +4,10 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.support.annotation.RequiresApi
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
@@ -20,13 +19,32 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_adventure.*
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.*
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
-import kotlin.math.abs
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 var viewPagerSideQ:ViewPager? = null
 var viewPopQuest:View? = null
 var resourcesAdventure: Resources? = null
+val db = FirebaseFirestore.getInstance()
+val activeQuestDocRef = db.collection("users").document(player.username).collection("ActiveQuest").document("Quest")
+val currentTimeDocRef = db.collection("users").document(player.username).collection("ServerTimestamp").document("TemporaryTimestamp")
+@RequiresApi(Build.VERSION_CODES.O)
+var questStartTime: LocalDateTime = LocalDateTime.now()
+@RequiresApi(Build.VERSION_CODES.O)
+var questEndTime: LocalDateTime = LocalDateTime.now()
+@RequiresApi(Build.VERSION_CODES.O)
+var currentTime: LocalDateTime = LocalDateTime.now()
+var questLength: Int = 0
+
+
+val docRef = db.collection("users").document(player.username).collection("ServerTimestamp").document("TemporaryTimestamp")
+
+val map = HashMap<String, FieldValue>()
 
 class Adventure : AppCompatActivity() {
 
@@ -50,6 +68,7 @@ class Adventure : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
@@ -63,6 +82,24 @@ class Adventure : AppCompatActivity() {
         windowManager.defaultDisplay.getMetrics(dm)
         val displayY = dm.heightPixels.toDouble()
         val displayX = dm.widthPixels.toDouble()
+
+        map["timestamp"] = FieldValue.serverTimestamp()
+
+
+        docRef.set(map).addOnSuccessListener {
+            currentTimeDocRef.get().addOnSuccessListener { documentSnapshot ->
+
+                currentTime = documentSnapshot.getDate("timestamp")!!.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+
+                Log.d("TimeDebug", "CurrentTime: ${currentTime.toString()}")
+
+            }
+        }
+
+
+
 
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
@@ -117,6 +154,7 @@ class Adventure : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onClickQuest(view: View){
         val index = view.toString()[view.toString().length - 2].toString().toInt()-1
         val surface = view.toString()[view.toString().length - 8].toString().toInt()
@@ -129,6 +167,30 @@ class Adventure : AppCompatActivity() {
         val buttonClose: Button = viewPop.buttonClose
 
         val quest:Quest = player.currentSurfaces[surface].quests[index]
+
+        /*
+
+        **Proof of concept - to be taken as an example**
+
+        var activeQuest = ActiveQuest(quest, FieldValue.serverTimestamp(), 5)
+
+        player.setActiveQuest(activeQuest)
+
+        activeQuestDocRef.get().addOnSuccessListener { documentSnapshot ->
+
+            if (documentSnapshot.exists()){
+                activeQuest = documentSnapshot.toObject(ActiveQuest::class.java)!!
+
+                questStartTime = documentSnapshot.getDate("startTime")!!.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+            }
+            else {
+                Log.d("LoadActiveQuestDebug", "User has no active quest")
+            }
+        }
+        */
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             textViewQuest.setText(Html.fromHtml(quest.getStats(resourcesAdventure!!),Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
@@ -159,7 +221,8 @@ class Adventure : AppCompatActivity() {
         val buttonAccept: Button = viewPopQuest!!.findViewById(R.id.buttonAccept)
         val buttonClose: Button = viewPopQuest!!.findViewById(R.id.buttonClose)
 
-        val quest:Quest = player.currentSurfaces[surface].quests[index]
+        var quest:Quest = player.currentSurfaces[surface].quests[index]
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             textViewQuest.setText(Html.fromHtml(quest.getStats(resourcesAdventure!!),Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)

@@ -12,6 +12,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
+import android.support.annotation.RequiresApi
 import android.support.v4.app.Fragment
 import android.util.Log
 import com.google.android.gms.tasks.Task
@@ -21,9 +22,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Period
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.concurrent.fixedRateTimer
+
 
 var playerListReturn: Array<Player>? = null
 //returned list of players in order to show them in fight board Base adapter(list)
@@ -140,18 +145,18 @@ fun loadGlobalData(): Task<DocumentSnapshot> {
 
     return db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
         storyQuests = itStory.toObjects(StoryQuest::class.java)
-    }.continueWithTask{
+    }.continueWithTask {
         db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
             val loadItemClasses = itItems.toObjects(LoadItems::class.java)
 
             itemClasses = mutableListOf()
-            for(i in 0 until loadItemClasses.size){
+            for (i in 0 until loadItemClasses.size) {
                 itemClasses.add(LoadItems())
             }
 
-            for(i in 0 until loadItemClasses.size){
-                for(j in 0 until loadItemClasses[i].items.size){
-                    itemClasses[i].items.add(when(loadItemClasses[i].items[j].type){
+            for (i in 0 until loadItemClasses.size) {
+                for (j in 0 until loadItemClasses[i].items.size) {
+                    itemClasses[i].items.add(when (loadItemClasses[i].items[j].type) {
                         "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
                         "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
                         "Runes" -> (loadItemClasses[i].items[j]).toRune()
@@ -161,15 +166,15 @@ fun loadGlobalData(): Task<DocumentSnapshot> {
                 }
             }
         }
-    }.continueWithTask{
+    }.continueWithTask {
         db.collection("spells").get().addOnSuccessListener {
             spellClasses = it.toObjects(LoadSpells::class.java)
         }
-    }.continueWithTask{
+    }.continueWithTask {
         db.collection("charclasses").get().addOnSuccessListener {
             charClasses = it.toObjects(CharClass::class.java)
         }
-    }.continueWithTask{
+    }.continueWithTask {
         db.collection("npcs").get().addOnSuccessListener {
             npcs = it.toObjects(NPC::class.java)
         }
@@ -296,27 +301,25 @@ fun uploadGlobalData() {
     }
 }
 
-
 fun getPlayerList(pageNumber:Int): Task<QuerySnapshot> { // returns each page
 
     val db = FirebaseFirestore.getInstance()
 
-    val docRef = db.collection("users").orderBy("fame", Query.Direction.DESCENDING)
-
     val upperPlayerRange = pageNumber*50
     val lowerPlayerRange =if(pageNumber==0)0 else  upperPlayerRange - 50
+
+    val docRef = db.collection("users").orderBy("fame")
+            .startAt(upperPlayerRange)
+            .endAt(lowerPlayerRange)
+
 
     return docRef.get().addOnSuccessListener { querySnapshot ->
 
         val playerList: MutableList<out LoadPlayer> = querySnapshot.toObjects(LoadPlayer()::class.java)
 
-        docRef.get()
-
-        val returnPlayerList = playerList.subList(lowerPlayerRange, if(upperPlayerRange<playerList.size)playerList.size else upperPlayerRange)
-
         val tempList: MutableList<Player> = mutableListOf()
 
-        for (loadedPlayer in returnPlayerList)
+        for (loadedPlayer in playerList)
         {
             tempList.add(loadedPlayer.toPlayer())
         }
@@ -431,6 +434,8 @@ fun getRandomPlayer() {
         returnUsernameHelper(tempUsername)
     }
 }
+
+
 
 fun getPlayerByUsername(usernameIn:String) {
 
@@ -820,33 +825,24 @@ open class Player(
         return tempLoadedPlayer
     }
 
-    fun startTimedSync(){
-        val fixedRateTimer = fixedRateTimer(name = "Sync-Player-Timer", initialDelay = 300000, period = 300000){
-            loadPlayer() // add loading popup - noninvasive?
-        }
+    fun setActiveQuest(ActiveQuestIn: ActiveQuest){
+
+        val docRef = db.collection("users").document(username).collection("ActiveQuest").document("Quest")
+
+        docRef.set(ActiveQuestIn)
+
+    }
+    fun writeTimeStampToServer(){
+
+        val docRef = db.collection("users").document(username).collection("ServerTimestamp").document("TemporaryTimestamp")
+
+        val map = HashMap<String, FieldValue>()
+
+        map["timestamp"] = FieldValue.serverTimestamp()
+
+        docRef.set(map)
     }
 
-    fun startQuest(userIdIn: String, usernameIn: String, questIn: ActiveQuest){ // Starts quest document in firebase
-
-        val timestamp1 = FieldValue.serverTimestamp()
-        val timestamp2 = FieldValue.serverTimestamp()
-
-        val questString = HashMap<String, Any?>()
-
-        questString["startTime"] = timestamp1
-        questString["lastCheckedTime"] = timestamp2
-        questString["name"] = questIn.quest.name
-        questString["userId"] = userIdIn
-        questString["description"] = questIn.quest.description
-        questString["level"] = questIn.quest.level
-        questString["experience"] = questIn.quest.experience
-        questString["money"] = questIn.quest.money
-
-        db.collection("users").document(usernameIn).collection("quests").document().set(questString)
-    }
-    fun returnServerTime(): FieldValue {
-        return FieldValue.serverTimestamp()
-    }
     fun calculateTime(usernameIn: String, questNameIn: String){
 
         val docRef = db.collection("users").document(usernameIn).collection("quests").document(questNameIn)
@@ -1016,11 +1012,7 @@ open class Player(
 class ActiveQuest(
         val quest:Quest,
         val startTime:FieldValue = FieldValue.serverTimestamp(),
-        val minutesLength: Int
-
-){
-    val length = 0
-}
+        val minutesLength: Int)
 
 class DamageOverTime(
         var rounds:Int = 0,
