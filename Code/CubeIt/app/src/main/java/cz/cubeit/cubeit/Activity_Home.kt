@@ -96,8 +96,10 @@ class Home : AppCompatActivity() {
 
             player.online = false
             player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
-                val svc = Intent(this, BackgroundSoundService()::class.java)
-                stopService(svc)
+                if(bgMusic.mediaPlayer.isPlaying){
+                    val svc = Intent(this, bgMusic::class.java)
+                    stopService(svc)
+                }
                 player = Player()
 
                 loadedLogin = LoginStatus.UNLOGGED

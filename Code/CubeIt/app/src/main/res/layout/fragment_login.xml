@@ -30,9 +30,11 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginEnd="16dp"
+        android:fontFamily="@font/average_sans"
         android:gravity="center"
         android:text="Email"
         android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/Texguideline7"
         app:layout_constraintEnd_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
@@ -57,11 +59,12 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
         android:hint="e-mail"
-        android:textColorHint="@color/colorGrey"
         android:inputType="textEmailAddress"
         android:nextFocusForward="@id/inputPassLogin"
         android:textColor="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
         app:layout_constraintBottom_toTopOf="@+id/Texguideline7"
         app:layout_constraintEnd_toStartOf="@+id/guideline13"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
@@ -86,9 +89,11 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginEnd="16dp"
+        android:fontFamily="@font/average_sans"
         android:gravity="center"
         android:text="Password"
         android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline5"
         app:layout_constraintEnd_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toTopOf="@+id/Texguideline8" />
@@ -106,12 +111,13 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
         android:hint="password"
-        android:textColorHint="@color/colorGrey"
         android:inputType="textPassword"
         android:nextFocusForward="@id/resetPass"
         android:selectAllOnFocus="false"
         android:textColor="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
         app:layout_constraintBottom_toTopOf="@+id/guideline5"
         app:layout_constraintEnd_toStartOf="@+id/guideline67"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
@@ -124,6 +130,7 @@
         android:layout_marginStart="8dp"
         android:clickable="true"
         android:focusable="true"
+        android:fontFamily="@font/average_sans"
         android:gravity="center"
         android:text="Forgot Password? "
         android:textColor="@color/colorSecondary"
@@ -157,6 +164,13 @@
         app:layout_constraintGuide_percent="0.491" />
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline131"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.383" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline14"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -167,8 +181,6 @@
         android:id="@+id/buttonLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:adjustViewBounds="true"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
@@ -189,5 +201,18 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <CheckBox
+        android:id="@+id/checkBoxStayLogged"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
+        android:text="remember me"
+        android:textColor="@color/colorSecondary"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline14"
+        app:layout_constraintEnd_toStartOf="@+id/guideline131"
+        app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
 </android.support.constraint.ConstraintLayout>

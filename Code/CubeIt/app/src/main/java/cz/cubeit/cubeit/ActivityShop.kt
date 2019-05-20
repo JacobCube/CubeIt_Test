@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -29,6 +30,7 @@ var lastClicked = ""
 class ActivityShop : AppCompatActivity(){
 
     private var hidden = false
+    var displayY = 0.0
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -48,6 +50,24 @@ class ActivityShop : AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val viewRect = Rect()
+        frameLayoutMenuShop.getGlobalVisibleRect(viewRect)
+
+        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuShop.y <= (displayY * 0.83).toFloat()) {
+
+            ValueAnimator.ofFloat(frameLayoutMenuShop.y, displayY.toFloat()).apply {
+                duration = (frameLayoutMenuShop.y/displayY * 160).toLong()
+                addUpdateListener {
+                    frameLayoutMenuShop.y = it.animatedValue as Float
+                }
+                start()
+            }
+
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,8 +92,9 @@ class ActivityShop : AppCompatActivity(){
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
+        displayY = dm.heightPixels.toDouble()
 
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuShop, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityShop, R.id.frameLayoutMenuShop, R.id.homeButtonBackShop)).commitNow()
+        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuShop, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityShop, R.id.frameLayoutMenuShop, R.id.homeButtonBackShop, R.id.imageViewMenuUpShop)).commitNow()
         frameLayoutMenuShop.y = dm.heightPixels.toFloat()
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
@@ -87,11 +108,15 @@ class ActivityShop : AppCompatActivity(){
         listViewShop.adapter = ShopOffer(hidden, animUpText, animDownText, player, textViewInfoItem, bubleDialogShop, listViewInventoryShop.adapter as ShopInventory, this, textViewMoney)
 
         shopOfferRefresh.setOnClickListener {
-            for(i in 0 until player.shopOffer.size){
-                player.shopOffer[i] = generateItem(player)
-                (listViewShop.adapter as ShopOffer).notifyDataSetChanged()
+            val moneyReq = player.level * 10
+            if(player.money >= moneyReq){
+                player.money -= moneyReq
+                for(i in 0 until player.shopOffer.size){
+                    player.shopOffer[i] = generateItem(player)
+                    (listViewShop.adapter as ShopOffer).notifyDataSetChanged()
+                }
+                lastClicked = ""
             }
-            lastClicked = ""
         }
     }
     private class ShopInventory(var hidden:Boolean, val animUpText:Animation, val animDownText:Animation, val playerS:Player, val textViewInfoItem: TextView, val viewInflater:View, val context:Context, val listView:ListView, val textViewMoney:TextView) : BaseAdapter() {

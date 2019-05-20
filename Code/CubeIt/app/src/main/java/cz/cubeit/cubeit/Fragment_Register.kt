@@ -62,8 +62,8 @@ class Fragment_Register : Fragment() {
                 handler.postDelayed({showNotification("Oops", "Passwords must match")},100)
             }
 
-            loadGlobalData().addOnCompleteListener {
-                if (appVersion <= BuildConfig.VERSION_CODE){
+            loadGlobalData(view.context).addOnCompleteListener {
+                if (appVersion < BuildConfig.VERSION_CODE){
                     loadedLogin = LoginStatus.CLOSELOADING
                     handler.postDelayed({showNotification("Oops", "Your version is too old, download more recent one.")},100)
                 }
@@ -73,29 +73,21 @@ class Fragment_Register : Fragment() {
 
                     Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener { task: Task<AuthResult> ->
                         if (task.isSuccessful) {
+                            if(textViewLog!= null){
+                                textViewLog!!.text = resources.getString(R.string.loading_log, "Your profile information")
+                            }
+
                             val user = Auth!!.currentUser
                             user!!.sendEmailVerification()
                             Toast.makeText(view.context, "Please confirm your account by clicking on the link sent to your email address!", Toast.LENGTH_SHORT).show()
 
                             val tempPlayer = Player()
                             tempPlayer.username = view.inputUsernameReg.text.toString()
-                            val charClass = tempPlayer.charClass
-
-                            tempPlayer.currentSurfaces = mutableListOf(
-                                    CurrentSurface(mutableListOf(surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!,surfaces[0].quests["0001"]!!))
-                                    ,CurrentSurface(mutableListOf(surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!,surfaces[1].quests["0001"]!!))
-                                    ,CurrentSurface(mutableListOf(surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!,surfaces[2].quests["0001"]!!))
-                                    ,CurrentSurface(mutableListOf(surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!,surfaces[3].quests["0001"]!!))
-                                    ,CurrentSurface(mutableListOf(surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!,surfaces[4].quests["0001"]!!))
-                                    ,CurrentSurface(mutableListOf(surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!,surfaces[5].quests["0001"]!!))
-                            )
-                            tempPlayer.learnedSpells = mutableListOf(charClass.spellList[0], charClass.spellList[1], charClass.spellList[2], charClass.spellList[3], charClass.spellList[4])
-                            tempPlayer.shopOffer = arrayOf(charClass.itemList[0], charClass.itemList[1], charClass.itemList[2], charClass.itemList[3], charClass.itemList[4], charClass.itemList[5], charClass.itemList[5], charClass.itemList[5])
 
                             tempPlayer.toLoadPlayer().createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnCompleteListener {
                                 player.username = view.inputUsernameReg.text.toString()
                                 player.loadPlayer().addOnCompleteListener {
-                                    val intent = Intent(view.context, Activity_Character_Customization(view.inputUsernameReg.text.toString(), view.inputUsernameReg.text.toString())::class.java)
+                                    val intent = Intent(view.context, Activity_Character_Customization::class.java)
                                     startActivity(intent)
                                     //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
                                 }

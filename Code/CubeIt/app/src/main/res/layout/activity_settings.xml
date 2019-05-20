@@ -83,6 +83,25 @@
         tools:layout_editor_absoluteY="0dp"
         tools:ignore="MissingConstraints" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline139"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <ImageView
+        android:id="@+id/imageViewMenuUpSettings"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline139"
+        app:srcCompat="@drawable/setting3rows" />
+
     <FrameLayout
         android:id="@+id/frameLayoutBugReport"
         android:layout_width="0dp"
@@ -100,7 +119,9 @@
         android:layout_height="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
+        app:layout_constraintStart_toStartOf="parent">
+
+    </FrameLayout>
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline82"

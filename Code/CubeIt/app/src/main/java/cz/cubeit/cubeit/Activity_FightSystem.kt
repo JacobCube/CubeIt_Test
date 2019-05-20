@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
@@ -27,6 +28,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
     private var requiredEnergyEnemy = 0
     private var playerStun:Int = 0
     private var enemyStun:Int = 0
+    private var fightEnded:Boolean = false
 
     private var energyPlayer = playerFight.energy
     private var energyEnemy = 0//enemy.energyPlayer
@@ -35,6 +37,44 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
 
     override fun onBackPressed() {
+    }
+
+    override fun onPause() {            //if user puts activity to sleep before fight has ended => save state of fight to Bundle
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+
+    override fun onDestroy() {          //if user destroys activity before fight has ended => he lost the fight
+        super.onDestroy()
+        if(!fightEnded){
+            if (playerFight.username != enemy.username) {
+                val reward = Reward().generate(enemy)
+                var fameGained = nextInt(0, 75)
+
+                if (enemy.username == playerFight.username) {
+                    if (enemy.fame <= fameGained) fameGained = enemy.fame
+                    enemy.fame -= fameGained
+                } else {
+                    if (playerFight.fame <= fameGained) fameGained = playerFight.fame
+                    playerFight.fame -= fameGained
+                }
+                if (enemy.inventory.contains(null) && reward.item != null) {
+                    enemy.inventory[enemy.inventory.indexOf(null)] = reward.item
+                    enemy.toLoadPlayer().uploadSingleItem("inventory")
+                }
+                enemy.money += reward.money
+                enemy.experience += reward.experience
+                enemy.fame += fameGained
+
+                val loadPlayerFight = playerFight.toLoadPlayer()
+                val loadEnemy = enemy.toLoadPlayer()
+                loadPlayerFight.uploadPlayer()
+                loadEnemy.uploadPlayer()
+            }
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -50,20 +90,39 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
+
+
     fun spellValueAnimator(to:Float, imageView: ImageView){
         val from = imageView.y
-        ValueAnimator.ofFloat(imageView.y, to).apply {
-            duration = 800
+
+        val fromAnim = ValueAnimator.ofFloat(imageView.y, from).apply {
+            duration = 100
             addUpdateListener {
                 imageView.y = it.animatedValue as Float
             }
-            start()
         }
-        ValueAnimator.ofFloat(to, from).apply {
-            duration = 800
+
+        val toAnim = ValueAnimator.ofFloat(imageView.y, to).apply {
+            duration = 300
             addUpdateListener {
                 imageView.y = it.animatedValue as Float
             }
+
+            addListener(object : Animator.AnimatorListener {
+                override fun onAnimationRepeat(animation: Animator?) {
+                }
+
+                override fun onAnimationCancel(animation: Animator?) {
+                }
+
+                override fun onAnimationStart(animation: Animator?) {
+                }
+
+                override fun onAnimationEnd(animation: Animator?) {
+                    fromAnim.start()
+                }
+
+            })
             start()
         }
     }
@@ -78,7 +137,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             enemy.loadPlayer()
 
         }else{
-            NPC().generateNPC(if(intent?.extras?.getString("npcID").isNullOrBlank())null else intent?.extras?.getString("npcID"))
+            NPC().generate(if(intent?.extras?.getString("npcID").isNullOrBlank())null else intent?.extras?.getString("npcID"))
 
         }.addOnCompleteListener {
             setContentView(R.layout.activity_fight_system)
@@ -531,6 +590,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
     }
 
     private fun endOfFight(winner:Player, view: View) {
+        fightEnded = true
         if (playerFight.username == enemy.username) {
             val endFight = Intent(this, Home::class.java)
             endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -538,15 +598,27 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             this.overridePendingTransition(0, 0)
         } else {
 
-            val reward = Reward().generateReward(winner)
+            val reward = Reward().generate(winner)
             var fameGained = nextInt(0, 75)
 
             if (winner.username == playerFight.username) {
                 if (enemy.fame <= fameGained) fameGained = enemy.fame
                 enemy.fame -= fameGained
+
+                if(playerFight.level > enemy.level+2){
+                    reward.money = 0
+                    reward.experience = 0
+                    reward.item = null
+                }
             } else {
                 if (playerFight.fame <= fameGained) fameGained = playerFight.fame
                 playerFight.fame -= fameGained
+
+                if(enemy.level > enemy.level+2){
+                    reward.money = 0
+                    reward.experience = 0
+                    reward.item = null
+                }
             }
             if (winner.inventory.contains(null) && reward.item != null) {
                 winner.inventory[winner.inventory.indexOf(null)] = reward.item
@@ -594,7 +666,8 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                 this.overridePendingTransition(0, 0)
             }
             imageItem.setOnClickListener {
-                textViewStats.visibility = View.VISIBLE
+                textViewStats.visibility = if(textViewStats.visibility == View.GONE)View.VISIBLE else View.GONE
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     textViewStats.setText(Html.fromHtml(reward.item!!.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
                 } else {

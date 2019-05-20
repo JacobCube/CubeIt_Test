@@ -84,6 +84,25 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline138"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <ImageView
+        android:id="@+id/imageViewMenuUpBoard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline138"
+        app:srcCompat="@drawable/setting3rows" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline77"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -114,7 +133,7 @@
         android:id="@+id/imageViewLoadingBoard"
         android:layout_width="75dp"
         android:layout_height="0dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="8dp"
         android:alpha="0.5"
         android:src="@drawable/icon_app"
         android:tint="@color/colorGrey"
@@ -128,6 +147,7 @@
         android:id="@+id/changeFragmentProfile"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
         android:src="@drawable/setting3rows"
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"

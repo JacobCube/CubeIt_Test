@@ -81,7 +81,7 @@ class FragmentInboxMessage : Fragment() {
 
                                 val inboxMessage = InboxMessage(
                                         priority = view.spinnerInboxPriority.selectedItemPosition,
-                                        reciever = view.editTextInboxReciever.text.toString(),
+                                        receiver = view.editTextInboxReciever.text.toString(),
                                         objectMessage = view.editTextInboxObject.text.toString(),
                                         content = view.editTextInboxContent.text.toString(),
                                         sender = player.username

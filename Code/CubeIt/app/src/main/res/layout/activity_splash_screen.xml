@@ -77,18 +77,29 @@
         app:layout_constraintVertical_bias="0.163" />
 
     <TextView
+        android:id="@+id/textViewLoadingLog"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/colorSecondary"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewSplash"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSplashText" />
+
+    <TextView
         android:id="@+id/textViewSplashText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
         android:gravity="center"
         android:text="We're contacting your parents, stay patient"
         android:textColor="@color/colorSecondary"
         android:textSize="21sp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewSplash"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewSplashIcon" />
+        app:layout_constraintTop_toTopOf="@+id/guideline130" />
 
     <ImageView
         android:id="@+id/imageViewSplashIG"
@@ -121,7 +132,7 @@
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline124"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewSplashIG"/>
+        app:layout_constraintTop_toBottomOf="@+id/imageViewSplashIG" />
 
     <ImageView
         android:id="@+id/imageViewSplashDiscord"
@@ -145,5 +156,12 @@
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline130"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.7" />
 
 </android.support.constraint.ConstraintLayout>

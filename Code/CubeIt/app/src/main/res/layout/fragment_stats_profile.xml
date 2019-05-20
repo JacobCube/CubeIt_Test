@@ -8,43 +8,106 @@
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
-    <TextView
-        android:id="@+id/profile_stats"
+    <ProgressBar
+        android:id="@+id/progressBarProfileXp"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:gravity="center_horizontal"
-        android:textColor="@color/colorSecondary"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:animationResolution="@android:integer/config_longAnimTime"
+        android:max="100"
+        android:progress="100"
+        android:progressDrawable="@drawable/progress_experience"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/guideline145"
+        app:layout_constraintEnd_toStartOf="@+id/profile_stats_fight"
+        app:layout_constraintStart_toEndOf="@+id/helperImageView"
+        app:layout_constraintTop_toTopOf="@+id/guideline79" />
+
+    <TextView
+        android:id="@+id/textViewProfileXp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:text="0/1"
         android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline145"
+        app:layout_constraintEnd_toEndOf="@+id/progressBarProfileXp"
+        app:layout_constraintStart_toStartOf="@+id/progressBarProfileXp"
+        app:layout_constraintTop_toTopOf="@+id/guideline79" />
+
+    <TextView
+        android:id="@+id/textViewProfileLevel"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center_horizontal"
+        android:text="1"
+        android:textColor="@color/colorSecondary"
+        android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline79"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/profile_description"
+        android:id="@+id/profile_stats"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/profile_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline145" />
+
+    <TextView
+        android:id="@+id/profile_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:textColor="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline79" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline79"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.65" />
+        app:layout_constraintGuide_percent="0.1" />
 
     <ImageView
         android:id="@+id/profile_stats_fight"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/battle"
+        app:layout_constraintBottom_toTopOf="@+id/guideline145"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/helperImageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline145"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline145"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-
- android:src="@drawable/battle" />
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.18" />
 
 </android.support.constraint.ConstraintLayout>

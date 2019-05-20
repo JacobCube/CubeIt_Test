@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.Rect
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
@@ -25,9 +26,7 @@ import kotlin.math.abs
 
 class Spells: AppCompatActivity(){
 
-    var dm:DisplayMetrics? = null
-    var animUp: Animation? = null
-    var animDown: Animation? = null
+    var displayY = 0.0
 
     fun onClickArrow(v:View){
         when(v.toString()[v.toString().lastIndex-1]){
@@ -60,18 +59,31 @@ class Spells: AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val viewRect = Rect()
+        frameLayoutMenuSpells.getGlobalVisibleRect(viewRect)
+
+        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuSpells.y <= (displayY * 0.83).toFloat()) {
+
+            ValueAnimator.ofFloat(frameLayoutMenuSpells.y, displayY.toFloat()).apply {
+                duration = (frameLayoutMenuSpells.y/displayY * 160).toLong()
+                addUpdateListener {
+                    frameLayoutMenuSpells.y = it.animatedValue as Float
+                }
+                start()
+            }
+
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_spells)
 
-        animUp = AnimationUtils.loadAnimation(this,
-                R.anim.animation_adventure_up)
-        animDown = AnimationUtils.loadAnimation(this,
-                R.anim.animation_adventure_down)
-
-        dm = DisplayMetrics()
+        val dm  = DisplayMetrics()
         val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
 
@@ -81,11 +93,11 @@ class Spells: AppCompatActivity(){
             }
         }
 
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuSpells, Fragment_Menu_Bar.newInstance(R.id.viewPagerSpells, R.id.frameLayoutMenuSpells, R.id.homeButtonBackSpells)).commitNow()
-        var originalY = homeButtonBackSpells.y
-        val displayY = dm!!.heightPixels.toDouble()
+        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuSpells, Fragment_Menu_Bar.newInstance(R.id.viewPagerSpells, R.id.frameLayoutMenuSpells, R.id.homeButtonBackSpells, R.id.imageViewMenuUpSpells)).commitNow()
+        frameLayoutMenuSpells.y = dm.heightPixels.toFloat()
+        displayY = dm.heightPixels.toDouble()
 
-        viewPagerSpells.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        /*viewPagerSpells.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
             override fun onPageScrollStateChanged(state: Int) {
             }
@@ -102,21 +114,7 @@ class Spells: AppCompatActivity(){
                                 frameLayoutMenuSpells.y = it.animatedValue as Float
                             }
                             start()
-                        }.addListener(object : Animator.AnimatorListener {
-                            override fun onAnimationRepeat(animation: Animator?) {
-                            }
-
-                            override fun onAnimationCancel(animation: Animator?) {
-                            }
-
-                            override fun onAnimationStart(animation: Animator?) {
-                            }
-
-                            override fun onAnimationEnd(animation: Animator?) {
-                                originalY = homeButtonBackSpells.y
-                            }
-
-                        })
+                        }
                     }
                     1 -> {
                         ValueAnimator.ofFloat(frameLayoutMenuSpells.y, displayY.toFloat()).apply{
@@ -125,26 +123,12 @@ class Spells: AppCompatActivity(){
                                 frameLayoutMenuSpells.y = it.animatedValue as Float
                             }
                             start()
-                        }.addListener(object : Animator.AnimatorListener {
-                            override fun onAnimationRepeat(animation: Animator?) {
-                            }
-
-                            override fun onAnimationCancel(animation: Animator?) {
-                            }
-
-                            override fun onAnimationStart(animation: Animator?) {
-                            }
-
-                            override fun onAnimationEnd(animation: Animator?) {
-                                originalY = homeButtonBackSpells.y
-                            }
-
-                        })
+                        }
                     }
                 }
             }
 
-        })
+        })*/
 
         viewPagerSpells.offscreenPageLimit = 2
         if (viewPagerSpells != null) {

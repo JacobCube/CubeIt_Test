@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.ClipDescription
@@ -10,7 +11,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
@@ -24,7 +24,6 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_character.*
-import kotlinx.android.synthetic.main.fragment_character_profile.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
 import kotlin.math.abs
 
@@ -41,6 +40,11 @@ class Activity_Character : AppCompatActivity() {
     private var clicks = 0
     var animUpText: Animation? = null
     var animDownText: Animation? = null
+    var displayY: Double = 0.0
+
+    var animatorStatsUp = ValueAnimator()
+    var animatorStatsDown = ValueAnimator()
+    var statsShowed = false
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -62,14 +66,73 @@ class Activity_Character : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
+    override fun onResume() {
+        super.onResume()
+        player.syncStats()
+        progressBarCharacterXp.progress = player.experience
+        progressBarCharacterXp.max = (player.level * 0.75 * (8 * (player.level*0.8) * (3))).toInt()
+        textViewCharacterLevel.text = player.level.toString()
+        textViewCharacterXp.text = progressBarCharacterXp.progress.toString() + " / " + progressBarCharacterXp.max.toString()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val viewRect = Rect()
+        val viewRectStats = Rect()
+        frameLayoutCharacterStats.getGlobalVisibleRect(viewRectStats)
+        frameLayoutMenuCharacter.getGlobalVisibleRect(viewRect)
+
+        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuCharacter.y <= (displayY * 0.83).toFloat()) {
+
+            ValueAnimator.ofFloat(frameLayoutMenuCharacter.y, displayY.toFloat()).apply {
+                duration = (frameLayoutMenuCharacter.y/displayY * 160).toLong()
+                addUpdateListener {
+                    frameLayoutMenuCharacter.y = it.animatedValue as Float
+                }
+                start()
+            }
+
+        }
+        if(!viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt()) && statsShowed){
+
+            animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
+                duration = 800
+                addUpdateListener {
+                    frameLayoutCharacterStats.y = it.animatedValue as Float
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        statsShowed = false
+                    }
+
+                })
+                start()
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
         player.syncStats()
         setContentView(R.layout.activity_character)
-        textViewCharacterStatsHeight.text = player.syncStats()
         textViewInfoItem.movementMethod = ScrollingMovementMethod()
+
+        progressBarCharacterXp.progress = player.experience
+        progressBarCharacterXp.max = (player.level * 0.75 * (8 * (player.level*0.8) * (3))).toInt()
+        textViewCharacterLevel.text = player.level.toString()
+        textViewCharacterXp.text = progressBarCharacterXp.progress.toString() + " / " + progressBarCharacterXp.max.toString()
+
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -90,11 +153,16 @@ class Activity_Character : AppCompatActivity() {
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
+        displayY = dm.heightPixels.toDouble()
 
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityCharacter, R.id.frameLayoutMenuCharacter, R.id.homeButtonBackCharacter)).commitNow()
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitNow()
-        frameLayoutCharacterStats.y = 8f
-        openedBagViewStats = false
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityCharacter, R.id.frameLayoutMenuCharacter, R.id.homeButtonBackCharacter, R.id.imageViewMenuUpCharacter)).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
+
+        frameLayoutCharacterStats.y = displayY.toFloat() + 1f
+
+
+        frameLayoutMenuCharacter.y = dm.heightPixels.toFloat()
 
         val bagViewV = findViewById<View>(R.id.imageViewCharacterBag)
 
@@ -116,89 +184,6 @@ class Activity_Character : AppCompatActivity() {
             buttonBag1.isEnabled = false
             buttonBag1.isClickable = false
         }
-
-        var initialTouchY = 0f
-        var initialTouchX = 0f
-        var originalYBagView = imageViewCharacterBag.y
-        var bagViewAnimator = ValueAnimator()
-        val displayY = dm.heightPixels
-        var statsHeight = 0
-
-        imageViewCharacterBag.setOnTouchListener(object: Class_OnSwipeDragListener(this) {
-
-            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        statsHeight = textViewCharacterStatsHeight.y.toInt() + textViewCharacterStatsHeight.height
-                        initialTouchY = motionEvent.rawY
-                        initialTouchX = motionEvent.rawX
-                        originalYBagView = imageViewCharacterBag.y
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        if(imageViewCharacterBag.y.toInt() - imageViewCharacterBag.layoutParams.height >= statsHeight && !openedBagViewStats){
-                            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
-                            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
-                            frameLayoutCharacterStats.y = 8f
-                            openedBagViewStats = true
-
-                        }else if(imageViewCharacterBag.y.toInt() - imageViewCharacterBag.layoutParams.height < (statsHeight) && openedBagViewStats){
-                            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitAllowingStateLoss()
-                            frameLayoutCharacterStats.layoutParams.height = (displayY/100 * 41.25).toInt()
-                            openedBagViewStats = false
-                        }
-
-                        if(!bagViewAnimator.isRunning){
-                            bagViewAnimator = ValueAnimator.ofFloat(imageViewCharacterBag.y, frameLayoutCharacterStats.y + frameLayoutCharacterStats.height).apply {
-                                duration = 400
-                                addUpdateListener {
-                                    imageViewCharacterBag.y = it.animatedValue as Float
-                                }
-                                start()
-                            }
-                        }else{
-                            imageViewCharacterBag.y = frameLayoutCharacterStats.y + frameLayoutCharacterStats.height
-                        }
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY) && imageViewCharacterBag.y.toInt() - imageViewCharacterBag.layoutParams.height >= displayY/100*20){
-                            imageViewCharacterBag.y = (originalYBagView + (motionEvent.rawY - initialTouchY))
-                        }
-                    }
-                }
-
-                return super.onTouch(view, motionEvent)
-            }
-        })
-
-        imageViewCharacterStatsChange.setOnClickListener {
-            //frameLayoutCharacterStats.y = 8f
-            if(openedBagViewStats){
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_Quests()).commitAllowingStateLoss()
-                frameLayoutCharacterStats.layoutParams.height = (displayY/100 * 41.25).toInt()
-                openedBagViewStats = false
-            }else{
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
-                frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
-                frameLayoutCharacterStats.y = 8f
-
-                openedBagViewStats = true
-            }
-
-            if(!bagViewAnimator.isRunning){
-                bagViewAnimator = ValueAnimator.ofFloat(imageViewCharacterBag.y, frameLayoutCharacterStats.y + frameLayoutCharacterStats.height).apply {
-                    duration = 400
-                    addUpdateListener {
-                        imageViewCharacterBag.y = it.animatedValue as Float
-                    }
-                    start()
-                }
-            }else{
-                imageViewCharacterBag.y = frameLayoutCharacterStats.y + frameLayoutCharacterStats.height
-            }
-        }
-
-
 
 
         //DRAG LISTENER for player's equip
@@ -235,7 +220,7 @@ class Activity_Character : AppCompatActivity() {
 
                     val index = ClipDataIndex
 
-                    if(index!=null){
+                    /*if(index!=null){
 
                         val button: ImageView = when (player.inventory[index]?.slot) {
                             0 -> fragmentCharacterProfile.profile_EquipItem0
@@ -272,7 +257,7 @@ class Activity_Character : AppCompatActivity() {
                                 }
                             }
                             false -> null
-                        }}
+                        }}*/
                     (inventoryListView.adapter as InventoryView).dragItemSync()
 
 
@@ -427,7 +412,7 @@ class Activity_Character : AppCompatActivity() {
 
                     // Invalidate the view to force a redraw in the new tint
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        fragmentCharacterProfile.view!!.cancelDragAndDrop()
+                        frameLayoutCharacterProfile.cancelDragAndDrop()
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         bagViewV.cancelDragAndDrop()
@@ -703,12 +688,11 @@ class Activity_Character : AppCompatActivity() {
                 )
             }*/
         })
-        inventoryListView.adapter = InventoryView(frameLayoutCharacterStats, hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, supportFragmentManager, equipDragListener, runesDragListener, bagViewV,fragmentCharacterProfile.view!!,
-                fragmentCharacterProfile.profile_EquipItem0, fragmentCharacterProfile.profile_EquipItem1, fragmentCharacterProfile.profile_EquipItem2, fragmentCharacterProfile.profile_EquipItem3, fragmentCharacterProfile.profile_EquipItem4, fragmentCharacterProfile.profile_EquipItem5, fragmentCharacterProfile.profile_EquipItem6, fragmentCharacterProfile.profile_EquipItem7, fragmentCharacterProfile.profile_EquipItem8, fragmentCharacterProfile.profile_EquipItem9, this)
+        inventoryListView.adapter = InventoryView(frameLayoutCharacterStats, hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, supportFragmentManager, equipDragListener, runesDragListener, bagViewV,frameLayoutCharacterProfile, this)
     }
 
     private class InventoryView(val frameLayoutCharacterStats: FrameLayout, var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: TextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val supportFragmentManager:FragmentManager, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
-                                val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView, private val context: Context) : BaseAdapter() {
+                                /*val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView,*/ private val context: Context) : BaseAdapter() {
 
         override fun getCount(): Int {
             return playerC.inventory.size/4+1
@@ -723,9 +707,6 @@ class Activity_Character : AppCompatActivity() {
         }
 
         fun dragItemSync() {
-            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
-            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT //ConstraintLayout.LayoutParams(oldXFrameLayout.toInt(), ConstraintLayout.LayoutParams.WRAP_CONTENT)
-            frameLayoutCharacterStats.y = 0f
             openedBagViewStats = true
 
             this.notifyDataSetChanged()
@@ -1040,7 +1021,7 @@ class Activity_Character : AppCompatActivity() {
             lastClicked = ""
 
             val button:ImageView = when(playerC.inventory[index]!!.slot){
-                0->equipItem0
+                /*0->equipItem0
                 1->equipItem1
                 2->equipItem2
                 3->equipItem3
@@ -1049,10 +1030,10 @@ class Activity_Character : AppCompatActivity() {
                 6->equipItem6
                 7->equipItem7
                 8->equipItem8
-                9->equipItem9
+                9->equipItem9*/
                 10->buttonBag0
                 11->buttonBag1
-                else -> equipItem0
+                else -> buttonBag0
             }
 
             when(playerC.inventory[index]){
@@ -1098,13 +1079,13 @@ class Activity_Character : AppCompatActivity() {
                 }
 
                 is Weapon,is Wearable -> if (playerC.equip[playerC.inventory[index]!!.slot] == null) {
-                    button.setImageResource(playerC.inventory[index]!!.drawable)
-                    button.isEnabled = true
+                    /*button.setImageResource(playerC.inventory[index]!!.drawable)
+                    button.isEnabled = true*/
                     playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
                     playerC.inventory[index] = null
                 } else {
-                    button.setImageResource(playerC.inventory[index]!!.drawable)
-                    button.isEnabled = true
+                    /*button.setImageResource(playerC.inventory[index]!!.drawable)
+                    button.isEnabled = true*/
                     tempMemory = playerC.equip[playerC.inventory[index]!!.slot]
                     playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
                     playerC.inventory[index] = tempMemory
@@ -1112,6 +1093,7 @@ class Activity_Character : AppCompatActivity() {
                     dragItemSync()
                 }
             }
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
         }
 
         private class ViewHolder(val buttonInventory1: ImageView, val buttonInventory2: ImageView, val buttonInventory3: ImageView, val buttonInventory4: ImageView)
@@ -1120,10 +1102,6 @@ class Activity_Character : AppCompatActivity() {
         val index = view.tag.toString().toInt()
         ++clicks
         if (clicks == 2&&lastClicked=="equip$index"&& player.inventory.contains(null)) {
-            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitAllowingStateLoss()
-            frameLayoutCharacterStats.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT //ConstraintLayout.LayoutParams(oldXFrameLayout.toInt(), ConstraintLayout.LayoutParams.WRAP_CONTENT)
-            frameLayoutCharacterStats.y = 0f
-            openedBagViewStats = true
 
             player.inventory[player.inventory.indexOf(null)] = player.equip[index]
             player.equip[index] = null
@@ -1145,10 +1123,60 @@ class Activity_Character : AppCompatActivity() {
         handler.postDelayed({
             clicks=0
         }, 250)
+
+
+    }
+    fun onCharacterClicked(view: View){
+
+        if(!statsShowed){
+            animatorStatsUp = ValueAnimator.ofFloat(frameLayoutCharacterStats.y, 0f).apply {
+                duration = 800
+                addUpdateListener {
+                    frameLayoutCharacterStats.y = it.animatedValue as Float
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        statsShowed = true
+                    }
+
+                })
+                start()
+            }
+        }else{
+            animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
+                duration = 800
+                addUpdateListener {
+                    frameLayoutCharacterStats.y = it.animatedValue as Float
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        statsShowed = false
+                    }
+
+                })
+                start()
+            }
+        }
     }
 }
-
-
 
 
 

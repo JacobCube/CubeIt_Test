@@ -52,6 +52,25 @@
         app:layout_constraintStart_toStartOf="@+id/guideline83"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline141"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <ImageView
+        android:id="@+id/imageViewMenuUpStory"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline141"
+        app:srcCompat="@drawable/setting3rows" />
+
     <FrameLayout
         android:id="@+id/frameLayoutMenuStory"
         android:layout_width="0dp"

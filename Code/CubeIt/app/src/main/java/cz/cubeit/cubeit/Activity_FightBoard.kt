@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.Rect
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import android.support.v7.app.AppCompatActivity
@@ -29,6 +30,7 @@ private var changeFragment = 0
 class ActivityFightBoard: AppCompatActivity(){
 
     private var currentPage:Int = 0
+    var displayY = 0.0
 
     override fun onBackPressed() {
         pickedPlayer = null
@@ -56,10 +58,30 @@ class ActivityFightBoard: AppCompatActivity(){
         pickedPlayer = null
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val viewRect = Rect()
+        frameLayoutMenuBoard.getGlobalVisibleRect(viewRect)
+
+        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuBoard.y <= (displayY * 0.83).toFloat()) {
+
+            ValueAnimator.ofFloat(frameLayoutMenuBoard.y, displayY.toFloat()).apply {
+                duration = (frameLayoutMenuBoard.y/displayY * 160).toLong()
+                addUpdateListener {
+                    frameLayoutMenuBoard.y = it.animatedValue as Float
+                }
+                start()
+            }
+
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_fight_board)
+
+        pickedPlayer = player
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -84,11 +106,12 @@ class ActivityFightBoard: AppCompatActivity(){
         }*/
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull")).commit()
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard)).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
+        displayY = dm.heightPixels.toDouble()
 
         frameLayoutMenuBoard.y = dm.heightPixels.toFloat()
 
@@ -168,7 +191,7 @@ class PlayersFameAdapter(private val players:Array<Player>, private val page:Int
         } else rowMain = convertView
         val viewHolder = rowMain.tag as ViewHolder
 
-        viewHolder.textViewPosition.text = (position+(page*50)).toString()
+        viewHolder.textViewPosition.text = (position+(page*50)+1).toString()
         viewHolder.textViewName.text = players[position].username
         viewHolder.textViewFame.text = players[position].fame.toString()
 

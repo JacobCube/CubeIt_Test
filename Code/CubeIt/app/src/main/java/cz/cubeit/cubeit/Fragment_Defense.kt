@@ -7,12 +7,14 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import kotlinx.android.synthetic.main.fragment_defense.*
 import kotlinx.android.synthetic.main.fragment_defense.view.*
 import kotlinx.android.synthetic.main.row_choosingspells.view.*
 import kotlinx.android.synthetic.main.row_chosen_spells.view.*
@@ -65,6 +67,8 @@ class FragmentDefense : Fragment(){
             startActivity(intent)
             //Activity().overridePendingTransition(0,0)
         }
+
+        view.textViewInfoSpells.movementMethod = ScrollingMovementMethod()
 
         view.chosen_listView.adapter = ChosenSpellsView(player)
         view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)

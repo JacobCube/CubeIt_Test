@@ -64,6 +64,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
         hideSystemUI()
 
         setContentView(R.layout.activity_splash_screen)
+        textViewLog = this.textViewLoadingLog
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false

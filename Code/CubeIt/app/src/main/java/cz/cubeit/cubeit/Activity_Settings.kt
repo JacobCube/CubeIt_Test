@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.Rect
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
@@ -17,6 +18,8 @@ import kotlin.math.abs
 
 
 class ActivitySettings : AppCompatActivity(){
+
+    var displayY = 0.0
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -38,6 +41,24 @@ class ActivitySettings : AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val viewRect = Rect()
+        frameLayoutMenuSettings.getGlobalVisibleRect(viewRect)
+
+        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuSettings.y <= (displayY * 0.83).toFloat()) {
+
+            ValueAnimator.ofFloat(frameLayoutMenuSettings.y, displayY.toFloat()).apply {
+                duration = (frameLayoutMenuSettings.y/displayY * 160).toLong()
+                addUpdateListener {
+                    frameLayoutMenuSettings.y = it.animatedValue as Float
+                }
+                start()
+            }
+
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         hideSystemUI()
@@ -53,6 +74,7 @@ class ActivitySettings : AppCompatActivity(){
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
+        displayY = dm.heightPixels.toDouble()
 
         val displayY = dm.heightPixels.toDouble()
 
@@ -64,12 +86,12 @@ class ActivitySettings : AppCompatActivity(){
 
 
         switchSounds.setOnCheckedChangeListener { _, isChecked ->
-            val svc = Intent(this, BackgroundSoundService()::class.java)
+            val svc = Intent(this, bgMusic::class.java)
             if(isChecked){
                 startService(svc)
             }else{
                 stopService(svc)
-                BackgroundSoundService().onPause()
+                bgMusic.onPause()
             }
             player.music = isChecked
         }
@@ -110,6 +132,7 @@ class ActivitySettings : AppCompatActivity(){
             }
         }
 
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuSettings, Fragment_Menu_Bar.newInstance(R.id.imageViewActivitySettings, R.id.frameLayoutMenuSettings, R.id.homeButtonBackSettings)).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuSettings, Fragment_Menu_Bar.newInstance(R.id.imageViewActivitySettings, R.id.frameLayoutMenuSettings, R.id.homeButtonBackSettings, R.id.imageViewMenuUpSettings)).commitNow()
+        frameLayoutMenuSettings.y = dm.heightPixels.toFloat()
     }
 }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +45,7 @@ class FragmentAttack : Fragment(){
                 spellButtons[i+2].setImageResource(0)
             }
         }
+        view.textViewInfoSpell.movementMethod = ScrollingMovementMethod()
 
         view.listViewSpells.adapter = AllSpells(view.textViewInfoSpell, view.imageViewIcon, spellButtons, view.context)
 

@@ -30,11 +30,33 @@
         android:src="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline42"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline38"
         app:srcCompat="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewPlayerChar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleX="-1"
+        app:layout_constraintBottom_toTopOf="@+id/guideline31"
+        app:layout_constraintEnd_toStartOf="@+id/guideline102"
+        app:layout_constraintStart_toStartOf="@+id/guideline36"
+        app:layout_constraintTop_toTopOf="@+id/guideline41"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/character_0" />
+
+    <ImageView
+        android:id="@+id/imageViewEnemyChar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline31"
+        app:layout_constraintEnd_toStartOf="@+id/guideline100"
+        app:layout_constraintStart_toStartOf="@+id/guideline15"
+        app:layout_constraintTop_toTopOf="@+id/guideline40"
+        app:srcCompat="@drawable/character_0" />
 
     <ImageView
         android:id="@+id/Spell2"
@@ -171,29 +193,6 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline15"
         app:layout_constraintStart_toStartOf="@+id/guideline34"
         app:layout_constraintTop_toTopOf="@+id/guideline31" />
-
-    <ImageView
-        android:id="@+id/imageViewPlayerChar"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleX="-1"
-        app:layout_constraintBottom_toTopOf="@+id/guideline31"
-        app:layout_constraintEnd_toStartOf="@+id/guideline102"
-        app:layout_constraintStart_toStartOf="@+id/guideline36"
-        app:layout_constraintTop_toTopOf="@+id/guideline41"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/character_0" />
-
-    <ImageView
-        android:id="@+id/imageViewEnemyChar"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline31"
-        app:layout_constraintEnd_toStartOf="@+id/guideline100"
-        app:layout_constraintStart_toStartOf="@+id/guideline15"
-        app:layout_constraintTop_toTopOf="@+id/guideline40"
-        app:srcCompat="@drawable/character_0" />
 
     <TextView
         android:id="@+id/textViewEnemyLevel"

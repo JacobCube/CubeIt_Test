@@ -1,7 +1,5 @@
 package cz.cubeit.cubeit
 
-import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -9,13 +7,11 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_character_customization.*
 
 
-class Activity_Character_Customization(private val inputUsername:String = "", private val inputEmail:String = ""): AppCompatActivity(){
+class Activity_Character_Customization: AppCompatActivity(){
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -44,7 +40,6 @@ class Activity_Character_Customization(private val inputUsername:String = "", pr
         textViewCurrentCharacter.text = "Vampire"
         textViewStatsCustomization.text = getString(R.string.character_ratio, (charClasses[1].dmgRatio*100).toString() + "%",(charClasses[1].armorRatio*100).toString() + "%", charClasses[1].blockRatio.toString() + "%", (charClasses[1].hpRatio*100).toInt().toString() + "%", (charClasses[1].staminaRatio*100).toString() + "%", charClasses[1].lifeSteal.toString())
         textViewCharacterDescription.text = charClasses[1].description
-        viewPagerCharacterCustomization.offscreenPageLimit = 8
 
         if (viewPagerCharacterCustomization!= null) {
             viewPagerCharacterCustomization.adapter = ViewPagerCharacterCustomization(supportFragmentManager)
@@ -94,6 +89,20 @@ class Activity_Character_Customization(private val inputUsername:String = "", pr
 
             player.charClassIndex = viewPagerPosition+1
             player.newPlayer = false
+
+            val charClass = player.charClass
+            player.currentSurfaces = mutableListOf(
+                    CurrentSurface(mutableListOf(Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate()))
+                    ,CurrentSurface(mutableListOf(Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate()))
+                    ,CurrentSurface(mutableListOf(Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate()))
+                    ,CurrentSurface(mutableListOf(Quest(surface = 3).generate(), Quest(surface = 3).generate(), Quest(surface = 3).generate(), Quest(surface = 3).generate(), Quest(surface = 3).generate(), Quest(surface = 3).generate(), Quest(surface = 3).generate()))
+                    ,CurrentSurface(mutableListOf(Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate()))
+                    ,CurrentSurface(mutableListOf(Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate()))
+            )
+            player.learnedSpells = mutableListOf(charClass.spellList[0], charClass.spellList[1], charClass.spellList[2], charClass.spellList[3], charClass.spellList[4])
+            player.shopOffer = arrayOf(generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player))
+
+
             player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
                 loadedLogin = LoginStatus.LOGGED
             }

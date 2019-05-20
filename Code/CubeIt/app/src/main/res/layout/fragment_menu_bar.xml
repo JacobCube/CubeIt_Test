@@ -105,7 +105,6 @@
         android:focusable="true"
         android:src="@drawable/adventure"
         app:layout_constraintBottom_toBottomOf="parent"
-
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline36"
         app:layout_constraintStart_toStartOf="@+id/guideline10"
@@ -201,6 +200,13 @@
 
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline132"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.94" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -218,11 +224,11 @@
         android:id="@+id/imageViewControlMenu"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="2dp"
+        android:layout_marginEnd="4dp"
         android:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewMenuBg"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/buttonSettings"
+        app:layout_constraintStart_toStartOf="@+id/guideline132"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/arrow_down" />
 

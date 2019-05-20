@@ -14,7 +14,7 @@ class Fragment_Adventure_Second : Fragment() {
         val view:View = inflater.inflate(R.layout.second_fragment_adventure, container, false)
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        val bitmap = BitmapFactory.decodeResource(resources, surfaces[1].background, opts)
+        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.map1, opts)
         view.surface2.setImageBitmap(bitmap)
         return view
     }

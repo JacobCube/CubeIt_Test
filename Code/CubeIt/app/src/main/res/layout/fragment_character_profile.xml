@@ -140,7 +140,7 @@
         app:layout_constraintEnd_toStartOf="@+id/profile_EquipItem4"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/profile_EquipItem8"
-
+        android:onClick="onCharacterClicked"
         app:layout_constraintTop_toBottomOf="@+id/profile_textViewInfoCharacter" />
 
     <TextView

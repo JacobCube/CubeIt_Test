@@ -1,12 +1,17 @@
 package cz.cubeit.cubeit
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
+import android.support.constraint.ConstraintSet
+import android.support.constraint.Constraints
 import android.support.v4.app.Fragment
 import android.util.DisplayMetrics
 import android.view.*
@@ -14,24 +19,93 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import kotlinx.android.synthetic.main.fragment_menu_bar.view.*
 import kotlin.math.abs
+import android.widget.LinearLayout
+import kotlinx.android.synthetic.main.fragment_menu_bar.*
+import android.view.MotionEvent
+import android.widget.RelativeLayout
+
 
 class Fragment_Menu_Bar : Fragment() {
 
+    lateinit var viewMenu: View
+
     companion object{
-        fun newInstance(layoutID:Int, menuID:Int, iconID:Int):Fragment_Menu_Bar{
+        fun newInstance(layoutID: Int, menuID: Int, iconID: Int, openButton: Int):Fragment_Menu_Bar{
             val fragment = Fragment_Menu_Bar()
             val args = Bundle()
             args.putInt("layoutID", layoutID)
             args.putInt("menuID", menuID)
             args.putInt("iconID", iconID)
+            args.putInt("openButton", openButton)
             fragment.arguments = args
             return fragment
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        var toWhite = ValueAnimator()
+        var toYellow = ValueAnimator()
+
+        if(activeQuest != null && viewMenu.buttonAdventure.isEnabled && activeQuest!!.completed){
+
+            toYellow = ValueAnimator.ofInt(0, 255).apply{
+                duration = 800
+                addUpdateListener {
+                    if(toWhite.isRunning)toWhite.cancel()
+                    viewMenu.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        toWhite.start()
+                    }
+
+                })
+            }
+            toWhite = ValueAnimator.ofInt(255, 0).apply{
+                duration = 800
+                addUpdateListener {
+                    if(toYellow.isRunning)toYellow.cancel()
+                    viewMenu.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        toYellow.start()
+                    }
+                })
+            }
+            toYellow.start()
+        }else{
+            if(toYellow.isRunning)toYellow.end()
+            if(toWhite.isRunning)toWhite.end()
+            viewMenu.buttonAdventure.setColorFilter(android.R.color.white)
+            viewMenu.buttonAdventure.drawable.clearColorFilter()
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_menu_bar, container, false)
+
+        viewMenu = view
 
             view.buttonAdventure.setOnClickListener {
                 val intent = Intent(view.context, Adventure::class.java)
@@ -84,9 +158,68 @@ class Fragment_Menu_Bar : Fragment() {
             isClickable = false
         }
 
+
+        var toWhite = ValueAnimator()
+        var toYellow = ValueAnimator()
+
+        if(activeQuest != null && view.buttonAdventure.isEnabled && activeQuest!!.completed){
+
+            toYellow = ValueAnimator.ofInt(0, 255).apply{
+                duration = 800
+                addUpdateListener {
+                    if(toWhite.isRunning)toWhite.cancel()
+                    view.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        toWhite.start()
+                    }
+
+                })
+            }
+            toWhite = ValueAnimator.ofInt(255, 0).apply{
+                duration = 800
+                addUpdateListener {
+                    if(toYellow.isRunning)toYellow.cancel()
+                    view.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        toYellow.start()
+                    }
+                })
+            }
+            toYellow.start()
+        }else{
+            if(toYellow.isRunning)toYellow.end()
+            if(toWhite.isRunning)toWhite.end()
+            viewMenu.buttonAdventure.setColorFilter(android.R.color.white)
+            viewMenu.buttonAdventure.drawable.clearColorFilter()
+        }
+
+
         val rootLayout = activity!!.findViewById<View>(arguments!!.getInt("layoutID"))
         val rootMenu = activity!!.findViewById<FrameLayout>(arguments!!.getInt("menuID"))
         val rootIcon = activity!!.findViewById<ImageView>(arguments!!.getInt("iconID"))
+        val rootOpenButton = activity!!.findViewById<ImageView>(arguments!!.getInt("openButton"))
 
         val dm = DisplayMetrics()
         val windowManager = rootLayout.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -100,12 +233,23 @@ class Fragment_Menu_Bar : Fragment() {
         var menuAnimator = ValueAnimator()
         var iconAnimator = ValueAnimator()
         val displayY = dm.heightPixels.toDouble()
-        rootMenu.layoutParams.height = (displayY / 10 * 1.75).toInt()
-        var originalYMenu = (displayY / 10 * 8.25).toFloat()
+        rootMenu.layoutParams.height = (displayY * 0.175).toInt()
+        var originalYMenu = (displayY * 0.825).toFloat()
 
-        rootIcon.layoutParams.height = (displayY / 10 * 1.8).toInt()
-        rootIcon.layoutParams.width = (displayY / 10 * 1.8).toInt()
-        rootIcon.y = -(displayY / 10 * 1.8).toFloat()
+        rootIcon.layoutParams.height = (displayY * 0.18).toInt()
+        rootIcon.layoutParams.width = (displayY * 0.18).toInt()
+        rootIcon.y = (-rootIcon.height).toFloat()
+        rootIcon.alpha = 0f
+
+        rootOpenButton.setOnClickListener {
+            menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
+                duration = (rootMenu.y/displayY * 160).toLong()
+                addUpdateListener {
+                    rootMenu.y = (it.animatedValue as Float)
+                }
+                start()
+            }
+        }
 
         rootLayout.setOnTouchListener(object: Class_OnSwipeDragListener(rootLayout.context) {
 
@@ -119,11 +263,11 @@ class Fragment_Menu_Bar : Fragment() {
                         initialTouchX = motionEvent.rawX
 
                         eventType = when {
-                            motionEvent.rawY <= displayY / 10 * 3.5 -> {
+                            motionEvent.rawY <= displayY * 0.35 -> {
                                 if(iconAnimator.isRunning)iconAnimator.pause()
                                 1
                             }
-                            motionEvent.rawY >= displayY / 10 * 7 -> {
+                            motionEvent.rawY >= displayY * 0.7 -> {
                                 if(menuAnimator.isRunning)menuAnimator.pause()
                                 2
                             }
@@ -136,9 +280,9 @@ class Fragment_Menu_Bar : Fragment() {
                     MotionEvent.ACTION_UP -> {
                         when (eventType) {
                             1 -> {
-                                if ((originalY + (motionEvent.rawY - initialTouchY).toInt()) < (displayY / 10*4)) {
-                                    iconAnimator = ValueAnimator.ofFloat(rootIcon.y, -(displayY / 10 * 1.8).toFloat()).apply{
-                                        duration = 400
+                                if ((originalY + (motionEvent.rawY - initialTouchY).toInt()) <= (displayY * 0.4)) {
+                                    iconAnimator = ValueAnimator.ofFloat(rootIcon.y, -(displayY * 0.18).toFloat()).apply{
+                                        duration = (rootMenu.y/displayY * 160).toLong()
                                         addUpdateListener {
                                             rootIcon.y = it.animatedValue as Float
                                         }
@@ -151,18 +295,18 @@ class Fragment_Menu_Bar : Fragment() {
                             }
                             2 -> {
                                 if (rootMenu.y < (displayY / 10 * 9)) {
-                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY / 10 * 8.25).toFloat()).apply {
-                                        duration = 400
+                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
+                                        duration = (rootMenu.y/displayY * 160).toLong()
                                         addUpdateListener {
-                                            rootMenu.y = it.animatedValue as Float
+                                            rootMenu.y = (it.animatedValue as Float)
                                         }
                                         start()
                                     }
-                                }else if(rootMenu.y >= (displayY / 10 * 9)){
-                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
-                                        duration = 400
+                                }else if(rootMenu.y >= (displayY * 0.9)){
+                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY).toFloat()).apply {
+                                        duration = (rootMenu.y/displayY * 160).toLong()
                                         addUpdateListener {
-                                            rootMenu.y = it.animatedValue as Float
+                                            rootMenu.y = (it.animatedValue as Float)
                                         }
                                         start()
                                     }
@@ -175,15 +319,15 @@ class Fragment_Menu_Bar : Fragment() {
                         if(abs(motionEvent.rawX - initialTouchX) <= abs(motionEvent.rawY - initialTouchY)){
                             when(eventType) {
                                 1 -> {
-                                    rootIcon.y = ((originalY + (motionEvent.rawY - initialTouchY)) / 4)
+                                    rootIcon.y = ((originalY + (motionEvent.rawY - initialTouchY)) / 3)
                                     rootIcon.alpha = (((originalY + (motionEvent.rawY - initialTouchY).toInt()) / (displayY / 100) / 100) * 3).toFloat()
                                     rootIcon.rotation = (0.9 * (originalY + (initialTouchY - motionEvent.rawY).toInt() / ((displayY / 2) / 100))).toFloat()
                                     rootIcon.drawable.setColorFilter(Color.rgb(255, 255, (2.55 * abs((originalY + (motionEvent.rawY - initialTouchY)).toInt() / ((displayY / 10 * 5) / 100) - 100)).toInt()), PorterDuff.Mode.MULTIPLY)
                                     rootIcon.requestLayout()
                                 }
                                 2 -> {
-                                    if(rootMenu.y >= displayY/10*8.25 && initialTouchY >= displayY/10*1.75){
-                                        rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY) * (-1)))
+                                    if((originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))>= displayY*0.82){
+                                        rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
                                     }
                                 }
 
@@ -198,7 +342,7 @@ class Fragment_Menu_Bar : Fragment() {
 
         view.imageViewControlMenu.setOnClickListener {
             menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
-                duration = 400
+                duration = (rootMenu.y/displayY * 160).toLong()
                 addUpdateListener {
                     rootMenu.y = it.animatedValue as Float
                 }
@@ -217,7 +361,7 @@ class Fragment_Menu_Bar : Fragment() {
                         initialTouchY = motionEvent.rawY
                         initialTouchX = motionEvent.rawX
 
-                        eventType = if(motionEvent.rawY >= displayY / 10 * 7){
+                        eventType = if(motionEvent.rawY >= displayY * 0.7){
                             if(menuAnimator.isRunning)menuAnimator.pause()
                             2
                         }else {
@@ -229,17 +373,35 @@ class Fragment_Menu_Bar : Fragment() {
                     MotionEvent.ACTION_UP -> {
                         when (eventType) {
                             2 -> {
-                                if (rootMenu.y < (displayY / 10 * 9)) {
-                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY / 10 * 8.25).toFloat()).apply {
-                                        duration = 400
+                                if (rootMenu.y < (displayY * 0.9)) {
+                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
+                                        duration = (rootMenu.y/displayY * 160).toLong()
                                         addUpdateListener {
                                             rootMenu.y = it.animatedValue as Float
                                         }
+                                        /*addListener(object : Animator.AnimatorListener {
+                                            override fun onAnimationRepeat(animation: Animator?) {
+                                            }
+
+                                            override fun onAnimationCancel(animation: Animator?) {
+                                            }
+
+                                            override fun onAnimationStart(animation: Animator?) {
+                                            }
+
+                                            override fun onAnimationEnd(animation: Animator?) {
+                                                val lp = rootMenu.layoutParams as ConstraintLayout.LayoutParams
+                                                lp.bottomToTop = ConstraintSet.BOTTOM
+                                                rootMenu.layoutParams = lp
+                                                //(rootMenu.layoutParams as ConstraintLayout.LayoutParams).bottomToTop = ConstraintSet.BOTTOM
+                                            }
+
+                                        })*/
                                         start()
                                     }
-                                }else if(rootMenu.y >= (displayY / 10 * 9)){
+                                }else if(rootMenu.y >= (displayY * 0.9)){
                                     menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
-                                        duration = 400
+                                        duration = (rootMenu.y/displayY * 160).toLong()
                                         addUpdateListener {
                                             rootMenu.y = it.animatedValue as Float
                                         }
@@ -254,7 +416,7 @@ class Fragment_Menu_Bar : Fragment() {
                         if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
                             when(eventType) {
                                 2 -> {
-                                    if(rootMenu.y >= displayY/10*8.25 && initialTouchY >= displayY/10*1.75){
+                                    if((originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))>= displayY*0.82){
                                         rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
                                     }
                                 }

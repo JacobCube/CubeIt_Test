@@ -14,30 +14,91 @@
         android:layout_height="414dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0">
 
     </android.support.v4.view.ViewPager>
 
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline44"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="1.0" />
+    <ProgressBar
+        android:id="@+id/progressAdventureQuest"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_active_quest"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/guideline135"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
-    <fragment
+    <FrameLayout
         android:id="@+id/fragmentSideQuestsAdventure"
-        android:name="cz.cubeit.cubeit.FragmentSideQuestsAdventure"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline83"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/imageViewMenuUpAdventure"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline133"
+        app:srcCompat="@drawable/setting3rows" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutMenuAdventure"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline83"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.70" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline133"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline134"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.825" />
+
+    <ImageView
+        android:id="@+id/sideQuestsIcon"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/secondarymission"
+        tools:layout_editor_absoluteX="477dp"
+        tools:layout_editor_absoluteY="3dp" />
 
     <ImageView
         android:id="@+id/homeButtonBackAdventure"
@@ -52,30 +113,25 @@
 
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/sideQuestsIcon"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/secondarymission"
-        tools:layout_editor_absoluteX="477dp"
-        tools:layout_editor_absoluteY="0dp" />
-
-    <FrameLayout
-        android:id="@+id/frameLayoutMenuAdventure"
-        android:layout_width="0dp"
-        android:layout_height="91dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
-
     <android.support.constraint.Guideline
-        android:id="@+id/guideline83"
+        android:id="@+id/guideline135"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.70" />
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.12" />
+
+    <TextView
+        android:id="@+id/textViewQuestProgress"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline135"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>

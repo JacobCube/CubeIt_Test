@@ -38,12 +38,11 @@ class Fragment_Character_Profile : Fragment() {
             view.profile_EquipItem7.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
             view.profile_EquipItem8.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
             view.profile_EquipItem9.setOnClickListener{(onClickEquipItemBoard(it, view, pickedPlayer!!))}
+            view.profile_imageViewCharacter.setOnClickListener{onClickCharacterImage(view.textViewCharacterProfile)}
             pickedPlayer!!
-        }else if(arguments?.getString("key")==null){
+        }else{
             player
-        } else player
-
-
+        }
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -53,11 +52,15 @@ class Fragment_Character_Profile : Fragment() {
 
         for(i in 0 until 10) {
             val itemEquip: ImageView = view.findViewById(this.resources.getIdentifier("profile_EquipItem$i", "id", view.context.packageName))
-            if(playerProfile.equip[i]!=null){
+            itemEquip.isEnabled = if(playerProfile.equip[i]!=null){
                 itemEquip.setImageResource(playerProfile.equip[i]!!.drawable)
-                itemEquip.isEnabled = true
+                true
             } else {
                 itemEquip.setImageResource(0)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    itemEquip.focusable = View.NOT_FOCUSABLE
+                }
+                false
             }
         }
 
@@ -67,7 +70,11 @@ class Fragment_Character_Profile : Fragment() {
     private fun onClickEquipItemBoard(v: View, contextView: View, chosenPlayer: Player){
         val index = v.tag.toString().toInt()
         if(chosenPlayer.equip[index] != null){
-            contextView.textViewCharacterProfile.setBackgroundResource(R.drawable.stats_info)
+
+            if(contextView.textViewCharacterProfile.visibility == View.GONE){
+                contextView.textViewCharacterProfile.setBackgroundResource(R.drawable.stats_info)
+                contextView.textViewCharacterProfile.visibility = View.VISIBLE
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 contextView.textViewCharacterProfile.setText(Html.fromHtml(chosenPlayer.equip[index]!!.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
@@ -75,5 +82,8 @@ class Fragment_Character_Profile : Fragment() {
                 contextView.textViewCharacterProfile.setText(Html.fromHtml(chosenPlayer.equip[index]!!.getStats()), TextView.BufferType.SPANNABLE)
             }
         }
+    }
+    private fun onClickCharacterImage(v: View){
+        v.visibility = View.GONE
     }
 }
