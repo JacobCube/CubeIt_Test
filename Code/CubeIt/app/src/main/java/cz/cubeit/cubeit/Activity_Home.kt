@@ -91,7 +91,7 @@ class Home : AppCompatActivity() {
         imageViewExit.setOnClickListener {
             val intentSplash = Intent(this, Activity_Splash_Screen::class.java)
             intentSplash.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            loadedLogin = LoginStatus.LOGGING
+            loadingStatus = LoadingStatus.LOGGING
             startActivity(intentSplash)
 
             player.online = false
@@ -102,7 +102,7 @@ class Home : AppCompatActivity() {
                 }
                 player = Player()
 
-                loadedLogin = LoginStatus.UNLOGGED
+                loadingStatus = LoadingStatus.UNLOGGED
                 this.overridePendingTransition(0,0)
             }
         }

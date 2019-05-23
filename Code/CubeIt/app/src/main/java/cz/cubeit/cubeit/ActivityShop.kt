@@ -31,6 +31,7 @@ class ActivityShop : AppCompatActivity(){
 
     private var hidden = false
     var displayY = 0.0
+    var originalCoinY:Float = 0f
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -88,6 +89,7 @@ class ActivityShop : AppCompatActivity(){
                 R.anim.animation_shop_text_down)
 
         textViewInfoItem.startAnimation(animDownText)
+        originalCoinY = imageViewShopCoin.y
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -107,7 +109,7 @@ class ActivityShop : AppCompatActivity(){
         listViewInventoryShop.adapter = ShopInventory(hidden, animUpText, animDownText, player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewInventoryShop, textViewMoney)
         listViewShop.adapter = ShopOffer(hidden, animUpText, animDownText, player, textViewInfoItem, bubleDialogShop, listViewInventoryShop.adapter as ShopInventory, this, textViewMoney)
 
-        shopOfferRefresh.setOnClickListener {
+        shopOfferRefresh.setOnClickListener {refresh: View ->
             val moneyReq = player.level * 10
             if(player.money >= moneyReq){
                 player.money -= moneyReq
@@ -116,6 +118,30 @@ class ActivityShop : AppCompatActivity(){
                     (listViewShop.adapter as ShopOffer).notifyDataSetChanged()
                 }
                 lastClicked = ""
+            }
+            textViewMoney.text = player.money.toString()
+
+            ValueAnimator.ofFloat(originalCoinY, refresh.y).apply {
+                duration = 400
+                addUpdateListener {
+                    imageViewShopCoin.y = it.animatedValue as Float
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                        imageViewShopCoin.visibility = View.VISIBLE
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        imageViewShopCoin.visibility = View.INVISIBLE
+                    }
+                })
+                start()
             }
         }
     }

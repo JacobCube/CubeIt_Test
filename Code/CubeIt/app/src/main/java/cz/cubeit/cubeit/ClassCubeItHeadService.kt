@@ -16,8 +16,6 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.animation.ValueAnimator
-import android.app.Activity
-import android.app.ProgressDialog
 
 
 class ClassCubeItHeadService : Service() {
@@ -126,12 +124,12 @@ class ClassCubeItHeadService : Service() {
 
                             val intentSplash = Intent(this@ClassCubeItHeadService, Activity_Splash_Screen::class.java)
                             intentSplash.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            loadedLogin = LoginStatus.LOGGING
+                            loadingStatus = LoadingStatus.LOGGING
                             startActivity(intentSplash)
 
 
                             player.loadPlayer().addOnCompleteListener {
-                                loadedLogin = LoginStatus.LOGGED
+                                loadingStatus = LoadingStatus.LOGGED
                             }
 
 

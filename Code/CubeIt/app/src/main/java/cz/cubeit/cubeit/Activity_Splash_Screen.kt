@@ -12,7 +12,6 @@ import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import kotlin.random.Random.Default.nextInt
 
 
@@ -55,7 +54,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
     }
 
     override fun onBackPressed() {
-        loadedLogin = LoginStatus.UNLOGGED
+        loadingStatus = LoadingStatus.UNLOGGED
         super.onBackPressed()
     }
 
@@ -112,20 +111,23 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
             override fun onAnimationRepeat(animation: Animation?) {
                 if(!keepSplash){
-                    when(loadedLogin){
-                        LoginStatus.LOGGED -> {
+                    when(loadingStatus){
+                        LoadingStatus.LOGGED -> {
                             val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             startActivity(intent)
                         }
-                        LoginStatus.UNLOGGED -> {
+                        LoadingStatus.UNLOGGED -> {
                             val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             startActivity(intent)
                         }
-                        LoginStatus.CLOSELOADING -> {
+                        LoadingStatus.CLOSELOADING -> {
                             finish()
                         }
+                        /*LoadingStatus.ENTERFIGHT -> {
+                            finish()
+                        }*/
                         else -> {
                         }
                     }
@@ -211,18 +213,18 @@ class Activity_Splash_Screen: AppCompatActivity(){
                     imageViewSplashIcon.isEnabled = true
 
                     if(!keepSplash){
-                        when(loadedLogin){
-                            LoginStatus.LOGGED -> {
+                        when(loadingStatus){
+                            LoadingStatus.LOGGED -> {
                                 val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 startActivity(intent)
                             }
-                            LoginStatus.UNLOGGED -> {
+                            LoadingStatus.UNLOGGED -> {
                                 val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 startActivity(intent)
                             }
-                            LoginStatus.CLOSELOADING -> {
+                            LoadingStatus.CLOSELOADING -> {
                                 finish()
                             }
                             else -> {

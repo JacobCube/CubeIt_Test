@@ -133,19 +133,26 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
         enemy.username = intent.extras!!.getString("enemy")!!
 
-        if(!intent.extras!!.getBoolean("npc")){
-            enemy.loadPlayer()
+        setContentView(R.layout.activity_fight_system)
+        textViewError.visibility = View.INVISIBLE
 
-        }else{
-            NPC().generate(if(intent?.extras?.getString("npcID").isNullOrBlank())null else intent?.extras?.getString("npcID"))
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                handler.postDelayed({ hideSystemUI() }, 1000)
+            }
+        }
+        val dm = DisplayMetrics()
+        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.defaultDisplay.getMetrics(dm)
+        val displayY = dm.heightPixels
 
-        }.addOnCompleteListener {
-            setContentView(R.layout.activity_fight_system)
+        val opts = BitmapFactory.Options()
+        opts.inScaled = false
+        imageViewFightBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
+        imageViewFightBars.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
 
-            val opts = BitmapFactory.Options()
-            opts.inScaled = false
-            imageViewFightBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
-            imageViewFightBars.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
+
+        fun init(){
             imageViewEnemyChar.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.charClass.drawable, opts))
             imageViewPlayerChar.setImageBitmap(BitmapFactory.decodeResource(resources, playerFight.charClass.drawable, opts))
 
@@ -163,19 +170,6 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             progressBarPlayerEnergy.progress = energyPlayer
             progressBarEnemyHealth.progress = enemy.health.toInt()
             progressBarEnemyEnergy.progress = energyEnemy
-
-
-            textViewError.visibility = View.INVISIBLE
-
-            window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-                if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                    handler.postDelayed({ hideSystemUI() }, 1000)
-                }
-            }
-            val dm = DisplayMetrics()
-            val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.defaultDisplay.getMetrics(dm)
-            val displayY = dm.heightPixels
 
             Spell0.setImageResource(playerFight.learnedSpells[0]!!.drawable)
             Spell1.setImageResource(playerFight.learnedSpells[1]!!.drawable)
@@ -203,183 +197,202 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             textEnemy.text = enemy.health.toString()
             energyEnemyTextView.text = enemy.energy.toString()
             energyTextView.text = playerFight.energy.toString()
-
-
-            Spell0.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell0)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = player.learnedSpells[0]!!.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell0)
-                }
-            })
-
-            Spell1.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell1)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = player.learnedSpells[1]!!.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell1)
-                }
-            })
-
-            Spell2.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell2)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = playerFight.chosenSpellsAttack[0]?.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell2)
-                }
-            })
-
-            Spell3.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell3)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = playerFight.chosenSpellsAttack[1]?.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell3)
-                }
-            })
-
-            Spell4.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell4)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = playerFight.chosenSpellsAttack[2]?.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell4)
-                }
-            })
-
-            Spell5.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell5)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = playerFight.chosenSpellsAttack[3]?.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell5)
-                }
-            })
-
-            Spell6.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell6)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = playerFight.chosenSpellsAttack[4]?.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell6)
-                }
-            })
-            Spell7.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-                override fun onSwipeUp() {
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell7)
-                }
-
-                override fun onClick() {
-                    super.onClick()
-                    textViewSpellSpecs.text = playerFight.chosenSpellsAttack[5]?.getStats()
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                    roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
-
-                    spellValueAnimator((displayY/10*6).toFloat(), Spell7)
-                }
-            })
         }
+
+        if(!intent.extras!!.getBoolean("npc")){
+            loadingStatus = LoadingStatus.LOGGING
+
+            val intent = Intent(this, Activity_Splash_Screen::class.java)
+            startActivity(intent)
+
+            enemy.loadPlayer().addOnSuccessListener {
+                init()
+                handler.postDelayed({loadingStatus = LoadingStatus.CLOSELOADING}, 50)
+            }
+        }else{
+            enemy = if(!intent.extras!!.getString("enemy").isNullOrBlank()){
+                NPC().generate().toPlayer()
+            }else{
+                npcs[intent.extras!!.getString("enemy")!!.toInt()].toPlayer()
+            }
+            init()
+        }
+
+
+        Spell0.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell0)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = player.learnedSpells[0]!!.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell0)
+            }
+        })
+
+        Spell1.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell1)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = player.learnedSpells[1]!!.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell1)
+            }
+        })
+
+        Spell2.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell2)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[0]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell2)
+            }
+        })
+
+        Spell3.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell3)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[1]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell3)
+            }
+        })
+
+        Spell4.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell4)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[2]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell4)
+            }
+        })
+
+        Spell5.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell5)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[3]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell5)
+            }
+        })
+
+        Spell6.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell6)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[4]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell6)
+            }
+        })
+        Spell7.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onSwipeUp() {
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell7)
+            }
+
+            override fun onClick() {
+                super.onClick()
+                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[5]?.getStats()
+            }
+
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
+                roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
+
+                spellValueAnimator((displayY/10*6).toFloat(), Spell7)
+            }
+        })
     }
     private fun attackCalc(player:Player, enemySpell:Spell, playerSpell:Spell, enemy:Player):Double{
         var returnValue = ((playerSpell.power.toDouble() * player.power.toDouble() * enemySpell.block)/4)

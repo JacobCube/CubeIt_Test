@@ -1,24 +1,19 @@
 package cz.cubeit.cubeit
 
-import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
-import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_register.*
 import kotlinx.android.synthetic.main.fragment_register.view.*
 import java.lang.Exception
@@ -45,27 +40,27 @@ class Fragment_Register : Fragment() {
 
         view.buttonRegister.setOnClickListener {
             val intentSplash = Intent(view.context, Activity_Splash_Screen::class.java)
-            loadedLogin = LoginStatus.LOGGING
+            loadingStatus = LoadingStatus.LOGGING
             val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
             val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
             startActivity(intentSplash)
-            loadedLogin = LoginStatus.LOGGING
+            loadingStatus = LoadingStatus.LOGGING
 
             if (!isConnected){
-                loadedLogin = LoginStatus.CLOSELOADING
+                loadingStatus = LoadingStatus.CLOSELOADING
                 handler.postDelayed({showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")},100)
             }
             if (inputPassReg.text.toString() != inputRePassReg.text.toString()){
-                loadedLogin = LoginStatus.CLOSELOADING
+                loadingStatus = LoadingStatus.CLOSELOADING
                 handler.postDelayed({showNotification("Oops", "Passwords must match")},100)
             }
 
             loadGlobalData(view.context).addOnCompleteListener {
                 if (appVersion < BuildConfig.VERSION_CODE){
-                    loadedLogin = LoginStatus.CLOSELOADING
-                    handler.postDelayed({showNotification("Oops", "Your version is too old, download more recent one.")},100)
+                    loadingStatus = LoadingStatus.CLOSELOADING
+                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned $appVersion)")},100)
                 }
 
                 if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && appVersion <= BuildConfig.VERSION_CODE && isConnected) {
@@ -101,10 +96,10 @@ class Fragment_Register : Fragment() {
                                 showNotification("Oops", "An account with this email already exists!")
                             }
                         }
-                        loadedLogin = LoginStatus.CLOSELOADING
+                        loadingStatus = LoadingStatus.CLOSELOADING
                     }
                 } else {
-                    loadedLogin = LoginStatus.CLOSELOADING
+                    loadingStatus = LoadingStatus.CLOSELOADING
                     showNotification("Alert", "Please enter a valid email address or password")
                 }
             }

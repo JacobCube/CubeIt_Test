@@ -92,7 +92,7 @@ class Activity_Character : AppCompatActivity() {
             }
 
         }
-        if(!viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt()) && statsShowed){
+        if(!viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt()) && statsShowed && !animatorStatsDown.isRunning){
 
             animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
                 duration = 800
@@ -582,6 +582,7 @@ class Activity_Character : AppCompatActivity() {
                         (inventoryListView.adapter as InventoryView).dragItemSync()
                     }
                 }
+                updateCharStats()
             }
 
             /*override fun onLongClick() {
@@ -1093,6 +1094,12 @@ class Activity_Character : AppCompatActivity() {
                     dragItemSync()
                 }
             }
+            val frg = supportFragmentManager.findFragmentById(R.id.frameLayoutCharacterStats)
+
+            supportFragmentManager.beginTransaction().detach(frg!!).commitNow()
+            supportFragmentManager.beginTransaction().attach(Fragment_Character_stats()).commitNow()
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
+
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
         }
 
@@ -1109,6 +1116,7 @@ class Activity_Character : AppCompatActivity() {
             (view as ImageView).setImageResource(0)
             (inventoryListView.adapter as InventoryView).dragItemSync()
             handler.removeCallbacksAndMessages(null)
+            updateCharStats()
         } else if (clicks == 1) {                                            //SINGLE CLICK
             //if(!hidden && lastClicked=="equip$index"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
             lastClicked="equip$index"
@@ -1122,9 +1130,7 @@ class Activity_Character : AppCompatActivity() {
         }
         handler.postDelayed({
             clicks=0
-        }, 250)
-
-
+        },  300)
     }
     fun onCharacterClicked(view: View){
 
@@ -1176,6 +1182,15 @@ class Activity_Character : AppCompatActivity() {
             }
         }
     }
+    fun updateCharStats(){
+        val frg = supportFragmentManager.findFragmentById(R.id.frameLayoutCharacterStats)
+
+        supportFragmentManager.beginTransaction().detach(frg!!).commitNow()
+        supportFragmentManager.beginTransaction().attach(Fragment_Character_stats()).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
+
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
+    }
 }
 
 
@@ -1211,20 +1226,5 @@ private class MyDragShadowBuilder(v: View) : View.DragShadowBuilder(v) {
     override fun onDrawShadow(canvas: Canvas) {
         // Draws the ColorDrawable in the Canvas passed in from the system.
         shadow.draw(canvas)
-    }
-}
-
-class ViewPagerAdapterCharacterProfile internal constructor(fm: FragmentManager, var character:Fragment, var stats:Fragment) : FragmentPagerAdapter(fm){
-
-    override fun getItem(position: Int): Fragment? {
-        return when(position) {
-            0 -> character
-            1 -> stats
-            else -> null
-        }
-    }
-
-    override fun getCount(): Int {
-        return 2
     }
 }

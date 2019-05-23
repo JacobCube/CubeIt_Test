@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -10,21 +11,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.fragment_sidequests_adventure.view.*
 import kotlinx.android.synthetic.main.row_adventure_overview.view.*
 
 class Fragment_Adventure_overview : Fragment() {
 
+    fun resetAdapter(){
+        activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, this).commitNow()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_sidequests_adventure, container, false)
 
         view.listViewSideQuestsAdventure.adapter = AdventureQuestsOverview(player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList(),
-                                                                view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure))
+                view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure), view.listViewSideQuestsAdventure, this)
+
         return view
     }
 }
 
-class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest>, val context: Context, val popupView:View, var progressBar: ProgressBar, var textView: TextView, val viewPopUpQuest: View, val viewPager: ViewPager) : BaseAdapter() {
+class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest>, val context: Context, val popupView:View, var progressBar: ProgressBar, var textView: TextView, val viewPopUpQuest: View, val viewPager: ViewPager, val adapter: ListView, val fragmentOverview: Fragment) : BaseAdapter() {
 
     override fun getCount(): Int {
         return sideQuestsAdventure.size
@@ -38,6 +45,14 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
         return "TEST STRING"
     }
 
+/*    override fun notifyDataSetChanged() {
+        super.notifyDataSetChanged()
+        val temp = sideQuestsAdventure
+        sideQuestsAdventure.clear()
+        sideQuestsAdventure.addAll(temp)
+    }*/
+
+    @SuppressLint("SetTextI18n")
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
         val rowMain: View
 
@@ -72,11 +87,11 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
 
         viewHolder.textViewLength.text = when{
             sideQuestsAdventure[position].secondsLength <= 0 -> "0:00"
-            sideQuestsAdventure[position].secondsLength.toDouble()%60 <=  10-> "${sideQuestsAdventure[position].secondsLength/60}:0${sideQuestsAdventure[position].secondsLength%60}"
+            sideQuestsAdventure[position].secondsLength.toDouble()%60 <= 9 -> "${sideQuestsAdventure[position].secondsLength/60}:0${sideQuestsAdventure[position].secondsLength%60}"
             else -> "${sideQuestsAdventure[position].secondsLength/60}:${sideQuestsAdventure[position].secondsLength%60}"
         }
-        viewHolder.textViewExperience.text = sideQuestsAdventure[position].experience.toString()
-        viewHolder.textViewMoney.text = sideQuestsAdventure[position].money.toString()
+        viewHolder.textViewExperience.text = "${sideQuestsAdventure[position].experience} xp"
+        viewHolder.textViewMoney.text = "${sideQuestsAdventure[position].money} coins"
         viewHolder.imageViewAdventureOverview.setImageResource(if(sideQuestsAdventure[position].reward.item != null){sideQuestsAdventure[position].reward.item!!.drawable}else 0)
         viewHolder.imageViewBackground.setImageResource(when(sideQuestsAdventure[position].surface){
             0 -> R.drawable.blue_window
@@ -107,7 +122,7 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
                 }
             }
 
-            handler.postDelayed({ Adventure().onClickQuestSideQuest(surface = sideQuestsAdventure[position].surface, index = index, context = context, progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager)}, 400)
+            Adventure().onClickQuestSideQuest(surface = sideQuestsAdventure[position].surface, index = index, context = context, progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview)
         }
 
         return rowMain

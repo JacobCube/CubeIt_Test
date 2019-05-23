@@ -2,15 +2,12 @@ package cz.cubeit.cubeit
 
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Bundle
-import android.os.Environment
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatDelegate
@@ -19,14 +16,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_login.view.*
-import java.io.File
 
 var player:Player = Player()
 var textViewLog: TextView? = null
@@ -70,22 +64,22 @@ class FragmentLogin : Fragment()  {
             val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
             startActivity(intentSplash)
-            loadedLogin = LoginStatus.LOGGING
+            loadingStatus = LoadingStatus.LOGGING
 
             if (userEmail.isEmpty() || userPassword.isEmpty()) {
                 handler.postDelayed({showNotification("Error", "Please fill out all fields.")},100)
-                loadedLogin = LoginStatus.CLOSELOADING
+                loadingStatus = LoadingStatus.CLOSELOADING
             }
             if (!isConnected){
                 handler.postDelayed({showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")},100)
-                loadedLogin = LoginStatus.CLOSELOADING
+                loadingStatus = LoadingStatus.CLOSELOADING
             }
 
             loadGlobalData(view.context).addOnCompleteListener{
 
                 if (appVersion > BuildConfig.VERSION_CODE){
-                    loadedLogin = LoginStatus.CLOSELOADING
-                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one.")},100)
+                    loadingStatus = LoadingStatus.CLOSELOADING
+                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned $appVersion)")},100)
                 }
 
                 if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && appVersion <= BuildConfig.VERSION_CODE && isConnected){
@@ -120,13 +114,13 @@ class FragmentLogin : Fragment()  {
 
                                             player.loadPlayer().addOnCompleteListener {
                                                 if(player.newPlayer){
-                                                    loadedLogin = LoginStatus.CLOSELOADING
+                                                    loadingStatus = LoadingStatus.CLOSELOADING
                                                     val intent = Intent(view.context, Activity_Character_Customization::class.java)
                                                     startActivity(intent)
                                                 }else {
                                                     player.online = true
                                                     player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
-                                                        loadedLogin = LoginStatus.LOGGED
+                                                        loadingStatus = LoadingStatus.LOGGED
                                                     }
                                                 }
                                             }
@@ -136,12 +130,12 @@ class FragmentLogin : Fragment()  {
                                         }
                                     }
                         } else {
-                            loadedLogin = LoginStatus.CLOSELOADING
+                            loadingStatus = LoadingStatus.CLOSELOADING
                             showNotification("Oops", exceptionFormatter(task.exception.toString()))
                             Log.d("Debug", task.exception.toString())
                         }
                     }
-                }else loadedLogin = LoginStatus.CLOSELOADING
+                }else loadingStatus = LoadingStatus.CLOSELOADING
             }
         }
 

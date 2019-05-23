@@ -182,6 +182,21 @@
         app:layout_constraintStart_toStartOf="@+id/guideline34"
         app:layout_constraintTop_toTopOf="@+id/guideline4" />
 
+    <ImageView
+        android:id="@+id/imageViewShopCoin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline51"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline48"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline47"
+        app:srcCompat="@drawable/bug_icon" />
+
     <Button
         android:id="@+id/shopOfferRefresh"
         android:layout_width="0dp"

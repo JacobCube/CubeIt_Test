@@ -22,6 +22,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
 import java.io.*
+import java.lang.Math.abs
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.HashMap
@@ -32,9 +33,11 @@ var playerListReturn: Array<Player>? = null
 
 var appVersion: Int = 0
 
-var loadedLogin = LoginStatus.LOGGING
+var loadingStatus = LoadingStatus.LOGGING
 
 var activeQuest: ActiveQuest? = null
+
+var rewarding: Boolean = false
 
 val bgMusic = BackgroundSoundService()
 
@@ -683,11 +686,12 @@ data class CurrentSurface(
         var quests:MutableList<Quest> = mutableListOf()
 )
 
-enum class LoginStatus{
+enum class LoadingStatus{
     LOGGED,
     UNLOGGED,
     LOGGING,
-    CLOSELOADING
+    CLOSELOADING,
+    ENTERFIGHT
 }
 
 class BackgroundSoundService : Service() {
@@ -1060,6 +1064,14 @@ open class Player(
     var health:Double = 175.0
     var energy:Int = 100
     var adventureSpeed:Int = 1
+    set(value) {
+        for(surface in this.currentSurfaces){       //if adventure speed changes, refresh every quest timer
+            for(quest in surface.quests){
+                quest.refresh()
+            }
+        }
+        field = value
+    }
     var inventorySlots:Int = 8
     var fame:Int = 0
     var newPlayer:Boolean = true
@@ -1070,6 +1082,7 @@ open class Player(
             InboxCategory(name = "Newsletter", color = Color.WHITE, ID = "0002", messages = mutableListOf(InboxMessage(), InboxMessage(), InboxMessage(), InboxMessage())),
             InboxCategory(name = "Important", color = Color.WHITE, ID = "0003", messages = mutableListOf(InboxMessage(), InboxMessage(), InboxMessage(), InboxMessage())),
             InboxCategory(name = "Spam", color = Color.WHITE, ID = "0004", messages = mutableListOf(InboxMessage(), InboxMessage(), InboxMessage(), InboxMessage())))
+    var drawableExt: Int = 0
 
     fun toLoadPlayer():LoadPlayer{
         val tempLoadedPlayer = LoadPlayer()
@@ -1315,7 +1328,7 @@ open class Player(
         this.energy = ((energy * this.charClass.staminaRatio)/this.level/4).toInt()
         this.dmgOverTime = (dmgOverTime * this.charClass.dmgRatio).toInt()
         this.lifeSteal = (lifeSteal / (this.level*2))
-        this.adventureSpeed = adventureSpeed / this.level/2
+        this.adventureSpeed = (adventureSpeed / (this.level/2))
         this.inventorySlots = inventorySlots
 
         val tempInventory = this.inventory
@@ -1342,9 +1355,9 @@ open class Player(
 
         return  ("HP: ${this.health}<br/>+(" +
                 if(this.charClass.hpRatio*100-100>=0){
-                    "<font color='green'>(${this.charClass.hpRatio*100-100}%</font>"
+                    "<font color='green'>${(this.charClass.hpRatio*100-100).toInt()}%</font>"
                 } else {
-                    "<font color='red'>${this.charClass.hpRatio * 100 - 100}%</font>"
+                    "<font color='red'>${(this.charClass.hpRatio*100-100).toInt()}%</font>"
                 }+
                 ")<br/>Energy: ${this.energy}<br/>+(" +
                 if(this.charClass.staminaRatio*100-100>=0){
@@ -1353,16 +1366,16 @@ open class Player(
                     "<font color='red'>${this.charClass.staminaRatio*100-100}%</font>"
                 }+
                 ")<br/>Armor: ${this.armor}<br/>+(" +
-                if(this.charClass.armorRatio*100-100>=0){
-                    "<font color='green'>${this.charClass.armorRatio*100-100}%</font>"
+                if(this.charClass.armorRatio*100>0){
+                    "<font color='green'>${this.charClass.armorRatio*100}%</font>"
                 } else {
-                    "<font color='red'>${this.charClass.armorRatio*100-100}%</font>"
+                    "<font color='red'>${this.charClass.armorRatio*100}%</font>"
                 }+
                 ")<br/>Block: ${this.block}<br/>+(" +
                 if(this.charClass.blockRatio*100-100>=0){
-                    "<font color='green'>${this.charClass.blockRatio*100-100}%</font>"
+                    "<font color='green'>${this.charClass.blockRatio}%</font>"
                 } else {
-                    "<font color='red'>${this.charClass.blockRatio*100-100}%</font>"
+                    "<font color='red'>${this.charClass.blockRatio}%</font>"
                 }+
                 ")<br/>Power: ${this.power}<br/>+(" +
                 if(this.charClass.dmgRatio*100-100>=0){
@@ -1373,12 +1386,12 @@ open class Player(
                 ")<br/>DMG over time: ${this.dmgOverTime}<br/>" +
                 "Lifesteal: ${this.lifeSteal}%<br/>+(" +
                 if(this.charClass.lifeSteal){
-                    "font color='green'>100%</font>"
+                    "<font color='green'>100%</font>"
                 } else {
                     "<font color='red'>0%</font>"
                 }+
-                ")<br/>Adventure speed: ${this.adventureSpeed}<br/>+(" +
-                ")Inventory slots: ${this.inventorySlots}")
+                ")<br/>Adventure speed: ${this.adventureSpeed}<br/>" +
+                "Inventory slots: ${this.inventorySlots}")
     }
 }
 
@@ -1536,7 +1549,7 @@ open class Item(
             7 -> "<font color='cyan'>Heirloom</font>"
             else -> "unspecified"
         }
-        }<br/>${when(this.charClass){
+        }\t(lv. ${this.levelRq})<br/>${when(this.charClass){
             0 -> "everyone"
             1 -> "Vampire"
             2 -> "Dwarf"
@@ -1575,7 +1588,7 @@ open class Item(
             7 -> "<font color='cyan'>Heirloom</font>"
             else -> "unspecified"
         }
-        }<br/>${when(this.charClass){
+        }\t(lv. ${this.levelRq})<br/>${when(this.charClass){
             0 -> "everyone"
             1 -> "Vampire"
             2 -> "Dwarf"
@@ -1663,31 +1676,47 @@ open class Item(
 }
 
 fun returnItem(player:Player): MutableList<Item?> {
-    val arrayTemp:MutableList<Item?> = mutableListOf()
+    val allItems: MutableList<Item?> = (player.charClass.itemList.asSequence().plus(player.charClass.itemListUniversal.asSequence())).toMutableList()
+    val allowedItems:MutableList<Item?> = mutableListOf()
 
-    for(i in player.charClass.itemList){
-        if(i.levelRq in player.level-50..player.level){
-            arrayTemp.add(i)
+    allItems.sortWith(compareBy {it!!.levelRq})                     //pro zjednodušení cyklu se půjde od nejbližšího konce a ukončí se na druhém limitu
+
+    if(abs(allItems.last()!!.levelRq - player.level) <= abs(allItems[0]!!.levelRq - player.level)){
+        for(item in allItems.lastIndex downTo 0){
+            if(player.level in allItems[item]!!.levelRq - 100 .. allItems[item]!!.levelRq + 101){             //rozptyl je -10 a +10
+                allowedItems.add(allItems[item])
+            }else{
+                if(allItems[item]!!.levelRq + 10 < player.level){
+                    break
+                }
+            }
+        }
+    }else{
+        for(item in 0..allItems.lastIndex){
+            if(player.level in allItems[item]!!.levelRq - 100 .. allItems[item]!!.levelRq + 101){
+                allowedItems.add(allItems[item])
+            }else{
+                if(allItems[item]!!.levelRq - 10 > player.level){
+                    break
+                }
+            }
         }
     }
-    for(i in player.charClass.itemListUniversal){
-        if(i.levelRq in player.level-50..player.level){
-            arrayTemp.add(i)
-        }
-    }
-    return arrayTemp
+
+    return allowedItems
 }
 
-fun generateItem(player:Player, inQuality: Int? = null):Item?{
+fun generateItem(playerG:Player, inQuality: Int? = null):Item?{
 
-    val tempArray:MutableList<Item?> = returnItem(player)
-    val itemTemp:Item? = when(val itemReturned = tempArray[nextInt(0, tempArray.size)]){
-        is Weapon->Weapon(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
-        is Wearable->Wearable(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
-        is Runes->Runes(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
+    val tempArray:MutableList<Item?> = returnItem(playerG)
+    val itemReturned = tempArray[nextInt(0, tempArray.size)]
+    val itemTemp:Item? = when(itemReturned?.type){
+        "Weapon" ->Weapon(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
+        "Wearable" ->Wearable(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
+        "Runes" ->Runes(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
         else -> Item(inName = itemReturned!!.name, inType = itemReturned.type, inCharClass = itemReturned.charClass, inDescription = itemReturned.description, inLevelRq = itemReturned.levelRq, inDrawable = getKey(drawableStorage, itemReturned.drawable)!!, inSlot = itemReturned.slot)
     }
-    itemTemp!!.levelRq = nextInt(player.level-4, player.level)
+    itemTemp!!.levelRq = nextInt(playerG.level - 4, playerG.level + 1)
     if(inQuality == null){
         itemTemp.quality = when(nextInt(0,10001)){                   //quality of an item by percentage
             in 0 until 3903 -> 0        //39,03%
@@ -1706,7 +1735,6 @@ fun generateItem(player:Player, inQuality: Int? = null):Item?{
 
     if(itemTemp.levelRq<1)itemTemp.levelRq=1
     var points = nextInt(itemTemp.levelRq*10*(itemTemp.quality+1), itemTemp.levelRq*20*(itemTemp.quality+1))
-    Log.d("points ITEM: ", points.toString())
     var pointsTemp:Int
     itemTemp.price = points
     val numberOfStats = nextInt(1,9)
@@ -1714,7 +1742,7 @@ fun generateItem(player:Player, inQuality: Int? = null):Item?{
         pointsTemp = nextInt(points / (numberOfStats * 2), points/numberOfStats+1)
         when(itemTemp){
             is Weapon -> {
-                when (nextInt(0, if(player.charClass.lifeSteal)4 else 3)) {
+                when (nextInt(0, if(playerG.charClass.lifeSteal)4 else 3)) {
                     0 -> {
                         itemTemp.power += pointsTemp
                     }
@@ -1754,7 +1782,7 @@ fun generateItem(player:Player, inQuality: Int? = null):Item?{
                         itemTemp.health += pointsTemp*10
                     }
                     2 -> {
-                        itemTemp.adventureSpeed += pointsTemp/10
+                        itemTemp.adventureSpeed += (pointsTemp/7.5).toInt()
                     }
                     3 -> {
                         itemTemp.inventorySlots += pointsTemp/10
@@ -1813,7 +1841,7 @@ data class Reward(
             item = generateItem(inPlayer, this.type)
         }
         money = nextInt((5 * (player.level*0.8) * (this.type!! +1) * 0.75).toInt(), 5 * ((player.level*0.8) * (this.type!! +1) * 1.25).toInt())
-        experience = nextInt((8 * (player.level*0.8) * (this.type!! +1) * 0.75).toInt() ,(8 * (player.level*0.8) * (this.type!! +1) * 1.25).toInt())
+        experience = nextInt((9 * (player.level*0.8) * (this.type!! +1) * 0.75).toInt() ,(8 * (player.level*0.8) * (this.type!! +1) * 1.25).toInt())
 
         return this
     }
@@ -1902,6 +1930,7 @@ class StoryQuest(
         var ID: String = "0001",
         var name:String = "",
         var description: String = "",
+        var shortDescription: String = "",
         difficulty:Int = 0,
         var chapter:Int = 0,
         var completed:Boolean = false,
@@ -1919,7 +1948,7 @@ class StorySlide(
         var images:MutableList<StoryImage> = mutableListOf(),
         var difficulty: Int
 ):Serializable{
-    var enemy:NPC = NPC()
+    var enemy:NPC? = NPC(difficulty = difficulty).generate()
 }
 
 class StoryImage(
@@ -1952,7 +1981,8 @@ class NPC(
         var name:String = "",
         var difficulty: Int = 0,
         var description: String = "",
-        var levelAppearance:Int = 0
+        var levelAppearance:Int = 0,
+        var charClassIndex: Int = 1
 ):Serializable{
     val drawable:Int
         get() = drawableStorage[inDrawable]!!
@@ -1965,15 +1995,73 @@ class NPC(
     var lifeSteal:Int = 0
     var health:Double = 175.0
     var energy:Int = 100
+    val charClass: CharClass
+        get() = charClasses[charClassIndex]
 
-    fun generate(databaseID: String? = null): Task<DocumentSnapshot> {
+    fun generate(): NPC {
 
-        val db = FirebaseFirestore.getInstance()
-        val npcRef = db.collection("npcs").document(databaseID ?: nextInt(0, npcs.size).toString())
+        npcs.sortWith(compareBy {it.levelAppearance})       //pro zjednodušení cyklu se půjde od nejbližšího konce a ukončí se na druhém limitu
+        val allowedNPCS: MutableList<NPC> = mutableListOf()
 
-        return npcRef.get().addOnSuccessListener {
-            this.level = nextInt(if(levelAppearance <= 3)1 else levelAppearance-3, levelAppearance+2)
+        if(abs(npcs.last().levelAppearance - level) <= abs(npcs[0].levelAppearance - level)){
+            for(npc in npcs.lastIndex downTo 0){
+                if(player.level in npcs[npc].levelAppearance - 10 .. npcs[npc].levelAppearance + 11){
+                    allowedNPCS.add(npcs[npc])
+                }else{
+                    if(npcs[npc].levelAppearance + 10 < player.level){
+                        break
+                    }
+                }
+            }
+        }else{
+            for(npc in 0..npcs.lastIndex){
+                if(player.level in npcs[npc].levelAppearance - 10 .. npcs[npc].levelAppearance + 11){
+                    allowedNPCS.add(npcs[npc])
+                }else{
+                    if(npcs[npc].levelAppearance - 10 > player.level){
+                        break
+                    }
+                }
+            }
         }
+
+        val chosenNPC = allowedNPCS[nextInt(0, allowedNPCS.lastIndex)]
+        chosenNPC.level = nextInt(if(levelAppearance <= 3)1 else levelAppearance-3, levelAppearance+2)
+
+        val balanceRate: Double = when(difficulty){
+            0 -> 0.4
+            1 -> 0.45
+            2 -> 0.5
+            3 -> 0.55
+            4 -> 0.7
+            5 -> 0.8
+            6 -> 1.0
+            7 -> 1.25
+            else -> {
+                5.0
+            }
+        }
+
+        return this
+    }
+
+    fun toPlayer(): Player{                 //temporary solution
+        val npcPlayer = Player(this.charClassIndex, this.name, this.level)
+
+        npcPlayer.drawableExt = this.drawable
+
+        npcPlayer.description = this.description
+        npcPlayer.charClassIndex = this.charClassIndex
+        npcPlayer.chosenSpellsDefense = this.chosenSpellsDefense
+        npcPlayer.power = this.power
+        npcPlayer.armor = this.armor
+        npcPlayer.block = this.block
+        npcPlayer.dmgOverTime = this.dmgOverTime
+        npcPlayer.lifeSteal = this.lifeSteal
+        npcPlayer.health = this.health
+        npcPlayer.energy = this.energy
+
+        return npcPlayer
     }
 }
 
@@ -1993,7 +2081,7 @@ class Quest(
         reward = difficulty?.let { Reward(it).generate(player) } ?: Reward().generate(player)
         val randQuest = surfaces[surface].quests.values.toTypedArray()[nextInt(0,surfaces[surface].quests.values.size)]
 
-        secondsLength = (reward.type!! + 4 - (((reward.type!! + 4)/100) * player.adventureSpeed)) *60
+        secondsLength = ((reward.type!!.toDouble()+2 - (((reward.type!!.toDouble()+2)/100) * player.adventureSpeed.toDouble())) *60).toInt()
 
         this.name = randQuest.name
         this.description = randQuest.description
@@ -2002,6 +2090,10 @@ class Quest(
         this.money = reward.money
 
         return this
+    }
+
+    fun refresh(){
+        secondsLength = ((reward.type!!.toDouble()+2 - (((reward.type!!.toDouble()+2)/100) * player.adventureSpeed.toDouble())) *60).toInt()
     }
 
     fun getStats(resources:Resources): String {

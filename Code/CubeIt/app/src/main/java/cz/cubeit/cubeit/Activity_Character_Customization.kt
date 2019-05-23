@@ -104,7 +104,7 @@ class Activity_Character_Customization: AppCompatActivity(){
 
 
             player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
-                loadedLogin = LoginStatus.LOGGED
+                loadingStatus = LoadingStatus.LOGGED
             }
         }
 
