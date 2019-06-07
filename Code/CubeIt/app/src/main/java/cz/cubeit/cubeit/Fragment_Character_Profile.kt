@@ -72,15 +72,10 @@ class Fragment_Character_Profile : Fragment() {
         if(chosenPlayer.equip[index] != null){
 
             if(contextView.textViewCharacterProfile.visibility == View.GONE){
-                contextView.textViewCharacterProfile.setBackgroundResource(R.drawable.stats_info)
                 contextView.textViewCharacterProfile.visibility = View.VISIBLE
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                contextView.textViewCharacterProfile.setText(Html.fromHtml(chosenPlayer.equip[index]!!.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-            }else{
-                contextView.textViewCharacterProfile.setText(Html.fromHtml(chosenPlayer.equip[index]!!.getStats()), TextView.BufferType.SPANNABLE)
-            }
+            contextView.textViewCharacterProfile.setHTMLText(chosenPlayer.equip[index]!!.getStats())
         }
     }
     private fun onClickCharacterImage(v: View){

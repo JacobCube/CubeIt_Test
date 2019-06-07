@@ -57,8 +57,8 @@ class Fragment_Register : Fragment() {
                 handler.postDelayed({showNotification("Oops", "Passwords must match")},100)
             }
 
-            loadGlobalData(view.context).addOnCompleteListener {
-                if (appVersion < BuildConfig.VERSION_CODE){
+            loadGlobalData(view.context).addOnSuccessListener {
+                if (appVersion > BuildConfig.VERSION_CODE){
                     loadingStatus = LoadingStatus.CLOSELOADING
                     handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned $appVersion)")},100)
                 }
@@ -66,7 +66,7 @@ class Fragment_Register : Fragment() {
                 if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && appVersion <= BuildConfig.VERSION_CODE && isConnected) {
                     userPassword = view.inputPassReg.text.toString()
 
-                    Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener { task: Task<AuthResult> ->
+                    Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener{ task: Task<AuthResult> ->
                         if (task.isSuccessful) {
                             if(textViewLog!= null){
                                 textViewLog!!.text = resources.getString(R.string.loading_log, "Your profile information")
@@ -79,9 +79,9 @@ class Fragment_Register : Fragment() {
                             val tempPlayer = Player()
                             tempPlayer.username = view.inputUsernameReg.text.toString()
 
-                            tempPlayer.toLoadPlayer().createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnCompleteListener {
+                            tempPlayer.toLoadPlayer().createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnSuccessListener {
                                 player.username = view.inputUsernameReg.text.toString()
-                                player.loadPlayer().addOnCompleteListener {
+                                player.loadPlayer().addOnSuccessListener {
                                     val intent = Intent(view.context, Activity_Character_Customization::class.java)
                                     startActivity(intent)
                                     //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)

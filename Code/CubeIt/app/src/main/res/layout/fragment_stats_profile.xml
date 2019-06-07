@@ -22,7 +22,7 @@
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/guideline145"
         app:layout_constraintEnd_toStartOf="@+id/profile_stats_fight"
-        app:layout_constraintStart_toEndOf="@+id/helperImageView"
+        app:layout_constraintStart_toEndOf="@+id/imageViewProfileMail"
         app:layout_constraintTop_toTopOf="@+id/guideline79" />
 
     <TextView
@@ -53,7 +53,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/profile_stats"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -95,13 +95,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/helperImageView"
+        android:id="@+id/imageViewProfileMail"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline145"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/email_icon" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline145"

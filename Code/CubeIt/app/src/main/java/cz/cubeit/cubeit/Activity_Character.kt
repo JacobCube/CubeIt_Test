@@ -540,11 +540,7 @@ class Activity_Character : AppCompatActivity() {
                 super.onClick()
                 //if(!hidden && lastClicked=="runes0"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                 lastClicked = "runes0"
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    textViewInfoItem.setText(Html.fromHtml(player.backpackRunes[0]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                }else{
-                    textViewInfoItem.setText(Html.fromHtml(player.backpackRunes[0]?.getStats()), TextView.BufferType.SPANNABLE)
-                }
+                textViewInfoItem.setHTMLText(player.backpackRunes[0]?.getStats()!!)
             }
 
             override fun onDoubleClick() {
@@ -616,11 +612,7 @@ class Activity_Character : AppCompatActivity() {
                 super.onClick()
                 //if(!hidden && lastClicked=="runes1"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                 lastClicked = "runes1"
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    textViewInfoItem.setText(Html.fromHtml(player.backpackRunes[1]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                }else{
-                    textViewInfoItem.setText(Html.fromHtml(player.backpackRunes[1]?.getStats()), TextView.BufferType.SPANNABLE)
-                }
+                textViewInfoItem.setHTMLText(player.backpackRunes[1]?.getStats()!!)
             }
 
             override fun onDoubleClick() {
@@ -692,7 +684,7 @@ class Activity_Character : AppCompatActivity() {
         inventoryListView.adapter = InventoryView(frameLayoutCharacterStats, hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, supportFragmentManager, equipDragListener, runesDragListener, bagViewV,frameLayoutCharacterProfile, this)
     }
 
-    private class InventoryView(val frameLayoutCharacterStats: FrameLayout, var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: TextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val supportFragmentManager:FragmentManager, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
+    private class InventoryView(val frameLayoutCharacterStats: FrameLayout, var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: CustomTextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val supportFragmentManager:FragmentManager, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
                                 /*val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView,*/ private val context: Context) : BaseAdapter() {
 
         override fun getCount(): Int {
@@ -760,22 +752,14 @@ class Activity_Character : AppCompatActivity() {
                     super.onClick()
                     //if(!hidden && lastClicked=="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory0$position"
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                    }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                    }
+                    textViewInfoItem.setHTMLText(playerC.inventory[index]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     getDoubleClick(index, playerC, viewHolder.buttonInventory1)
                     if(playerC.inventory[index]!=null){
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                        }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                        }
+                        textViewInfoItem.setHTMLText(playerC.inventory[index]?.getStatsCompare()!!)
                     }
                     notifyDataSetChanged()
                     handler.postDelayed({ dragItemSync()}, 500)
@@ -825,22 +809,14 @@ class Activity_Character : AppCompatActivity() {
                     super.onClick()
                     //if(!hidden && lastClicked=="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory1$position"
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                    }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                    }
+                    textViewInfoItem.setHTMLText(playerC.inventory[index+1]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     getDoubleClick(index+1, playerC, viewHolder.buttonInventory2)
                     if(playerC.inventory[index+1]!=null){
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                        }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+1]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                        }
+                        textViewInfoItem.setHTMLText(playerC.inventory[index+1]?.getStatsCompare()!!)
                     }
                     notifyDataSetChanged()
                     handler.postDelayed({ dragItemSync()}, 500)
@@ -890,22 +866,14 @@ class Activity_Character : AppCompatActivity() {
                     super.onClick()
                     //if(!hidden && lastClicked=="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory2$position"
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                    }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                    }
+                    textViewInfoItem.setHTMLText(playerC.inventory[index+2]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     getDoubleClick(index+2, playerC, viewHolder.buttonInventory3)
                     if(playerC.inventory[index+2]!=null){
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                        }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+2]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                        }
+                        textViewInfoItem.setHTMLText(playerC.inventory[index+2]?.getStatsCompare()!!)
                     }
                     notifyDataSetChanged()
                     handler.postDelayed({ dragItemSync()}, 500)
@@ -955,22 +923,14 @@ class Activity_Character : AppCompatActivity() {
                     super.onClick()
                     //if(!hidden && lastClicked=="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="inventory3$position"
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                    }else{
-                        textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                    }
+                    textViewInfoItem.setHTMLText(playerC.inventory[index+3]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     getDoubleClick(index+3, playerC, viewHolder.buttonInventory4)
                     if(playerC.inventory[index+3]!=null){
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                        }else{
-                            textViewInfoItem.setText(Html.fromHtml(playerC.inventory[index+3]?.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                        }
+                        textViewInfoItem.setHTMLText(playerC.inventory[index+3]?.getStatsCompare()!!)
                     }
                     notifyDataSetChanged()
                     handler.postDelayed({ dragItemSync()}, 500)
@@ -1121,11 +1081,7 @@ class Activity_Character : AppCompatActivity() {
             //if(!hidden && lastClicked=="equip$index"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
             lastClicked="equip$index"
             if(player.equip[index]!=null){
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    textViewInfoItem.setText(Html.fromHtml(player.equip[index]?.getStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                }else{
-                    textViewInfoItem.setText(Html.fromHtml(player.equip[index]?.getStats()), TextView.BufferType.SPANNABLE)
-                }
+                textViewInfoItem.setHTMLText(player.equip[index]?.getStats()!!)
             }
         }
         handler.postDelayed({

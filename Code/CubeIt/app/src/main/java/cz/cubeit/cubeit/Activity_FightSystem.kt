@@ -35,6 +35,8 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
     private var activeEffectOverTimePlayer = mutableListOf<DamageOverTime>()   //effect over time dealt by enemy to player
     private var activeEffectOverTimeEnemy = mutableListOf<DamageOverTime>()   //effect over time dealt by player to enemy
 
+    lateinit var onDestroyView:View
+
 
     override fun onBackPressed() {
     }
@@ -51,28 +53,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
         super.onDestroy()
         if(!fightEnded){
             if (playerFight.username != enemy.username) {
-                val reward = Reward().generate(enemy)
-                var fameGained = nextInt(0, 75)
-
-                if (enemy.username == playerFight.username) {
-                    if (enemy.fame <= fameGained) fameGained = enemy.fame
-                    enemy.fame -= fameGained
-                } else {
-                    if (playerFight.fame <= fameGained) fameGained = playerFight.fame
-                    playerFight.fame -= fameGained
-                }
-                if (enemy.inventory.contains(null) && reward.item != null) {
-                    enemy.inventory[enemy.inventory.indexOf(null)] = reward.item
-                    enemy.toLoadPlayer().uploadSingleItem("inventory")
-                }
-                enemy.money += reward.money
-                enemy.experience += reward.experience
-                enemy.fame += fameGained
-
-                val loadPlayerFight = playerFight.toLoadPlayer()
-                val loadEnemy = enemy.toLoadPlayer()
-                loadPlayerFight.uploadPlayer()
-                loadEnemy.uploadPlayer()
+                endOfFight(enemy, onDestroyView)
             }
         }
     }
@@ -130,12 +111,12 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
-
         enemy.username = intent.extras!!.getString("enemy")!!
 
         setContentView(R.layout.activity_fight_system)
         textViewError.visibility = View.INVISIBLE
 
+        onDestroyView = Spell0
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 handler.postDelayed({ hideSystemUI() }, 1000)
@@ -193,8 +174,8 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                 }
             }
 
-            textPlayer.text = playerFight.health.toString()
-            textEnemy.text = enemy.health.toString()
+            textPlayer.text = playerFight.health.toInt().toString()
+            textEnemy.text = enemy.health.toInt().toString()
             energyEnemyTextView.text = enemy.energy.toString()
             energyTextView.text = playerFight.energy.toString()
         }
@@ -206,12 +187,16 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             startActivity(intent)
 
             enemy.loadPlayer().addOnSuccessListener {
+                enemy.syncStats()
                 init()
+                /*if(nextInt(0,1) == 1){
+
+                }*/
                 handler.postDelayed({loadingStatus = LoadingStatus.CLOSELOADING}, 50)
             }
         }else{
             enemy = if(!intent.extras!!.getString("enemy").isNullOrBlank()){
-                NPC().generate().toPlayer()
+                NPC().toPlayer()
             }else{
                 npcs[intent.extras!!.getString("enemy")!!.toInt()].toPlayer()
             }
@@ -410,7 +395,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             //player's attack
             val dmgDealtPlayer = if(playerSpell.power==0)0 else nextInt((attackCalc(playerFight, enemySpell, playerSpell, enemy)*0.75).toInt(), (attackCalc(playerFight, enemySpell, playerSpell, enemy)*1.5).toInt())
             enemy.health -= dmgDealtPlayer                                                                                                 //Dealing damage to an enemy
-            playerFight.health += dmgDealtPlayer/100 * (playerSpell.lifeSteal + playerFight.lifeSteal)
+            playerFight.health += dmgDealtPlayer.safeDivider(100) * (playerSpell.lifeSteal + playerFight.lifeSteal)
             ValueAnimator.ofInt(progressBarEnemyHealth.progress, enemy.health.toInt()).apply{                                        //Animating the differences in progress bar
                 duration = 400
                 addUpdateListener {
@@ -444,13 +429,13 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
             if(activeEffectOverTimeEnemy.size>=1){
                 if(activeEffectOverTimeEnemy[0].rounds != 0){
-                    enemy.health -= (activeEffectOverTimeEnemy[0].dmg * playerFight.power/4 + playerFight.dmgOverTime)
+                    enemy.health -= (activeEffectOverTimeEnemy[0].dmg * playerFight.power/4 + playerFight.dmgOverTime).toInt()
                     activeEffectOverTimeEnemy[0].rounds--
                 }else{
                     activeEffectOverTimeEnemy.removeAt(0)
 
                     if(activeEffectOverTimeEnemy.size>=1 && activeEffectOverTimeEnemy[0].rounds != 0) {
-                        enemy.health -= (activeEffectOverTimeEnemy[0].dmg * playerFight.power/4 + playerFight.dmgOverTime)
+                        enemy.health -= (activeEffectOverTimeEnemy[0].dmg * playerFight.power/4 + playerFight.dmgOverTime).toInt()
                         activeEffectOverTimeEnemy[0].rounds--
                     }
                 }
@@ -464,7 +449,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             }else{
                 val dmgDealt = if(enemySpell.power==0)0 else nextInt((attackCalc(enemy, playerSpell, enemySpell, playerFight)*0.75).toInt(), (attackCalc(enemy, playerSpell, enemySpell, playerFight)*1.5).toInt())
                 playerFight.health -= dmgDealt                                                                                            //Dealing damage to a player
-                enemy.health += dmgDealt/100 * (enemySpell.lifeSteal+enemy.lifeSteal)
+                enemy.health += dmgDealt.safeDivider(100) * (enemySpell.lifeSteal+enemy.lifeSteal)
                 ValueAnimator.ofInt(progressBarPlayerHealth.progress, playerFight.health.toInt()).apply{                                  //Animating the differences in progress bar
                     duration = 400
                     addUpdateListener {
@@ -498,12 +483,12 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             //damage over time
             if(activeEffectOverTimePlayer.size>=1){
                 if(activeEffectOverTimePlayer[0].rounds != 0){
-                    playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/ + enemy.dmgOverTime)
+                    playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
                     activeEffectOverTimePlayer[0].rounds--
                 }else{
                     activeEffectOverTimePlayer.removeAt(0)
                     if(activeEffectOverTimePlayer.size>=1 && activeEffectOverTimePlayer[0].rounds != 0) {
-                        playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime)
+                        playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
                         activeEffectOverTimePlayer[0].rounds--
                     }
                 }
@@ -523,8 +508,8 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
                 val dmgDealt = if(enemySpell.power==0)0 else nextInt((attackCalc(enemy, playerSpell, tempSpell, playerFight)*0.75).toInt(),(attackCalc(enemy, playerSpell, tempSpell, playerFight)*1.5).toInt())
                 playerFight.health -= dmgDealt                                                                                    //Dealing damage to a player in case he's being stunned
-                enemy.health += dmgDealt/100 * (tempSpell.lifeSteal+enemy.lifeSteal)
-                textPlayer.text = playerFight.health.toString()
+                enemy.health += dmgDealt.safeDivider(100) * (tempSpell.lifeSteal+enemy.lifeSteal)
+                textPlayer.text = playerFight.health.toInt().toString()
                 ValueAnimator.ofInt(progressBarPlayerHealth.progress, playerFight.health.toInt()).apply{                          //Animating the differences in progress bar
                     duration = 400
                     addUpdateListener {
@@ -556,12 +541,12 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
                 if(activeEffectOverTimePlayer.size>=1){
                     if(activeEffectOverTimePlayer[0].rounds != 0){
-                        playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime)
+                        playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
                         activeEffectOverTimePlayer[0].rounds--
                     }else{
                         activeEffectOverTimePlayer.removeAt(0)
                         if(activeEffectOverTimePlayer.size>=1 && activeEffectOverTimePlayer[0].rounds != 0) {
-                            playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime)
+                            playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
                             activeEffectOverTimePlayer[0].rounds--
                         }
                     }
@@ -574,8 +559,8 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             roundCounter++
             energyPlayer+=25
             energyEnemy+=25
-            textPlayer.text = playerFight.health.toString()
-            textEnemy.text = enemy.health.toString()
+            textPlayer.text = playerFight.health.toInt().toString()
+            textEnemy.text = enemy.health.toInt().toString()
             energyEnemyTextView.text = (energyEnemy - requiredEnergyEnemy).toString()
             energyTextView.text = (energyPlayer - requiredEnergy).toString()
             textViewError.visibility = View.GONE
@@ -602,6 +587,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun endOfFight(winner:Player, view: View) {
         fightEnded = true
         if (playerFight.username == enemy.username) {
@@ -611,81 +597,68 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             this.overridePendingTransition(0, 0)
         } else {
 
-            val reward = Reward().generate(winner)
-            var fameGained = nextInt(0, 75)
+            var reward: Reward? = Reward().generate(winner)
+            var fameGained = nextInt(0, 100)
 
             if (winner.username == playerFight.username) {
                 if (enemy.fame <= fameGained) fameGained = enemy.fame
                 enemy.fame -= fameGained
 
                 if(playerFight.level > enemy.level+2){
-                    reward.money = 0
-                    reward.experience = 0
-                    reward.item = null
+                    reward = null
                 }
+                playerFight.writeInbox(enemy.username, InboxMessage(status = MessageStatus.Fight, receiver = enemy.username, sender = playerFight.username, subject = "${playerFight.username} fought you!", content = "${playerFight.username} fought you and you lost!\nYou lost $fameGained fame.\nNow it's your turn to decide who's gonna win the battle."))
             } else {
                 if (playerFight.fame <= fameGained) fameGained = playerFight.fame
                 playerFight.fame -= fameGained
 
-                if(enemy.level > enemy.level+2){
-                    reward.money = 0
-                    reward.experience = 0
-                    reward.item = null
+                if(enemy.level > playerFight.level+2){
+                    reward = null
                 }
+                playerFight.writeInbox(enemy.username, InboxMessage(status = MessageStatus.Fight, receiver = enemy.username, sender = playerFight.username, reward = reward, subject = "${playerFight.username} fought you!", content = "${playerFight.username} fought you and you won!\nYou won $fameGained fame.\nNow it's your turn to decide who's gonna win the battle."))
             }
-            if (winner.inventory.contains(null) && reward.item != null) {
-                winner.inventory[winner.inventory.indexOf(null)] = reward.item
-                winner.toLoadPlayer().uploadSingleItem("inventory")
-            }
-            winner.money += reward.money
-            winner.experience += reward.experience
-            winner.fame += fameGained
 
-            val loadPlayerFight = playerFight.toLoadPlayer()
-            val loadEnemy = enemy.toLoadPlayer()
-            loadPlayerFight.uploadPlayer()
-            loadEnemy.uploadPlayer()
+            //winner.fame += fameGained
 
             val window = PopupWindow(this)
             val viewPop: View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
             window.elevation = 0.0f
             window.contentView = viewPop
-            val textViewQuest: TextView = viewPop.textViewQuest
+            val textViewQuest: CustomTextView = viewPop.textViewQuest
             val buttonAccept: Button = viewPop.buttonAccept
             val buttonClose: Button = viewPop.buttonClose
             val imageItem: ImageView = viewPop.imageViewAdventure
-            val textViewStats: TextView = viewPop.textViewItemStats
+            val textViewStats: CustomTextView = viewPop.textViewItemStats
 
 
-            if (reward.item != null) {
+            if (reward?.item != null) {
                 imageItem.setImageResource(reward.item!!.drawable)
                 imageItem.isClickable = true
                 imageItem.isEnabled = true
+
+                imageItem.setOnClickListener {
+                    textViewStats.visibility = if(textViewStats.visibility == View.GONE)View.VISIBLE else View.GONE
+
+                    textViewStats.setHTMLText(reward.item!!.getStatsCompare())
+                }
             } else {
                 imageItem.isClickable = false
                 imageItem.isEnabled = false
             }
 
-            textViewQuest.text = "${winner.username} earned:\n${reward.getStats()}\n\nfame points  $fameGained"
+            textViewQuest.text = "${winner.username} earned:\n${reward?.getStats() ?: ""}\n\nfame points  $fameGained"
+
 
 
             window.isOutsideTouchable = false
             window.isFocusable = true
             window.setOnDismissListener {
+                reward?.receive()
                 window.dismiss()
                 val endFight = Intent(this, Home::class.java)
                 endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(endFight)
                 this.overridePendingTransition(0, 0)
-            }
-            imageItem.setOnClickListener {
-                textViewStats.visibility = if(textViewStats.visibility == View.GONE)View.VISIBLE else View.GONE
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    textViewStats.setText(Html.fromHtml(reward.item!!.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-                } else {
-                    textViewStats.setText(Html.fromHtml(reward.item!!.getStatsCompare()), TextView.BufferType.SPANNABLE)
-                }
             }
             buttonAccept.setOnClickListener {
                 window.dismiss()

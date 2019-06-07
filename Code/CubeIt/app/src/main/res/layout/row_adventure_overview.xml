@@ -60,7 +60,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline144" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewDifficulty"
         android:layout_width="wrap_content"
         android:layout_height="18dp"

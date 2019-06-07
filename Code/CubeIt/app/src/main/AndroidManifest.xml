@@ -32,7 +32,7 @@
             android:name=".ActivitySettings"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".ActivityShop"
+            android:name=".Activity_Shop"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".Adventure"
@@ -47,7 +47,7 @@
             android:name=".Activity_Character_Customization"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".ActivityStory"
+            android:name=".Activity_Story"
             android:screenOrientation="sensorLandscape"/>
         <activity
             android:name=".Activity_Inbox"

@@ -20,6 +20,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/textViewInboxCategoryNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:textColor="@color/colorSecondary"
+        android:layout_marginEnd="4dp"
+        android:gravity="center"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewInboxCategoryNew"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <android.support.constraint.Guideline
         android:id="@+id/guideline107"
         android:layout_width="wrap_content"
@@ -53,4 +65,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:color/transparent" />
+
 </android.support.constraint.ConstraintLayout>

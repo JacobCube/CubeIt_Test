@@ -11,4 +11,25 @@
         <item><FONT COLOR='#C0B02D\'>Medium</FONT></item>
         <item><FONT COLOR='#C0B02D\'>High</FONT></item>
     </string-array>
+
+    <string-array name="inbox_category">
+        <item>Category</item>
+        <item><FONT COLOR='#C0B02D\'>Unread</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>Read</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>Sent</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>Fights</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>Spam</FONT></item>
+    </string-array>
+
+    <string-array name="charclasses">
+        <item>Character type</item>
+        <item>Vampire</item>
+        <item>Dwarf</item>
+        <item>Archer</item>
+        <item>Wizard</item>
+        <item>Sniper</item>
+        <item>Mermaid</item>
+        <item>Elf</item>
+        <item>Warrior</item>
+    </string-array>
 </resources>

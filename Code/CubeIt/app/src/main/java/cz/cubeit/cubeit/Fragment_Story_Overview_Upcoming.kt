@@ -1,5 +1,7 @@
 package cz.cubeit.cubeit
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -7,27 +9,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_character_0.view.*
+import kotlinx.android.synthetic.main.fragment_story_overview_upcoming.view.*
 import kotlinx.android.synthetic.main.row_story_completed.view.*
 
 class Fragment_Story_Overview_Upcoming : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view:View = inflater.inflate(R.layout.fragment_story_overview, container, false)
+        val view:View = inflater.inflate(R.layout.fragment_story_overview_upcoming, container, false)
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        //view.imageViewCharacter0.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_0, opts))
+
+        storyQuests.sortWith(compareBy {it.reqLevel})
+        view.listViewStoryUpcoming.adapter = StoryOverviewUpcomingAdapter(storyQuests, activity!!)
         return view
     }
 }
 
 
-private class StoryOverviewUpcomingAdapter(var storyCompleted:MutableList<StoryQuest>) : BaseAdapter() {
+private class StoryOverviewUpcomingAdapter(var storyUpcoming:MutableList<StoryQuest>, val activity: Activity) : BaseAdapter() {
 
     override fun getCount(): Int {
-        return storyCompleted.size
+        return storyUpcoming.size
     }
 
     override fun getItemId(position: Int): Long {
@@ -38,22 +44,36 @@ private class StoryOverviewUpcomingAdapter(var storyCompleted:MutableList<StoryQ
         return "TEST STRING"
     }
 
+    @SuppressLint("SetTextI18n")
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
         val rowMain: View
 
         if (convertView == null) {
             val layoutInflater = LayoutInflater.from(viewGroup!!.context)
             rowMain = layoutInflater.inflate(R.layout.row_story_completed, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewShortDescription, rowMain.textViewExperience, rowMain.textViewMoney)
+            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewShortDescription, rowMain.textViewExperience, rowMain.textViewMoney, rowMain.imageViewLockedQuest, rowMain.imageViewStoryCompleted)
             rowMain.tag = viewHolder
         } else rowMain = convertView
         val viewHolder = rowMain.tag as ViewHolder
 
+        if(storyUpcoming[position].reqLevel <= player.level){
+            viewHolder.imageViewLockedQuest.visibility = View.INVISIBLE
+        }else {
+            viewHolder.imageViewLockedQuest.visibility = View.VISIBLE
+        }
 
+        viewHolder.name.text = storyUpcoming[position].name
+        viewHolder.shortDescription.text = storyUpcoming[position].shortDescription
+        viewHolder.experience.text = "xp: " + storyUpcoming[position].reward.experience.toString()
+        viewHolder.money.text = "C: " + storyUpcoming[position].reward.coins.toString()
+
+        rowMain.setOnClickListener {
+            (activity as Activity_Story).onStoryClicked(storyUpcoming[position])
+        }
 
         return rowMain
     }
 
-    private class ViewHolder(val name: TextView, val shortDescription: TextView, val experience: TextView, val money: TextView)
+    private class ViewHolder(val name: TextView, val shortDescription: TextView, val experience: TextView, val money: TextView, val imageViewLockedQuest: ImageView, val imageViewStoryCompleted: ImageView)
 }
 

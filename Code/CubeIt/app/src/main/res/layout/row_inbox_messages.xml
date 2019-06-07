@@ -14,7 +14,7 @@
         android:layout_marginStart="16dp"
         android:text="TextView"
         android:textColor="@color/colorSecondary"
-        android:textSize="18sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textViewInboxMessagesSender"
         app:layout_constraintTop_toTopOf="parent"
@@ -26,31 +26,44 @@
         android:layout_height="wrap_content"
         android:text="TextView"
         android:textColor="@color/colorSecondary"
-        android:textSize="18sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline108"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
     <android.support.constraint.Guideline
-        android:id="@+id/guideline107"
+        android:id="@+id/guideline108"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.82" />
+        app:layout_constraintGuide_percent="0.05" />
 
-    <ImageView
-        android:id="@+id/imageViewInboxMessagesNew"
+    <TextView
+        android:id="@+id/textViewInboxSentTime"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="2dp"
-        android:alpha="0"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="end"
+        android:text="TextView"
+        android:textColor="@color/colorSecondary"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintStart_toStartOf="@+id/guideline107"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/emptyspellslotlarge" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textViewInboxMessagesSubject"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessagesSubject" />
+
+    <TextView
+        android:id="@+id/textViewInboxMessagesReceiver"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="TextView"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textViewInboxMessagesSender"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessagesSender" />
 
     <ImageView
         android:id="@+id/imageViewInboxMessagesBg"
@@ -63,24 +76,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:color/transparent" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline108"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.05" />
-
-    <TextView
-        android:id="@+id/textViewInboxContent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="TextView"
-        android:textColor="@color/colorSecondary"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textViewInboxMessagesSubject"
-        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

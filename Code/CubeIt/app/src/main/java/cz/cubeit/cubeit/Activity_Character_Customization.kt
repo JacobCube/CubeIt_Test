@@ -103,7 +103,7 @@ class Activity_Character_Customization: AppCompatActivity(){
             player.shopOffer = arrayOf(generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player))
 
 
-            player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
+            player.toLoadPlayer().uploadPlayer().addOnSuccessListener {
                 loadingStatus = LoadingStatus.LOGGED
             }
         }

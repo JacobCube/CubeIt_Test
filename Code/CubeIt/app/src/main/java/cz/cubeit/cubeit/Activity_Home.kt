@@ -5,28 +5,13 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_home.*
 import android.arch.lifecycle.ProcessLifecycleOwner
-import android.content.BroadcastReceiver
 import android.provider.Settings
-import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.view.View
 
 var playedSong = R.raw.playedsong
-
-class AlarmReceiver : BroadcastReceiver() {
-
-    override fun onReceive(context: Context, intent: Intent) {
-
-        val service = Intent(context, Home()::class.java)
-        service.putExtra("reason", intent.getStringExtra("reason"))
-        service.putExtra("timestamp", intent.getLongExtra("timestamp", 0))
-
-        context.startService(service)
-    }
-}
-
 
 class Home : AppCompatActivity() {
 
@@ -59,7 +44,6 @@ class Home : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_home)
-
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -95,20 +79,19 @@ class Home : AppCompatActivity() {
             startActivity(intentSplash)
 
             player.online = false
-            player.toLoadPlayer().uploadPlayer().addOnCompleteListener {
+            player.toLoadPlayer().uploadPlayer().addOnSuccessListener {
                 if(bgMusic.mediaPlayer.isPlaying){
                     val svc = Intent(this, bgMusic::class.java)
                     stopService(svc)
                 }
-                player = Player()
+                logOut()
 
-                loadingStatus = LoadingStatus.UNLOGGED
                 this.overridePendingTransition(0,0)
             }
         }
 
         Story.setOnClickListener {
-            val intent = Intent(this, ActivityStory()::class.java)
+            val intent = Intent(this, Activity_Story()::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
@@ -137,7 +120,7 @@ class Home : AppCompatActivity() {
             this.overridePendingTransition(0,0)
         }
         Shop.setOnClickListener {
-            val intent = Intent(this, cz.cubeit.cubeit.ActivityShop::class.java)
+            val intent = Intent(this, cz.cubeit.cubeit.Activity_Shop::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)

@@ -61,7 +61,7 @@ class FragmentLogin : Fragment()  {
             val userPassword = view.inputPassLogin.text.toString()
             val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+            val isConnected: Boolean = activeNetwork?.isConnected == true
 
             startActivity(intentSplash)
             loadingStatus = LoadingStatus.LOGGING
@@ -75,7 +75,7 @@ class FragmentLogin : Fragment()  {
                 loadingStatus = LoadingStatus.CLOSELOADING
             }
 
-            loadGlobalData(view.context).addOnCompleteListener{
+            loadGlobalData(view.context).addOnSuccessListener{
 
                 if (appVersion > BuildConfig.VERSION_CODE){
                     loadingStatus = LoadingStatus.CLOSELOADING
@@ -112,14 +112,14 @@ class FragmentLogin : Fragment()  {
                                             val document: DocumentSnapshot = querySnapshot.documents[0]
                                             player.username = document.getString("username")!!
 
-                                            player.loadPlayer().addOnCompleteListener {
+                                            player.loadPlayer().addOnSuccessListener {
                                                 if(player.newPlayer){
                                                     loadingStatus = LoadingStatus.CLOSELOADING
                                                     val intent = Intent(view.context, Activity_Character_Customization::class.java)
                                                     startActivity(intent)
                                                 }else {
                                                     player.online = true
-                                                    player.toLoadPlayer().uploadSingleItem("online").addOnCompleteListener {
+                                                    player.toLoadPlayer().uploadSingleItem("online").addOnSuccessListener {
                                                         loadingStatus = LoadingStatus.LOGGED
                                                     }
                                                 }

@@ -72,6 +72,12 @@ class FragmentDefense : Fragment(){
 
         view.chosen_listView.adapter = ChosenSpellsView(player)
         view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)
+
+        view.buttonDefenseReset.setOnClickListener {
+            player.chosenSpellsDefense = arrayOfNulls<Spell?>(20).toMutableList()
+            (view.chosen_listView.adapter as ChosenSpellsView).notifyDataSetChanged()
+        }
+
         return view
     }
 
@@ -253,7 +259,7 @@ class FragmentDefense : Fragment(){
             }
 
             var requiredEnergy = 0
-            for(i in 0..(position-1)){
+            for(i in 0 until position){
                 if(player.chosenSpellsDefense[i]==null){
 
                 }else {

@@ -30,7 +30,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline63"
         app:layout_constraintTop_toTopOf="@+id/guideline62"
 
- android:src="@color/colorSecondary" />
+        android:src="@color/colorSecondary" />
 
     <ImageView
         android:id="@+id/imageViewMarket"
@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline63"
         app:layout_constraintTop_toTopOf="@+id/guideline62"
 
- android:src="@color/colorSecondary" />
+        android:src="@color/colorSecondary" />
 
     <ImageView
         android:id="@+id/imageViewAuctionInventory"
@@ -52,5 +52,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
 
- android:src="@color/colorSecondary" />
+        android:src="@color/colorSecondary" />
 </android.support.constraint.ConstraintLayout>

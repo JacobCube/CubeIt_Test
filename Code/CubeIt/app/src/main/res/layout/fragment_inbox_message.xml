@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorSecondary"
     android:configChanges="orientation"
     android:minHeight="0dp"
-    android:background="@color/colorSecondary"
     android:padding="1dp"
     android:screenOrientation="sensorLandscape">
 
@@ -23,17 +23,17 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <EditText
-        android:id="@+id/editTextInboxObject"
+        android:id="@+id/editTextInboxSubject"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:background="@color/loginColor"
         android:ems="10"
-        android:hint="Object"
+        android:hint="Subject"
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline110"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
 
@@ -48,9 +48,9 @@
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
-        app:layout_constraintBottom_toTopOf="@+id/editTextInboxObject"
+        app:layout_constraintBottom_toTopOf="@+id/editTextInboxSubject"
         app:layout_constraintEnd_toStartOf="@+id/guideline110"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline150"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
@@ -68,9 +68,9 @@
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline110"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextInboxObject" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSubject" />
 
     <Spinner
         android:id="@+id/spinnerInboxPriority"
@@ -86,12 +86,14 @@
     <ImageView
         android:id="@+id/imageViewInboxSend"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:src="@drawable/right_arrow"
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintDimensionRatio="H,"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline165"
         app:layout_constraintTop_toTopOf="@+id/guideline84" />
 
     <android.support.constraint.Guideline
@@ -102,10 +104,162 @@
         app:layout_constraintGuide_percent="0.76" />
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline148"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.44" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline110"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.72" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline146"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.92" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline165"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.86" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline147"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline150"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.36" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline149"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.59" />
+
+    <TextView
+        android:id="@+id/textViewInboxMessageTime"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/loginColor"
+        android:text="time"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/editTextInboxContent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
+
+    <TextView
+        android:id="@+id/textViewInboxMessageCubeCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="380dp"
+        android:text="TextView"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageCoins" />
+
+    <TextView
+        android:id="@+id/textViewInboxMessageCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toTopOf="@+id/guideline148" />
+
+    <TextView
+        android:id="@+id/textViewInboxMessageXp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageCubeCoins" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageItem"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline146"
+        app:layout_constraintHorizontal_bias="0.526"
+        app:layout_constraintStart_toStartOf="@+id/guideline147"
+        app:layout_constraintTop_toTopOf="@+id/editTextInboxContent"
+        app:srcCompat="@drawable/backpack" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxItemInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:background="@drawable/stats_info"
+        android:gravity="center_horizontal"
+        android:text="TextView"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/guideline147"
+        app:layout_constraintStart_toStartOf="@+id/guideline149"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
+
+    <Button
+        android:id="@+id/buttonInboxMessageGet"
+        android:layout_width="75dp"
+        android:layout_height="50dp"
+        android:text="get"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline84"
+        app:layout_constraintEnd_toStartOf="@+id/guideline146"
+        app:layout_constraintStart_toStartOf="@+id/guideline147" />
+
+    <TextView
+        android:id="@+id/textViewInboxMessageSender"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/loginColor"
+        android:text="from Player"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/editTextInboxSubject"
+        app:layout_constraintEnd_toStartOf="@+id/editTextInboxReciever"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewDeleteMessage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:tint="@android:color/holo_red_dark"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline165"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toTopOf="@+id/guideline84"
+        app:srcCompat="@drawable/head_close" />
 
 </android.support.constraint.ConstraintLayout>

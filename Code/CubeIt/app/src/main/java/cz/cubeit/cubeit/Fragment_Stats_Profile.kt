@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -23,6 +24,7 @@ class Fragment_Stats_Profile : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_stats_profile, container, false)
 
@@ -32,11 +34,7 @@ class Fragment_Stats_Profile : Fragment() {
             player
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            view.profile_stats.setText(Html.fromHtml(playerProfile.syncStats(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-        }else{
-            view.profile_stats.setText(Html.fromHtml(playerProfile.syncStats()), TextView.BufferType.SPANNABLE)
-        }
+        view.profile_stats.setHTMLText(playerProfile.syncStats())
 
         view.profile_description.text = playerProfile.description
         view.textViewProfileXp.text = playerProfile.experience.toString() + " / " + (playerProfile.level * 0.75 * (8 * (playerProfile.level*0.8) * (3))).toInt().toString()
@@ -50,6 +48,15 @@ class Fragment_Stats_Profile : Fragment() {
                 val intent = Intent(view.context, FightSystem(player)::class.java)
                 intent.putExtra("enemy", playerProfile.username)
                 intent.putExtra("npc", false)
+                startActivity(intent)
+            }
+        }
+
+        view.imageViewProfileMail.setOnClickListener {
+            if(playerProfile.username != player.username){
+
+                val intent = Intent(view.context, Activity_Inbox()::class.java)
+                intent.putExtra("receiver", playerProfile.username)
                 startActivity(intent)
             }
         }

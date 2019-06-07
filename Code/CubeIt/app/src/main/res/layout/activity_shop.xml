@@ -153,7 +153,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInfoItem"
         android:layout_width="0dp"
         android:layout_height="0dp"

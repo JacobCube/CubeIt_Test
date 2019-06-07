@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.text.Html
+import android.text.method.ScrollingMovementMethod
 import kotlinx.android.synthetic.main.activity_adventure.*
 import android.util.DisplayMetrics
 import android.view.*
@@ -162,7 +163,7 @@ class Adventure : AppCompatActivity() {
         var iconSideQuestsAnim = ValueAnimator()
 
         progressAdventureQuest.setOnClickListener {
-            onClickQuestSideQuest(0,0, this, activeQuest!!.quest, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
+            onClickQuestSideQuest(0,0, this, activeQuest?.quest, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
         }
 
         sideQuestsIcon.setOnClickListener {
@@ -197,6 +198,7 @@ class Adventure : AppCompatActivity() {
 
     fun changeSurface(surfaceIndex:Int, viewPagerAdventure: ViewPager){
         val handler = Handler()
+        cz.cubeit.cubeit.handler.removeCallbacksAndMessages(null)
         handler.postDelayed({viewPagerAdventure.setCurrentItem(surfaceIndex, true) }, 10)
     }
 
@@ -207,11 +209,12 @@ class Adventure : AppCompatActivity() {
         val viewPop:View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false)
         window.elevation = 0.0f
         window.contentView = viewPop
-        val textViewQuest: TextView = viewPop.textViewQuest
+        val textViewQuest: CustomTextView = viewPop.textViewQuest
         val buttonAccept: Button = viewPop.buttonAccept
         val buttonClose: Button = viewPop.buttonClose
         val imageViewAdventure: ImageView = viewPop.imageViewAdventure
-        val textViewStats: TextView = viewPop.textViewItemStats
+        val textViewStats: CustomTextView = viewPop.textViewItemStats
+        textViewQuest.movementMethod = ScrollingMovementMethod()
 
         val quest:Quest = player.currentSurfaces[surface].quests[index]
 
@@ -232,30 +235,26 @@ class Adventure : AppCompatActivity() {
             imageViewAdventure.setImageResource(0)
         }
         textViewStats.visibility = View.GONE
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            textViewQuest.setText(Html.fromHtml(quest.getStats(resourcesAdventure!!),Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-        }
+        textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
 
         imageViewAdventure.setOnClickListener {
             textViewStats.visibility = if(textViewStats.visibility == View.GONE)View.VISIBLE else View.GONE
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                textViewStats.setText(Html.fromHtml(quest.reward.item!!.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-            } else {
-                textViewStats.setText(Html.fromHtml(quest.reward.item!!.getStatsCompare()), TextView.BufferType.SPANNABLE)
-            }
+            textViewStats.setHTMLText(quest.reward.item!!.getStatsCompare())
         }
 
         window.setOnDismissListener {
             window.dismiss()
         }
 
-        buttonAccept.isEnabled = activeQuest == null
+        buttonAccept.isEnabled = false
+
+        if(!loadingActiveQuest){
+            buttonAccept.isEnabled = activeQuest == null
+        }
         window.isOutsideTouchable = false
         window.isFocusable = true
         buttonAccept.setOnClickListener {
-                if(activeQuest == null){
+                if(!loadingActiveQuest && activeQuest == null){
                     player.createActiveQuest(quest).addOnSuccessListener {
 
                         for(i in 0 until player.currentSurfaces[surface].quests.size){
@@ -337,11 +336,12 @@ class Adventure : AppCompatActivity() {
         val window = PopupWindow(context)
         window.elevation = 0.0f
         window.contentView = viewPopQuest
-        val textViewQuest: TextView = viewPopQuest.textViewQuest
+        val textViewQuest: CustomTextView = viewPopQuest.textViewQuest
         val buttonAccept: Button = viewPopQuest.buttonAccept
         val buttonClose: Button = viewPopQuest.buttonClose
         val imageViewAdventure: ImageView = viewPopQuest.imageViewAdventure
-        val textViewStats: TextView = viewPopQuest.textViewItemStats
+        val textViewStats: CustomTextView = viewPopQuest.textViewItemStats
+        textViewQuest.movementMethod = ScrollingMovementMethod()
 
         val quest:Quest = questIn ?: player.currentSurfaces[surface].quests[index]
 
@@ -363,18 +363,11 @@ class Adventure : AppCompatActivity() {
         }
         textViewStats.visibility = View.GONE
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            textViewQuest.setText(Html.fromHtml(quest.getStats(resourcesAdventure!!),Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-        }
+        textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
 
         imageViewAdventure.setOnClickListener {
             textViewStats.visibility = if(textViewStats.visibility == View.GONE)View.VISIBLE else View.GONE
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                textViewStats.setText(Html.fromHtml(quest.reward.item!!.getStatsCompare(), Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-            } else {
-                textViewStats.setText(Html.fromHtml(quest.reward.item!!.getStatsCompare()), TextView.BufferType.SPANNABLE)
-            }
+            textViewStats.setHTMLText(quest.reward.item!!.getStatsCompare())
         }
 
         window.setOnDismissListener {
@@ -383,20 +376,22 @@ class Adventure : AppCompatActivity() {
 
         window.isOutsideTouchable = false
         window.isFocusable = true
+
         buttonAccept.setOnClickListener {
-            if(activeQuest == null){
-                        player.createActiveQuest(quest).addOnCompleteListener {
+            if(!loadingActiveQuest && activeQuest == null){
+                        player.createActiveQuest(quest).addOnSuccessListener {
 
                             for(i in 0 until player.currentSurfaces[surface].quests.size){
                                 player.currentSurfaces[surface].quests[i] = Quest(surface = surface).generate()
                             }
 
 
-                            if(!fromFragment){
+                            (fragmentOverview as Fragment_Adventure_overview).resetAdapter()
+                            /*if(!fromFragment){
                                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commitNow()
                             }else{
-                                (fragmentOverview as Fragment_Adventure_overview).resetAdapter()
-                            }
+
+                            }*/
 
                             if(activeQuest != null){
                                 progressAdventureQuest.visibility = View.VISIBLE

@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_character_0.view.*
 import kotlinx.android.synthetic.main.fragment_story_overview.view.*
 
 class Fragment_Story_Overview : Fragment() {
@@ -20,14 +19,14 @@ class Fragment_Story_Overview : Fragment() {
         opts.inScaled = false
         //view.imageViewCharacter0.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_0, opts))
 
-        view.viewPagerStoryQuests.adapter = ViewPagerStoryQuests(childFragmentManager)
-        view.tabLayoutStoryOverview.setupWithViewPager(view.viewPagerStoryQuests)
+        view.viewPagerStoryOverview.adapter = ViewPagerStoryOverview(childFragmentManager)
+        view.tabLayoutStoryOverview.setupWithViewPager(view.viewPagerStoryOverview)
 
         return view
     }
 }
 
-class ViewPagerStoryQuests internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
+class ViewPagerStoryOverview internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
         return when(position) {

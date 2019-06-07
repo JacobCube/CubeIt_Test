@@ -65,7 +65,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewQuest"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -77,7 +77,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewItemStats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

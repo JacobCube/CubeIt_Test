@@ -66,18 +66,20 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline155"
         app:layout_constraintStart_toStartOf="@+id/guideline85"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/search_icon" />
 
     <EditText
-        android:id="@+id/inputSearchBoard"
+        android:id="@+id/editTextBoardSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:ems="10"
+        android:hint="Search..."
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
+        android:textColorHint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewActionBar"
         app:layout_constraintEnd_toStartOf="@+id/imageViewSearchIconBoard"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
@@ -168,6 +170,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.91" />
+        app:layout_constraintGuide_percent="0.80" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline155"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.90" />
+
+    <ImageView
+        android:id="@+id/imageViewFightBoardFilter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline155"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/filter" />
 
 </android.support.constraint.ConstraintLayout>

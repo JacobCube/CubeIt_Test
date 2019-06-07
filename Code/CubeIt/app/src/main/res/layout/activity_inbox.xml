@@ -43,23 +43,11 @@
         app:layout_constraintGuide_percent="0.25" />
 
     <ImageView
-        android:id="@+id/imageViewActionBarInbox"
+        android:id="@+id/imageViewInboxStartSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:tint="@color/common_google_signin_btn_text_dark_default"
-        android:tintMode="multiply"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@color/loginColor" />
-
-    <ImageView
-        android:id="@+id/imageViewSearchIconInbox"
-        android:layout_width="73dp"
-        android:layout_height="49dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline76"
-        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintEnd_toStartOf="@+id/guideline151"
         app:layout_constraintStart_toStartOf="@+id/guideline106"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/search_icon" />
@@ -73,6 +61,20 @@
         app:layout_constraintStart_toStartOf="@+id/guideline85"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/left_arrow" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxFilter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline151"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/filter" />
 
     <EditText
         android:id="@+id/inputSearchInbox"
@@ -113,7 +115,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.79" />
+        app:layout_constraintGuide_percent="0.70" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline151"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.80" />
 
     <ImageView
         android:id="@+id/imageViewInboxIcon"
@@ -138,13 +147,27 @@
         android:id="@+id/frameLayoutInbox"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="2dp"
         app:layout_constraintBottom_toBottomOf="@+id/listViewInboxMessages"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/listViewInboxMessages"
         app:layout_constraintTop_toTopOf="@+id/listViewInboxMessages">
 
     </FrameLayout>
+
+    <EditText
+        android:id="@+id/editTextInboxSearch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:ems="10"
+        android:hint="Search..."
+        android:inputType="textPersonName"
+        android:textColor="@color/colorSecondary"
+        android:textColorHint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline106"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="@+id/imageViewActivityInbox" />
 
 </android.support.constraint.ConstraintLayout>

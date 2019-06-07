@@ -188,10 +188,12 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCharacterProfile"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/stats_info"
+        android:visibility="gone"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
         app:layout_constraintEnd_toEndOf="@+id/profile_imageViewCharacter"

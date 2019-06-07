@@ -6,12 +6,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
-import android.support.constraint.ConstraintSet
-import android.support.constraint.Constraints
 import android.support.v4.app.Fragment
 import android.util.DisplayMetrics
 import android.view.*
@@ -19,10 +15,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import kotlinx.android.synthetic.main.fragment_menu_bar.view.*
 import kotlin.math.abs
-import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.fragment_menu_bar.*
 import android.view.MotionEvent
-import android.widget.RelativeLayout
 
 
 class Fragment_Menu_Bar : Fragment() {
@@ -138,7 +131,7 @@ class Fragment_Menu_Bar : Fragment() {
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonShop.setOnClickListener {
-                val intent = Intent(view.context, ActivityShop::class.java)
+                val intent = Intent(view.context, Activity_Shop::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
@@ -228,18 +221,18 @@ class Fragment_Menu_Bar : Fragment() {
         var eventType = 0
         var initialTouchY = 0f
         var initialTouchX = 0f
-        val originalY = rootIcon.y
 
         var menuAnimator = ValueAnimator()
         var iconAnimator = ValueAnimator()
         val displayY = dm.heightPixels.toDouble()
         rootMenu.layoutParams.height = (displayY * 0.175).toInt()
-        var originalYMenu = (displayY * 0.825).toFloat()
 
         rootIcon.layoutParams.height = (displayY * 0.18).toInt()
         rootIcon.layoutParams.width = (displayY * 0.18).toInt()
         rootIcon.y = (-rootIcon.height).toFloat()
         rootIcon.alpha = 0f
+        var originalYMenu = rootMenu.y
+        val originalY = rootIcon.y
 
         rootOpenButton.setOnClickListener {
             menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {

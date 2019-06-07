@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.view.ViewPager
 import android.text.Html
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,15 +18,26 @@ import kotlinx.android.synthetic.main.row_adventure_overview.view.*
 
 class Fragment_Adventure_overview : Fragment() {
 
+    lateinit var adapter: BaseAdapter
+
     fun resetAdapter(){
+        activity!!.supportFragmentManager.beginTransaction().detach(this).commit()
+        activity!!.supportFragmentManager.beginTransaction().attach(this).commit()
         activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, this).commitNow()
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        adapter.notifyDataSetChanged()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_sidequests_adventure, container, false)
 
-        view.listViewSideQuestsAdventure.adapter = AdventureQuestsOverview(player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList(),
+        adapter = AdventureQuestsOverview(player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList(),
                 view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure), view.listViewSideQuestsAdventure, this)
+
+        view.listViewSideQuestsAdventure.adapter = adapter
 
         return view
     }
@@ -79,11 +91,7 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
             else -> "Error: Collection out of its bounds! </br> report this to the support, please."
         })
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            viewHolder.textViewDifficulty.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE)
-        } else {
-            viewHolder.textViewDifficulty.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE)
-        }
+        viewHolder.textViewDifficulty.setHTMLText(text)
 
         viewHolder.textViewLength.text = when{
             sideQuestsAdventure[position].secondsLength <= 0 -> "0:00"
@@ -104,7 +112,8 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
         })
 
         rowMain.setOnClickListener {
-            handler.removeCallbacksAndMessages(null)
+            if(!loadingActiveQuest){
+                handler.removeCallbacksAndMessages(null)
                 when(sideQuestsAdventure[position].surface){
                     0 -> Adventure().changeSurface(0, viewPager)
                     1 -> Adventure().changeSurface(1, viewPager)
@@ -113,20 +122,21 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
                     4 -> Adventure().changeSurface(4, viewPager)
                     5 -> Adventure().changeSurface(5, viewPager)
                 }
-            var index = 0
-            for(i in position-1 downTo 0){
-                if(sideQuestsAdventure[i].surface==sideQuestsAdventure[position].surface){
-                    index++
-                }else{
-                    break
+                var index = 0
+                for(i in position-1 downTo 0){
+                    if(sideQuestsAdventure[i].surface==sideQuestsAdventure[position].surface){
+                        index++
+                    }else{
+                        break
+                    }
                 }
+                handler.postDelayed({Adventure().onClickQuestSideQuest(surface = sideQuestsAdventure[position].surface, index = index, context = context, progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview)}, 100)
             }
 
-            Adventure().onClickQuestSideQuest(surface = sideQuestsAdventure[position].surface, index = index, context = context, progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview)
         }
 
         return rowMain
     }
 
-    private class ViewHolder(val imageViewBackground:ImageView, val textViewName:TextView, val textViewDifficulty:TextView, val textViewExperience:TextView, val textViewMoney:TextView, val imageViewAdventureOverview:ImageView, val textViewLength: TextView)
+    private class ViewHolder(val imageViewBackground:ImageView, val textViewName:TextView, val textViewDifficulty: CustomTextView, val textViewExperience:TextView, val textViewMoney:TextView, val imageViewAdventureOverview:ImageView, val textViewLength: TextView)
 }
