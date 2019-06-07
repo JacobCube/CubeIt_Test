@@ -10,6 +10,13 @@
 
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline65"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline166"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,6 +26,7 @@
     <ImageView
         android:id="@+id/imageView1Template1"
         android:layout_width="0dp"
+        android:scaleType="fitXY"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline166"
         app:layout_constraintEnd_toEndOf="parent"
@@ -28,11 +36,14 @@
     <ImageView
         android:id="@+id/imageView0Template1"
         android:layout_width="0dp"
+        android:scaleType="fitXY"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline166"
         app:layout_constraintEnd_toStartOf="@+id/guideline64"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline64"
@@ -51,14 +62,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline166" />
 
-    <Button
+    <ImageView
         android:id="@+id/buttonFragmentStorySkip1"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="skip"
+        android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline65"
+        app:layout_constraintStart_toStartOf="@+id/guideline168"
+        app:srcCompat="@drawable/button_login_click" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline168"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.77" />
 
 </android.support.constraint.ConstraintLayout>

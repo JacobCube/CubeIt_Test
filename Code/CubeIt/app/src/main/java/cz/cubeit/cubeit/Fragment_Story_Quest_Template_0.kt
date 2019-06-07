@@ -43,7 +43,7 @@ class Fragment_Story_Quest_Template_0 : Fragment() {
         val slide: StorySlide = storyQuests.filter { it.ID == arguments!!.getString("questID") }[0].slides[arguments!!.getInt("slideNum")]
 
         if(!this.isAdded)return viewTemplate0
-        if(arguments!!.getInt("slideNum") == 0)viewTemplate0.textView0Template0.animateText(slide.textContent)
+        viewTemplate0.textView0Template0.animateText(slide.textContent)
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false

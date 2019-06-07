@@ -1451,7 +1451,7 @@ open class Player(
         var armor = 0
         var block = 0.0
         var power = 10
-        var energy = 100
+        var energy = 0
         var dmgOverTime = 0
         var lifeSteal = 0
         var adventureSpeed = 0
@@ -1488,7 +1488,7 @@ open class Player(
         this.armor = ((armor * this.charClass.armorRatio).safeDivider(this.level.toDouble() * 2)).toInt()
         this.block = ((block * this.charClass.blockRatio).safeDivider(this.level.toDouble() * 2)).toInt().toDouble()
         this.power = (power * this.charClass.dmgRatio).toInt()
-        this.energy = ((energy * this.charClass.staminaRatio).safeDivider(this.level.toDouble() / 4)).toInt()
+        this.energy = (energy * this.charClass.staminaRatio).toInt()
         this.dmgOverTime = (dmgOverTime * this.charClass.dmgRatio).toInt()
         this.lifeSteal = lifeSteal.safeDivider(this.level * 2)
         this.adventureSpeed = adventureSpeed.safeDivider(this.level / 2)
@@ -1707,9 +1707,9 @@ open class Item(
             2 -> "<font color='green'>Uncommon</font>"
             3 -> "<font color=#ADD8E6>Rare</font>"
             4 -> "<font color=#0000A0>Very rare</font>"
-            5 -> "<font color='blue'>Epic gamer item</font>"
-            6 -> "<font color='orange'>Legendary</font>"
-            7 -> "<font color='cyan'>Heirloom</font>"
+            6 -> "<font color='blue'>Epic gamer item</font>"
+            8 -> "<font color='orange'>Legendary</font>"
+            11 -> "<font color='cyan'>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -1746,9 +1746,9 @@ open class Item(
             2 -> "<font color='green'>Uncommon</font>"
             3 -> "<font color=#ADD8E6>Rare</font>"
             4 -> "<font color=#0000A0>Very rare</font>"
-            5 -> "<font color='blue'>Epic gamer item</font>"
-            6 -> "<font color='orange'>Legendary</font>"
-            7 -> "<font color='cyan'>Heirloom</font>"
+            6 -> "<font color='blue'>Epic gamer item</font>"
+            8 -> "<font color='orange'>Legendary</font>"
+            11 -> "<font color='cyan'>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -2124,10 +2124,10 @@ class StoryQuest(
                 resources.getString(R.string.quest_generic, when (this.difficulty) {
                     0 -> "<font color='lime'>Peaceful</font>"
                     1 -> "<font color='green'>Easy</font>"
-                    2 -> "<font color='yellow'>Medium rare</font>"
-                    3 -> "<font color='orange'>Medium</font>"
+                    2 -> "<font color='#C0B02D'>Medium rare</font>"
+                    3 -> "<font color='#FFA200'>Medium</font>"
                     4 -> "<font color='red'>Well done</font>"
-                    5 -> "<font color='brown'>Hard rare</font>"
+                    5 -> "<font color='#860704'>Hard rare</font>"
                     6 -> "<font color='maroon'>Hard</font>"
                     7 -> "<font color='olive'>Evil</font>"
                     else -> "Error: Collection out of its bounds! </br> report this to the support, please."
@@ -2158,17 +2158,40 @@ class StoryImage(
 }
 
 class marketOffer(
-        val item: Item? = Item(),
-        val owner: String = "MexxFM",
-        val price: Int = 0,
-        val expiryDate: LocalDateTime
+        var item: Item? = Item(),
+        var seller: String = "MexxFM",
+        var buyer: String = "MexxFM",
+        var priceCoins: Int = 0,
+        var priceCubeCoins: Int = 0,
+        var creationTime: FieldValue,
+        var expiryDate: Date
 ) {
-    fun buyOffer() {
+    private var df: Calendar = Calendar.getInstance()
 
+    fun buyOffer() {
         deleteOffer()
     }
-
     fun deleteOffer() {
+
+    }
+    fun initialize(days: Int): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+
+        val docRef = db.collection("users").document(player.username)
+        val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+
+        return docRef.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
+            docRef.collection("ActiveQuest").document("timeStamp").get().addOnSuccessListener {
+                val time = it.getDate("timeStamp", behaviour)!!
+
+                df.time = time
+                df.add(Calendar.DATE, days)
+                expiryDate = df.time
+
+            }
+        }.continueWithTask {
+            db.collection("market").document().set(this)
+        }
     }
 }
 

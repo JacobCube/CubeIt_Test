@@ -95,6 +95,18 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
+        android:id="@+id/profile_stats_compare"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/compare_icon"
+        app:layout_constraintBottom_toTopOf="@+id/guideline170"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline145"
+        app:tint="@color/colorSecondary" />
+
+    <ImageView
         android:id="@+id/imageViewProfileMail"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -110,5 +122,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.18" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline170"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.36" />
 
 </android.support.constraint.ConstraintLayout>

@@ -189,9 +189,10 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             enemy.loadPlayer().addOnSuccessListener {
                 enemy.syncStats()
                 init()
-                /*if(nextInt(0,1) == 1){
 
-                }*/
+                if (enemy.chosenSpellsDefense[0] == null) {
+                    enemy.chosenSpellsDefense[0] = enemy.charClass.spellList[0]
+                }
                 handler.postDelayed({loadingStatus = LoadingStatus.CLOSELOADING}, 50)
             }
         }else{

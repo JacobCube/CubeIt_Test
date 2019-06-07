@@ -91,7 +91,7 @@ class ActivitySettings : AppCompatActivity(){
                 startService(svc)
             }else{
                 stopService(svc)
-                bgMusic.onPause()
+                bgMusic.stopSelf()
             }
             player.music = isChecked
         }

@@ -41,7 +41,7 @@ class Fragment_Story_Quest_Template_1 : Fragment() {
         viewTemplate1 = inflater.inflate(R.layout.fragment_story_quest_template_1, container, false)
         val slide: StorySlide = storyQuests.filter { it.ID == arguments!!.getString("questID") }[0].slides[arguments!!.getInt("slideNum")]
         if(!this.isAdded)return viewTemplate1
-        if(arguments!!.getInt("slideNum") == 0)viewTemplate1.textView0Template1.animateText(slide.textContent)
+        viewTemplate1.textView0Template1.animateText(slide.textContent)
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false

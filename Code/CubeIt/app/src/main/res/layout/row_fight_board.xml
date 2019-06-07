@@ -65,6 +65,18 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.2" />
 
+    <TextView
+        android:id="@+id/textViewBoardLevel"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        android:gravity="center_horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline74"
+        app:layout_constraintStart_toStartOf="@+id/guideline156"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/imageViewBoardRowActive"
         android:layout_width="0dp"

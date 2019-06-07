@@ -50,24 +50,24 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.93" />
 
-    <ImageView
-        android:id="@+id/imageViewMenuUpStory"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline141"
-        app:srcCompat="@drawable/setting3rows" />
-
     <FrameLayout
         android:id="@+id/frameLayoutStoryQuestInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline83"
+        app:layout_constraintEnd_toStartOf="@+id/frameLayoutStoryOverview"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/frameLayoutStoryOverview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline83"
         app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
@@ -83,6 +83,17 @@
 
     </FrameLayout>
 
+    <ImageView
+        android:id="@+id/imageViewMenuUpStory"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline141"
+        app:srcCompat="@drawable/setting3rows" />
+
     <FrameLayout
         android:id="@+id/frameLayoutMenuStory"
         android:layout_width="0dp"
@@ -90,18 +101,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"></FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/frameLayoutStoryOverview"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline83"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </FrameLayout>
 
 
 </android.support.constraint.ConstraintLayout>

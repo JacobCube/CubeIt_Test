@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.text.method.ScrollingMovementMethod
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.animation.Animation
@@ -26,6 +27,7 @@ private var changeFragment = 0
 
 class ActivityFightBoard: AppCompatActivity(){
 
+    lateinit var textViewBoardCompare: CustomTextView
     private var currentPage:Int = 0
     var displayY = 0.0
 
@@ -57,7 +59,9 @@ class ActivityFightBoard: AppCompatActivity(){
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val viewRect = Rect()
+        val viewRectCompare = Rect()
         frameLayoutMenuBoard.getGlobalVisibleRect(viewRect)
+        textViewBoardCompare.getGlobalVisibleRect(viewRectCompare)
 
         if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuBoard.y <= (displayY * 0.83).toFloat()) {
 
@@ -69,6 +73,9 @@ class ActivityFightBoard: AppCompatActivity(){
                 start()
             }
 
+        }
+        if(!viewRectCompare.contains(ev.rawX.toInt(), ev.rawY.toInt())){
+            textViewBoardCompare.visibility = View.GONE
         }
         return super.dispatchTouchEvent(ev)
     }
@@ -83,7 +90,8 @@ class ActivityFightBoard: AppCompatActivity(){
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         imageViewActivityFightBoard.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fightboard_bg, opts))
-
+        textViewBoardCompare = textViewFightBoardCompare
+        textViewFightBoardCompare.movementMethod = ScrollingMovementMethod()
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull")).commit()
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
@@ -310,6 +318,11 @@ class ActivityFightBoard: AppCompatActivity(){
             }
         }
     }
+
+    fun compareStats(){
+        if(textViewFightBoardCompare.visibility != View.VISIBLE)textViewFightBoardCompare.visibility = View.VISIBLE
+        textViewBoardCompare.setHTMLText(player.syncStats())
+    }
 }
 
 class FightBoardPlayerList(private val players:MutableList<Player>, private val page:Int, private val supportFragmentManager: FragmentManager) : BaseAdapter() {
@@ -332,7 +345,7 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         if (convertView == null) {
             val layoutInflater = LayoutInflater.from(viewGroup!!.context)
             rowMain = layoutInflater.inflate(R.layout.row_fight_board, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewFame, rowMain.textViewPosition, rowMain.rowFightBoard, rowMain.imageViewBoardRowActive)
+            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewFame, rowMain.textViewPosition, rowMain.rowFightBoard, rowMain.imageViewBoardRowActive, rowMain.textViewBoardLevel)
             rowMain.tag = viewHolder
 
         } else rowMain = convertView
@@ -342,6 +355,7 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         viewHolder.textViewName.text = players[position].username
         viewHolder.textViewFame.text = players[position].fame.toString()
         viewHolder.imageViewBoardRowActive.visibility = if(players[position].online)View.VISIBLE else View.GONE
+        viewHolder.textViewBoardLevel.text = players[position].level.toString()
 
         viewHolder.rowFightBoard.setOnClickListener {
             if(changeFragment == 1){
@@ -355,5 +369,5 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         return rowMain
     }
 
-    private class ViewHolder(var textViewName:TextView, var textViewFame:TextView, var textViewPosition:TextView, val rowFightBoard:ImageView, val imageViewBoardRowActive:ImageView)
+    private class ViewHolder(var textViewName:TextView, var textViewFame:TextView, var textViewPosition:TextView, val rowFightBoard:ImageView, val imageViewBoardRowActive:ImageView, val textViewBoardLevel: TextView)
 }

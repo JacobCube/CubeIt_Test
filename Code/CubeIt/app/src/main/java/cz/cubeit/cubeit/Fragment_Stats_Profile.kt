@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.text.Html
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,7 +35,10 @@ class Fragment_Stats_Profile : Fragment() {
             player
         }
 
-        view.profile_stats.setHTMLText(playerProfile.syncStats())
+        view.profile_stats.apply {
+            setHTMLText(playerProfile.syncStats())
+            movementMethod = ScrollingMovementMethod()
+        }
 
         view.profile_description.text = playerProfile.description
         view.textViewProfileXp.text = playerProfile.experience.toString() + " / " + (playerProfile.level * 0.75 * (8 * (playerProfile.level*0.8) * (3))).toInt().toString()
@@ -59,6 +63,10 @@ class Fragment_Stats_Profile : Fragment() {
                 intent.putExtra("receiver", playerProfile.username)
                 startActivity(intent)
             }
+        }
+
+        view.profile_stats_compare.setOnClickListener {
+            (activity as ActivityFightBoard).compareStats()
         }
 
         return view

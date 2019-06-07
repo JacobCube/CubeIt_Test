@@ -15,10 +15,10 @@ class Fragment_Character_stats : Fragment() {
 
     lateinit var textViewStats:CustomTextView
 
-    override fun onDetach() {
+    /*override fun onDetach() {
         super.onDetach()
         textViewStats.setHTMLText(player.syncStats())
-    }
+    }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_character_stats, container, false)

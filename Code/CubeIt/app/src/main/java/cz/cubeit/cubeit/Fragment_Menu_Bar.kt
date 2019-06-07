@@ -139,14 +139,14 @@ class Fragment_Menu_Bar : Fragment() {
 
         when(arguments!!.getInt("layoutID")){
             R.id.imageViewActivityShop -> view.buttonShop
-            //R.id.imageViewStoryBg -> view.buttonStory
+            R.id.imageViewStoryBg -> null
             R.id.viewPagerSpells -> view.buttonDefence
             R.id.imageViewActivitySettings -> view.buttonSettings
             R.id.imageViewActivityFightBoard -> view.buttonFight
             R.id.imageViewActivityCharacter -> view.buttonCharacter
             R.id.viewPagerAdventure -> view.buttonAdventure
-            else -> view.buttonCharacter
-        }.apply {
+            else -> null
+        }?.apply {
             isEnabled = false
             isClickable = false
         }

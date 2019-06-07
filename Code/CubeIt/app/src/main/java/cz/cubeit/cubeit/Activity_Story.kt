@@ -71,8 +71,6 @@ class Activity_Story: AppCompatActivity(){
             }
         }
 
-
-
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
@@ -80,6 +78,7 @@ class Activity_Story: AppCompatActivity(){
         displayX = dm.widthPixels.toDouble()
 
         frameLayoutMenuStory.y = displayY.toFloat()
+        frameLayoutStoryOverview.x = (frameLayoutStoryQuest.width - frameLayoutStoryOverview.width).toFloat()
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -146,8 +145,8 @@ class Activity_Story: AppCompatActivity(){
         startStory()
     }
 
-    fun startStory(){
-        if(player.currentStoryQuest != null){
+    fun startStory(): Boolean{
+        return if(player.currentStoryQuest != null){
             ValueAnimator.ofFloat(frameLayoutStoryOverview.x, frameLayoutStoryOverview.x + frameLayoutStoryOverview.width.toFloat()).apply {
                 duration = 1000
                 addUpdateListener {
@@ -156,6 +155,9 @@ class Activity_Story: AppCompatActivity(){
                 start()
             }
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutStoryQuest, Fragment_Story()).commit()
+            true
+        }else{
+            false
         }
     }
     fun onStoryClicked(storyQuest: StoryQuest){

@@ -6,12 +6,12 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.third_fragment_adventure.view.*
+import kotlinx.android.synthetic.main.fragment_adventure_3.view.*
 
 class Fragment_Adventure_Third : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view:View = inflater.inflate(R.layout.third_fragment_adventure, container, false)
+        val view:View = inflater.inflate(R.layout.fragment_adventure_3, container, false)
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         val bitmap = BitmapFactory.decodeResource(resources, R.drawable.map2, opts)

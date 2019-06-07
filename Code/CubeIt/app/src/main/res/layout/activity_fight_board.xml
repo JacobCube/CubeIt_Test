@@ -8,6 +8,12 @@
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline169"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
     <ImageView
         android:id="@+id/imageViewActivityFightBoard"
         android:layout_width="0dp"
@@ -39,7 +45,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewBoardNickname" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline76"
@@ -47,6 +53,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline175"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.18" />
 
     <ImageView
         android:id="@+id/imageViewActionBar"
@@ -110,6 +123,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.4" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline174"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.52" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline81"
@@ -192,5 +212,62 @@
         app:layout_constraintStart_toStartOf="@+id/guideline155"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/filter" />
+
+    <TextView
+        android:id="@+id/textViewFightBoardFame"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="fame"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline155"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <TextView
+        android:id="@+id/textViewBoardNickname"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="nickname"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="@+id/guideline174"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <TextView
+        android:id="@+id/textViewBoardPosition"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="position"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/guideline174"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <TextView
+        android:id="@+id/textViewFightBoardLevel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="lvl"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/guideline155"
+        app:layout_constraintStart_toStartOf="@+id/guideline85"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFightBoardCompare"
+        android:layout_width="0dp"
+        android:gravity="center_horizontal"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:textColor="@color/colorSecondary"
+        android:background="@color/loginColor"
+        app:layout_constraintBottom_toBottomOf="@+id/frameLayoutFightProfile"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="@+id/guideline175" />
 
 </android.support.constraint.ConstraintLayout>

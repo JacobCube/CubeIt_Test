@@ -42,7 +42,7 @@ class Fragment_Story_info : Fragment() {
 
         view.imageViewStoryInfoAccept.setOnClickListener {
             if(!player.storyQuestsCompleted.filter { it.ID == quest.ID }.isNullOrEmpty() && quest.ID == player.storyQuestsCompleted.filter { it.ID == quest.ID }[0].ID){
-                player.currentStoryQuest = player.storyQuestsCompleted.filter { it.ID == quest.ID }[0]
+                player.currentStoryQuest = quest
                 player.storyQuestsCompleted.remove(player.storyQuestsCompleted.filter { it.ID == quest.ID }[0])
             }else{
                 player.currentStoryQuest = quest

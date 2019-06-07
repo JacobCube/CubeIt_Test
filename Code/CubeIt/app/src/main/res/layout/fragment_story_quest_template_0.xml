@@ -20,6 +20,7 @@
         android:id="@+id/imageView1Template0"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toTopOf="@+id/guideline166"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline64"
@@ -28,6 +29,7 @@
     <ImageView
         android:id="@+id/imageView0Template0"
         android:layout_width="0dp"
+        android:scaleType="fitXY"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline166"
         app:layout_constraintEnd_toStartOf="@+id/guideline64"
@@ -41,6 +43,20 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline66"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline167"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.77" />
+
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textView0Template0"
         android:layout_width="0dp"
@@ -51,14 +67,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline166" />
 
-    <Button
+    <ImageView
         android:id="@+id/buttonFragmentStorySkip0"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="skip"
+        android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline66"
+        app:layout_constraintStart_toStartOf="@+id/guideline167"
+        app:srcCompat="@drawable/button_login_click" />
 
 </android.support.constraint.ConstraintLayout>
