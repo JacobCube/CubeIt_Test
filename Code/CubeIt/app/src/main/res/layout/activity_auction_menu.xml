@@ -33,7 +33,7 @@
         android:src="@color/colorSecondary" />
 
     <ImageView
-        android:id="@+id/imageViewMarket"
+        android:id="@+id/imageViewMarketRegister"
         android:layout_width="170dp"
         android:layout_height="51dp"
         android:layout_marginStart="75dp"

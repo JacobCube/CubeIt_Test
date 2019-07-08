@@ -141,7 +141,7 @@
         app:layout_constraintGuide_percent="0.57" />
 
     <TextView
-        android:id="@+id/textViewMoney"
+        android:id="@+id/textViewOverviewRowMoney"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"

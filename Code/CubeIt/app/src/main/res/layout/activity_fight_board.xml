@@ -29,7 +29,7 @@
         android:id="@+id/frameLayoutFightProfile"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/listViewPlayers"
         app:layout_constraintHorizontal_bias="0.5"
@@ -45,7 +45,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toBottomOf="@+id/textViewBoardNickname" />
+        app:layout_constraintTop_toTopOf="@+id/guideline175" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline76"
@@ -124,6 +124,53 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.4" />
 
+    <TextView
+        android:id="@+id/textViewBoardNickname"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_horizontal"
+        android:text="nickname"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline175"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="@+id/guideline174"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <TextView
+        android:id="@+id/textViewBoardPosition"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="position"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline175"
+        app:layout_constraintEnd_toStartOf="@+id/guideline174"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <TextView
+        android:id="@+id/textViewFightBoardFame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_horizontal"
+        android:text="fame"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline175"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline155"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <TextView
+        android:id="@+id/textViewFightBoardLevel"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_horizontal"
+        android:text="lvl"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline175"
+        app:layout_constraintEnd_toStartOf="@+id/guideline155"
+        app:layout_constraintStart_toStartOf="@+id/guideline85"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
     <android.support.constraint.Guideline
         android:id="@+id/guideline174"
         android:layout_width="wrap_content"
@@ -155,15 +202,15 @@
         android:id="@+id/imageViewLoadingBoard"
         android:layout_width="75dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
         android:alpha="0.5"
         android:src="@drawable/icon_app"
         android:tint="@color/colorGrey"
         android:tintMode="multiply"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.515"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+        app:layout_constraintTop_toTopOf="@+id/guideline175" />
 
     <ImageView
         android:id="@+id/changeFragmentProfile"
@@ -212,49 +259,6 @@
         app:layout_constraintStart_toStartOf="@+id/guideline155"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/filter" />
-
-    <TextView
-        android:id="@+id/textViewFightBoardFame"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="fame"
-        android:gravity="center_horizontal"
-        android:textColor="@color/colorSecondary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline155"
-        app:layout_constraintTop_toTopOf="@+id/guideline76" />
-
-    <TextView
-        android:id="@+id/textViewBoardNickname"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="nickname"
-        android:gravity="center_horizontal"
-        android:textColor="@color/colorSecondary"
-        app:layout_constraintEnd_toStartOf="@+id/guideline85"
-        app:layout_constraintStart_toStartOf="@+id/guideline174"
-        app:layout_constraintTop_toTopOf="@+id/guideline76" />
-
-    <TextView
-        android:id="@+id/textViewBoardPosition"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="position"
-        android:textColor="@color/colorSecondary"
-        app:layout_constraintEnd_toStartOf="@+id/guideline174"
-        app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="@+id/guideline76" />
-
-    <TextView
-        android:id="@+id/textViewFightBoardLevel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="lvl"
-        android:gravity="center_horizontal"
-        android:textColor="@color/colorSecondary"
-        app:layout_constraintEnd_toStartOf="@+id/guideline155"
-        app:layout_constraintStart_toStartOf="@+id/guideline85"
-        app:layout_constraintTop_toTopOf="@+id/guideline76" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightBoardCompare"

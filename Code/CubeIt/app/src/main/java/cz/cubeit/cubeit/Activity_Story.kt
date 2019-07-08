@@ -10,6 +10,7 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -101,7 +102,6 @@ class Activity_Story: AppCompatActivity(){
                                 difficulty = 1,
                                 inFragment = "0",
                                 inInstanceID = "0001",
-                                inSlideID = 0,
                                 images = mutableListOf(StoryImage("90000", 0, 0), StoryImage("90001", 0, 0)))
 
                         ,StorySlide(
@@ -109,7 +109,6 @@ class Activity_Story: AppCompatActivity(){
                                 difficulty = 1,
                                 inFragment = "1",
                                 inInstanceID = "0001",
-                                inSlideID = 1,
                                 images = mutableListOf(StoryImage("90002", 0, 0), StoryImage("90003", 0, 0)))
                 )
         ))
@@ -130,7 +129,6 @@ class Activity_Story: AppCompatActivity(){
                                 difficulty = 1,
                                 inFragment = "0",
                                 inInstanceID = "0002",
-                                inSlideID = 0,
                                 images = mutableListOf(StoryImage("90000", 0, 0), StoryImage("90001", 0, 0)))
 
                         ,StorySlide(
@@ -138,11 +136,10 @@ class Activity_Story: AppCompatActivity(){
                                 difficulty = 1,
                                 inFragment = "1",
                                 inInstanceID = "0002",
-                                inSlideID = 1,
                                 images = mutableListOf(StoryImage("90002", 0, 0), StoryImage("90003", 0, 0)))
                 )
         ))
-        startStory()
+        Log.d("startStory", startStory().toString())
     }
 
     fun startStory(): Boolean{

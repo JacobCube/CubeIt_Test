@@ -12,6 +12,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.os.Parcelable
 import android.provider.Settings
 import android.support.v4.app.Fragment
 import android.support.v4.view.ViewPager
@@ -20,7 +21,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.TextView
-import android.widget.Toast
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
@@ -30,7 +30,6 @@ import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
 import java.io.*
 import java.lang.Math.abs
-import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.HashMap
 import java.util.concurrent.TimeUnit
@@ -126,7 +125,7 @@ var drawableStorage = hashMapOf(
 
 )
 
-fun getFragment(fragmentID: String, instanceID: String, slideNum: Int): Fragment {
+fun getStoryFragment(fragmentID: String, instanceID: String, slideNum: Int): Fragment {          //fragmentID - number of fragment, slideNum
     return when (fragmentID) {
         "0" -> Fragment_Story_Quest_Template_0.newInstance(instanceID, slideNum)
         "1" -> Fragment_Story_Quest_Template_1.newInstance(instanceID, slideNum)
@@ -137,12 +136,31 @@ fun getFragment(fragmentID: String, instanceID: String, slideNum: Int): Fragment
 class LoadSpells(
         var ID: String = "0",
         var spells: MutableList<Spell> = mutableListOf()
-) : Serializable
+) : Serializable{
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + spells.hashCode()
+        return result
+    }
+
+}
 
 class LoadItems(
         var ID: String = "0",
         var items: MutableList<Item> = mutableListOf()
-) : Serializable
+) : Serializable{
+
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + items.hashCode()
+        return result
+    }
+
+}
 
 var spellClasses: MutableList<LoadSpells> = mutableListOf()
 
@@ -197,7 +215,11 @@ fun readObject(context: Context, fileName: String): Any {
     val fis = context.openFileInput(fileName)
     return if (file.readText() != "") {
         val ois = ObjectInputStream(fis)
-        ois.readObject()
+        try{
+            ois.readObject()
+        }catch(e1: InvalidClassException){
+            return  0
+        }
     } else {
         0
     }
@@ -238,16 +260,21 @@ fun Double.safeDivider(n2: Double): Double {
 fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
     val db = FirebaseFirestore.getInstance()
 
-    val storyQuestsCheckSum: Int = readFileText(context, "storyCheckSum.data").toInt()
+    /*val storyQuestsCheckSum: Int = readFileText(context, "storyCheckSum.data").toInt()
     val itemClassesCheckSum: Int = readFileText(context, "itemsCheckSum.data").toInt()
     val spellClassesCheckSum: Int = readFileText(context, "spellsCheckSum.data").toInt()
     val charClassesCheckSum: Int = readFileText(context, "charclassesCheckSum.data").toInt()
     val npcsCheckSum: Int = readFileText(context, "npcsCheckSum.data").toInt()
-    val surfacesCheckSum: Int = readFileText(context, "surfacesCheckSum.data").toInt()
+    val surfacesCheckSum: Int = readFileText(context, "surfacesCheckSum.data").toInt()*/
 
+    if (textViewLog != null) {
+        textViewLog!!.text = context.resources.getString(R.string.loading_log, "Items")
+    }
     return db.collection("globalDataChecksum").document("items").get().addOnSuccessListener {
+        itemClasses = if (readObject(context, "items.data") != 0) readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
         val dbChecksum = (it.get("checksum") as Long).toInt()
-        if (dbChecksum != itemClassesCheckSum) {      //is local stored data equal to current state of database?
+
+        if (dbChecksum != itemClasses.hashCode()) {      //is local stored data equal to current state of database?
             db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
                 val loadItemClasses = itItems.toObjects(LoadItems::class.java)
 
@@ -267,11 +294,8 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                         })
                     }
                 }
-                if (textViewLog != null) {
-                    textViewLog!!.text = context.resources.getString(R.string.loading_log, "Items")
-                }
                 writeObject(context, "items.data", itemClasses)            //write updated data to local storage
-                writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
+                //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
             }
         } else {
             try {
@@ -296,25 +320,25 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                             })
                         }
                     }
-                    if (textViewLog != null) {
-                        textViewLog!!.text = context.resources.getString(R.string.loading_log, "Items")
-                    }
                     writeObject(context, "items.data", itemClasses)            //write updated data to local storage
-                    writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
+                    //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
                 }
             }
         }
     }.continueWithTask {
+        if (textViewLog != null) {
+            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Spells")
+        }
+
         db.collection("globalDataChecksum").document("spells").get().addOnSuccessListener {
+            spellClasses = if (readObject(context, "spells.data") != 0) readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
             val dbChecksum = (it.get("checksum") as Long).toInt()
-            if (dbChecksum != spellClassesCheckSum) {      //is local stored data equal to current state of database?
+
+            if (dbChecksum != spellClasses.hashCode()) {      //is local stored data equal to current state of database?
                 db.collection("spells").get().addOnSuccessListener { itSpells ->
                     spellClasses = itSpells.toObjects(LoadSpells::class.java)
-                    if (textViewLog != null) {
-                        textViewLog!!.text = context.resources.getString(R.string.loading_log, "Spells")
-                    }
                     writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
-                    writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
+                    //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
                 }
             } else {
                 try {
@@ -322,26 +346,26 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                 } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
                     db.collection("spells").get().addOnSuccessListener { itSpells ->
                         spellClasses = itSpells.toObjects(LoadSpells::class.java)
-                        if (textViewLog != null) {
-                            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Spells")
-                        }
                         writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
-                        writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
+                        //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
                     }
                 }
             }
         }
     }.continueWithTask {
+        if (textViewLog != null) {
+            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Characters")
+        }
+
         db.collection("globalDataChecksum").document("charclasses").get().addOnSuccessListener {
+            charClasses = if (readObject(context, "charclasses.data") != 0) readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
             val dbChecksum = (it.get("checksum") as Long).toInt()
-            if (dbChecksum != charClassesCheckSum) {      //is local stored data equal to current state of database?
+
+            if (dbChecksum != charClasses.hashCode()) {      //is local stored data equal to current state of database?
                 db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
                     charClasses = itCharclasses.toObjects(CharClass::class.java)
                     writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
-                    if (textViewLog != null) {
-                        textViewLog!!.text = context.resources.getString(R.string.loading_log, "Characters")
-                    }
-                    writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
+                    //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
                 }
             } else {
                 try {
@@ -350,25 +374,25 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                     db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
                         charClasses = itCharclasses.toObjects(CharClass::class.java)
                         writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
-                        if (textViewLog != null) {
-                            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Characters")
-                        }
-                        writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
+                        //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
                     }
                 }
             }
         }
     }.continueWithTask {
+        if (textViewLog != null) {
+            textViewLog!!.text = context.resources.getString(R.string.loading_log, "NPCs")
+        }
+
         db.collection("globalDataChecksum").document("npcs").get().addOnSuccessListener {
+            npcs = if (readObject(context, "npcs.data") != 0) readObject(context, "npcs.data") as MutableList<NPC> else mutableListOf()
             val dbChecksum = (it.get("checksum") as Long).toInt()
-            if (dbChecksum != npcsCheckSum) {      //is local stored data equal to current state of database?
+
+            if (dbChecksum != npcs.hashCode()) {      //is local stored data equal to current state of database?
                 db.collection("npcs").get().addOnSuccessListener { itNpcs ->
                     npcs = itNpcs.toObjects(NPC::class.java)
                     writeObject(context, "npcs.data", npcs)            //write updated data to local storage
-                    writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
-                    if (textViewLog != null) {
-                        textViewLog!!.text = context.resources.getString(R.string.loading_log, "NPCs")
-                    }
+                    //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
                 }
             } else {
                 try {
@@ -377,25 +401,25 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                     db.collection("npcs").get().addOnSuccessListener { itNpcs ->
                         npcs = itNpcs.toObjects(NPC::class.java)
                         writeObject(context, "npcs.data", npcs)            //write updated data to local storage
-                        writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
-                        if (textViewLog != null) {
-                            textViewLog!!.text = context.resources.getString(R.string.loading_log, "NPCs")
-                        }
+                        //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
                     }
                 }
             }
         }
     }.continueWithTask {
+        if (textViewLog != null) {
+            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Adventure quests")
+        }
+
         db.collection("globalDataChecksum").document("surfaces").get().addOnSuccessListener {
+            surfaces = if (readObject(context, "surfaces.data") != 0) readObject(context, "surfaces.data") as List<Surface> else listOf()
             val dbChecksum = (it.get("checksum") as Long).toInt()
-            if (dbChecksum != surfacesCheckSum) {      //is local stored data equal to current state of database?
+
+            if (dbChecksum != surfaces.hashCode()) {      //is local stored data equal to current state of database?
                 db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
                     surfaces = itSurfaces.toObjects(Surface::class.java)
                     writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
-                    writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
-                    if (textViewLog != null) {
-                        textViewLog!!.text = context.resources.getString(R.string.loading_log, "Adventure quests")
-                    }
+                    //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
                 }
             } else {
                 try {
@@ -404,26 +428,25 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                     db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
                         surfaces = itSurfaces.toObjects(Surface::class.java)
                         writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
-                        writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
-                        if (textViewLog != null) {
-                            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Adventure quests")
-                        }
+                        //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
                     }
                 }
             }
         }
     }.continueWithTask {
+        if (textViewLog != null) {
+            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Stories")
+        }
+
         db.collection("globalDataChecksum").document("story").get().addOnSuccessListener {
+            storyQuests = if (readObject(context, "story.data") != 0) readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
             val dbChecksum = (it.get("checksum") as Long).toInt()
-            if (dbChecksum != storyQuestsCheckSum) {      //is local stored data equal to current state of database?
+
+            if (dbChecksum != storyQuests.hashCode()) {      //is local stored data equal to current state of database?
                 db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
                     storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
-
-                    if (textViewLog != null) {
-                        textViewLog!!.text = context.resources.getString(R.string.loading_log, "Stories")
-                    }
                     writeObject(context, "story.data", storyQuests)         //write updated data to local storage
-                    writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
+                    //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
                 }
             } else {
                 try {
@@ -431,12 +454,8 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                 } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
                     db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
                         storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
-
-                        if (textViewLog != null) {
-                            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Stories")
-                        }
                         writeObject(context, "story.data", storyQuests)         //write updated data to local storage
-                        writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
+                        //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
                     }
                 }
             }
@@ -562,9 +581,9 @@ fun uploadGlobalData() {
     val surfacesRef = db.collection("surfaces")
 
     /*for(i in 0 until storyQuests.size){                                     //stories
-        storyRef.document(storyQuests[i].ID)
+        storyRef.document(storyQuests[i].id)
                 .set(hashMapOf<String, Any?>(
-                        "ID" to storyQuests[i].ID,
+                        "id" to storyQuests[i].id,
                         "name" to storyQuests[i].name,
                         "description" to storyQuests[i].description,
                         "chapter" to storyQuests[i].chapter,
@@ -583,7 +602,7 @@ fun uploadGlobalData() {
     for (i in 0 until charClasses.size) {                                     //charclasses
         charClassRef.document(charClasses[i].ID.toString())
                 .set(hashMapOf<String, Any?>(
-                        "ID" to charClasses[i].ID,
+                        "id" to charClasses[i].ID,
                         "dmgRatio" to charClasses[i].dmgRatio,
                         "hpRatio" to charClasses[i].hpRatio,
                         "staminaRatio" to charClasses[i].staminaRatio,
@@ -605,9 +624,9 @@ fun uploadGlobalData() {
                 }
     }
     /*for(i in 0 until spellClasses.size){                                     //spells
-        spellsRef.document(spellClasses[i].ID)
+        spellsRef.document(spellClasses[i].id)
                 .set(hashMapOf<String, Any?>(
-                        "ID" to spellClasses[i].ID,
+                        "id" to spellClasses[i].id,
                         "spells" to spellClasses[i].spells
                 )).addOnSuccessListener {
                     Log.d("COMPLETED spellclasses", "$i")
@@ -618,7 +637,7 @@ fun uploadGlobalData() {
     for (i in 0 until itemClasses.size) {                                     //items
         itemsRef.document(itemClasses[i].ID)
                 .set(hashMapOf<String, Any?>(
-                        "ID" to itemClasses[i].ID,
+                        "id" to itemClasses[i].ID,
                         "items" to itemClasses[i].items
                 )).addOnSuccessListener {
                     Log.d("COMPLETED itemclasses", "$i")
@@ -627,9 +646,9 @@ fun uploadGlobalData() {
                 }
     }
     /*for(i in 0 until npcs.size){                                     //npcs
-        npcsRef.document(npcs[i].ID)
+        npcsRef.document(npcs[i].id)
                 .set(hashMapOf<String, Any?>(
-                        "ID" to npcs[i].ID,
+                        "id" to npcs[i].id,
                         "inDrawable" to npcs[i].inDrawable,
                         "name" to npcs[i].name,
                         "difficulty" to npcs[i].difficulty,
@@ -870,7 +889,6 @@ data class LoadPlayer(
     var storyQuestsCompleted: MutableList<StoryQuest> = mutableListOf()
     var currentStoryQuest: StoryQuest? = null
 
-    var db = FirebaseFirestore.getInstance() // Loads FireBase functions
 
     fun toPlayer(): Player {                                 //HAS TO BE LOADED AFTER LOADING ALL THE GLOBAL DATA (AS CHARCLASSES ETC.) !!
 
@@ -897,6 +915,8 @@ data class LoadPlayer(
         tempPlayer.fame = this.fame
         tempPlayer.newPlayer = this.newPlayer
         tempPlayer.description = this.description
+        tempPlayer.storyQuestsCompleted = this.storyQuestsCompleted
+        tempPlayer.currentStoryQuest = this.currentStoryQuest
         tempPlayer.storyQuestsCompleted = this.storyQuestsCompleted
         tempPlayer.currentStoryQuest = this.currentStoryQuest
 
@@ -958,6 +978,7 @@ data class LoadPlayer(
     }
 
     fun uploadSingleItem(item: String): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
         val userStringHelper: HashMap<String, Any?> = hashMapOf(
                 "username" to this.username,
                 "look" to this.look,
@@ -1000,6 +1021,7 @@ data class LoadPlayer(
     }
 
     fun uploadPlayer(): Task<Void> { // uploads player to Firebase (will need to use userSession)
+        val db = FirebaseFirestore.getInstance()
 
         val userString = HashMap<String, Any?>()
 
@@ -1066,15 +1088,20 @@ data class LoadPlayer(
         userString["online"] = this.online
         userString["newPlayer"] = this.newPlayer
         userString["description"] = this.description
-        userString["lastLogin"] = FieldValue.serverTimestamp()
         userString["storyQuestsCompleted"] = this.storyQuestsCompleted
         userString["currentStoryQuest"] = this.currentStoryQuest
+
+
+
+
+        userString["lastLogin"] = FieldValue.serverTimestamp()
 
         return db.collection("users").document(this.username)
                 .update(userString)
     }
 
     fun createPlayer(inUserId: String, username: String): Task<Task<Void>> { // Call only once per player!!! Creates user document in Firebase
+        val db = FirebaseFirestore.getInstance()
 
         val userString = HashMap<String, Any?>()
 
@@ -1124,7 +1151,7 @@ open class Player(
         var level: Int = 1
 ) {
     val charClass: CharClass
-        get() = charClasses[charClassIndex]
+        @Exclude get() = charClasses[charClassIndex]
     var look: Array<Int> = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     var inventory: MutableList<Item?> = arrayOfNulls<Item?>(8).toMutableList()
     var equip: Array<Item?> = arrayOfNulls(10)
@@ -1133,6 +1160,7 @@ open class Player(
     var chosenSpellsDefense: MutableList<Spell?> = mutableListOf(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
     var chosenSpellsAttack: Array<Spell?> = arrayOfNulls(6)
     var money: Int = 100
+    var cubeCoins: Int = 0
     var shopOffer: Array<Item?> = arrayOf(Item(), Item(), Item(), Item(), Item(), Item(), Item(), Item())
     var notifications: Boolean = true
     var music: Boolean = true
@@ -1148,7 +1176,7 @@ open class Player(
     var health: Double = 175.0
     var energy: Int = 100
     var adventureSpeed: Int = 0
-        set(value) {
+        @Exclude set(value) {
             field = value
             for (surface in this.currentSurfaces) {       //if adventure speed changes, refresh every quest timer
                 for (quest in surface.quests) {
@@ -1160,8 +1188,7 @@ open class Player(
     var fame: Int = 0
     var newPlayer: Boolean = true
     var online: Boolean = true
-    lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
-    var db = FirebaseFirestore.getInstance() // Loads Firebase functions
+    @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
     var drawableExt: Int = 0
     var storyQuestsCompleted: MutableList<StoryQuest> = mutableListOf()
     var currentStoryQuest: StoryQuest? = null
@@ -1231,6 +1258,7 @@ open class Player(
     }
 
     fun checkForQuest(): Task<DocumentSnapshot> {
+        val db = FirebaseFirestore.getInstance()
         loadingActiveQuest = true
 
         val docRef = db.collection("users").document(this.username).collection("ActiveQuest")
@@ -1279,9 +1307,10 @@ open class Player(
 
 
     fun loadInbox(): Task<QuerySnapshot> {
+        val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox").orderBy("sentTime", Query.Direction.DESCENDING)
 
-        inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory(name = "Spam"))
+        inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory("Market"),InboxCategory(name = "Spam"))
 
         return docRef.get().addOnSuccessListener {
             inbox = it.toObjects(InboxMessage::class.java)
@@ -1292,20 +1321,23 @@ open class Player(
                     MessageStatus.Read -> inboxCategories[1].messages
                     MessageStatus.Sent -> inboxCategories[2].messages
                     MessageStatus.Fight -> inboxCategories[3].messages
-                    MessageStatus.Spam -> inboxCategories[4].messages
-                    else -> inboxCategories[4].messages
+                    MessageStatus.Market -> inboxCategories[4].messages
+                    MessageStatus.Spam -> inboxCategories[5].messages
+                    else -> inboxCategories[5].messages
                 }.add(message)
             }
         }
     }
 
     fun uploadMessage(message: InboxMessage): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox")
 
         return docRef.document(message.ID.toString()).set(message)
     }
 
     fun createInbox(): Task<Task<Void>> {
+        val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox")
 
         inbox = mutableListOf(InboxMessage(ID = 1, priority = 2, sender = "Admin team", receiver = this.username, content = "Welcome, \n we're are really glad you chose us to entertain you!\n If you have any questions or you're interested in the upcoming updates and news going on follow us on social media as @cubeit_app or shown in the loading screen\n Most importantly have fun.\nYour CubeIt team"))
@@ -1316,14 +1348,14 @@ open class Player(
     }
 
     fun writeInbox(receiver: String, message: InboxMessage = InboxMessage(sender = this.username, receiver = "MexxFM")): Task<Task<Void>> {
+        val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(receiver).collection("Inbox")
 
         var temp: MutableList<InboxMessage>
-        return docRef.get().addOnSuccessListener { querySnapshot ->
-            temp = querySnapshot.toObjects(InboxMessage::class.java)
-            temp.sortWith(compareBy { it.ID })
+        return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            temp = it.toObjects(InboxMessage::class.java)
             message.ID = if (!temp.isNullOrEmpty()) {
-                temp.last().ID + 1
+                temp[0].ID + 1
             } else 1
         }.continueWithTask {
             message.initialize()
@@ -1333,23 +1365,32 @@ open class Player(
     }
 
     fun removeInbox(messageID: Int = 0): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox")
 
         return docRef.document(messageID.toString()).delete().addOnSuccessListener {
         }
     }
 
-    /*fun fameGained(ammount: Int){                       //temporary solution
-        val docRef = db.collection("users").document(this.username).collection("Fight").document("fame")
+    @Exclude fun fileOffer(marketOffer: MarketOffer): Task<Task<Void>> {
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("market")
 
-        docRef.get().addOnSuccessListener {
-            this.fame = it.get("fame") as Int
+        var temp: MutableList<MarketOffer>
+        return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            temp = it.toObjects(MarketOffer::class.java)
+            marketOffer.id = if (!temp.isNullOrEmpty()) {
+                temp[0].id + 1
+            } else 1
         }.continueWithTask {
-            docRef.set().
+            marketOffer.initialize().addOnCompleteListener {  }
+        }.continueWith {
+            docRef.document(marketOffer.id.toString()).set(marketOffer)
         }
-    }*/
+    }
 
     fun loadPlayer(): Task<QuerySnapshot> { // loads the player from Firebase
+        val db = FirebaseFirestore.getInstance()
 
         val playerRef = db.collection("users").document(this.username)
 
@@ -1359,8 +1400,9 @@ open class Player(
 
             if (loadedPlayer != null) {
 
-                this.inventorySlots = loadedPlayer.inventorySlots
+                this.username = loadedPlayer.username
                 this.level = loadedPlayer.level
+                this.charClassIndex = loadedPlayer.charClass
                 this.power = loadedPlayer.power
                 this.armor = loadedPlayer.armor
                 this.block = loadedPlayer.block
@@ -1369,15 +1411,20 @@ open class Player(
                 this.health = loadedPlayer.health
                 this.energy = loadedPlayer.energy
                 this.adventureSpeed = loadedPlayer.adventureSpeed
+                this.inventorySlots = loadedPlayer.inventorySlots
                 this.money = loadedPlayer.money
                 this.notifications = loadedPlayer.notifications
                 this.music = loadedPlayer.music
                 this.appearOnTop = loadedPlayer.appearOnTop
+                this.online = loadedPlayer.online
                 this.experience = loadedPlayer.experience
                 this.fame = loadedPlayer.fame
                 this.newPlayer = loadedPlayer.newPlayer
                 this.description = loadedPlayer.description
-                this.charClassIndex = loadedPlayer.charClass
+                this.storyQuestsCompleted = loadedPlayer.storyQuestsCompleted
+                this.currentStoryQuest = loadedPlayer.currentStoryQuest
+                this.storyQuestsCompleted = loadedPlayer.storyQuestsCompleted
+                this.currentStoryQuest = loadedPlayer.currentStoryQuest
 
 
                 for (i in 0 until loadedPlayer.chosenSpellsAttack.size) {
@@ -1446,7 +1493,7 @@ open class Player(
         }
     }
 
-    fun syncStats(): String {
+    @Exclude fun syncStats(): String {
         var health = 175.0
         var armor = 0
         var block = 0.0
@@ -1561,14 +1608,14 @@ open class Player(
 class ActiveQuest(
         var quest: Quest = Quest().generate()
 ) {
-    private val db = FirebaseFirestore.getInstance()
-    private var df: Calendar = Calendar.getInstance()
+    @Exclude private var df: Calendar = Calendar.getInstance()
     lateinit var startTime: Date
     lateinit var endTime: Date
     var secondsLeft: Int = 0
     var completed: Boolean = false
 
-    fun initialize(): Task<Void> {
+    @Exclude fun initialize(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(player.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
@@ -1587,6 +1634,7 @@ class ActiveQuest(
     }
 
     fun delete(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
         activeQuest = null
         return db.collection("users").document(player.username).collection("ActiveQuest").document("quest").delete()
     }
@@ -1596,7 +1644,18 @@ class DamageOverTime(
         var rounds: Int = 0,
         var dmg: Double = 0.0,
         var type: Int = 0
-) : Serializable
+) : Serializable {
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = rounds
+        result = 31 * result + dmg.hashCode()
+        result = 31 * result + type
+        return result
+    }
+}
 
 class Spell(
         var inDrawable: String = "00001",
@@ -1614,14 +1673,35 @@ class Spell(
         var animation: Int = 0
 ) : Serializable {
     val drawable: Int
-        get() = drawableStorage[inDrawable]!!
+        @Exclude get() = drawableStorage[inDrawable]!!
 
-    fun getStats(): String {
+    @Exclude fun getStats(): String {
         var text = "\n${this.name}\nlevel: ${this.level}\n ${this.description}\nstamina: ${this.energy}\npower: ${(this.power * player.power.toDouble() / 4).toInt()}"
         if (this.stun != 0) text += "\nstun: +${this.stun}%"
         if (this.block != 1.0) text += "\nblocks ${this.block * 100}%"
         if (this.dmgOverTime.rounds != 0) text += "\ndamage over time: (\nrounds: ${this.dmgOverTime.rounds}\ndamage: ${(this.dmgOverTime.dmg * player.power / 4).toInt()})"
         return text
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = inDrawable.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + energy
+        result = 31 * result + power
+        result = 31 * result + stun
+        result = 31 * result + dmgOverTime.hashCode()
+        result = 31 * result + level
+        result = 31 * result + description.hashCode()
+        result = 31 * result + lifeSteal
+        result = 31 * result + ID.hashCode()
+        result = 31 * result + block.hashCode()
+        result = 31 * result + grade
+        result = 31 * result + animation
+        return result
     }
 }
 
@@ -1644,15 +1724,38 @@ class CharClass(
 
 ) : Serializable {
     val drawable
-        get() = drawableStorage[inDrawable]!!
+        @Exclude get() = drawableStorage[inDrawable]!!
     val itemList
-        get() = itemClasses[itemListIndex].items
+        @Exclude get() = itemClasses[itemListIndex].items
     val spellList
-        get() = spellClasses[spellListIndex].spells
+        @Exclude get() = spellClasses[spellListIndex].spells
     val itemListUniversal
-        get() = itemClasses[itemlistUniversalIndex].items
+        @Exclude get() = itemClasses[itemlistUniversalIndex].items
     val spellListUniversal
-        get() = spellClasses[spellListUniversalIndex].spells
+        @Exclude get() = spellClasses[spellListUniversalIndex].spells
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = ID
+        result = 31 * result + dmgRatio.hashCode()
+        result = 31 * result + hpRatio.hashCode()
+        result = 31 * result + staminaRatio.hashCode()
+        result = 31 * result + blockRatio.hashCode()
+        result = 31 * result + armorRatio.hashCode()
+        result = 31 * result + lifeSteal.hashCode()
+        result = 31 * result + inDrawable.hashCode()
+        result = 31 * result + itemListIndex
+        result = 31 * result + spellListIndex
+        result = 31 * result + name.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + description2.hashCode()
+        result = 31 * result + itemlistUniversalIndex
+        result = 31 * result + spellListUniversalIndex
+        return result
+    }
 }
 
 open class Item(
@@ -1675,7 +1778,8 @@ open class Item(
         inAdventureSpeed: Int = 0,
         inInventorySlots: Int = 0,
         inSlot: Int = 0,
-        inPrice: Int = 0
+        inPrice: Int = 0,
+        inPriceCubeCoins: Int = 0
 ) : Serializable {
     open var ID: String = inID
     open var name: String = inName
@@ -1697,19 +1801,20 @@ open class Item(
     open var inventorySlots: Int = inInventorySlots
     open var slot: Int = inSlot
     open var price: Int = inPrice
+    open var priceCubeCoins: Int = inPriceCubeCoins
     val drawable: Int
-        get() = drawableStorage[drawableIn]!!
+        @Exclude get() = drawableStorage[drawableIn]!!
 
-    fun getStats(): String {
-        var textView = "${this.name}    ${this.price}<br/>${when (this.quality) {
-            0 -> "<font color='grey'>Poor</font>"
-            1 -> "<font color='olive'>Common</font>"
-            2 -> "<font color='green'>Uncommon</font>"
-            3 -> "<font color=#ADD8E6>Rare</font>"
-            4 -> "<font color=#0000A0>Very rare</font>"
-            6 -> "<font color='blue'>Epic gamer item</font>"
-            8 -> "<font color='orange'>Legendary</font>"
-            11 -> "<font color='cyan'>Heirloom</font>"
+    @Exclude fun getStats(): String {
+        var textView = "${this.name}<br/>price: ${this.price}<br/>${when (this.quality) {
+            0 -> "<font color=#535353>Poor</font>"
+            1 -> "<font color=#FFFFFF>Common</font>"
+            2 -> "<font color=#8DD837>Uncommon</font>"
+            3 -> "<font color=#5DBDE9>Rare</font>"
+            4 -> "<font color=#058DCA>Very rare</font>"
+            6 -> "<font color=#9136A2>Epic gamer item</font>"
+            8 -> "<font color=#FF9800>Legendary</font>"
+            11 -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -1739,16 +1844,16 @@ open class Item(
         return textView
     }
 
-    fun getStatsCompare(): String {
-        var textView = "${this.name}    ${this.price}<br/>${when (this.quality) {
-            0 -> "<font color='grey'>Poor</font>"
-            1 -> "<font color='olive'>Common</font>"
-            2 -> "<font color='green'>Uncommon</font>"
-            3 -> "<font color=#ADD8E6>Rare</font>"
-            4 -> "<font color=#0000A0>Very rare</font>"
-            6 -> "<font color='blue'>Epic gamer item</font>"
-            8 -> "<font color='orange'>Legendary</font>"
-            11 -> "<font color='cyan'>Heirloom</font>"
+    @Exclude fun getStatsCompare(): String {
+        var textView = "${this.name}<br/>price: ${this.price}<br/>${when (this.quality) {
+            0 -> "<font color=#535353>Poor</font>"
+            1 -> "<font color=#FFFFFF>Common</font>"
+            2 -> "<font color=#8DD837>Uncommon</font>"
+            3 -> "<font color=#5DBDE9>Rare</font>"
+            4 -> "<font color=#058DCA>Very rare</font>"
+            6 -> "<font color=#9136A2>Epic gamer item</font>"
+            8 -> "<font color=#FF9800>Legendary</font>"
+            11 -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -1824,19 +1929,62 @@ open class Item(
         return textView
     }
 
-    fun toWearable(): Wearable {
-        return Wearable(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
-                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price)
+    fun getBackground(): Int{
+        return when(this.quality){
+            0 -> R.drawable.emptyslot_poor
+            1 -> R.drawable.emptyslot_common
+            2 -> R.drawable.emptyslot_uncommon
+            3 -> R.drawable.emptyslot_rare
+            4 -> R.drawable.emptyslot_very_rare
+            6 -> R.drawable.emptyslot_epic_gamer_item
+            8 -> R.drawable.emptyslot_legendary
+            11 -> R.drawable.emptyslot_heirloom
+            else -> R.drawable.emptyslot
+        }
     }
 
-    fun toRune(): Runes {
+    @Exclude fun toWearable(): Wearable {
+        return Wearable(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
+                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price, priceCubeCoins = this.priceCubeCoins)
+    }
+
+    @Exclude fun toRune(): Runes {
         return Runes(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
-                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price)
+                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price, priceCubeCoins = this.priceCubeCoins)
     }
 
     fun toWeapon(): Weapon {
         return Weapon(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
-                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price)
+                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price, priceCubeCoins = this.priceCubeCoins)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + drawableIn.hashCode()
+        result = 31 * result + levelRq
+        result = 31 * result + quality
+        result = 31 * result + charClass
+        result = 31 * result + description.hashCode()
+        result = 31 * result + grade
+        result = 31 * result + power
+        result = 31 * result + armor
+        result = 31 * result + block
+        result = 31 * result + dmgOverTime
+        result = 31 * result + lifeSteal
+        result = 31 * result + health
+        result = 31 * result + energy
+        result = 31 * result + adventureSpeed
+        result = 31 * result + inventorySlots
+        result = 31 * result + slot
+        result = 31 * result + price
+        result = 31 * result + priceCubeCoins
+        return result
     }
 }
 
@@ -1899,7 +2047,7 @@ fun generateItem(playerG: Player, inQuality: Int? = null): Item? {
     }
 
     if (itemTemp.levelRq < 1) itemTemp.levelRq = 1
-    var points = nextInt(itemTemp.levelRq * 10 * (itemTemp.quality + 1), itemTemp.levelRq * 20 * (itemTemp.quality + 1))
+    var points = nextInt(itemTemp.levelRq * (itemTemp.quality + 1), itemTemp.levelRq * 2 * (itemTemp.quality + 1))
     var pointsTemp: Int
     itemTemp.price = points
     val numberOfStats = nextInt(1, 9)
@@ -1977,7 +2125,7 @@ data class Reward(
             }
         }
 
-    fun generate(inPlayer: Player = player): Reward {
+    @Exclude fun generate(inPlayer: Player = player): Reward {
         if (this.type == null) {
             this.type = when (nextInt(0, 10001)) {                   //quality of an item by percentage
                 in 0 until 3903 -> 0        //39,03%
@@ -2020,16 +2168,29 @@ data class Reward(
         return this
     }
 
-    fun receive() {
+    @Exclude fun receive() {
         player.money += this.coins
-        if (player.inventory.indexOf(null) == -1) player.money += this.item!!.price / 2 else player.inventory[player.inventory.indexOf(null)] = this.item
+        player.inventory[player.inventory.indexOf(null)] = this.item
         player.experience += this.experience
 
         player.syncStats()
     }
 
-    fun getStats(): String {
+    @Exclude fun getStats(): String {
         return "experience  ${this.experience}\nCubeIt coins  ${this.coins}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = inType ?: 0
+        result = 31 * result + experience
+        result = 31 * result + coins
+        result = 31 * result + cubeCoins
+        result = 31 * result + (type ?: 0)
+        return result
     }
 }
 
@@ -2053,8 +2214,9 @@ data class Wearable(
         override var adventureSpeed: Int = 0,
         override var inventorySlots: Int = 0,
         override var slot: Int = 0,
-        override var price: Int = 0
-) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
+        override var price: Int = 0,
+        override var priceCubeCoins: Int = 0
+) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
 
 data class Runes(
         override var ID: String = "",
@@ -2076,8 +2238,9 @@ data class Runes(
         override var adventureSpeed: Int = 0,
         override var inventorySlots: Int = 0,
         override var slot: Int = 0,
-        override var price: Int = 0
-) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
+        override var price: Int = 0,
+        override var priceCubeCoins: Int = 0
+) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
 
 data class Weapon(
         override var ID: String = "",
@@ -2099,8 +2262,9 @@ data class Weapon(
         override var adventureSpeed: Int = 0,
         override var inventorySlots: Int = 0,
         override var slot: Int = 0,
-        override var price: Int = 0
-) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price)
+        override var price: Int = 0,
+        override var priceCubeCoins: Int = 0
+) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
 
 class StoryQuest(
         var ID: String = "0001",
@@ -2119,7 +2283,7 @@ class StoryQuest(
     var reward = Reward(difficulty).generate()
     var locked: Boolean = false
 
-    fun getStats(resources: Resources): String {
+    @Exclude fun getStats(resources: Resources): String {
         return "${resources.getString(R.string.quest_title, this.name)}<br/>difficulty: " +
                 resources.getString(R.string.quest_generic, when (this.difficulty) {
                     0 -> "<font color='lime'>Peaceful</font>"
@@ -2130,21 +2294,77 @@ class StoryQuest(
                     5 -> "<font color='#860704'>Hard rare</font>"
                     6 -> "<font color='maroon'>Hard</font>"
                     7 -> "<font color='olive'>Evil</font>"
-                    else -> "Error: Collection out of its bounds! </br> report this to the support, please."
+                    else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
                 }) + " (" +
                 "<br/>experience: ${resources.getString(R.string.quest_number, reward.experience)}<br/>coins: ${resources.getString(R.string.quest_number, this.reward.coins)}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as StoryQuest
+
+        if (ID != other.ID) return false
+        if (name != other.name) return false
+        if (description != other.description) return false
+        if (shortDescription != other.shortDescription) return false
+        if (difficulty != other.difficulty) return false
+        if (chapter != other.chapter) return false
+        if (completed != other.completed) return false
+        if (progress != other.progress) return false
+        if (slides != other.slides) return false
+        if (reqLevel != other.reqLevel) return false
+        if (skipToSlide != other.skipToSlide) return false
+        if (mainEnemy != other.mainEnemy) return false
+        if (reward != other.reward) return false
+        if (locked != other.locked) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + shortDescription.hashCode()
+        result = 31 * result + difficulty
+        result = 31 * result + chapter
+        result = 31 * result + completed.hashCode()
+        result = 31 * result + progress
+        result = 31 * result + slides.hashCode()
+        result = 31 * result + reqLevel
+        result = 31 * result + skipToSlide
+        result = 31 * result + mainEnemy.hashCode()
+        result = 31 * result + reward.hashCode()
+        result = 31 * result + locked.hashCode()
+        return result
     }
 }
 
 class StorySlide(
         var inFragment: String = "0",
         var inInstanceID: String = "0",
-        var inSlideID: Int = 0,
         var textContent: String = "",
         var images: MutableList<StoryImage> = mutableListOf(),
         var difficulty: Int = 0
 ) : Serializable {
     var enemy: NPC? = NPC(difficulty = difficulty)
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = inFragment.hashCode()
+        result = 31 * result + inInstanceID.hashCode()
+        result = 31 * result + textContent.hashCode()
+        result = 31 * result + images.hashCode()
+        result = 31 * result + difficulty
+        result = 31 * result + (enemy?.hashCode() ?: 0)
+        return result
+    }
+
 }
 
 class StoryImage(
@@ -2154,28 +2374,59 @@ class StoryImage(
 
 ) : Serializable {
     val drawable: Int
-        get() = drawableStorage[imageID]!!
+        @Exclude get() = drawableStorage[imageID]!!
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = imageID.hashCode()
+        result = 31 * result + animIn
+        result = 31 * result + animOut
+        return result
+    }
+
 }
 
-class marketOffer(
-        var item: Item? = Item(),
+class MarketOffer(
+        var item: Item? = null,
         var seller: String = "MexxFM",
-        var buyer: String = "MexxFM",
-        var priceCoins: Int = 0,
-        var priceCubeCoins: Int = 0,
-        var creationTime: FieldValue,
-        var expiryDate: Date
+        var buyer: String? = null
 ) {
-    private var df: Calendar = Calendar.getInstance()
+    var priceCoins: Int = 0
+    var priceCubeCoins: Int = 0
+    var closeAfterExpiry: Boolean = true
+    var expiryDate: Date = Calendar.getInstance().time
+    var afterExpiryDate: Date = Calendar.getInstance().time
+    var afterExpiryCoins: Int = 0
+    var afterExpiryCubeCoins: Int = 0
+    var id: Int = 0
+        set(value){
+            this.item =  when (this.item?.type) {
+                "Wearable" -> this.item!!.toWearable()
+                "Weapon" -> this.item!!.toWeapon()
+                "Runes" -> this.item!!.toRune()
+                "Item" -> this.item
+                else -> null
+            }
+            field = value
+        }
+    var creationTime: Date = Calendar.getInstance().time
+    val itemLvl: Int
+        get() = item!!.levelRq
+    val itemName: String
+        get() = item!!.name
+    val itemQuality: Int
+        get() = item!!.quality
+    val itemClass: Int
+        get() = item!!.charClass
+    val itemType: Int
+        get() = item!!.slot
 
-    fun buyOffer() {
-        deleteOffer()
-    }
-    fun deleteOffer() {
-
-    }
-    fun initialize(days: Int): Task<Void> {
+    @Exclude fun initialize(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
+        val df: Calendar = Calendar.getInstance()
 
         val docRef = db.collection("users").document(player.username)
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
@@ -2184,14 +2435,76 @@ class marketOffer(
             docRef.collection("ActiveQuest").document("timeStamp").get().addOnSuccessListener {
                 val time = it.getDate("timeStamp", behaviour)!!
 
-                df.time = time
-                df.add(Calendar.DATE, days)
-                expiryDate = df.time
+                creationTime = time
 
+                if(!closeAfterExpiry){
+                    df.time = expiryDate
+                    df.add(Calendar.DAY_OF_MONTH, 5)
+
+                    afterExpiryDate = df.time
+                }
             }
-        }.continueWithTask {
-            db.collection("market").document().set(this)
         }
+    }
+
+    @Exclude fun deleteOffer(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        val rewardBuyer = Reward()
+        val rewardSeller = Reward()
+        player.money -= this.priceCoins
+        player.cubeCoins -= this.priceCubeCoins
+        player.inventory[player.inventory.indexOf(null)] = this.item
+
+        rewardBuyer.item = this.item
+
+        rewardSeller.coins = this.priceCoins
+        rewardSeller.cubeCoins = this.priceCubeCoins
+
+        player.writeInbox(this.seller, InboxMessage(status = MessageStatus.Market, receiver = this.seller, sender = this.buyer!!, subject = "Your item ${this.item!!.name} has been bought", content = "${this.buyer} bought your market offer ${this.item!!.name} for ${this.priceCoins} ${if(priceCubeCoins != 0) " and " + this.priceCubeCoins.toString() else ""}.", reward = rewardSeller))
+        //player.writeInbox(this.buyer!!, InboxMessage(status = MessageStatus.Market, receiver = this.buyer!!, sender = this.seller, subject = "You bought an item!", content = "You bought ${this.seller}'s item for ${this.priceCoins} ${if(priceCubeCoins != 0) " and " + this.priceCubeCoins.toString() else ""}.", reward = rewardBuyer))
+
+        return db.collection("market").document(this.id.toString()).delete()
+    }
+
+    @Exclude fun getGenericStatsOffer(): String{
+        return "item quality: ${when (this.item?.quality) {
+            0 -> "<font color=#535353>Poor</font>"
+            1 -> "<font color=#FFFFFF>Common</font>"
+            2 -> "<font color=#8DD837>Uncommon</font>"
+            3 -> "<font color=#5DBDE9>Rare</font>"
+            4 -> "<font color=#058DCA>Very rare</font>"
+            6 -> "<font color=#9136A2>Epic gamer item</font>"
+            8 -> "<font color=#FF9800>Legendary</font>"
+            11 -> "<font color=#FFE500>Heirloom</font>"
+            else -> "unspecified"
+        }}<br/>class: ${when (this.item?.charClass) {
+            0 -> "everyone"
+            1 -> "Vampire"
+            2 -> "Dwarf"
+            3 -> "Archer"
+            4 -> "Wizard"
+            5 -> "Sniper"
+            6 -> "Mermaid"
+            7 -> "Elf"
+            8 -> "Warrior"
+            else -> "unspecified"
+        }}<br/>item level: ${item?.levelRq}<br/>specification: " +
+                when(item?.slot){
+                   0 -> "Primary weapon"
+                   1 -> "Secondary weapon"
+                   2 -> "Universal 2"
+                   3 -> "Universal 1"
+                   4 -> "Belt"
+                   5 -> "Overall"
+                   6 -> "Boots"
+                   7 -> "Trousers"
+                   8 -> "Chestplate"
+                   9 -> "Hat"
+                   else -> "All types"
+        }
+    }
+    @Exclude fun getSpecStatsOffer(): String{
+        return "Coins: ${this.priceCoins}<br/>CubeCoins: ${this.priceCubeCoins}"
     }
 }
 
@@ -2205,7 +2518,7 @@ class NPC(
         var charClassIndex: Int = 1
 ) : Serializable {
     val drawable: Int
-        get() = drawableStorage[inDrawable]!!
+        @Exclude get() = drawableStorage[inDrawable]!!
     var level: Int = 0
     var chosenSpellsDefense: MutableList<Spell?> = mutableListOf()
     var power: Int = 40
@@ -2216,10 +2529,9 @@ class NPC(
     var health: Double = 175.0
     var energy: Int = 100
     val charClass: CharClass
-        get() = charClasses[charClassIndex]
+        @Exclude get() = charClasses[charClassIndex]
 
-    fun generate(): NPC {
-
+    @Exclude fun generate(): NPC {
         npcs.sortWith(compareBy { it.levelAppearance })       //pro zjednodušení cyklu se půjde od nejbližšího konce a ukončí se na druhém limitu
         val allowedNPCS: MutableList<NPC> = mutableListOf()
 
@@ -2284,6 +2596,52 @@ class NPC(
 
         return npcPlayer
     }
+
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + inDrawable.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + difficulty
+        result = 31 * result + description.hashCode()
+        result = 31 * result + levelAppearance
+        result = 31 * result + charClassIndex
+        result = 31 * result + level
+        result = 31 * result + chosenSpellsDefense.hashCode()
+        result = 31 * result + power
+        result = 31 * result + armor
+        result = 31 * result + block.hashCode()
+        result = 31 * result + dmgOverTime
+        result = 31 * result + lifeSteal
+        result = 31 * result + health.hashCode()
+        result = 31 * result + energy
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NPC
+
+        if (ID != other.ID) return false
+        if (inDrawable != other.inDrawable) return false
+        if (name != other.name) return false
+        if (difficulty != other.difficulty) return false
+        if (description != other.description) return false
+        if (levelAppearance != other.levelAppearance) return false
+        if (charClassIndex != other.charClassIndex) return false
+        if (level != other.level) return false
+        if (chosenSpellsDefense != other.chosenSpellsDefense) return false
+        if (power != other.power) return false
+        if (armor != other.armor) return false
+        if (block != other.block) return false
+        if (dmgOverTime != other.dmgOverTime) return false
+        if (lifeSteal != other.lifeSteal) return false
+        if (health != other.health) return false
+        if (energy != other.energy) return false
+
+        return true
+    }
 }
 
 class Quest(
@@ -2298,7 +2656,7 @@ class Quest(
     var reward: Reward = Reward()
     var secondsLength: Int = 62
 
-    fun generate(difficulty: Int? = null): Quest {
+    @Exclude fun generate(difficulty: Int? = null): Quest {
         reward = difficulty?.let { Reward(it).generate(player) } ?: Reward().generate(player)
         val randQuest = surfaces[surface].quests.values.toTypedArray()[nextInt(0, surfaces[surface].quests.values.size)]
 
@@ -2317,7 +2675,15 @@ class Quest(
         secondsLength = ((reward.type!!.toDouble() + 2 - (((reward.type!!.toDouble() + 2) / 100) * player.adventureSpeed.toDouble())) * 60).toInt()
     }
 
-    fun getStats(resources: Resources): String {
+    @Exclude fun getLength(): String{
+        return when{
+            this.secondsLength <= 0 -> "0:00"
+            this.secondsLength.toDouble()%60 <= 9 -> "${this.secondsLength/60}:0${this.secondsLength%60}"
+            else -> "${this.secondsLength/60}:${this.secondsLength%60}"
+        }
+    }
+
+    @Exclude fun getStats(resources: Resources): String {
         return "${resources.getString(R.string.quest_title, this.name)}<br/>${resources.getString(R.string.quest_generic, this.description)}<br/>difficulty: " +
                 resources.getString(R.string.quest_generic, when (this.level) {
                     0 -> "<font color='lime'>Peaceful</font>"
@@ -2328,7 +2694,7 @@ class Quest(
                     5 -> "<font color='brown'>Hard rare</font>"
                     6 -> "<font color='maroon'>Hard</font>"
                     7 -> "<font color='olive'>Evil</font>"
-                    else -> "Error: Collection out of its bounds! </br> report this to the support, please."
+                    else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
                 }) + " (" +
                 when {
                     this.secondsLength <= 0 -> "0:00"
@@ -2336,6 +2702,23 @@ class Quest(
                     else -> "${this.secondsLength / 60}:${this.secondsLength % 60}"
                 } + " m)" +
                 "<br/>experience: ${resources.getString(R.string.quest_number, this.experience)}<br/>coins: ${resources.getString(R.string.quest_number, this.money)}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + level
+        result = 31 * result + experience
+        result = 31 * result + money
+        result = 31 * result + surface
+        result = 31 * result + reward.hashCode()
+        result = 31 * result + secondsLength
+        return result
     }
 }
 
@@ -2371,6 +2754,10 @@ class CustomTextView : TextView {
 
     fun setCharacterAnimationDelay(millis: Long) {
         mDelay = millis
+    }
+
+    fun skip(){
+        mHandler.removeCallbacksAndMessages(null)
     }
 
     fun setHTMLText(text: String) {
@@ -2459,7 +2846,8 @@ enum class MessageStatus {
     New,
     Spam,
     Sent,
-    Fight
+    Fight,
+    Market
 }
 
 /*enum class ItemType{
@@ -2475,5 +2863,16 @@ class Surface(
         val quests: HashMap<String, Quest> = hashMapOf()
 ) : Serializable {
     val background: Int
-        get() = drawableStorage[inBackground]!!
+        @Exclude get() = drawableStorage[inBackground]!!
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = inBackground.hashCode()
+        result = 31 * result + (boss?.hashCode() ?: 0)
+        result = 31 * result + quests.hashCode()
+        return result
+    }
 }

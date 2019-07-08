@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_character_0.view.*
 import kotlinx.android.synthetic.main.fragment_story_overview_completed.view.*
 import kotlinx.android.synthetic.main.row_story_completed.view.*
 
@@ -51,7 +50,7 @@ private class StoryOverviewCompletedAdapter(var storyCompleted:MutableList<Story
         if (convertView == null) {
             val layoutInflater = LayoutInflater.from(viewGroup!!.context)
             rowMain = layoutInflater.inflate(R.layout.row_story_completed, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewShortDescription, rowMain.textViewExperience, rowMain.textViewMoney, rowMain.imageViewLockedQuest, rowMain.imageViewStoryCompleted)
+            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewShortDescription, rowMain.textViewOverviewRowExperience, rowMain.textViewOverviewRowMoney, rowMain.imageViewLockedQuest, rowMain.imageViewStoryCompleted)
             rowMain.tag = viewHolder
         } else rowMain = convertView
         val viewHolder = rowMain.tag as ViewHolder

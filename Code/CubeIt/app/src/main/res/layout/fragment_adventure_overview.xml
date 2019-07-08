@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/loginColor"
+    android:screenOrientation="sensorLandscape">
+
+    <TextView
+        android:id="@+id/textViewAdventureOverviewItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="item"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline194"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline193"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6" />
+
+    <ListView
+        android:id="@+id/listViewAdventureOverview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:dividerHeight="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewAdventureOverviewDifficulty" />
+
+    <TextView
+        android:id="@+id/textViewAdventureOverviewDifficulty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="difficulty"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline192"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewAdventureOverviewCoins"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="coins"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline193"
+        app:layout_constraintStart_toStartOf="@+id/guideline192"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewAdventureOverviewExperience"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="xp"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline194"
+        app:layout_constraintStart_toStartOf="@+id/guideline193"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline194"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline192"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3" />
+
+</android.support.constraint.ConstraintLayout>

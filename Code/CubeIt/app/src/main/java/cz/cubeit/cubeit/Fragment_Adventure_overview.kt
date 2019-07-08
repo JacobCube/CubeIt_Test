@@ -1,24 +1,28 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
 import android.support.v4.view.ViewPager
-import android.text.Html
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import kotlinx.android.synthetic.main.activity_settings.*
-import kotlinx.android.synthetic.main.fragment_sidequests_adventure.view.*
+import kotlinx.android.synthetic.main.fragment_adventure_overview.view.*
 import kotlinx.android.synthetic.main.row_adventure_overview.view.*
 
 class Fragment_Adventure_overview : Fragment() {
 
     lateinit var adapter: BaseAdapter
+    private var filterDifficulty: Boolean = true
+    private var filterExperience: Boolean = true
+    private var filterItem: Boolean = true
+    private var filterCoins: Boolean = true
+    private var overviewList: MutableList<Quest> = mutableListOf()
 
     fun resetAdapter(){
         activity!!.supportFragmentManager.beginTransaction().detach(this).commit()
@@ -26,24 +30,138 @@ class Fragment_Adventure_overview : Fragment() {
         activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, this).commitNow()
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        adapter.notifyDataSetChanged()
+    override fun onStop() {
+        super.onStop()
+        overviewList = player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList()
+        (adapter as AdventureQuestsOverview).updateList(overviewList)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view: View = inflater.inflate(R.layout.fragment_sidequests_adventure, container, false)
+        val view: View = inflater.inflate(R.layout.fragment_adventure_overview, container, false)
 
-        adapter = AdventureQuestsOverview(player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList(),
-                view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure), view.listViewSideQuestsAdventure, this)
+        overviewList = player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList()
 
-        view.listViewSideQuestsAdventure.adapter = adapter
+        adapter = AdventureQuestsOverview(overviewList, view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure), view.listViewAdventureOverview, this, activity!!)
+
+        view.listViewAdventureOverview.adapter = adapter
+        view.listViewAdventureOverview.smoothScrollByOffset(2)
+
+        view.textViewAdventureOverviewCoins.setOnClickListener {
+            if(view.textViewAdventureOverviewDifficulty.text.toString() != "difficulty"){
+                view.textViewAdventureOverviewDifficulty.text = "difficulty"
+                filterDifficulty = true
+            }
+            if(view.textViewAdventureOverviewExperience.text.toString() != "experience"){
+                view.textViewAdventureOverviewExperience.text = "xp"
+                filterExperience = true
+            }
+            if(view.textViewAdventureOverviewItem.text.toString() != "item"){
+                view.textViewAdventureOverviewItem.text = "item"
+                filterItem = true
+            }
+
+            filterCoins = if(filterCoins){
+                view.textViewAdventureOverviewCoins.text = "coins " + String(Character.toChars(0x25BC))
+                overviewList.sortByDescending{ it.money}
+                false
+            }else{
+                view.textViewAdventureOverviewCoins.text = "coins " + String(Character.toChars(0x25B2))
+                overviewList.sortBy{ it.money }
+                true
+            }
+            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            //resetAdapter()
+        }
+
+        view.textViewAdventureOverviewDifficulty.setOnClickListener {
+            if(view.textViewAdventureOverviewCoins.text.toString() != "coins"){
+                view.textViewAdventureOverviewCoins.text = "coins"
+                filterCoins = true
+            }
+            if(view.textViewAdventureOverviewExperience.text.toString() != "experience"){
+                view.textViewAdventureOverviewExperience.text = "xp"
+                filterExperience = true
+            }
+            if(view.textViewAdventureOverviewItem.text.toString() != "item"){
+                view.textViewAdventureOverviewItem.text = "item"
+                filterItem = true
+            }
+
+            filterDifficulty = if(filterDifficulty){
+                view.textViewAdventureOverviewDifficulty.text = "difficulty " + String(Character.toChars(0x25BC))
+                overviewList.sortByDescending{ it.level}
+                false
+            }else{
+                view.textViewAdventureOverviewDifficulty.text = "difficulty " + String(Character.toChars(0x25B2))
+                overviewList.sortBy{ it.level }
+                true
+            }
+            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            //resetAdapter()
+        }
+
+        view.textViewAdventureOverviewExperience.setOnClickListener {
+            if(view.textViewAdventureOverviewDifficulty.text.toString() != "difficulty"){
+                view.textViewAdventureOverviewDifficulty.text = "difficulty"
+                filterDifficulty = true
+            }
+            if(view.textViewAdventureOverviewCoins.text.toString() != "coins"){
+                view.textViewAdventureOverviewCoins.text = "coins"
+                filterCoins = true
+            }
+            if(view.textViewAdventureOverviewItem.text.toString() != "item"){
+                view.textViewAdventureOverviewItem.text = "item"
+                filterItem = true
+            }
+
+            filterExperience = if(filterExperience){
+                view.textViewAdventureOverviewExperience.text = "xp " + String(Character.toChars(0x25BC))
+                overviewList.sortByDescending{ it.experience }
+                false
+            }else{
+                view.textViewAdventureOverviewExperience.text = "xp " + String(Character.toChars(0x25B2))
+                overviewList.sortBy{ it.experience }
+                true
+            }
+            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            //resetAdapter()
+        }
+
+        view.textViewAdventureOverviewItem.setOnClickListener {
+            if(view.textViewAdventureOverviewDifficulty.text.toString() != "difficulty"){
+                view.textViewAdventureOverviewDifficulty.text = "difficulty"
+                filterDifficulty = true
+            }
+            if(view.textViewAdventureOverviewExperience.text.toString() != "experience"){
+                view.textViewAdventureOverviewExperience.text = "xp"
+                filterExperience = true
+            }
+            if(view.textViewAdventureOverviewCoins.text.toString() != "coins"){
+                view.textViewAdventureOverviewCoins.text = "coins"
+                filterCoins = true
+            }
+
+            filterItem = if(filterItem){
+                view.textViewAdventureOverviewItem.text = "item " + String(Character.toChars(0x25BC))
+                overviewList.sortByDescending{ /*if(it.reward.item == null) 0 else it.reward.item!!.price*/it.reward.item?.price }
+                false
+            }else{
+                view.textViewAdventureOverviewItem.text = "item " + String(Character.toChars(0x25B2))
+                overviewList.sortBy{ it.reward.item?.price }
+                true
+            }
+            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            //resetAdapter()
+        }
 
         return view
     }
 }
 
-class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest>, val context: Context, val popupView:View, var progressBar: ProgressBar, var textView: TextView, val viewPopUpQuest: View, val viewPager: ViewPager, val adapter: ListView, val fragmentOverview: Fragment) : BaseAdapter() {
+class AdventureQuestsOverview(var sideQuestsAdventure: MutableList<Quest>, val context: Context, val popupView:View, var progressBar: ProgressBar, var textView: TextView, val viewPopUpQuest: View, val viewPager: ViewPager, val adapter: ListView, val fragmentOverview: Fragment, val activity: Activity) : BaseAdapter() {
 
     override fun getCount(): Int {
         return sideQuestsAdventure.size
@@ -57,12 +175,10 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
         return "TEST STRING"
     }
 
-/*    override fun notifyDataSetChanged() {
-        super.notifyDataSetChanged()
-        val temp = sideQuestsAdventure
-        sideQuestsAdventure.clear()
-        sideQuestsAdventure.addAll(temp)
-    }*/
+    fun updateList(list: MutableList<Quest>){
+        this.sideQuestsAdventure = list
+        notifyDataSetChanged()
+    }
 
     @SuppressLint("SetTextI18n")
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
@@ -71,7 +187,7 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
         if (convertView == null) {
             val layoutInflater = LayoutInflater.from(viewGroup!!.context)
             rowMain = layoutInflater.inflate(R.layout.row_adventure_overview, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.imageViewBackground, rowMain.textViewName, rowMain.textViewDifficulty, rowMain.textViewExperience, rowMain.textViewMoney, rowMain.imageViewAdventureOverview, rowMain.textViewLength)
+            val viewHolder = ViewHolder(rowMain.imageViewBackground, rowMain.textViewName, rowMain.textViewDifficulty, rowMain.textViewOverviewRowExperience, rowMain.textViewOverviewRowMoney, rowMain.imageViewAdventureOverview, rowMain.textViewLength)
             rowMain.tag = viewHolder
 
         } else rowMain = convertView
@@ -88,7 +204,7 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
             5 -> "<font color='brown'>Hard rare</font>"
             6 -> "<font color='maroon'>Hard</font>"
             7 -> "<font color='olive'>Evil</font>"
-            else -> "Error: Collection out of its bounds! </br> report this to the support, please."
+            else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
         })
 
         viewHolder.textViewDifficulty.setHTMLText(text)
@@ -130,7 +246,7 @@ class AdventureQuestsOverview(private var sideQuestsAdventure: MutableList<Quest
                         break
                     }
                 }
-                handler.postDelayed({Adventure().onClickQuestSideQuest(surface = sideQuestsAdventure[position].surface, index = index, context = context, progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview)}, 100)
+                handler.postDelayed({Adventure().onClickQuestSideQuest(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview)}, 100)
             }
 
         }

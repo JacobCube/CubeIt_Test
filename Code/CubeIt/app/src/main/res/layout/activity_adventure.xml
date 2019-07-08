@@ -44,8 +44,10 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline83"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
 
     </FrameLayout>
 
@@ -94,11 +96,13 @@
         android:id="@+id/sideQuestsIcon"
         android:layout_width="35dp"
         android:layout_height="35dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/secondarymission"
-        tools:layout_editor_absoluteX="477dp"
-        tools:layout_editor_absoluteY="3dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/homeButtonBackAdventure"

@@ -22,7 +22,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textViewMoney"
+        android:id="@+id/textViewOverviewRowMoney"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
@@ -35,7 +35,7 @@
         app:layout_constraintVertical_bias="0.769" />
 
     <TextView
-        android:id="@+id/textViewExperience"
+        android:id="@+id/textViewOverviewRowExperience"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="TextView"

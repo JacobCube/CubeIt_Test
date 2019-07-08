@@ -22,7 +22,7 @@
     </string-array>
 
     <string-array name="charclasses">
-        <item>Character type</item>
+        <item>Character</item>
         <item>Vampire</item>
         <item>Dwarf</item>
         <item>Archer</item>
@@ -31,5 +31,30 @@
         <item>Mermaid</item>
         <item>Elf</item>
         <item>Warrior</item>
+    </string-array>
+
+    <string-array name="item_quality">
+        <item>Item quality</item>
+        <item>Common</item>
+        <item>Uncommon</item>
+        <item>Rare</item>
+        <item>Very rare</item>
+        <item>Epic gamer item</item>
+        <item>Legendary</item>
+        <item>Heirloom</item>
+    </string-array>
+
+    <string-array name="item_types">
+        <item>Item type</item>
+        <item>Primary weapon</item>
+        <item>Secondary weapon</item>
+        <item>Universal item 2</item>
+        <item>Universal item 1</item>
+        <item>Belt</item>
+        <item>Overall</item>
+        <item>Boots</item>
+        <item>Trousers</item>
+        <item>Chestplate</item>
+        <item>Hat</item>
     </string-array>
 </resources>

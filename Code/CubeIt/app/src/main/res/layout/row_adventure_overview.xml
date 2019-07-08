@@ -24,86 +24,96 @@
 
     <TextView
         android:id="@+id/textViewName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
         android:text="TextView"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/imageViewAdventureOverview"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline128"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline143" />
 
     <TextView
         android:id="@+id/textViewLength"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="TextView"
+        android:gravity="center_horizontal"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline128"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewOverviewRowMoney"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline128" />
 
     <TextView
-        android:id="@+id/textViewMoney"
+        android:id="@+id/textViewOverviewRowExperience"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="4dp"
+        android:gravity="center_horizontal"
         android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/textViewExperience" />
-
-    <TextView
-        android:id="@+id/textViewExperience"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline144" />
+        app:layout_constraintStart_toEndOf="@+id/textViewOverviewRowMoney" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewDifficulty"
-        android:layout_width="wrap_content"
-        android:layout_height="18dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:gravity="center_horizontal"
         android:text="TextView"
         app:layout_constraintBottom_toTopOf="@+id/textViewLength"
-        app:layout_constraintEnd_toStartOf="@+id/imageViewAdventureOverview"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline128"
-        app:layout_constraintTop_toBottomOf="@+id/textViewName"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline128"
+        app:layout_constraintHorizontal_bias="0.484"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline128"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.14" />
+        app:layout_constraintGuide_percent="0.3" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline144"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.92" />
+        app:layout_constraintGuide_percent="0.75" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline191"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline143"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1" />
+        app:layout_constraintGuide_percent="0.05" />
 
     <ImageView
         android:id="@+id/imageViewAdventureOverview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="2dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/textViewExperience"
+        app:layout_constraintBottom_toTopOf="@+id/textViewOverviewRowExperience"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline144"
+        app:layout_constraintStart_toStartOf="@+id/guideline144"
         app:layout_constraintTop_toTopOf="@+id/guideline143"
-        app:layout_constraintVertical_bias="0.6" />
+        app:layout_constraintVertical_bias="0.0" />
 
 </android.support.constraint.ConstraintLayout>

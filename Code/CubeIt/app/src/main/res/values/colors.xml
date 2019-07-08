@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="itemborder">#535353</color>
     <color name="colorPrimaryDarker">#2B2B2B</color>
     <color name="colorGrey">#646D72</color>
     <color name="colorPrimary">#161B42</color>
     <color name="colorSecondary">#C0B02D</color>
+    <color name="colorThird">#C0B02D</color>
     <color name="auctionMenu">#FFA200</color>
     <color name="defense_bg">#54C3CC</color>
     <color name="attack_bg">#CC3932</color>
@@ -15,4 +15,15 @@
     <color name="experience">#2835A5</color>
     <color name="pop_up_bg">#494949</color>
     <color name="character_dark">#898989</color>
+    <color name="loginColor_light">#504F4F</color>
+
+    <color name="itemborder">#535353</color>
+    <color name="itemborder_poor">#535353</color>
+    <color name="itemborder_common">#FFFFFF</color>
+    <color name="itemborder_uncommon">#8DD837</color>
+    <color name="itemborder_rare">#5DBDE9</color>
+    <color name="itemborder_very_rare">#058DCA</color>
+    <color name="itemborder_epic_gamer_item">#9136A2</color>
+    <color name="itemborder_legendary">#FF9800</color>
+    <color name="itemborder_heirloom">#FFE500</color>
 </resources>

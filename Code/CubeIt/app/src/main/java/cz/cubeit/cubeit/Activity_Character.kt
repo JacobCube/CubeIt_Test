@@ -168,19 +168,23 @@ class Activity_Character : AppCompatActivity() {
 
         if(player.backpackRunes[0]!=null){
             buttonBag0.setImageResource(player.backpackRunes[0]!!.drawable)
+            buttonBag0.setBackgroundResource(player.backpackRunes[0]!!.getBackground())
             buttonBag0.isEnabled = true
             buttonBag0.isClickable = false
         }else{
+            buttonBag0.setBackgroundResource(R.drawable.emptyslot)
             buttonBag0.setImageResource(0)
             buttonBag0.isEnabled = false
             buttonBag0.isClickable = true
         }
         if(player.backpackRunes[1]!=null){
+            buttonBag1.setBackgroundResource(player.backpackRunes[1]!!.getBackground())
             buttonBag1.setImageResource(player.backpackRunes[1]!!.drawable)
             buttonBag1.isEnabled = true
             buttonBag1.isClickable = true
         } else{
             buttonBag1.setImageResource(0)
+            buttonBag1.setBackgroundResource(R.drawable.emptyslot)
             buttonBag1.isEnabled = false
             buttonBag1.isClickable = false
         }
@@ -335,6 +339,7 @@ class Activity_Character : AppCompatActivity() {
 
                                 if (player.backpackRunes[player.inventory[index]!!.slot-10] == null) {
                                     button.setImageResource(player.inventory[index]!!.drawable)
+                                    button.setBackgroundResource(player.inventory[index]!!.getBackground())
                                     button.isEnabled = true
                                     player.backpackRunes[player.inventory[index]!!.slot-10] = (player.inventory[index] as Runes)
                                     player.inventory[index] = null
@@ -498,32 +503,6 @@ class Activity_Character : AppCompatActivity() {
                         }
                         else -> null
                     }
-
-                    for(i in 0 until 10) {
-                        val itemEquip: ImageView = findViewById(this.resources.getIdentifier("equipItem$i", "id", this.packageName))
-                        if(player.equip[i]!=null){
-                            itemEquip.setImageResource(player.equip[i]!!.drawable)
-                            itemEquip.isEnabled = true
-                        } else {
-                            itemEquip.setImageResource(R.drawable.emptyslot)
-                        }
-                    }
-
-                    if(player.backpackRunes[0]!=null){
-                        buttonBag0.setImageResource(player.backpackRunes[0]!!.drawable)
-                        buttonBag0.isEnabled = true
-                    }else{
-                        buttonBag0.setImageResource(0)
-                        buttonBag0.isEnabled = false
-                    }
-                    if(player.backpackRunes[1]!=null){
-                        buttonBag1.setImageResource(player.backpackRunes[1]!!.drawable)
-                        buttonBag0.isEnabled = true
-                    } else{
-                        buttonBag1.setImageResource(0)
-                        buttonBag0.isEnabled = false
-                    }
-
                     // returns true; the value is ignored.
                     true
                 }
@@ -562,7 +541,8 @@ class Activity_Character : AppCompatActivity() {
                                 }
                             }
 
-                            buttonBag0.setImageResource(R.drawable.emptyslot)
+                            buttonBag0.setImageResource(0)
+                            buttonBag0.setBackgroundResource(R.drawable.emptyslot)
                             player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
                             player.backpackRunes[0] = null
                             buttonBag0.isEnabled = false
@@ -571,7 +551,8 @@ class Activity_Character : AppCompatActivity() {
                     }
                 }else{
                     if(player.inventory.contains(null)){
-                        buttonBag0.setImageResource(R.drawable.emptyslot)
+                        buttonBag0.setImageResource(0)
+                        buttonBag0.setBackgroundResource(R.drawable.emptyslot)
                         player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
                         player.backpackRunes[0] = null
                         buttonBag0.isEnabled = false
@@ -634,7 +615,8 @@ class Activity_Character : AppCompatActivity() {
                                 }
                             }
 
-                            buttonBag1.setImageResource(R.drawable.emptyslot)
+                            buttonBag1.setImageResource(0)
+                            buttonBag0.setBackgroundResource(R.drawable.emptyslot)
                             player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[1]
                             player.backpackRunes[1] = null
                             buttonBag1.isEnabled = false
@@ -643,7 +625,8 @@ class Activity_Character : AppCompatActivity() {
                     }
                 }else{
                     if(player.inventory.contains(null)){
-                        buttonBag1.setImageResource(R.drawable.emptyslot)
+                        buttonBag1.setImageResource(0)
+                        buttonBag0.setBackgroundResource(R.drawable.emptyslot)
                         player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[1]
                         player.backpackRunes[1] = null
                         buttonBag1.isEnabled = false
@@ -731,14 +714,15 @@ class Activity_Character : AppCompatActivity() {
                     else->viewHolder.buttonInventory1
                 }
                 if(index+i<player.inventory.size){
-                    if(player.inventory[index+i]!=null){
+                    if(playerC.inventory[index+i]!=null){
                         tempSlot.setImageResource(player.inventory[index+i]!!.drawable)
+                        tempSlot.setBackgroundResource(player.inventory[index+i]!!.getBackground())
                         tempSlot.isEnabled = true
                     }else{
                         tempSlot.setImageResource(0)
+                        tempSlot.setBackgroundResource(R.drawable.emptyslot)
                         tempSlot.isEnabled = false
                     }
-                    tempSlot.setBackgroundResource(R.drawable.emptyslot)
                 }else{
                     tempSlot.isEnabled = false
                     tempSlot.isClickable = false
@@ -997,70 +981,77 @@ class Activity_Character : AppCompatActivity() {
                 else -> buttonBag0
             }
 
-            when(playerC.inventory[index]){
-                is Runes ->{
-                    if (playerC.backpackRunes[playerC.inventory[index]!!.slot-10] == null) {
-                        button.setImageResource(playerC.inventory[index]!!.drawable)
-                        button.isEnabled = true
-                        playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
-                        playerC.inventory[index] = null
-                    } else {
-                        if(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots > playerC.inventory[index]!!.inventorySlots){
-                            var tempEmptySpaces = 0
-                            for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
-                                if(player.inventory[i] == null){
-                                    tempEmptySpaces++
-                                }
-                            }
-
-                            if(tempEmptySpaces > playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots){
-                                for(i in (player.inventory.size-1-abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)) until player.inventory.size){
-                                    if(player.inventory[i]!=null){
-                                        val tempItem = player.inventory[i]
-                                        player.inventory[i] = null
-                                        player.inventory[player.inventory.indexOf(null)] = tempItem
+            if(playerC.inventory[index]!!.charClass == player.charClassIndex || playerC.inventory[index]!!.charClass == 0){
+                when(playerC.inventory[index]){
+                    is Runes ->{
+                        if (playerC.backpackRunes[playerC.inventory[index]!!.slot-10] == null) {
+                            button.setImageResource(playerC.inventory[index]!!.drawable)
+                            button.setBackgroundResource(playerC.inventory[index]!!.getBackground())
+                            button.isEnabled = true
+                            playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
+                            playerC.inventory[index] = null
+                        } else {
+                            if(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots > playerC.inventory[index]!!.inventorySlots){
+                                var tempEmptySpaces = 0
+                                for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
+                                    if(player.inventory[i] == null){
+                                        tempEmptySpaces++
                                     }
                                 }
+
+                                if(tempEmptySpaces > playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots){
+                                    for(i in (player.inventory.size-1-abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)) until player.inventory.size){
+                                        if(player.inventory[i]!=null){
+                                            val tempItem = player.inventory[i]
+                                            player.inventory[i] = null
+                                            player.inventory[player.inventory.indexOf(null)] = tempItem
+                                        }
+                                    }
+                                    button.setImageResource(playerC.inventory[index]!!.drawable)
+                                    button.setBackgroundResource(playerC.inventory[index]!!.getBackground())
+                                    button.isEnabled = true
+                                    tempMemory = playerC.backpackRunes[playerC.inventory[index]!!.slot-10]
+                                    playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
+                                    playerC.inventory[index] = tempMemory
+                                }
+                            }else{
                                 button.setImageResource(playerC.inventory[index]!!.drawable)
+                                button.setBackgroundResource(playerC.inventory[index]!!.getBackground())
                                 button.isEnabled = true
                                 tempMemory = playerC.backpackRunes[playerC.inventory[index]!!.slot-10]
                                 playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
                                 playerC.inventory[index] = tempMemory
                             }
-                        }else{
-                            button.setImageResource(playerC.inventory[index]!!.drawable)
-                            button.isEnabled = true
-                            tempMemory = playerC.backpackRunes[playerC.inventory[index]!!.slot-10]
-                            playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
-                            playerC.inventory[index] = tempMemory
+                            view.setImageResource(playerC.inventory[index]!!.drawable)
+                            button.setBackgroundResource(playerC.inventory[index]!!.getBackground())
+                            dragItemSync()
                         }
+                    }
+
+                    is Weapon,is Wearable -> if (playerC.equip[playerC.inventory[index]!!.slot] == null) {
+                        /*button.setImageResource(playerC.inventory[index]!!.drawable)
+                        button.isEnabled = true*/
+                        playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
+                        playerC.inventory[index] = null
+                    } else {
+                        /*button.setImageResource(playerC.inventory[index]!!.drawable)
+                        button.isEnabled = true*/
+                        tempMemory = playerC.equip[playerC.inventory[index]!!.slot]
+                        playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
+                        playerC.inventory[index] = tempMemory
                         view.setImageResource(playerC.inventory[index]!!.drawable)
+                        view.setBackgroundResource(playerC.inventory[index]!!.getBackground())
                         dragItemSync()
                     }
                 }
+                val frg = supportFragmentManager.findFragmentById(R.id.frameLayoutCharacterStats)
 
-                is Weapon,is Wearable -> if (playerC.equip[playerC.inventory[index]!!.slot] == null) {
-                    /*button.setImageResource(playerC.inventory[index]!!.drawable)
-                    button.isEnabled = true*/
-                    playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
-                    playerC.inventory[index] = null
-                } else {
-                    /*button.setImageResource(playerC.inventory[index]!!.drawable)
-                    button.isEnabled = true*/
-                    tempMemory = playerC.equip[playerC.inventory[index]!!.slot]
-                    playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
-                    playerC.inventory[index] = tempMemory
-                    view.setImageResource(playerC.inventory[index]!!.drawable)
-                    dragItemSync()
-                }
+                supportFragmentManager.beginTransaction().detach(frg!!).commitNow()
+                supportFragmentManager.beginTransaction().attach(Fragment_Character_stats()).commitNow()
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
+
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
             }
-            val frg = supportFragmentManager.findFragmentById(R.id.frameLayoutCharacterStats)
-
-            supportFragmentManager.beginTransaction().detach(frg!!).commitNow()
-            supportFragmentManager.beginTransaction().attach(Fragment_Character_stats()).commitNow()
-            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
-
-            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
         }
 
         private class ViewHolder(val buttonInventory1: ImageView, val buttonInventory2: ImageView, val buttonInventory3: ImageView, val buttonInventory4: ImageView)
@@ -1074,6 +1065,7 @@ class Activity_Character : AppCompatActivity() {
             player.equip[index] = null
             view.isEnabled = false
             (view as ImageView).setImageResource(0)
+            view.setBackgroundResource(R.drawable.emptyslot)
             (inventoryListView.adapter as InventoryView).dragItemSync()
             handler.removeCallbacksAndMessages(null)
             updateCharStats()

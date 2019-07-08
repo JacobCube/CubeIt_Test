@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.view.View
+import kotlin.random.Random.Default.nextInt
 
 var playedSong = R.raw.playedsong
 
@@ -49,10 +50,9 @@ class Home : AppCompatActivity() {
         opts.inScaled = false
         layoutHome.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.homebackground, opts))
 
-
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& player.appearOnTop) {
-                //If the draw over permission is not available open the settings screen
-                //to grant the permission.
+                //If the draw over permission is not available open the settings screen to grant the permission.
+
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:$packageName"))
                 startActivityForResult(intent, 2084)
@@ -64,6 +64,12 @@ class Home : AppCompatActivity() {
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 handler.postDelayed({hideSystemUI()},1000)
             }
+        }
+
+        buttonHomeMarket.setOnClickListener {
+            val intent = Intent(this, Activity_Market()::class.java)
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
         }
 
         imageViewHomeInbox.setOnClickListener {

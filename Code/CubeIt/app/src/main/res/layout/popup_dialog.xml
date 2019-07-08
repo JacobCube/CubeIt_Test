@@ -7,6 +7,17 @@
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
+    <ImageView
+        android:id="@+id/imageViewPopUpDialogBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,5:4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/adventure_window" />
+
     <Button
         android:id="@+id/buttonYes"
         android:layout_width="69dp"
@@ -35,7 +46,7 @@
         app:layout_constraintGuide_percent="0.835" />
 
     <Button
-        android:id="@+id/buttonClose"
+        android:id="@+id/buttonCloseDialog"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@android:color/transparent"
@@ -46,12 +57,12 @@
 
     <TextView
         android:id="@+id/textViewInfo"
-        android:layout_width="240dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginBottom="8dp"
-        android:text="You sure ?"
         android:gravity="center_horizontal"
+        android:text="You sure ?"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonYes"
         app:layout_constraintEnd_toEndOf="parent"

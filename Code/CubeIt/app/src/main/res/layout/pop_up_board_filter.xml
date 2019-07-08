@@ -33,7 +33,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/buttonClose"
+        android:id="@+id/buttonCloseDialog"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@android:color/transparent"

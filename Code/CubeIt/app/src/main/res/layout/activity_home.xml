@@ -329,5 +329,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/email_icon" />
 
+    <Button
+        android:id="@+id/buttonHomeMarket"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="market"
+        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
+        app:layout_constraintStart_toStartOf="@+id/guideline119"
+        app:layout_constraintTop_toTopOf="@+id/guideline1124" />
+
 
 </android.support.constraint.ConstraintLayout>

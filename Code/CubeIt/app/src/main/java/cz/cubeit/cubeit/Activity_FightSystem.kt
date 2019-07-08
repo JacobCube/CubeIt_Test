@@ -6,10 +6,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.text.Html
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.View
@@ -74,6 +72,10 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
 
     fun spellValueAnimator(to:Float, imageView: ImageView){
+        imageView.isEnabled = false
+        handler.postDelayed({
+            imageView.isEnabled = true
+        }, 400)
         val from = imageView.y
 
         val fromAnim = ValueAnimator.ofFloat(imageView.y, from).apply {
@@ -388,7 +390,6 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
     @SuppressLint("SetTextI18n")
     private fun roundTick(playerSpell:Spell, enemySpell:Spell, view:View){
-        if (enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
         if(requiredEnergy + playerSpell.energy <= energyPlayer){
             requiredEnergy+=playerSpell.energy
             requiredEnergyEnemy+=enemySpell.energy
@@ -556,7 +557,6 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             }
 
 
-
             roundCounter++
             energyPlayer+=25
             energyEnemy+=25
@@ -627,7 +627,7 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
             window.contentView = viewPop
             val textViewQuest: CustomTextView = viewPop.textViewQuest
             val buttonAccept: Button = viewPop.buttonAccept
-            val buttonClose: Button = viewPop.buttonClose
+            val buttonClose: Button = viewPop.buttonCloseDialog
             val imageItem: ImageView = viewPop.imageViewAdventure
             val textViewStats: CustomTextView = viewPop.textViewItemStats
 

@@ -54,9 +54,11 @@ class Fragment_Character_Profile : Fragment() {
             val itemEquip: ImageView = view.findViewById(this.resources.getIdentifier("profile_EquipItem$i", "id", view.context.packageName))
             itemEquip.isEnabled = if(playerProfile.equip[i]!=null){
                 itemEquip.setImageResource(playerProfile.equip[i]!!.drawable)
+                itemEquip.setBackgroundColor(playerProfile.equip[i]!!.getBackground())
                 true
             } else {
                 itemEquip.setImageResource(0)
+                itemEquip.setBackgroundResource(R.drawable.emptyslot)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     itemEquip.focusable = View.NOT_FOCUSABLE
                 }

@@ -6,13 +6,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.util.DisplayMetrics
 import android.view.*
@@ -20,10 +16,8 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_shop.*
-import kotlinx.android.synthetic.main.fragment_menu_bar.*
 import kotlinx.android.synthetic.main.row_shop_inventory.view.*
 import kotlinx.android.synthetic.main.row_shop_offer.view.*
-import kotlin.math.abs
 
 var lastClicked = ""
 
@@ -76,7 +70,7 @@ class Activity_Shop : AppCompatActivity(){
         hideSystemUI()
         player.syncStats()
         setContentView(R.layout.activity_shop)
-        textViewMoney.text = player.money.toString()
+        textViewOverviewRowMoney.text = player.money.toString()
         textViewInfoItem.movementMethod = ScrollingMovementMethod()
 
         val opts = BitmapFactory.Options()
@@ -106,8 +100,8 @@ class Activity_Shop : AppCompatActivity(){
         }
 
 
-        listViewInventoryShop.adapter = ShopInventory(hidden, animUpText, animDownText, player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewInventoryShop, textViewMoney)
-        listViewShop.adapter = ShopOffer(hidden, animUpText, animDownText, player, textViewInfoItem, bubleDialogShop, listViewInventoryShop.adapter as ShopInventory, this, textViewMoney)
+        listViewInventoryShop.adapter = ShopInventory(hidden, animUpText, animDownText, player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewInventoryShop, textViewOverviewRowMoney)
+        listViewShop.adapter = ShopOffer(hidden, animUpText, animDownText, player, textViewInfoItem, bubleDialogShop, listViewInventoryShop.adapter as ShopInventory, this, textViewOverviewRowMoney)
 
         shopOfferRefresh.setOnClickListener {refresh: View ->
             val moneyReq = player.level * 10
@@ -119,7 +113,7 @@ class Activity_Shop : AppCompatActivity(){
                 }
                 lastClicked = ""
             }
-            textViewMoney.text = player.money.toString()
+            textViewOverviewRowMoney.text = player.money.toString()
 
             ValueAnimator.ofFloat(originalCoinY, refresh.y).apply {
                 duration = 400
@@ -186,12 +180,13 @@ class Activity_Shop : AppCompatActivity(){
                 if(index+i<playerS.inventory.size){
                     if(playerS.inventory[index+i]!=null){
                         tempSlot.setImageResource(playerS.inventory[index+i]!!.drawable)
+                        tempSlot.setBackgroundResource(playerS.inventory[index+i]!!.getBackground())
                         tempSlot.isEnabled = true
                     }else{
                         tempSlot.setImageResource(0)
+                        tempSlot.setBackgroundResource(R.drawable.emptyslot)
                         tempSlot.isEnabled = false
                     }
-                    tempSlot.setBackgroundResource(R.drawable.emptyslot)
                 }else{
                     tempSlot.isEnabled = false
                     tempSlot.setBackgroundResource(0)
@@ -298,7 +293,10 @@ class Activity_Shop : AppCompatActivity(){
                     2->viewHolder.buttonOffer3
                     3->viewHolder.buttonOffer4
                     else->viewHolder.buttonOffer1
-                }.setImageResource(player.shopOffer[index+i]!!.drawable)
+                }.apply {
+                    setImageResource(player.shopOffer[index+i]!!.drawable)
+                    setBackgroundResource(player.shopOffer[index+i]!!.getBackground())
+                }
             }
 
             viewHolder.buttonOffer1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
@@ -375,7 +373,7 @@ class Activity_Shop : AppCompatActivity(){
             val window = PopupWindow(context)
             window.contentView = view
             val buttonYes:Button = view.findViewById(R.id.buttonYes)
-            val buttonNo:Button = view.findViewById(R.id.buttonClose)
+            val buttonNo:Button = view.findViewById(R.id.buttonCloseDialog)
             val info:TextView = view.findViewById(R.id.textViewInfo)
             info.text = "Are you sure you want to sell ${player.inventory[index]?.name} ?"
             window.isOutsideTouchable = false

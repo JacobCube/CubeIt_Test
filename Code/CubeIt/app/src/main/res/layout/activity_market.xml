@@ -2,36 +2,57 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layoutFightBoard"
+    android:id="@+id/layoutMarket"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
     <android.support.constraint.Guideline
-        android:id="@+id/guideline169"
+        android:id="@+id/guideline173"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical" />
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.04" />
 
     <ImageView
-        android:id="@+id/imageViewActivityFightBoard"
+        android:id="@+id/imageViewActivityMarket"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitXY"
         android:src="@color/loginColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
-    <ListView
-        android:id="@+id/listViewPlayers"
+    <Button
+        android:id="@+id/imageViewMarketRegister"
+        style="@style/AppTheme.Button"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline85"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:text="File an offer"
+        app:layout_constraintBottom_toTopOf="@+id/imageViewMenuUpMarket"
+        app:layout_constraintEnd_toStartOf="@+id/guideline189"
+        app:layout_constraintStart_toStartOf="@+id/guideline85" />
+
+    <Button
+        android:id="@+id/imageViewMarketMyOffers"
+        style="@style/AppTheme.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="My offers"
+        app:layout_constraintBottom_toTopOf="@+id/imageViewMarketRegister"
+        app:layout_constraintEnd_toStartOf="@+id/guideline189"
+        app:layout_constraintStart_toStartOf="@+id/guideline85" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline76"
@@ -40,28 +61,47 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline182"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.29" />
+
     <ImageView
-        android:id="@+id/imageViewSearchIconBoard"
+        android:id="@+id/imageViewSearchIconMarket"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline138"
-        app:layout_constraintTop_toTopOf="@+id/editTextBoardSearch"
+        app:layout_constraintTop_toTopOf="@+id/editTextMarketSearch"
         app:srcCompat="@drawable/search_icon" />
 
+    <ImageView
+        android:id="@+id/imageViewMarketFilter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline182"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline138"
+        app:layout_constraintTop_toTopOf="@+id/guideline76"
+        app:srcCompat="@drawable/filter" />
+
     <EditText
-        android:id="@+id/editTextBoardSearch"
+        android:id="@+id/editTextMarketSearch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:ems="10"
         android:hint="Search..."
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
-        app:layout_constraintEnd_toStartOf="@+id/imageViewSearchIconBoard"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewSearchIconMarket"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline85" />
 
     <android.support.constraint.Guideline
@@ -71,20 +111,209 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.93" />
 
-    <ImageView
-        android:id="@+id/imageViewMenuUpBoard"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline138"
-        app:srcCompat="@drawable/setting3rows" />
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline189"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.96" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline85"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.78" />
 
     <ImageView
-        android:id="@+id/homeButtonBackBoard"
+        android:id="@+id/imageViewMarketBarBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewMarketBarSeller"
+        app:srcCompat="@color/loginColor"
+        android:paddingBottom="1dp"
+        android:background="@color/colorSecondary"/>
+
+    <TextView
+        android:id="@+id/textViewMarketBarSeller"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:text=" seller"
+        android:textStyle="bold"
+        android:textColor="@color/colorThird"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline176"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline179"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/textViewMarketBarPrice"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_horizontal"
+        android:text="price"
+        android:textStyle="bold"
+        android:textColor="@color/colorThird"
+        android:tint="@color/colorThird"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="@+id/guideline185"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/textViewMarketBarDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_horizontal"
+        android:text="expiry date"
+        android:textStyle="bold"
+        android:textColor="@color/colorThird"
+        android:tint="@color/colorThird"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline185"
+        app:layout_constraintStart_toStartOf="@+id/guideline177"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/textViewMarketBarItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:gravity="center_horizontal"
+        android:text="item"
+        android:textStyle="bold"
+        android:textColor="@color/colorThird"
+        android:tint="@color/colorThird"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline177"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline176"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/textViewMarketBarDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginBottom="1dp"
+        android:text="description"
+        android:textColor="@color/colorThird"
+        android:textStyle="bold"
+        android:gravity="center_horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline179"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <ListView
+        android:id="@+id/listViewMarketItems"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:divider="@null"
+        android:dividerHeight="0sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline76"
+        app:layout_constraintVertical_bias="0.0">
+
+    </ListView>
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewMarketItemInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
+        android:text="test info"
+        android:background="@drawable/stats_info"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/guideline184"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <ImageView
+        android:id="@+id/imageViewLoadingMarket"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:alpha="0.5"
+        android:src="@drawable/icon_app"
+        android:tint="@color/colorGrey"
+        android:tintMode="multiply"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/listViewMarketItems" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline176"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3744" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline179"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.273" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline184"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.29" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline177"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.4913" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline185"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6552" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutMarketRegisterOffer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/listViewMarketItems"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline76">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/homeButtonBackMarket"
         android:layout_width="75dp"
         android:layout_height="0dp"
         android:background="@drawable/emptyspellslotlarge"
@@ -96,51 +325,25 @@
 
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/imageViewMenuUpMarket"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline138"
+        app:srcCompat="@drawable/setting3rows"
+        app:tint="@color/colorSecondary" />
+
     <FrameLayout
-        android:id="@+id/frameLayoutMenuBoard"
+        android:id="@+id/frameLayoutMenuMarket"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline85"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.78" />
-
-    <ListView
-        android:id="@+id/listViewMarket"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline85"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline169"
-        app:layout_constraintTop_toTopOf="@+id/guideline76"
-        app:layout_constraintVertical_bias="1.0">
-
-    </ListView>
-
-    <ImageView
-        android:id="@+id/imageViewLoadingBoard"
-        android:layout_width="98dp"
-        android:layout_height="70dp"
-        android:alpha="0.5"
-        android:src="@drawable/icon_app"
-        android:tint="@color/colorGrey"
-        android:tintMode="multiply"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline85"
-        app:layout_constraintStart_toStartOf="@+id/guideline169"
-        app:layout_constraintTop_toTopOf="@+id/listViewMarket" />
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </FrameLayout>
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

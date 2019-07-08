@@ -39,8 +39,11 @@ class Fragment_Story_Quest_Template_1 : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewTemplate1 = inflater.inflate(R.layout.fragment_story_quest_template_1, container, false)
-        val slide: StorySlide = storyQuests.filter { it.ID == arguments!!.getString("questID") }[0].slides[arguments!!.getInt("slideNum")]
-        if(!this.isAdded)return viewTemplate1
+        if(!this.isAdded || arguments?.getInt("slideNum") == null || arguments!!.getString("questID") == null)return viewTemplate1
+
+        val quest: StoryQuest = storyQuests.filter { it.ID == arguments!!.getString("questID") }[0]
+        val slide: StorySlide = quest.slides[arguments!!.getInt("slideNum")]
+
         viewTemplate1.textView0Template1.animateText(slide.textContent)
 
         val opts = BitmapFactory.Options()
@@ -60,7 +63,7 @@ class Fragment_Story_Quest_Template_1 : Fragment() {
             val window = PopupWindow(context)
             window.contentView = viewP
             val buttonYes: Button = viewP.buttonYes
-            val buttonNo:Button = viewP.buttonClose
+            val buttonNo:Button = viewP.buttonCloseDialog
             val info: TextView = viewP.textViewInfo
             info.text = "Are you sure?"
             window.isOutsideTouchable = false

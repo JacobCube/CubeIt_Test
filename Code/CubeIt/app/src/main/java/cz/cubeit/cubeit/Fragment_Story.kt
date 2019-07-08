@@ -33,6 +33,10 @@ class Fragment_Story : Fragment() {
 
         viewStory.viewPagerStoryQuest.offscreenPageLimit = player.currentStoryQuest!!.slides.size -1
 
+        viewStory.viewPagerStoryQuest.setOnClickListener {
+            skipSlide()
+        }
+
         return viewStory
     }
 
@@ -49,7 +53,7 @@ class Fragment_Story : Fragment() {
 class ViewPagerStoryQuest internal constructor(fm: FragmentManager, private val storyQuest: StoryQuest) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
-        return getFragment(storyQuest.slides[position].inFragment, storyQuest.slides[position].inInstanceID, storyQuest.slides[position].inSlideID)
+        return getStoryFragment(storyQuest.slides[position].inFragment, storyQuest.slides[position].inInstanceID, position)
     }
 
     override fun getCount(): Int {

@@ -2,10 +2,8 @@ package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -82,7 +80,7 @@ class FragmentInboxMessage : Fragment() {
                 val window = PopupWindow(context)
                 window.contentView = viewP
                 val buttonYes: Button = viewP.buttonYes
-                val buttonNo:Button = viewP.buttonClose
+                val buttonNo:Button = viewP.buttonCloseDialog
                 val info:TextView = viewP.textViewInfo
                 info.text = "Are you sure?"
                 window.isOutsideTouchable = false
@@ -123,21 +121,25 @@ class FragmentInboxMessage : Fragment() {
                 }
 
                 view.buttonInboxMessageGet.setOnClickListener {
-                    view.buttonInboxMessageGet.isEnabled = false
-                    chosenMail.reward!!.receive()
-                    chosenMail.reward = null
+                    if(player.inventory.contains(null)){
+                        view.buttonInboxMessageGet.isEnabled = false
+                        chosenMail.reward!!.receive()
+                        chosenMail.reward = null
 
-                    for(message in currentCategory.messages){
-                        if(message.ID == chosenMail.ID){
-                            message.reward = null
+                        for(message in currentCategory.messages){
+                            if(message.ID == chosenMail.ID){
+                                message.reward = null
+                            }
                         }
+                        (activity!! as Activity_Inbox).refreshCategory()
+                        player.uploadMessage(chosenMail).addOnSuccessListener {
+                            activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = chosenMail.priority, messageObject = chosenMail.subject, messageContent = chosenMail.content, messageSender = chosenMail.sender)).commit()
+                        }
+                        player.removeInbox(chosenMail.ID)
+                        currentCategory.messages.remove(chosenMail)
+                    }else{
+                        Toast.makeText(view.context, "No space in inventory!", Toast.LENGTH_SHORT).show()
                     }
-                    (activity!! as Activity_Inbox).refreshCategory()
-                    player.uploadMessage(chosenMail).addOnSuccessListener {
-                        activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = chosenMail.priority, messageObject = chosenMail.subject, messageContent = chosenMail.content, messageSender = chosenMail.sender)).commit()
-                    }
-                    player.removeInbox(chosenMail.ID)
-                    currentCategory.messages.remove(chosenMail)
                 }
             }else{
                 view.buttonInboxMessageGet.isEnabled = false
@@ -164,8 +166,8 @@ class FragmentInboxMessage : Fragment() {
                                 player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
                                         priority = view.spinnerInboxPriority.selectedItemPosition,
                                         receiver = view.editTextInboxReciever.text.toString(),
-                                        subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
-                                        content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
+                                        subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nig", "I'm an racist idiot"),
+                                        content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nig", "I'm an racist idiot"),
                                         sender = player.username
                                 )).addOnSuccessListener {
                                     Toast.makeText(view.context, "Message to ${view.editTextInboxReciever.text} has been sent", Toast.LENGTH_LONG).show()

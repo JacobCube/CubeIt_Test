@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
+import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.fragment_menu_bar.*
 import kotlinx.android.synthetic.main.fragment_menu_bar.view.*
@@ -20,6 +21,7 @@ import kotlin.math.abs
 class ActivitySettings : AppCompatActivity(){
 
     var displayY = 0.0
+    lateinit var frameLayoutMenu: FrameLayout
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -43,14 +45,14 @@ class ActivitySettings : AppCompatActivity(){
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val viewRect = Rect()
-        frameLayoutMenuSettings.getGlobalVisibleRect(viewRect)
+        frameLayoutMenu.getGlobalVisibleRect(viewRect)
 
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuSettings.y <= (displayY * 0.83).toFloat()) {
+        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenu.y <= (displayY * 0.83).toFloat()) {
 
-            ValueAnimator.ofFloat(frameLayoutMenuSettings.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenuSettings.y/displayY * 160).toLong()
+            ValueAnimator.ofFloat(frameLayoutMenu.y, displayY.toFloat()).apply {
+                duration = (frameLayoutMenu.y/displayY * 160).toLong()
                 addUpdateListener {
-                    frameLayoutMenuSettings.y = it.animatedValue as Float
+                    frameLayoutMenu.y = it.animatedValue as Float
                 }
                 start()
             }

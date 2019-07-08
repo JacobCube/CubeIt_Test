@@ -16,9 +16,6 @@ import android.app.DatePickerDialog
 import android.os.Build
 import android.util.Log
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
@@ -117,7 +114,7 @@ class Activity_Inbox : AppCompatActivity(){
                 val subject: EditText = viewPop.editTextInboxSubject
                 val content: EditText = viewPop.editTextInboxContent
 
-                val buttonClose: Button = viewPop.buttonClose
+                val buttonClose: Button = viewPop.buttonCloseDialog
                 val buttonApply: Button = viewPop.buttonAccept
 
                 dateFrom.setOnClickListener {

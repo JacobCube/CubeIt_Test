@@ -52,15 +52,17 @@ class ActivityFightBoard: AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
         pickedPlayer = null
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val viewRect = Rect()
         val viewRectCompare = Rect()
+        val viewRectCompareCharacter = Rect()
         frameLayoutMenuBoard.getGlobalVisibleRect(viewRect)
+        frameLayoutFightProfile.getGlobalVisibleRect(viewRectCompareCharacter)
         textViewBoardCompare.getGlobalVisibleRect(viewRectCompare)
 
         if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuBoard.y <= (displayY * 0.83).toFloat()) {
@@ -74,7 +76,7 @@ class ActivityFightBoard: AppCompatActivity(){
             }
 
         }
-        if(!viewRectCompare.contains(ev.rawX.toInt(), ev.rawY.toInt())){
+        if(!viewRectCompare.contains(ev.rawX.toInt(), ev.rawY.toInt())/* && !viewRectCompareCharacter.contains(ev.rawX.toInt(), ev.rawY.toInt())*/){
             textViewBoardCompare.visibility = View.GONE
         }
         return super.dispatchTouchEvent(ev)
@@ -221,7 +223,7 @@ class ActivityFightBoard: AppCompatActivity(){
             val active: CheckBox = viewPop.checkBoxBoardActive
             val position: EditText = viewPop.editTextBoardPosition
 
-            val buttonClose: Button = viewPop.buttonClose
+            val buttonClose: Button = viewPop.buttonCloseDialog
             val buttonApply: Button = viewPop.buttonAccept
 
 
@@ -320,7 +322,7 @@ class ActivityFightBoard: AppCompatActivity(){
     }
 
     fun compareStats(){
-        if(textViewFightBoardCompare.visibility != View.VISIBLE)textViewFightBoardCompare.visibility = View.VISIBLE
+        textViewFightBoardCompare.visibility = if(textViewFightBoardCompare.visibility != View.VISIBLE)View.VISIBLE else View.GONE
         textViewBoardCompare.setHTMLText(player.syncStats())
     }
 }

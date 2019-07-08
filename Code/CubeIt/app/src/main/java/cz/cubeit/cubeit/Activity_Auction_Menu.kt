@@ -13,10 +13,6 @@ class ActivityAuctionMenu: AppCompatActivity(){
         imageViewAuction.setOnClickListener{
 
         }
-
-        imageViewMarket.setOnClickListener {
-
-        }
     }
 
 }
