@@ -21,6 +21,19 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
+    <SeekBar
+        android:id="@+id/seekBarSettingsTextSize"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:max="14"
+        android:progress="0"
+        app:layout_constraintEnd_toStartOf="@+id/guideline199"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSettingsSeekBar" />
+
     <Switch
         android:id="@+id/switchNotifications"
         android:layout_width="wrap_content"
@@ -54,12 +67,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:checked="true"
-        android:textColor="@color/colorSecondary"
         android:fontFamily="sans-serif-medium"
         android:text="Sounds"
+        android:textColor="@color/colorSecondary"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/homeButtonBackSettings"
+        app:layout_constraintTop_toTopOf="parent"
         tools:checked="true" />
 
     <ImageView
@@ -69,11 +83,11 @@
         android:background="@drawable/emptyspellslotlarge"
         android:backgroundTint="@color/colorPrimary"
         android:src="@drawable/home_button"
+        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
 
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/imageViewBugIcon"
@@ -137,6 +151,24 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.6" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline199"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3" />
+
+    <TextView
+        android:id="@+id/textViewSettingsSeekBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Text size matters"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/switchAppearOnTop"
+        app:layout_constraintTop_toBottomOf="@+id/switchAppearOnTop" />
 
 
 </android.support.constraint.ConstraintLayout>

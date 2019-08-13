@@ -58,6 +58,7 @@
         app:layout_constraintGuide_percent="0.12" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxDateFrom"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -81,6 +82,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSender"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -103,6 +105,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxReceiver"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -125,6 +128,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxDateTo"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -199,6 +203,7 @@
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSubject"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -221,6 +226,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline157" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxContent"
         android:layout_width="0dp"
         android:layout_height="0dp"

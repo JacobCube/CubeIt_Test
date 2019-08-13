@@ -143,15 +143,18 @@
         android:onClick="onCharacterClicked"
         app:layout_constraintTop_toBottomOf="@+id/profile_textViewInfoCharacter" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/profile_textViewInfoCharacter"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline91"
         app:layout_constraintEnd_toStartOf="@+id/profile_EquipItem5"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/profile_EquipItem9"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline91"
@@ -199,5 +202,6 @@
         app:layout_constraintEnd_toEndOf="@+id/profile_imageViewCharacter"
         app:layout_constraintStart_toStartOf="@+id/profile_imageViewCharacter"
         app:layout_constraintTop_toTopOf="parent" />
+
 
 </android.support.constraint.ConstraintLayout>

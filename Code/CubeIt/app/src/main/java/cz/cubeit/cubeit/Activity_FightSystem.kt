@@ -9,32 +9,37 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
+import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.buttonCloseDialog
+import kotlinx.android.synthetic.main.popup_dialog.view.*
+import java.lang.Math.max
 import kotlin.random.Random.Default.nextInt
 
-private var enemy = Player()
-private var npc = NPC()
+class FightSystem : AppCompatActivity() {              //In order to pass the enemyData.player - intent.putExtra(enemy, /username/)
+    private lateinit var enemy: FightEnemy
+    private lateinit var playerFight: FightPlayer
 
-class FightSystem(val playerFight:Player = player) : AppCompatActivity() {              //In order to pass the enemy player - intent.putExtra(enemy, /username/)
     private var roundCounter = 0
-    private var requiredEnergy = 0
-    private var requiredEnergyEnemy = 0
-    private var playerStun:Int = 0
-    private var enemyStun:Int = 0
+        set(value){
+            if (value == enemy.enemy.chosenSpellsDefense.size || enemy.enemy.chosenSpellsDefense[value] == null){
+                field = 0
+            }else{
+                field = value
+            }
+        }
     private var fightEnded:Boolean = false
-
-    private var energyPlayer = playerFight.energy
-    private var energyEnemy = 0//enemy.energyPlayer
-    private var activeEffectOverTimePlayer = mutableListOf<DamageOverTime>()   //effect over time dealt by enemy to player
-    private var activeEffectOverTimeEnemy = mutableListOf<DamageOverTime>()   //effect over time dealt by player to enemy
-
-    lateinit var onDestroyView:View
-
+    private var displayY = 0
+    private var displayX = 0
+    private var spellFlowLog = mutableListOf<FightUsedSpell>()
+    private var surrender = false
 
     override fun onBackPressed() {
     }
@@ -49,10 +54,9 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
 
     override fun onDestroy() {          //if user destroys activity before fight has ended => he lost the fight
         super.onDestroy()
-        if(!fightEnded){
-            if (playerFight.username != enemy.username) {
-                endOfFight(enemy, onDestroyView)
-            }
+        if(!fightEnded && playerFight.playerFight.username != enemy.enemy.username){
+            surrender = true
+            endOfFight(enemy.enemy, Spell0)
         }
     }
 
@@ -69,56 +73,421 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
+    fun spellAnimatorStunned(enemySpell: Spell){
+        spellFightEnemy.setImageResource(enemySpell.drawable)
+    }
 
+    fun spellAnimator(imageView: ImageView, enemySpell: Spell, playerSpell: Spell){
 
-    fun spellValueAnimator(to:Float, imageView: ImageView){
-        imageView.isEnabled = false
-        handler.postDelayed({
-            imageView.isEnabled = true
-        }, 400)
-        val from = imageView.y
+        val fromX = imageView.x
+        val fromY = imageView.y
+        val fromXEnemy = spellFightEnemy.x
+        val fromYEnemy = spellFightEnemy.y
+        val fromXPlayer = spellFightPlayer.x
 
-        val fromAnim = ValueAnimator.ofFloat(imageView.y, from).apply {
-            duration = 100
-            addUpdateListener {
-                imageView.y = it.animatedValue as Float
+        spellFightEnemy.setImageResource(enemySpell.drawable)
+        spellFightPlayer.setImageDrawable(imageView.drawable)
+
+        disableSpellsFor(
+                if(enemySpell.ID == "0000" || playerSpell.ID == "0000"){
+                    600
+                }else{
+                    1600
+                }
+        )
+
+        val animationShield = AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use_shield)
+        val animationUseSpell = AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use)
+        val animationShieldResume = AnimationUtils.loadAnimation(applicationContext,
+                R.anim.animation_spell_use_shield_resume)
+        animationShield.setAnimationListener(object: Animation.AnimationListener{
+                    override fun onAnimationStart(animation: Animation) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animation) {
+
+                        if(enemySpell.ID != "0000" && playerSpell.ID == "0000"){
+                            handler.postDelayed({
+                                spellFightPlayer.alpha = 0f
+                                spellFightPlayer.startAnimation(animationShieldResume)
+                            }, 100)
+                        }else if(enemySpell.ID == "0000" && playerSpell.ID != "0000"){
+                            handler.postDelayed({
+                                spellFightEnemy.alpha = 0f
+                                spellFightEnemy.startAnimation(animationShieldResume)
+                            }, 100)
+                        }else {
+                            spellFightPlayer.alpha = 0f
+                            spellFightEnemy.alpha = 0f
+                            spellFightPlayer.startAnimation(animationShieldResume)
+                            spellFightEnemy.startAnimation(animationShieldResume)
+                        }
+                    }
+
+                    override fun onAnimationRepeat(animation: Animation) {
+                    }
+                })
+
+        /*if(isNpc){
+            if(enemySpell.id == "0000"){                                            //enemy's attack
+                imageViewSpellEnemy.startAnimation(animationShield)
+            }else{
+                imageViewSpellEnemy.animate().apply {
+                    x((displayX / 2).toFloat())
+                    y((displayY / 2 - imageViewSpellEnemy.height).toFloat())
+                    duration = 600
+                    alpha(1f)
+                    scaleX(2.5f)
+                    scaleY(2.5f)
+                    setListener(
+                            object : Animator.AnimatorListener {
+                                override fun onAnimationStart(animation: Animator) {
+                                }
+                                override fun onAnimationEnd(animation: Animator) {
+                                    imageViewSpellEnemy.x = fromXEnemy
+                                    imageViewSpellEnemy.y = fromYEnemy
+                                    imageViewSpellEnemy.alpha = 0f
+                                    handler.postDelayed({
+                                        animationShield.cancel()
+                                    },100)
+                                }
+                                override fun onAnimationCancel(animation: Animator) {
+                                }
+                                override fun onAnimationRepeat(animation: Animator) {
+                                }
+                            }
+                    )
+                    startDelay = 1000
+                    start()
+                }
+            }
+
+            if(playerSpell.id == "0000"){                                           //player's attack
+                imageView.startAnimation(animationShield)
+            }else{
+                imageView.animate().apply {
+                    x((displayX / 2).toFloat())
+                    y((displayY / 2 - imageView.height).toFloat())
+                    duration = 600
+                    alpha(0f)
+                    setListener(
+                            object : Animator.AnimatorListener {
+                                override fun onAnimationStart(animation: Animator) {
+                                }
+                                override fun onAnimationEnd(animation: Animator) {
+                                    imageView.x = fromX
+                                    imageView.y = fromY
+                                    imageView.alpha = 1f
+                                    handler.postDelayed({
+                                        animationShield.cancel()
+                                    },100)
+                                }
+                                override fun onAnimationCancel(animation: Animator) {
+                                }
+                                override fun onAnimationRepeat(animation: Animator) {
+                                }
+                            }
+                    )
+                    start()
+                }
+            }
+        }*/
+
+        imageView.startAnimation(animationUseSpell)         //bar spell animation
+
+        if(enemySpell.ID == "0000"){                        //enemy's attack
+            if(playerSpell.ID == "0000"){
+                spellFightEnemy.alpha = 1f
+                spellFightEnemy.startAnimation(animationShield)
+            }else {
+                spellFightPlayer.bringToFront()
+                handler.postDelayed({
+                    spellFightEnemy.alpha = 1f
+                    spellFightEnemy.startAnimation(animationShield)
+                }, 100)
+            }
+        }else{
+            spellFightEnemy.animate().apply {
+                x(spellFightPlayer.x)
+                duration = 600
+                alpha(1f)
+                setListener(
+                        object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {
+                            }
+                            override fun onAnimationEnd(animation: Animator) {
+                                spellFightEnemy.x = fromXEnemy
+                                spellFightEnemy.alpha = 0f
+                            }
+                            override fun onAnimationCancel(animation: Animator) {
+                            }
+                            override fun onAnimationRepeat(animation: Animator) {
+                            }
+                        }
+                )
+                startDelay = if(playerSpell.ID != "0000"){
+                    1000
+                }else{
+                    0
+                }
+                start()
             }
         }
 
-        val toAnim = ValueAnimator.ofFloat(imageView.y, to).apply {
-            duration = 300
-            addUpdateListener {
-                imageView.y = it.animatedValue as Float
+        if(playerSpell.ID == "0000"){                            //player's attack
+            if(enemySpell.ID == "0000"){
+                spellFightPlayer.alpha = 1f
+                spellFightPlayer.startAnimation(animationShield)
+            }else {
+                spellFightEnemy.bringToFront()
+                handler.postDelayed({
+                    spellFightPlayer.alpha = 1f
+                    spellFightPlayer.startAnimation(animationShield)
+                }, 100)
             }
-
-            addListener(object : Animator.AnimatorListener {
-                override fun onAnimationRepeat(animation: Animator?) {
+        }else{
+            spellFightPlayer.animate().apply {
+                x(spellFightEnemy.x)
+                duration = 600
+                alpha(1f)
+                setListener(
+                        object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {
+                            }
+                            override fun onAnimationEnd(animation: Animator) {
+                                spellFightPlayer.x = fromXPlayer
+                                spellFightPlayer.alpha = 0f
+                            }
+                            override fun onAnimationCancel(animation: Animator) {
+                            }
+                            override fun onAnimationRepeat(animation: Animator) {
+                            }
+                        }
+                )
+                startDelay = if(enemySpell.ID != "0000"){
+                    400
+                }else{
+                    0
                 }
-
-                override fun onAnimationCancel(animation: Animator?) {
-                }
-
-                override fun onAnimationStart(animation: Animator?) {
-                }
-
-                override fun onAnimationEnd(animation: Animator?) {
-                    fromAnim.start()
-                }
-
-            })
-            start()
+                start()
+            }
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private fun disableSpellsFor(millis: Long){
+        Spell0.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+        Spell1.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+        Spell2.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+        Spell3.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+        Spell4.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+        Spell5.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+        Spell6.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+        Spell7.apply {
+            isEnabled = false
+            alpha = 0.5f
+        }
+
+        handler.postDelayed(
+                {
+                    Spell0.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                    Spell1.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                    Spell2.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                    Spell3.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                    Spell4.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                    Spell5.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                    Spell6.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                    Spell7.apply {
+                        isEnabled = true
+                        alpha = 1f
+                    }
+                }, millis
+        )
+    }
+
+    inner class FightEnemy(
+            var enemy: Player
+    ){
+        var currentSpell = Spell()
+            get(){
+                return this.enemy.chosenSpellsDefense[roundCounter]!!
+            }
+        var stun = 0
+            set(value){
+                ValueAnimator.ofInt(progressBarEnemyStun.progress, value).apply{                                  //Animating the differences in progress bar
+                    duration = 600
+                    addUpdateListener {
+                        textViewEnemyStun.text = (it.animatedValue as Int).toString() + "%"
+                        progressBarEnemyStun.progress = it.animatedValue as Int
+                    }
+                    start()
+                }
+                field = value
+            }
+        var requiredEnergy = 0
+        var energy = 0
+            set(value){
+                ValueAnimator.ofInt(progressBarEnemyEnergy.progress, (value - this.requiredEnergy)).apply{                                  //Animating the differences in progress bar
+                    duration = 600
+                    addUpdateListener {
+                        textViewEnemyEnergy.text = (it.animatedValue as Int).toString()
+                        progressBarEnemyEnergy.progress = it.animatedValue as Int
+                    }
+                    start()
+                }
+                field = value
+            }
+        var EOT = mutableListOf<DamageOverTime>()       //effects over time (on this player)
+        var health = 0.0
+            set(value){
+                ValueAnimator.ofInt(progressBarEnemyHealth.progress, value.toInt()).apply{                                  //Animating the differences in progress bar
+                    duration = 600
+                    addUpdateListener {
+                        textViewEnemyHealth.text = (it.animatedValue as Int).toString()
+                        progressBarEnemyHealth.progress = it.animatedValue as Int
+                    }
+                    start()
+                }
+                field = value
+            }
+
+        init {
+            this.energy = enemy.energy.toInt()
+            this.health = enemy.health.toDouble()
+            this.stun = 0
+            this.currentSpell = this.enemy.chosenSpellsDefense[roundCounter]!!
+            progressBarEnemyHealth.max = enemy.health.toInt()
+            progressBarEnemyEnergy.max = enemy.energy
+            val temp: MutableList<Spell> = mutableListOf()
+            temp.addAll( enemy.learnedSpells.filterNotNull().toMutableList() )
+            temp.sortByDescending { it.energy }
+            progressBarEnemyEnergy.max = temp[0].energy
+        }
+
+        /*fun useSpell(playerSpell: Spell, enemySpell: Spell, view: ImageView){
+            if (roundCounter == this.enemy.chosenSpellsDefense.size || this.enemy.chosenSpellsDefense[roundCounter] == null){
+                roundCounter = 0
+            }
+
+            spellAnimator(view, enemySpell, playerSpell)
+            roundTick(playerSpell, view)
+        }*/
+    }
+
+    inner class FightPlayer(
+            var playerFight: Player
+    ){
+        var stun = 0
+            set(value){
+                ValueAnimator.ofInt(progressBarPlayerStun.progress, value).apply{                                  //Animating the differences in progress bar
+                    duration = 600
+                    addUpdateListener {
+                        textViewPlayerStun.text = (it.animatedValue as Int).toString() + "%"
+                        progressBarPlayerStun.progress = it.animatedValue as Int
+                    }
+                    start()
+                }
+                field = value
+            }
+        var requiredEnergy = 0
+        var energy = 0
+            set(value){
+                ValueAnimator.ofInt(progressBarPlayerEnergy.progress, (value - this.requiredEnergy)).apply{                                  //Animating the differences in progress bar
+                    duration = 600
+                    addUpdateListener {
+                        textViewPlayerEnergy.text = (it.animatedValue as Int).toString()
+                        progressBarPlayerEnergy.progress = it.animatedValue as Int
+                    }
+                    start()
+                }
+                field = value
+            }
+        var EOT = mutableListOf<DamageOverTime>()       //effects over time (on this player)
+        var health = 0.0
+            set(value){
+                ValueAnimator.ofInt(progressBarPlayerHealth.progress, value.toInt()).apply{                                  //Animating the differences in progress bar
+                    duration = 600
+                    addUpdateListener {
+                        textViewPlayerHealth.text = (it.animatedValue as Int).toString()
+                        progressBarPlayerHealth.progress = it.animatedValue as Int
+                    }
+                    start()
+                }
+                field = value
+            }
+
+        init {
+            this.energy = playerFight.energy.toDouble().toInt()
+            this.health = playerFight.health.toInt().toDouble()
+            this.stun = 0
+            progressBarPlayerHealth.max = playerFight.health.toInt()
+            if(playerFight.chosenSpellsAttack[0] != null){
+                val temp: MutableList<Spell> = mutableListOf()
+                temp.addAll( playerFight.chosenSpellsAttack.filterNotNull().toMutableList() )
+                temp.sortByDescending { it.energy }
+                progressBarPlayerEnergy.max = temp[0].energy
+            }
+        }
+
+        fun useSpell(playerSpell: Spell, enemySpell: Spell, view: ImageView){
+            if(roundTick(playerSpell, view)){
+                spellAnimator(view, enemySpell, playerSpell)
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {                //parameters: enemy: Player, reward: Reward
         super.onCreate(savedInstanceState)
+        val enemyPlayer = intent.extras!!.getSerializable("enemy")!! as Player
+        //reward = if(intent.extras?.getSerializable("reward") != null) intent.extras!!.getSerializable("reward")!! as Reward else null
         hideSystemUI()
-        enemy.username = intent.extras!!.getString("enemy")!!
-
         setContentView(R.layout.activity_fight_system)
-        textViewError.visibility = View.INVISIBLE
 
-        onDestroyView = Spell0
+        playerFight = FightPlayer(Data.player)
+
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 handler.postDelayed({ hideSystemUI() }, 1000)
@@ -127,37 +496,24 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
-        val displayY = dm.heightPixels
+        displayY = dm.heightPixels
+        displayX = dm.widthPixels
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        imageViewFightBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
-        imageViewFightBars.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
-
 
         fun init(){
-            imageViewEnemyChar.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.charClass.drawable, opts))
-            imageViewPlayerChar.setImageBitmap(BitmapFactory.decodeResource(resources, playerFight.charClass.drawable, opts))
+            imageViewEnemyChar.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.enemy.charClass.drawable, opts))
+            imageViewPlayerChar.setImageBitmap(BitmapFactory.decodeResource(resources, playerFight.playerFight.charClass.drawable, opts))
 
-            textViewPlayerLevel.text = playerFight.level.toString()
-            textViewEnemyLevel.text = enemy.level.toString()
+            textViewPlayerLevel.text = playerFight.playerFight.level.toString()
+            textViewEnemyLevel.text = enemy.enemy.level.toString()
+            textViewError.visibility = View.GONE
 
-            energyEnemy = enemy.energy
+            Spell0.setImageResource(playerFight.playerFight.learnedSpells[0]!!.drawable)
+            Spell1.setImageResource(playerFight.playerFight.learnedSpells[1]!!.drawable)
 
-            progressBarPlayerHealth.max = playerFight.health.toInt()
-            progressBarPlayerEnergy.max = playerFight.energy
-            progressBarEnemyHealth.max = enemy.health.toInt()
-            progressBarEnemyEnergy.max = enemy.energy
-
-            progressBarPlayerHealth.progress = playerFight.health.toInt()
-            progressBarPlayerEnergy.progress = energyPlayer
-            progressBarEnemyHealth.progress = enemy.health.toInt()
-            progressBarEnemyEnergy.progress = energyEnemy
-
-            Spell0.setImageResource(playerFight.learnedSpells[0]!!.drawable)
-            Spell1.setImageResource(playerFight.learnedSpells[1]!!.drawable)
-
-            for (i in 0 until playerFight.chosenSpellsAttack.size) {
+            for (i in 0 until playerFight.playerFight.chosenSpellsAttack.size) {
                 val spell = when (i) {
                     0 -> Spell2
                     1 -> Spell3
@@ -167,494 +523,375 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                     5 -> Spell7
                     else -> Spell2
                 }
-                if (playerFight.chosenSpellsAttack[i] != null) {
+                if (playerFight.playerFight.chosenSpellsAttack[i] != null) {
                     spell.isEnabled = true
-                    spell.setImageResource(playerFight.chosenSpellsAttack[i]!!.drawable)
+                    spell.setImageResource(playerFight.playerFight.chosenSpellsAttack[i]!!.drawable)
                 } else {
                     spell.visibility = View.GONE
                     spell.isEnabled = false
                 }
             }
-
-            textPlayer.text = playerFight.health.toInt().toString()
-            textEnemy.text = enemy.health.toInt().toString()
-            energyEnemyTextView.text = enemy.energy.toString()
-            energyTextView.text = playerFight.energy.toString()
+            textViewPlayerEnergy.text = playerFight.playerFight.energy.toString()
+            progressBarPlayerEnergy.progress = playerFight.playerFight.energy
+            textViewEnemyEnergy.text = enemy.enemy.energy.toString()
+            progressBarEnemyEnergy.progress = enemy.enemy.energy
+            Log.d("player energy", playerFight.playerFight.energy.toString())
         }
-
-        if(!intent.extras!!.getBoolean("npc")){
-            loadingStatus = LoadingStatus.LOGGING
-
-            val intent = Intent(this, Activity_Splash_Screen::class.java)
-            startActivity(intent)
-
-            enemy.loadPlayer().addOnSuccessListener {
-                enemy.syncStats()
-                init()
-
-                if (enemy.chosenSpellsDefense[0] == null) {
-                    enemy.chosenSpellsDefense[0] = enemy.charClass.spellList[0]
-                }
-                handler.postDelayed({loadingStatus = LoadingStatus.CLOSELOADING}, 50)
-            }
-        }else{
-            enemy = if(!intent.extras!!.getString("enemy").isNullOrBlank()){
-                NPC().toPlayer()
-            }else{
-                npcs[intent.extras!!.getString("enemy")!!.toInt()].toPlayer()
-            }
-            init()
-        }
-
 
         Spell0.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell0)
+                playerFight.useSpell(playerFight.playerFight.learnedSpells[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = player.learnedSpells[0]!!.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.learnedSpells[0]!!.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.learnedSpells[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell0)
+                playerFight.useSpell(playerFight.playerFight.learnedSpells[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
             }
         })
 
         Spell1.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
+                playerFight.useSpell(playerFight.playerFight.learnedSpells[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
 
-                spellValueAnimator((displayY/10*6).toFloat(), Spell1)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = player.learnedSpells[1]!!.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.learnedSpells[1]!!.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.learnedSpells[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell1)
+                playerFight.useSpell(playerFight.playerFight.learnedSpells[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
             }
         })
 
         Spell2.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell2)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[0]?.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[0]?.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[0]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell2)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
             }
         })
 
         Spell3.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell3)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[1]?.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[1]?.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[1]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell3)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
             }
         })
 
         Spell4.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell4)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[2]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[2]?.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[2]?.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[2]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell4)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[2]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
             }
         })
 
         Spell5.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell5)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[3]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[3]?.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[3]?.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[3]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell5)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[3]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
             }
         })
 
         Spell6.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell6)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[4]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[4]?.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[4]?.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[4]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell6)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[4]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
             }
         })
         Spell7.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
             override fun onSwipeUp() {
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell7)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[5]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
             }
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecs.text = playerFight.chosenSpellsAttack[5]?.getStats()
+                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[5]?.getStats()
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if (roundCounter == enemy.chosenSpellsDefense.size || enemy.chosenSpellsDefense[roundCounter] == null) roundCounter = 0
-                roundTick(playerFight.chosenSpellsAttack[5]!!, enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
-
-                spellValueAnimator((displayY/10*6).toFloat(), Spell7)
+                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[5]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
             }
         })
+
+        imageViewFightBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
+        imageViewFightBars.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
+
+        imageViewFightSurrender.setOnClickListener {
+            val viewS = layoutInflater.inflate(R.layout.popup_dialog, null, false)
+            val window = PopupWindow(this)
+            window.contentView = viewS
+            val buttonYes: Button = viewS.buttonYes
+            val buttonNo:Button = viewS.buttonCloseDialog
+            val info: TextView = viewS.textViewInfo
+            info.text = "Are you sure?"
+            window.isOutsideTouchable = false
+            window.isFocusable = true
+            buttonYes.setOnClickListener {
+                surrender = true
+                endOfFight(enemy.enemy, spellFightEnemy)
+                window.dismiss()
+            }
+            buttonNo.setOnClickListener {
+                window.dismiss()
+            }
+            window.showAtLocation(viewS, Gravity.CENTER,0,0)
+        }
+
+        Data.loadingStatus = LoadingStatus.LOGGING                           //procesing
+
+        val intent = Intent(this, Activity_Splash_Screen::class.java)
+        startActivity(intent)
+
+        enemyPlayer.syncStats()
+
+        if (enemyPlayer.chosenSpellsDefense[0] == null) {
+            enemyPlayer.chosenSpellsDefense[0] = enemyPlayer.charClass.spellList[0]
+        }
+        enemy = FightEnemy(enemyPlayer)
+        init()
+        Data.loadingStatus = LoadingStatus.CLOSELOADING
     }
     private fun attackCalc(player:Player, enemySpell:Spell, playerSpell:Spell, enemy:Player):Double{
-        var returnValue = ((playerSpell.power.toDouble() * player.power.toDouble() * enemySpell.block)/4)
+        var returnValue = ((playerSpell.power.toDouble() * Data.player.power.toDouble() * enemySpell.block)/4)
         returnValue -= returnValue/100 * enemy.armor
         return if(returnValue<0)0.0 else returnValue
     }
 
     @SuppressLint("SetTextI18n")
-    private fun roundTick(playerSpell:Spell, enemySpell:Spell, view:View){
-        if(requiredEnergy + playerSpell.energy <= energyPlayer){
-            requiredEnergy+=playerSpell.energy
-            requiredEnergyEnemy+=enemySpell.energy
+    private fun roundTick(playerSpell:Spell, view:View): Boolean{
 
-            //player's attack
-            val dmgDealtPlayer = if(playerSpell.power==0)0 else nextInt((attackCalc(playerFight, enemySpell, playerSpell, enemy)*0.75).toInt(), (attackCalc(playerFight, enemySpell, playerSpell, enemy)*1.5).toInt())
-            enemy.health -= dmgDealtPlayer                                                                                                 //Dealing damage to an enemy
-            playerFight.health += dmgDealtPlayer.safeDivider(100) * (playerSpell.lifeSteal + playerFight.lifeSteal)
-            ValueAnimator.ofInt(progressBarEnemyHealth.progress, enemy.health.toInt()).apply{                                        //Animating the differences in progress bar
-                duration = 400
-                addUpdateListener {
-                    progressBarEnemyHealth.progress = it.animatedValue as Int
-                }
-                start()
-            }
-            ValueAnimator.ofInt(progressBarPlayerHealth.progress, playerFight.health.toInt()).apply{                                  //Animating the differences in progress bar
-                duration = 400
-                addUpdateListener {
-                    progressBarPlayerHealth.progress = it.animatedValue as Int
-                }
-                start()
-            }
-            playerUsedSpell.setImageResource(playerSpell.drawable)
-            enemyStun += playerSpell.stun
-            //around here should be spell animation (make it as an attribute for a spell)
-            ValueAnimator.ofInt(progressBarEnemyStun.progress, enemyStun).apply{                                  //Animating the differences in progress bar (stun)
-                duration = 400
-                addUpdateListener {
-                    textViewEnemyStun.text = (it.animatedValue as Int).toString()+"%"
-                    progressBarEnemyStun.progress = it.animatedValue as Int
-                }
-                start()
-            }
-
-            if(enemy.health<=0){
-                endOfFight(playerFight, view)
-                return
-            }
-
-            if(activeEffectOverTimeEnemy.size>=1){
-                if(activeEffectOverTimeEnemy[0].rounds != 0){
-                    enemy.health -= (activeEffectOverTimeEnemy[0].dmg * playerFight.power/4 + playerFight.dmgOverTime).toInt()
-                    activeEffectOverTimeEnemy[0].rounds--
-                }else{
-                    activeEffectOverTimeEnemy.removeAt(0)
-
-                    if(activeEffectOverTimeEnemy.size>=1 && activeEffectOverTimeEnemy[0].rounds != 0) {
-                        enemy.health -= (activeEffectOverTimeEnemy[0].dmg * playerFight.power/4 + playerFight.dmgOverTime).toInt()
-                        activeEffectOverTimeEnemy[0].rounds--
-                    }
-                }
-            }
-            if(playerSpell.dmgOverTime.rounds!=0)activeEffectOverTimeEnemy.add(playerSpell.dmgOverTime)
-
-            //enemy's attack
-            if(enemyStun >= 100){
-                enemyStun-=100
-                Toast.makeText(this,"Enemy's been stunned", Toast.LENGTH_SHORT).show()
-            }else{
-                val dmgDealt = if(enemySpell.power==0)0 else nextInt((attackCalc(enemy, playerSpell, enemySpell, playerFight)*0.75).toInt(), (attackCalc(enemy, playerSpell, enemySpell, playerFight)*1.5).toInt())
-                playerFight.health -= dmgDealt                                                                                            //Dealing damage to a player
-                enemy.health += dmgDealt.safeDivider(100) * (enemySpell.lifeSteal+enemy.lifeSteal)
-                ValueAnimator.ofInt(progressBarPlayerHealth.progress, playerFight.health.toInt()).apply{                                  //Animating the differences in progress bar
-                    duration = 400
-                    addUpdateListener {
-                        progressBarPlayerHealth.progress = it.animatedValue as Int
-                    }
-                    start()
-                }
-                ValueAnimator.ofInt(progressBarEnemyHealth.progress, enemy.health.toInt()).apply{                                        //Animating the differences in progress bar
-                    duration = 400
-                    addUpdateListener {
-                        progressBarEnemyHealth.progress = it.animatedValue as Int
-                    }
-                    start()
-                }
-                playerStun += enemySpell.stun
-                ValueAnimator.ofInt(progressBarPlayerStun.progress, playerStun).apply{                                  //Animating the differences in progress bar (stun)
-                    duration = 400
-                    addUpdateListener {
-                        textViewPlayerStun.text = (it.animatedValue as Int).toString()+"%"
-                        progressBarPlayerStun.progress = it.animatedValue as Int
-                    }
-                    start()
-                }
-                enemyUsedSpell.setImageResource(enemySpell.drawable)
-            }
-            if(playerFight.health<=0){
-                endOfFight(enemy, view)
-                return
-            }
-
-            //damage over time
-            if(activeEffectOverTimePlayer.size>=1){
-                if(activeEffectOverTimePlayer[0].rounds != 0){
-                    playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
-                    activeEffectOverTimePlayer[0].rounds--
-                }else{
-                    activeEffectOverTimePlayer.removeAt(0)
-                    if(activeEffectOverTimePlayer.size>=1 && activeEffectOverTimePlayer[0].rounds != 0) {
-                        playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
-                        activeEffectOverTimePlayer[0].rounds--
-                    }
-                }
-            }
-            if(enemySpell.dmgOverTime.rounds!=0)activeEffectOverTimePlayer.add(enemySpell.dmgOverTime)
-            //around here should be spell animation (make it as an attribute for a spell)
-
-            //if player is stunned from last enemy's attack - attack again, roundcounter ++ as well
-            if(playerStun>=100){
-                roundCounter++
-                val tempSpell = enemy.chosenSpellsDefense[roundCounter]!!
-                playerStun-=100
-                enemyUsedSpell.setImageResource(tempSpell.drawable)
-                energyEnemy+=25
-                requiredEnergyEnemy+=enemySpell.energy
-                Toast.makeText(this,"You've been stunned", Toast.LENGTH_SHORT).show()
-
-                val dmgDealt = if(enemySpell.power==0)0 else nextInt((attackCalc(enemy, playerSpell, tempSpell, playerFight)*0.75).toInt(),(attackCalc(enemy, playerSpell, tempSpell, playerFight)*1.5).toInt())
-                playerFight.health -= dmgDealt                                                                                    //Dealing damage to a player in case he's being stunned
-                enemy.health += dmgDealt.safeDivider(100) * (tempSpell.lifeSteal+enemy.lifeSteal)
-                textPlayer.text = playerFight.health.toInt().toString()
-                ValueAnimator.ofInt(progressBarPlayerHealth.progress, playerFight.health.toInt()).apply{                          //Animating the differences in progress bar
-                    duration = 400
-                    addUpdateListener {
-                        textViewPlayerStun.text = (it.animatedValue as Int).toString()+"%"
-                        progressBarPlayerHealth.progress = (it.animatedValue) as Int
-                    }
-                    start()
-                }
-                ValueAnimator.ofInt(progressBarEnemyHealth.progress, enemy.health.toInt()).apply{                                        //Animating the differences in progress bar
-                    duration = 400
-                    addUpdateListener {
-                        progressBarEnemyHealth.progress = it.animatedValue as Int
-                    }
-                    start()
-                }
-                playerStun += tempSpell.stun
-                ValueAnimator.ofInt(progressBarPlayerStun.progress, playerStun).apply{                                  //Animating the differences in progress bar (stun)
-                    duration = 400
-                    addUpdateListener {
-                        progressBarPlayerStun.progress = it.animatedValue as Int
-                    }
-                    start()
-                }
-
-                if(playerFight.health<=0){
-                    endOfFight(enemy, view)
-                    return
-                }
-
-                if(activeEffectOverTimePlayer.size>=1){
-                    if(activeEffectOverTimePlayer[0].rounds != 0){
-                        playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
-                        activeEffectOverTimePlayer[0].rounds--
-                    }else{
-                        activeEffectOverTimePlayer.removeAt(0)
-                        if(activeEffectOverTimePlayer.size>=1 && activeEffectOverTimePlayer[0].rounds != 0) {
-                            playerFight.health -= (activeEffectOverTimePlayer[0].dmg * enemy.power/4 + enemy.dmgOverTime).toInt()
-                            activeEffectOverTimePlayer[0].rounds--
-                        }
-                    }
-                }
-                if(tempSpell.dmgOverTime.rounds!=0)activeEffectOverTimePlayer.add(tempSpell.dmgOverTime)
-            }
-
-
-            roundCounter++
-            energyPlayer+=25
-            energyEnemy+=25
-            textPlayer.text = playerFight.health.toInt().toString()
-            textEnemy.text = enemy.health.toInt().toString()
-            energyEnemyTextView.text = (energyEnemy - requiredEnergyEnemy).toString()
-            energyTextView.text = (energyPlayer - requiredEnergy).toString()
-            textViewError.visibility = View.GONE
-
-            ValueAnimator.ofInt(progressBarPlayerEnergy.progress, energyPlayer).apply{                                  //Animating the differences in progress bar
-                duration = 400
-                addUpdateListener {
-                    progressBarPlayerEnergy.progress = it.animatedValue as Int
-                }
-                start()
-            }
-            ValueAnimator.ofInt(progressBarEnemyEnergy.progress, energyEnemy).apply{                                  //Animating the differences in progress bar
-                duration = 400
-                addUpdateListener {
-                    progressBarEnemyEnergy.progress = it.animatedValue as Int
-                }
-                start()
-            }
-            if(playerFight.health<=0)endOfFight(enemy, view)
-            if(enemy.health<=0)endOfFight(playerFight, view)
-        }else{
+        if(playerFight.requiredEnergy + playerSpell.energy > playerFight.energy){
             textViewError.text = "Not enough energy"
             textViewError.visibility = View.VISIBLE
+            return false
+        }else {
+            textViewError.visibility = View.GONE
         }
+
+        playerFight.requiredEnergy += playerSpell.energy
+        enemy.requiredEnergy += enemy.currentSpell.energy
+
+        //player's attack
+        val dmgDealtPlayer = if(playerSpell.power==0)0 else nextInt((attackCalc(playerFight.playerFight, enemy.currentSpell, playerSpell, enemy.enemy)*0.75).toInt(), max((attackCalc(playerFight.playerFight, enemy.currentSpell, playerSpell, enemy.enemy)*1.5).toInt(), 1))
+        spellFlowLog.add(FightUsedSpell(playerFight.playerFight.username, playerSpell, dmgDealtPlayer))
+
+        enemy.health -= dmgDealtPlayer                                                                                                 //Dealing damage to an enemy
+        playerFight.health += dmgDealtPlayer.safeDivider(100) * (playerSpell.lifeSteal + playerFight.playerFight.lifeSteal)
+        Log.d("healed", (dmgDealtPlayer.safeDivider(100) * (playerSpell.lifeSteal + playerFight.playerFight.lifeSteal)).toString())
+        imageViewPlayerUsedSpell.setImageResource(playerSpell.drawable)
+        enemy.stun += playerSpell.stun
+
+        if(enemy.health<=0){
+            endOfFight(playerFight.playerFight, view)
+            return true
+        }
+
+        if(enemy.EOT.size>=1){
+            if(enemy.EOT[0].rounds != 0){
+                enemy.health -= (enemy.EOT[0].dmg * playerFight.playerFight.power/4 + playerFight.playerFight.dmgOverTime).toInt()
+                enemy.EOT[0].rounds--
+            }else{
+                enemy.EOT.removeAt(0)
+
+                if(enemy.EOT.size>=1 && enemy.EOT[0].rounds != 0) {
+                    enemy.health -= (enemy.EOT[0].dmg * playerFight.playerFight.power/4 + playerFight.playerFight.dmgOverTime).toInt()
+                    enemy.EOT[0].rounds--
+                }
+            }
+        }
+        if(playerSpell.dmgOverTime.rounds!=0)enemy.EOT.add(playerSpell.dmgOverTime.clone())
+
+        //enemy's attack
+        if(enemy.stun >= 100){       //skip 1 round
+            enemy.stun -= 100
+            Toast.makeText(this,"Enemy's been stunned", Toast.LENGTH_SHORT).show()
+        }else{
+            val dmgDealt = if(enemy.currentSpell.power==0)0 else nextInt((attackCalc(enemy.enemy, playerSpell, enemy.currentSpell, playerFight.playerFight) * 0.75).toInt(), max((attackCalc(enemy.enemy, playerSpell, enemy.currentSpell, playerFight.playerFight) * 1.5).toInt(), 1))
+            spellFlowLog.add(FightUsedSpell(enemy.enemy.username, enemy.currentSpell, dmgDealt))
+
+            playerFight.health -= dmgDealt                                                                                            //Dealing damage to a player
+            enemy.health += dmgDealt.safeDivider(100) * (enemy.currentSpell.lifeSteal + enemy.enemy.lifeSteal)
+            playerFight.stun += enemy.currentSpell.stun
+            imageViewEnemyUsedSpell.setImageResource(enemy.currentSpell.drawable)
+        }
+        if(playerFight.health<=0){
+            endOfFight(enemy.enemy, view)
+            return true
+        }
+
+        //damage over time
+        if(playerFight.EOT.size >= 1){
+            if(playerFight.EOT[0].rounds != 0){
+                playerFight.health -= (playerFight.EOT[0].dmg * enemy.enemy.power/4 + enemy.enemy.dmgOverTime).toInt()
+                playerFight.EOT[0].rounds--
+            }else{
+                playerFight.EOT.removeAt(0)
+                if(playerFight.EOT.size>=1 && playerFight.EOT[0].rounds != 0) {
+                    playerFight.health -= (playerFight.EOT[0].dmg * enemy.enemy.power/4 + enemy.enemy.dmgOverTime).toInt()
+                    playerFight.EOT[0].rounds--
+                }
+            }
+        }
+        if(enemy.currentSpell.dmgOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.dmgOverTime.clone())
+        //around here should be spell animation (make it as an attribute for a spell)
+
+        //ifData.player is stunned from last enemy's attack - attack again
+        if(playerFight.stun >= 100){
+            roundCounter++
+            playerFight.stun -= 100
+            imageViewEnemyUsedSpell.setImageResource(enemy.currentSpell.drawable)
+            enemy.energy += 25
+            enemy.requiredEnergy += enemy.currentSpell.energy
+            Toast.makeText(this,"You've been stunned", Toast.LENGTH_SHORT).show()
+
+            val dmgDealt = if(enemy.currentSpell.power==0)0 else nextInt((attackCalc(enemy.enemy, playerSpell, enemy.currentSpell, playerFight.playerFight) * 0.75).toInt(), max((attackCalc(enemy.enemy, playerSpell, enemy.currentSpell, playerFight.playerFight) * 1.5).toInt(), 1))
+            spellFlowLog.add(FightUsedSpell(enemy.enemy.username, enemy.currentSpell, dmgDealt))
+
+            playerFight.health -= dmgDealt                                                                                    //Dealing damage to aData.player in case he's being stunned
+            enemy.health += dmgDealt.safeDivider(100) * (enemy.currentSpell.lifeSteal+enemy.enemy.lifeSteal)
+            playerFight.stun += enemy.currentSpell.stun
+
+            if(playerFight.health <= 0){
+                endOfFight(enemy.enemy, view)
+                return true
+            }
+
+            if(playerFight.EOT.size>=1){
+                if(playerFight.EOT[0].rounds != 0){
+                    playerFight.health -= (playerFight.EOT[0].dmg * enemy.enemy.power/4 + enemy.enemy.dmgOverTime).toInt()
+                    playerFight.EOT[0].rounds--
+                }else{
+                    playerFight.EOT.removeAt(0)
+                    if(playerFight.EOT.size >= 1 && playerFight.EOT[0].rounds != 0) {
+                        playerFight.health -= (playerFight.EOT[0].dmg * enemy.enemy.power/4 + enemy.enemy.dmgOverTime).toInt()
+                        playerFight.EOT[0].rounds--
+                    }
+                }
+            }
+            if(enemy.currentSpell.dmgOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.dmgOverTime.clone())
+        }
+
+        roundCounter++
+        enemy.energy += 25
+        playerFight.energy += 25
+        if(playerFight.health <= 0)endOfFight(enemy.enemy, view)
+        if(enemy.health <= 0)endOfFight(playerFight.playerFight, view)
+
+        return true
     }
 
     @SuppressLint("SetTextI18n")
     private fun endOfFight(winner:Player, view: View) {
         fightEnded = true
-        if (playerFight.username == enemy.username) {
+
+        val window = PopupWindow(this)
+        val viewPop: View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
+        window.elevation = 0.0f
+        window.contentView = viewPop
+        val textViewQuest: CustomTextView = viewPop.textViewQuest
+        val buttonAccept: Button = viewPop.buttonAccept
+        val buttonClose: Button = viewPop.buttonCloseDialog
+        val imageItem: ImageView = viewPop.imageViewAdventure
+        val textViewStats: CustomTextView = viewPop.textViewItemStats
+
+        var reward: Reward? = Reward().generate(winner)
+        val playerName = playerFight.playerFight.username
+        val enemyName = enemy.enemy.username
+        var fameGained = nextInt(0, 100)
+
+        if (playerName == enemyName) {
             val endFight = Intent(this, Home::class.java)
             endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(endFight)
             this.overridePendingTransition(0, 0)
-        } else {
+        } else {                                                                    //revenge bonus?, other bonuses? TODO
 
-            var reward: Reward? = Reward().generate(winner)
-            var fameGained = nextInt(0, 100)
+            var looserName: String
 
-            if (winner.username == playerFight.username) {
-                if (enemy.fame <= fameGained) fameGained = enemy.fame
-                enemy.fame -= fameGained
-
-                if(playerFight.level > enemy.level+2){
+            if (winner.username == playerName) {
+                if (enemy.enemy.fame <= fameGained) fameGained = enemy.enemy.fame
+                if(playerFight.playerFight.level > enemy.enemy.level+2){
                     reward = null
                 }
-                playerFight.writeInbox(enemy.username, InboxMessage(status = MessageStatus.Fight, receiver = enemy.username, sender = playerFight.username, subject = "${playerFight.username} fought you!", content = "${playerFight.username} fought you and you lost!\nYou lost $fameGained fame.\nNow it's your turn to decide who's gonna win the battle."))
-            } else {
-                if (playerFight.fame <= fameGained) fameGained = playerFight.fame
-                playerFight.fame -= fameGained
+                looserName = enemyName
 
-                if(enemy.level > playerFight.level+2){
+                playerFight.playerFight.writeInbox(enemyName, InboxMessage(status = MessageStatus.Fight, receiver = enemyName, sender = playerName, subject = "$playerName fought you!", content = "$playerName fought you and you lost!\nYou lost $fameGained fame.\nNow it's your turn to decide who's gonna win the war."))
+            } else {
+                if (playerFight.playerFight.fame <= fameGained) fameGained = playerFight.playerFight.fame
+                if (enemy.enemy.level > playerFight.playerFight.level + 2) {
                     reward = null
                 }
-                playerFight.writeInbox(enemy.username, InboxMessage(status = MessageStatus.Fight, receiver = enemy.username, sender = playerFight.username, reward = reward, subject = "${playerFight.username} fought you!", content = "${playerFight.username} fought you and you won!\nYou won $fameGained fame.\nNow it's your turn to decide who's gonna win the battle."))
+                looserName = playerName
+
+                playerFight.playerFight.writeInbox(enemyName, InboxMessage(status = MessageStatus.Fight, receiver = enemyName, sender = playerName, reward = reward, subject = "$playerName fought you!", content = "$playerName fought you and you won!\nYou won $fameGained fame.\nNow it's your turn to decide who's gonna win the war."))
             }
 
-            //winner.fame += fameGained
 
-            val window = PopupWindow(this)
-            val viewPop: View = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null)
-            window.elevation = 0.0f
-            window.contentView = viewPop
-            val textViewQuest: CustomTextView = viewPop.textViewQuest
-            val buttonAccept: Button = viewPop.buttonAccept
-            val buttonClose: Button = viewPop.buttonCloseDialog
-            val imageItem: ImageView = viewPop.imageViewAdventure
-            val textViewStats: CustomTextView = viewPop.textViewItemStats
+            val log = FightLog(winnerName = winner.username, looserName = looserName, spellFlow = spellFlowLog, reward = reward!!, fame = fameGained, surrenderRound = if(surrender)roundCounter else null)
+            if(surrender)finish()
 
-
-            if (reward?.item != null) {
-                imageItem.setImageResource(reward.item!!.drawable)
-                imageItem.isClickable = true
-                imageItem.isEnabled = true
-
-                imageItem.setOnClickListener {
-                    textViewStats.visibility = if(textViewStats.visibility == View.GONE)View.VISIBLE else View.GONE
-
-                    textViewStats.setHTMLText(reward.item!!.getStatsCompare())
-                }
-            } else {
-                imageItem.isClickable = false
-                imageItem.isEnabled = false
-            }
-
-            textViewQuest.text = "${winner.username} earned:\n${reward?.getStats() ?: ""}\n\nfame points  $fameGained"
-
-
+            textViewQuest.text = "${winner.username} won" +
+                    "\n and earned:" +
+                    "\n${reward.getStats()}" +
+                    "\n\nand $fameGained fame points"
 
             window.isOutsideTouchable = false
             window.isFocusable = true
             window.setOnDismissListener {
-                reward?.receive()
+                if(winner.username == playerName)reward.receive()
                 window.dismiss()
                 val endFight = Intent(this, Home::class.java)
                 endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -674,6 +911,21 @@ class FightSystem(val playerFight:Player = player) : AppCompatActivity() {      
                 endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(endFight)
                 this.overridePendingTransition(0, 0)
+            }
+
+            if (reward.item != null) {
+                imageItem.setImageResource(reward.item!!.drawable)
+                imageItem.isClickable = true
+                imageItem.isEnabled = true
+
+                imageItem.setOnClickListener {
+                    textViewStats.visibility = if (textViewStats.visibility == View.GONE) View.VISIBLE else View.GONE
+
+                    textViewStats.setHTMLText(reward.item!!.getStatsCompare())
+                }
+            } else {
+                imageItem.isClickable = false
+                imageItem.isEnabled = false
             }
 
             window.showAtLocation(view, Gravity.CENTER, 0, 0)

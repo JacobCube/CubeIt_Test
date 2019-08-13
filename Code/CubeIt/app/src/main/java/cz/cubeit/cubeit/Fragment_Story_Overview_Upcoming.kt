@@ -22,8 +22,8 @@ class Fragment_Story_Overview_Upcoming : Fragment() {
         val opts = BitmapFactory.Options()
         opts.inScaled = false
 
-        storyQuests.sortWith(compareBy {it.reqLevel})
-        view.listViewStoryUpcoming.adapter = StoryOverviewUpcomingAdapter(storyQuests, activity!!)
+        Data.storyQuests.sortWith(compareBy {it.reqLevel})
+        view.listViewStoryUpcoming.adapter = StoryOverviewUpcomingAdapter(Data.storyQuests, activity!!)
         return view
     }
 }
@@ -55,7 +55,7 @@ private class StoryOverviewUpcomingAdapter(var storyUpcoming:MutableList<StoryQu
         } else rowMain = convertView
         val viewHolder = rowMain.tag as ViewHolder
 
-        if(storyUpcoming[position].reqLevel <= player.level){
+        if(storyUpcoming[position].reqLevel <= Data.player.level){
             viewHolder.imageViewLockedQuest.visibility = View.INVISIBLE
         }else {
             viewHolder.imageViewLockedQuest.visibility = View.VISIBLE

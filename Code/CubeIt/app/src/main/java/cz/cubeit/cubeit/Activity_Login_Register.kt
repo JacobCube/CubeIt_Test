@@ -7,7 +7,9 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_login_register.*
 
 val handler = Handler()
@@ -40,12 +42,6 @@ class ActivityLoginRegister(private val loginUsername: String = "", private val 
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_login_register)
-
-
-        val args = Bundle()
-        args.putString("loginUsername", loginUsername)
-        args.putString("loginEmail", loginEmail)
-        FragmentLogin().arguments = args
 
         val adapter = ViewPagerAdapterLoginRegister(supportFragmentManager)
         viewPagerLoginRegister!!.adapter = adapter

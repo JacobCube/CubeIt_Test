@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
+    android:animateLayoutChanges="true"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
@@ -77,6 +78,7 @@
         app:srcCompat="@drawable/filter" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputSearchInbox"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -157,6 +159,7 @@
     </FrameLayout>
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"

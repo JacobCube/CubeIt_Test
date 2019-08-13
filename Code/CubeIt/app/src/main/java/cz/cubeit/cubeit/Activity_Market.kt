@@ -92,6 +92,7 @@ class Activity_Market:AppCompatActivity(){
         windowManager.defaultDisplay.getMetrics(dm)
         displayY = dm.heightPixels.toDouble()
         textViewMarketItem = textViewMarketItemInfo
+        textViewMarketMoney.text = "${Data.player.money} C\n${Data.player.cubeCoins} CB"
 
         val rotateAnimation = RotateAnimation(
                 0f, 360f,
@@ -114,16 +115,7 @@ class Activity_Market:AppCompatActivity(){
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuMarket, Fragment_Menu_Bar.newInstance(R.id.layoutMarket, R.id.frameLayoutMenuMarket, R.id.homeButtonBackMarket, R.id.imageViewMenuUpMarket)).commitNow()
         frameLayoutMenuMarket.y = dm.heightPixels.toFloat()
 
-        listViewMarketItems.adapter = MarketItemsList(itemsList, this)
-
-        docRef.orderBy("creationTime", Query.Direction.DESCENDING).limit(50).get().addOnSuccessListener {
-            itemsList = it.toObjects(MarketOffer::class.java)
-            listViewMarketItems.adapter = MarketItemsList(itemsList, this)
-            Log.d("itemslist ", itemsList.size.toString())
-            (listViewMarketItems.adapter as MarketItemsList).notifyDataSetChanged()
-        }.addOnCompleteListener {
-            rotateAnimation.cancel()
-        }
+        //listViewMarketItems.adapter = MarketItemsList(itemsList, this, textViewMarketMoney)
 
         rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
 
@@ -139,10 +131,19 @@ class Activity_Market:AppCompatActivity(){
             }
         })
 
+        docRef.orderBy("creationTime", Query.Direction.DESCENDING).limit(25).get().addOnCompleteListener {
+            if(it.isSuccessful){
+                itemsList = it.result!!.toObjects(MarketOffer::class.java)
+            }
+            listViewMarketItems.adapter = MarketItemsList(itemsList, this, textViewMarketMoney)
+            (listViewMarketItems.adapter as MarketItemsList).notifyDataSetChanged()
+            rotateAnimation.cancel()
+        }
+
         imageViewMarketMyOffers.setOnClickListener {
             frameLayoutMarketRegisterOffer.visibility = View.GONE
             imageViewLoadingMarket.startAnimation(rotateAnimation)
-            docRef.whereEqualTo("seller", player.username).limit(50).get().addOnCompleteListener {
+            db.collection("market").whereEqualTo("seller", Data.player.username).limit(50).get().addOnCompleteListener {
                 if(it.isSuccessful){
                     itemsList = it.result!!.toObjects(MarketOffer::class.java)
                     (listViewMarketItems.adapter as MarketItemsList).updateList(itemsList)
@@ -158,8 +159,8 @@ class Activity_Market:AppCompatActivity(){
 
 
         textViewMarketBarPrice.setOnClickListener {
-            if(textViewMarketBarDate.text.toString() != "date"){
-                textViewMarketBarDate.text = "date"
+            if(textViewMarketBarDate.text.toString() != "exp. date"){
+                textViewMarketBarDate.text = "exp. date"
                 filterDate = true
             }
             if(textViewMarketBarItem.text.toString() != "item"){
@@ -209,11 +210,11 @@ class Activity_Market:AppCompatActivity(){
             }
 
             filterDate = if(filterDate){
-                textViewMarketBarDate.text = "date " + String(Character.toChars(0x25B2))
+                textViewMarketBarDate.text = "exp. date " + String(Character.toChars(0x25B2))
                 itemsList.sortBy{ it.expiryDate }
                 false
             }else{
-                textViewMarketBarDate.text = "date " + String(Character.toChars(0x25BC))
+                textViewMarketBarDate.text = "exp. date " + String(Character.toChars(0x25BC))
                 itemsList.sortByDescending{ it.expiryDate }
                 true
             }
@@ -225,8 +226,8 @@ class Activity_Market:AppCompatActivity(){
                 textViewMarketBarPrice.text = "price"
                 filterPrice = 0
             }
-            if(textViewMarketBarDate.text.toString() != "date"){
-                textViewMarketBarDate.text = "date"
+            if(textViewMarketBarDate.text.toString() != "exp. date"){
+                textViewMarketBarDate.text = "exp. date"
                 filterDate = true
             }
 
@@ -275,10 +276,21 @@ class Activity_Market:AppCompatActivity(){
 
             imageViewSearchIconMarket.setOnClickListener {
                 imageViewLoadingMarket.startAnimation(rotateAnimation)
-                docRef.whereGreaterThanOrEqualTo("itemName", editTextMarketSearch.text.toString()).get().addOnSuccessListener {             //filter by its item's name
-                    itemsList = it.toObjects(MarketOffer::class.java)
-                    (listViewMarketItems.adapter as MarketItemsList).updateList(itemsList)
-                    rotateAnimation.cancel()
+                if(editTextMarketSearch.text.isNotEmpty()){
+                    docRef.whereGreaterThanOrEqualTo("itemName", editTextMarketSearch.text.toString()).get().addOnSuccessListener {             //filter by its item's name
+                        itemsList = it.toObjects(MarketOffer::class.java)
+                        (listViewMarketItems.adapter as MarketItemsList).updateList(itemsList)
+                        rotateAnimation.cancel()
+                    }
+                }else {
+                    docRef.orderBy("creationTime", Query.Direction.DESCENDING).limit(25).get().addOnCompleteListener {
+                        if(it.isSuccessful){
+                            itemsList = it.result!!.toObjects(MarketOffer::class.java)
+                        }
+                        listViewMarketItems.adapter = MarketItemsList(itemsList, this, textViewMarketMoney)
+                        (listViewMarketItems.adapter as MarketItemsList).notifyDataSetChanged()
+                        rotateAnimation.cancel()
+                    }
                 }
             }
 
@@ -335,7 +347,7 @@ class Activity_Market:AppCompatActivity(){
     }
 }
 
-class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, val activity: Activity_Market) : BaseAdapter() {
+class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, val activity: Activity_Market, val textViewMoney: TextView) : BaseAdapter() {
 
     override fun getCount(): Int {
         return itemsListAdapter.size
@@ -366,7 +378,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
         } else rowMain = convertView
         val viewHolder = rowMain.tag as ViewHolder
 
-        viewHolder.buttonRemove.visibility = if(itemsListAdapter[position].seller == player.username){      //if player owns the offer, he can delete it
+        viewHolder.buttonRemove.visibility = if(itemsListAdapter[position].seller == Data.player.username){      //ifData.player owns the offer, he can delete it
             val db = FirebaseFirestore.getInstance()
 
             viewHolder.buttonRemove.setOnClickListener {
@@ -384,13 +396,14 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
 
                 viewPopBuy.buttonYes.setOnClickListener {
                     viewHolder.buttonRemove.isEnabled = false
-                    if(player.inventory.contains(null)){
-                        player.inventory[player.inventory.indexOf(null)] = itemsListAdapter[position].item
+                    if(Data.player.inventory.contains(null)){
+                        Data.player.inventory[Data.player.inventory.indexOf(null)] = itemsListAdapter[position].item
                         db.collection("market").document(itemsListAdapter[position].id.toString()).delete()
                                 .addOnCompleteListener{
                                     Toast.makeText(activity, if(it.isSuccessful){
                                         itemsListAdapter.removeAt(position)
                                         this.notifyDataSetChanged()
+                                        textViewMoney.text = "${Data.player.money} C\n${Data.player.cubeCoins} CB"
                                         "Offer successfully removed."
                                     }else{
                                         "Error has occurred."
@@ -413,6 +426,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
         viewHolder.textViewMarketName.setHTMLText(itemsListAdapter[position].getGenericStatsOffer())
         viewHolder.textViewMarketPrice.setHTMLText(itemsListAdapter[position].getSpecStatsOffer())
         viewHolder.imageViewMarketItem.setImageResource(itemsListAdapter[position].item!!.drawable)
+        viewHolder.imageViewMarketItem.setBackgroundResource(itemsListAdapter[position].item!!.getBackground())
         viewHolder.textViewMarketUntilDate.text = SimpleDateFormat("dd/MM/yy").format(itemsListAdapter[position].expiryDate)
         viewHolder.textViewMarketSeller.text = itemsListAdapter[position].seller
 
@@ -459,14 +473,14 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                     windowBuy.dismiss()
                 }
 
-                viewPopBuy.buttonYes.isEnabled = player.money >= itemsListAdapter[position].priceCoins && player.cubeCoins >= itemsListAdapter[position].priceCubeCoins
+                viewPopBuy.buttonYes.isEnabled = Data.player.money >= itemsListAdapter[position].priceCoins && Data.player.cubeCoins >= itemsListAdapter[position].priceCubeCoins
 
                 viewPopBuy.buttonYes.setOnClickListener {
-                    if(player.inventory.contains(null)){
+                    if(Data.player.inventory.contains(null)){
                         windowBuy.dismiss()
                         window.dismiss()
                         rowMain.isEnabled = false
-                        itemsListAdapter[position].buyer = player.username
+                        itemsListAdapter[position].buyer = Data.player.username
                         itemsListAdapter[position].deleteOffer().addOnCompleteListener {
                             if (it.isSuccessful) {
                                 itemsListAdapter.removeAt(position)

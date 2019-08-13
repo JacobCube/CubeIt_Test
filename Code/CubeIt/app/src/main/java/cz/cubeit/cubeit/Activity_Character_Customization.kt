@@ -9,6 +9,7 @@ import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import kotlinx.android.synthetic.main.activity_character_customization.*
+import kotlin.random.Random.Default.nextInt
 
 
 class Activity_Character_Customization: AppCompatActivity(){
@@ -37,15 +38,16 @@ class Activity_Character_Customization: AppCompatActivity(){
             }
         }
 
-        textViewCurrentCharacter.text = "Vampire"
-        textViewStatsCustomization.text = getString(R.string.character_ratio, (charClasses[1].dmgRatio*100).toString() + "%",(charClasses[1].armorRatio*100).toString() + "%", charClasses[1].blockRatio.toString() + "%", (charClasses[1].hpRatio*100).toInt().toString() + "%", (charClasses[1].staminaRatio*100).toString() + "%", charClasses[1].lifeSteal.toString())
-        textViewCharacterDescription.text = charClasses[1].description
+        var viewPagerPosition = nextInt(0, 7)
+        viewPagerCharacterCustomization.currentItem = viewPagerPosition
+
+        textViewCurrentCharacter.text = Data.charClasses[viewPagerPosition+1].name
+        textViewStatsCustomization.text = getString(R.string.character_ratio, (Data.charClasses[viewPagerPosition+1].dmgRatio*100).toString() + "%",(Data.charClasses[viewPagerPosition+1].armorRatio*100).toString() + "%", Data.charClasses[viewPagerPosition+1].blockRatio.toString() + "%", (Data.charClasses[viewPagerPosition+1].hpRatio*100).toInt().toString() + "%", (Data.charClasses[viewPagerPosition+1].staminaRatio*100).toString() + "%", Data.charClasses[viewPagerPosition+1].lifeSteal.toString())
+        textViewCharacterDescription.text = Data.charClasses[viewPagerPosition+1].description
 
         if (viewPagerCharacterCustomization!= null) {
             viewPagerCharacterCustomization.adapter = ViewPagerCharacterCustomization(supportFragmentManager)
         }
-
-        var viewPagerPosition = 0
 
         viewPagerCharacterCustomization.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
@@ -58,9 +60,9 @@ class Activity_Character_Customization: AppCompatActivity(){
             override fun onPageSelected(position: Int) {
                 viewPagerPosition = viewPagerCharacterCustomization.currentItem
 
-                textViewCurrentCharacter.text = charClasses[viewPagerPosition+1].name
-                textViewStatsCustomization.text = getString(R.string.character_ratio, (charClasses[position+1].dmgRatio*100).toString() + "%",(charClasses[position+1].armorRatio*100).toString() + "%", charClasses[position+1].blockRatio.toString() + "%", (charClasses[position+1].hpRatio*100).toInt().toString() + "%", (charClasses[position+1].staminaRatio*100).toString() + "%", charClasses[position+1].lifeSteal.toString())
-                textViewCharacterDescription.text = charClasses[position+1].description
+                textViewCurrentCharacter.text = Data.charClasses[viewPagerPosition+1].name
+                textViewStatsCustomization.text = getString(R.string.character_ratio, (Data.charClasses[position+1].dmgRatio*100).toString() + "%",(Data.charClasses[position+1].armorRatio*100).toString() + "%", Data.charClasses[position+1].blockRatio.toString() + "%", (Data.charClasses[position+1].hpRatio*100).toInt().toString() + "%", (Data.charClasses[position+1].staminaRatio*100).toString() + "%", Data.charClasses[position+1].lifeSteal.toString())
+                textViewCharacterDescription.text = Data.charClasses[position+1].description
             }
         })
 
@@ -87,11 +89,11 @@ class Activity_Character_Customization: AppCompatActivity(){
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
 
-            player.charClassIndex = viewPagerPosition+1
-            player.newPlayer = false
+            Data.player.charClassIndex = viewPagerPosition+1
+            Data.player.newPlayer = false
 
-            val charClass = player.charClass
-            player.currentSurfaces = mutableListOf(
+            val charClass = Data.player.charClass
+            Data.player.currentSurfaces = mutableListOf(
                     CurrentSurface(mutableListOf(Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate(), Quest(surface = 0).generate()))
                     ,CurrentSurface(mutableListOf(Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate(), Quest(surface = 1).generate()))
                     ,CurrentSurface(mutableListOf(Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate(), Quest(surface = 2).generate()))
@@ -99,12 +101,12 @@ class Activity_Character_Customization: AppCompatActivity(){
                     ,CurrentSurface(mutableListOf(Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate(), Quest(surface = 4).generate()))
                     ,CurrentSurface(mutableListOf(Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate(), Quest(surface = 5).generate()))
             )
-            player.learnedSpells = mutableListOf(charClass.spellList[0], charClass.spellList[1], charClass.spellList[2], charClass.spellList[3], charClass.spellList[4])
-            player.shopOffer = arrayOf(generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player), generateItem(player))
+            Data.player.learnedSpells = mutableListOf(charClass.spellList[0], charClass.spellList[1], charClass.spellList[2], charClass.spellList[3], charClass.spellList[4])
+            Data.player.shopOffer = mutableListOf(GameFlow.generateItem(Data.player), GameFlow.generateItem(Data.player), GameFlow.generateItem(Data.player), GameFlow.generateItem(Data.player), GameFlow.generateItem(Data.player), GameFlow.generateItem(Data.player), GameFlow.generateItem(Data.player), GameFlow.generateItem(Data.player))
 
 
-            player.toLoadPlayer().uploadPlayer().addOnSuccessListener {
-                loadingStatus = LoadingStatus.LOGGED
+            Data.player.uploadPlayer().addOnSuccessListener {
+                Data.loadingStatus = LoadingStatus.LOGGED
             }
         }
 
@@ -128,17 +130,8 @@ class Activity_Character_Customization: AppCompatActivity(){
 class ViewPagerCharacterCustomization internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
-        return when (position) {
-            0 -> Fragment_Character_0()
-            1 -> Fragment_Character_1()
-            2 -> Fragment_Character_2()
-            3 -> Fragment_Character_3()
-            4 -> Fragment_Character_4()
-            5 -> Fragment_Character_5()
-            6 -> Fragment_Character_6()
-            7 -> Fragment_Character_7()
-            else -> null
-        }
+        val drawable = Data.charClasses[position].drawable
+        return Fragment_Character.newInstance(drawable)
     }
 
     override fun getCount(): Int {

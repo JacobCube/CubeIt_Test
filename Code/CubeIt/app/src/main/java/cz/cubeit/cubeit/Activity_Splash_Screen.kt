@@ -9,17 +9,19 @@ import kotlinx.android.synthetic.main.activity_splash_screen.*
 import android.view.animation.RotateAnimation
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.widget.TextView
 import kotlin.random.Random.Default.nextInt
 
+var textViewLog: TextView? = null
 
 class Activity_Splash_Screen: AppCompatActivity(){
 
     var keepSplash: Boolean = false
-
-    val splashTexts: Array<String> = arrayOf(
+    val splashTexts: MutableList<String> = mutableListOf(
             "We're contacting your parents, stay patient.",
             "Don't forget to follow our Instagram @cubeit_app.",
             "Feel free to submit a meme to our subreddit /r/cubeit_app.",
@@ -40,6 +42,10 @@ class Activity_Splash_Screen: AppCompatActivity(){
             "Mermaid hmm? Ladies and gentlemen, we got him."
     )
 
+    fun setLogText(text: String){
+        if(textViewLog != null)textViewLog!!.text = text
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
@@ -54,16 +60,19 @@ class Activity_Splash_Screen: AppCompatActivity(){
     }
 
     override fun onBackPressed() {
-        loadingStatus = LoadingStatus.UNLOGGED
+        Data.loadingStatus = LoadingStatus.UNLOGGED
         super.onBackPressed()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
-
         setContentView(R.layout.activity_splash_screen)
-        textViewLog = this.textViewLoadingLog
+        textViewLog = textViewLoadingLog
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -111,7 +120,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
             override fun onAnimationRepeat(animation: Animation?) {
                 if(!keepSplash){
-                    when(loadingStatus){
+                    when(Data.loadingStatus){
                         LoadingStatus.LOGGED -> {
                             val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -213,7 +222,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                     imageViewSplashIcon.isEnabled = true
 
                     if(!keepSplash){
-                        when(loadingStatus){
+                        when(Data.loadingStatus){
                             LoadingStatus.LOGGED -> {
                                 val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

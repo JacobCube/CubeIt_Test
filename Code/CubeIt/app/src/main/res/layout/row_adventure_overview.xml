@@ -22,6 +22,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
+    <ImageView
+        android:id="@+id/imageViewAdventureOverview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/textViewOverviewRowExperience"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline144"
+        app:layout_constraintTop_toTopOf="@+id/guideline143"
+        app:layout_constraintVertical_bias="0.0" />
+
     <TextView
         android:id="@+id/textViewName"
         android:layout_width="0dp"
@@ -38,8 +49,8 @@
         android:id="@+id/textViewLength"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="TextView"
         android:gravity="center_horizontal"
+        android:text="TextView"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline128"
@@ -68,7 +79,7 @@
         android:id="@+id/textViewDifficulty"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="2dp"
+        android:layout_marginBottom="4dp"
         android:gravity="center_horizontal"
         android:text="TextView"
         app:layout_constraintBottom_toTopOf="@+id/textViewLength"
@@ -88,7 +99,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.75" />
+        app:layout_constraintGuide_percent="0.74" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline191"
@@ -103,17 +114,5 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.05" />
-
-    <ImageView
-        android:id="@+id/imageViewAdventureOverview"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/textViewOverviewRowExperience"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintStart_toStartOf="@+id/guideline144"
-        app:layout_constraintTop_toTopOf="@+id/guideline143"
-        app:layout_constraintVertical_bias="0.0" />
 
 </android.support.constraint.ConstraintLayout>

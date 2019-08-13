@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_faction_message"
+        android:title="@string/menu_faction_member_0" />
+
+    <item android:id="@+id/menu_faction_friend"
+        android:title="@string/menu_faction_member_1" />
+
+    <item android:id="@+id/menu_faction_show_profile"
+        android:title="@string/menu_faction_member_2" />
+
+    <item android:id="@+id/menu_faction_promote"
+        android:title="@string/menu_faction_member_3" />
+
+    <item android:id="@+id/menu_faction_demote"
+        android:title="@string/menu_faction_member_4" />
+
+    <item android:id="@+id/menu_faction_kick"
+        android:title="@string/menu_faction_member_5" />
+
+    <item android:id="@+id/menu_faction_warn"
+        android:title="@string/menu_faction_member_6" />
+
+</menu>

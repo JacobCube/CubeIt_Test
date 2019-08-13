@@ -31,7 +31,7 @@ class Fragment_Story_Quest_Template_0 : Fragment() {
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
         super.setUserVisibleHint(isVisibleToUser)
-        val slide: StorySlide = storyQuests.filter { it.ID == arguments!!.getString("questID") }[0].slides[arguments!!.getInt("slideNum")]
+        val slide: StorySlide = Data.storyQuests.filter { it.ID == arguments!!.getString("questID") }[0].slides[arguments!!.getInt("slideNum")]
 
         if (isVisibleToUser && arguments!!.getInt("slideNum") != 0) {
             viewTemplate0.textView0Template0.animateText(slide.textContent)
@@ -42,7 +42,7 @@ class Fragment_Story_Quest_Template_0 : Fragment() {
         viewTemplate0 = inflater.inflate(R.layout.fragment_story_quest_template_0, container, false)
         if(!this.isAdded || arguments?.getInt("slideNum") == null || arguments!!.getString("questID") == null)return viewTemplate0
 
-        val quest: StoryQuest = storyQuests.filter { it.ID == arguments!!.getString("questID") }[0]
+        val quest: StoryQuest = Data.storyQuests.filter { it.ID == arguments!!.getString("questID") }[0]
         val slide: StorySlide = quest.slides[arguments!!.getInt("slideNum")]
         viewTemplate0.textView0Template0.animateText(slide.textContent)
 

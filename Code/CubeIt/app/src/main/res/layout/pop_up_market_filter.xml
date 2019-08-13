@@ -89,6 +89,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketLvlFrom"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -104,6 +105,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketPriceFrom"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -119,6 +121,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline157" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketPriceTo"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -134,6 +137,7 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketLvlTo" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketLvlTo"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -149,6 +153,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketSeller"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

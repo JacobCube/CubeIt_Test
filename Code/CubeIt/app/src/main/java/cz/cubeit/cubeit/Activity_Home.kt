@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -9,12 +10,20 @@ import android.provider.Settings
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
+import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.View
-import kotlin.random.Random.Default.nextInt
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.MetadataChanges
+import android.content.DialogInterface
+
+
 
 var playedSong = R.raw.playedsong
 
 class Home : AppCompatActivity() {
+
+    var dialog: AlertDialog? = null
 
     private val lifecycleListener: LifecycleListener by lazy{
         LifecycleListener(this)
@@ -50,7 +59,7 @@ class Home : AppCompatActivity() {
         opts.inScaled = false
         layoutHome.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.homebackground, opts))
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& player.appearOnTop) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& Data.player.appearOnTop) {
                 //If the draw over permission is not available open the settings screen to grant the permission.
 
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -66,6 +75,51 @@ class Home : AppCompatActivity() {
             }
         }
 
+
+        val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
+        val docRef = db.collection("Server").document("Generic")
+        docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+            if (e != null) {
+                Log.w("Server listener", "Listen failed.", e)
+                return@addSnapshotListener
+            }
+
+            val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
+                "Local"
+            else
+                "Server"
+
+            if (snapshot != null && snapshot.exists()) {
+                Log.d("Server listener", "$source data: ${snapshot.data}")
+
+                if(snapshot.getString("Status") != "on"){
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle("Server not available")
+                    builder.setMessage("Server is currently ${snapshot.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(snapshot.getBoolean("ShowDsc")!!)snapshot.getString("ExternalDsc") else "")
+                    if(dialog == null)dialog = builder.create()
+                    dialog!!.setCanceledOnTouchOutside(false)
+                    dialog!!.setCancelable(false)
+
+                    dialog!!.setButton(Dialog.BUTTON_POSITIVE, "OK") { dialogX, which ->
+                        dialogX.dismiss()
+                    }
+                    dialog!!.setOnDismissListener {
+                        if(!dialog!!.isShowing)Data.logOut(this) else dialog!!.dismiss()
+                    }
+                    if(!dialog!!.isShowing)dialog!!.show()
+                }
+
+            } else {
+                Log.d("Server listener", "$source data: null n error")
+            }
+        }
+
+        buttonHomeFaction.setOnClickListener {
+            val intent = Intent(this, Activity_Faction_Base()::class.java)
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+
         buttonHomeMarket.setOnClickListener {
             val intent = Intent(this, Activity_Market()::class.java)
             startActivity(intent)
@@ -79,21 +133,7 @@ class Home : AppCompatActivity() {
         }
 
         imageViewExit.setOnClickListener {
-            val intentSplash = Intent(this, Activity_Splash_Screen::class.java)
-            intentSplash.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            loadingStatus = LoadingStatus.LOGGING
-            startActivity(intentSplash)
-
-            player.online = false
-            player.toLoadPlayer().uploadPlayer().addOnSuccessListener {
-                if(bgMusic.mediaPlayer.isPlaying){
-                    val svc = Intent(this, bgMusic::class.java)
-                    stopService(svc)
-                }
-                logOut()
-
-                this.overridePendingTransition(0,0)
-            }
+            Data.logOut(this)
         }
 
         Story.setOnClickListener {

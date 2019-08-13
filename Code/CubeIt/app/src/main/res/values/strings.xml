@@ -22,4 +22,13 @@
     <string name="quest_title"><big><font face="normal" color="#C0B02D">%1$s</font></big></string>
     <string name="quest_number"><font face="normal" color="#C0B02D">%1$d</font></string>
     <string name="quest_generic"><font face="normal" color="#161B42">%1$s</font></string>
+
+    <string name="menu_faction_member_0">Message</string>
+    <string name="menu_faction_member_1">Friend</string>
+    <string name="menu_faction_member_2">Show profile</string>
+    <string name="menu_faction_member_3">Promote</string>
+    <string name="menu_faction_member_4">Demote</string>
+    <string name="menu_faction_member_5">Kick</string>
+    <string name="menu_faction_member_6">Warn</string>
+
 </resources>

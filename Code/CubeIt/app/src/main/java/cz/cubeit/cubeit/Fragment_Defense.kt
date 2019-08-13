@@ -25,29 +25,29 @@ class FragmentDefense : Fragment(){
     override fun onStop() {
         super.onStop()
         var tempNull = 0   //index of first item, which is null
-        var tempEnergy = player.energy-25
-        for(i in 0 until player.chosenSpellsDefense.size){  //clean the list from white spaces between items, and items of higher index than is allowed to be
-            if(player.chosenSpellsDefense[i]==null){
+        var tempEnergy = Data.player.energy-25
+        for(i in 0 until Data.player.chosenSpellsDefense.size){  //clean the list from white spaces between items, and items of higher index than is allowed to be
+            if(Data.player.chosenSpellsDefense[i]==null){
                 tempNull = i
-                for(d in i until player.chosenSpellsDefense.size){
-                    player.chosenSpellsDefense[d] = null
-                    if(d>19){player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.size-1)}
+                for(d in i until Data.player.chosenSpellsDefense.size){
+                    Data.player.chosenSpellsDefense[d] = null
+                    if(d>19){Data.player.chosenSpellsDefense.removeAt(Data.player.chosenSpellsDefense.size-1)}
                 }
                 break
             }
             else{
-                tempEnergy+=(25-player.chosenSpellsDefense[i]!!.energy)
+                tempEnergy+=(25-Data.player.chosenSpellsDefense[i]!!.energy)
             }
         }
 
         while(true){            //corrects energy usage by the last index, which is nulls, adds new item if it is bigger than limit of the memory
-            if(tempEnergy+25 < player.energy){
+            if(tempEnergy+25 < Data.player.energy){
                 if (tempNull < 19) {
                     tempEnergy+=25
-                    player.chosenSpellsDefense.add(tempNull, player.learnedSpells[0])
-                    player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.size - 1)
+                    Data.player.chosenSpellsDefense.add(tempNull, Data.player.learnedSpells[0])
+                    Data.player.chosenSpellsDefense.removeAt(Data.player.chosenSpellsDefense.size - 1)
                 } else {
-                    player.chosenSpellsDefense.add(player.learnedSpells[0])
+                    Data.player.chosenSpellsDefense.add(Data.player.learnedSpells[0])
                 }
             } else break
         }
@@ -61,20 +61,19 @@ class FragmentDefense : Fragment(){
         view.imageViewBarDefense.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbardefense, opts))
 
         view.buttonSet.setOnClickListener {
-            val intent = Intent(view.context, FightSystem(player)::class.java)
-            intent.putExtra("enemy", player.username)
-            intent.putExtra("npc", false)
+            val intent = Intent(view.context, FightSystem()::class.java)        //enemy: String
+            intent.putExtra("enemy", Data.player)
             startActivity(intent)
             //Activity().overridePendingTransition(0,0)
         }
 
         view.textViewInfoSpells.movementMethod = ScrollingMovementMethod()
 
-        view.chosen_listView.adapter = ChosenSpellsView(player)
+        view.chosen_listView.adapter = ChosenSpellsView(Data.player)
         view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)
 
         view.buttonDefenseReset.setOnClickListener {
-            player.chosenSpellsDefense = arrayOfNulls<Spell?>(20).toMutableList()
+            Data.player.chosenSpellsDefense = arrayOfNulls<Spell?>(20).toMutableList()
             (view.chosen_listView.adapter as ChosenSpellsView).notifyDataSetChanged()
         }
 
@@ -84,7 +83,7 @@ class FragmentDefense : Fragment(){
     private class LearnedSpellsView(var textViewInfoSpells: TextView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int, private val context:Context) : BaseAdapter() { //listview of player's learned spells
 
         override fun getCount(): Int {
-            return (player.learnedSpells.size/2+1)
+            return (Data.player.learnedSpells.size/2+1)
         }
 
         override fun getItemId(position: Int): Long {
@@ -119,9 +118,9 @@ class FragmentDefense : Fragment(){
                     1->viewHolder.button2
                     else->viewHolder.button1
                 }
-                if(index+i<player.learnedSpells.size){
-                    if(player.learnedSpells[index+i]!=null){
-                        tempSpell.setImageResource(player.learnedSpells[index+i]!!.drawable)
+                if(index+i<Data.player.learnedSpells.size){
+                    if(Data.player.learnedSpells[index+i]!=null){
+                        tempSpell.setImageResource(Data.player.learnedSpells[index+i]!!.drawable)
                         tempSpell.isEnabled = true
                     }else{
                         tempSpell.setImageResource(0)
@@ -136,17 +135,17 @@ class FragmentDefense : Fragment(){
             viewHolder.button1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    textViewInfoSpells.text = player.learnedSpells[index]?.getStats()
+                    textViewInfoSpells.text = Data.player.learnedSpells[index]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     requiredEnergy = 0
                     for (i in 0..19){
-                        if (player.chosenSpellsDefense[i] == null) {
-                            if(requiredEnergy + player.learnedSpells[index]!!.energy <= (player.energy+25*i)){
-                                errorTextView.visibility = View.INVISIBLE
-                                player.chosenSpellsDefense[i] = player.learnedSpells[index]
+                        if (Data.player.chosenSpellsDefense[i] == null) {
+                            if(requiredEnergy + Data.player.learnedSpells[index]!!.energy <= (Data.player.energy+25*i)){
+                                errorTextView.visibility = View.GONE
+                                Data.player.chosenSpellsDefense[i] = Data.player.learnedSpells[index]
                                 chosen_listView.notifyDataSetChanged()
                                 break
                             }else{
@@ -155,17 +154,17 @@ class FragmentDefense : Fragment(){
                                 break
                             }
                         }else{
-                            requiredEnergy += player.chosenSpellsDefense[i]!!.energy
+                            requiredEnergy += Data.player.chosenSpellsDefense[i]!!.energy
                         }
                     }
                     requiredEnergy = 0
                     for(j in 0..19){
-                        if(player.chosenSpellsDefense[j]!=null){
-                            if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
-                                player.chosenSpellsDefense[j]=null
+                        if(Data.player.chosenSpellsDefense[j]!=null){
+                            if(((Data.player.energy+j*25) - requiredEnergy) < Data.player.chosenSpellsDefense[j]!!.energy){
+                                Data.player.chosenSpellsDefense[j]=null
                             }else{
-                                if(player.chosenSpellsDefense[j]!=null) {
-                                    requiredEnergy += player.chosenSpellsDefense[j]!!.energy
+                                if(Data.player.chosenSpellsDefense[j]!=null) {
+                                    requiredEnergy += Data.player.chosenSpellsDefense[j]!!.energy
                                 }
                             }
                         }
@@ -176,17 +175,17 @@ class FragmentDefense : Fragment(){
             viewHolder.button2.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
-                    textViewInfoSpells.text = player.learnedSpells[index+1]?.getStats()
+                    textViewInfoSpells.text = Data.player.learnedSpells[index+1]?.getStats()
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
                     requiredEnergy = 0
                     for (i in 0..19){
-                        if (player.chosenSpellsDefense[i] == null) {
-                            if(requiredEnergy + player.learnedSpells[index+1]!!.energy <= (player.energy+25*i)){
-                                errorTextView.visibility = View.INVISIBLE
-                                player.chosenSpellsDefense[i] = player.learnedSpells[index+1]
+                        if (Data.player.chosenSpellsDefense[i] == null) {
+                            if(requiredEnergy + Data.player.learnedSpells[index+1]!!.energy <= (Data.player.energy+25*i)){
+                                errorTextView.visibility = View.GONE
+                                Data.player.chosenSpellsDefense[i] = Data.player.learnedSpells[index+1]
                                 chosen_listView.notifyDataSetChanged()
                                 break
                             }else{
@@ -194,17 +193,17 @@ class FragmentDefense : Fragment(){
                                 break
                             }
                         }else{
-                            requiredEnergy += player.chosenSpellsDefense[i]!!.energy
+                            requiredEnergy += Data.player.chosenSpellsDefense[i]!!.energy
                         }
                     }
                     requiredEnergy = 0
                     for(j in 0..19){
-                        if(player.chosenSpellsDefense[j]!=null){
-                            if(((player.energy+j*25) - requiredEnergy) < player.chosenSpellsDefense[j]!!.energy){
-                                player.chosenSpellsDefense[j]=null
+                        if(Data.player.chosenSpellsDefense[j]!=null){
+                            if(((Data.player.energy+j*25) - requiredEnergy) < Data.player.chosenSpellsDefense[j]!!.energy){
+                                Data.player.chosenSpellsDefense[j]=null
                             }else{
-                                if(player.chosenSpellsDefense[j]!=null) {
-                                    requiredEnergy += player.chosenSpellsDefense[j]!!.energy
+                                if(Data.player.chosenSpellsDefense[j]!=null) {
+                                    requiredEnergy += Data.player.chosenSpellsDefense[j]!!.energy
                                 }
                             }
                         }
@@ -245,9 +244,9 @@ class FragmentDefense : Fragment(){
             }
             val viewHolder = rowMain.tag as ViewHolder
 
-            if(position<player.chosenSpellsDefense.size){
-                if(player.chosenSpellsDefense[position]!=null){
-                    viewHolder.button1.setImageResource(player.chosenSpellsDefense[position]!!.drawable)
+            if(position<Data.player.chosenSpellsDefense.size){
+                if(Data.player.chosenSpellsDefense[position]!=null){
+                    viewHolder.button1.setImageResource(Data.player.chosenSpellsDefense[position]!!.drawable)
                     viewHolder.button1.isEnabled = true
                 }else{
                     viewHolder.button1.setImageResource(0)
@@ -260,16 +259,16 @@ class FragmentDefense : Fragment(){
 
             var requiredEnergy = 0
             for(i in 0 until position){
-                if(player.chosenSpellsDefense[i]==null){
+                if(Data.player.chosenSpellsDefense[i]==null){
 
                 }else {
-                    requiredEnergy += player.chosenSpellsDefense[i]!!.energy
+                    requiredEnergy += Data.player.chosenSpellsDefense[i]!!.energy
                 }
             }
-            viewHolder.textViewEnergy.text = (position+1).toString() +". Energy: "+ ((player.energy+position*25) - requiredEnergy).toString()
+            viewHolder.textViewEnergy.text = (position+1).toString() +". Energy: "+ ((Data.player.energy+position*25) - requiredEnergy).toString()
 
             viewHolder.button1.setOnClickListener {
-                player.chosenSpellsDefense[position] = null
+                Data.player.chosenSpellsDefense[position] = null
                 viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
                 notifyDataSetChanged()
             }

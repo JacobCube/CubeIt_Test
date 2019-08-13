@@ -49,7 +49,7 @@ class ClassCubeItHeadService : Service() {
             params = WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_PHONE,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT)
         }
@@ -124,12 +124,12 @@ class ClassCubeItHeadService : Service() {
 
                             val intentSplash = Intent(this@ClassCubeItHeadService, Activity_Splash_Screen::class.java)
                             intentSplash.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            loadingStatus = LoadingStatus.LOGGING
+                            Data.loadingStatus = LoadingStatus.LOGGING
                             startActivity(intentSplash)
 
 
-                            player.loadPlayer().addOnSuccessListener {
-                                loadingStatus = LoadingStatus.LOGGED
+                            Data.player.loadPlayer().addOnSuccessListener {
+                                Data.loadingStatus = LoadingStatus.LOGGED
                             }
 
 
@@ -204,6 +204,6 @@ class ClassCubeItHeadService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (mCubeItHeadView != null)mWindowManager!!.removeView(mCubeItHeadView)
+        mWindowManager?.removeView(mCubeItHeadView)
     }
 }

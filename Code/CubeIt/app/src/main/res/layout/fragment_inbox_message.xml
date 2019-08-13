@@ -23,6 +23,7 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSubject"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -38,6 +39,7 @@
         app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxReciever"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -54,6 +56,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxContent"
         android:layout_width="0dp"
         android:layout_height="0dp"

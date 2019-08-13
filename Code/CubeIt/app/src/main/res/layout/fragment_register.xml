@@ -40,6 +40,7 @@
         app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputUsernameReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -78,6 +79,7 @@
         app:layout_constraintTop_toTopOf="@+id/texguideline4" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputEmailReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -126,6 +128,7 @@
         app:layout_constraintGuide_percent="0.53" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputPassReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -207,6 +210,7 @@
         app:layout_constraintGuide_percent="0.69" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputRePassReg"
         android:layout_width="0dp"
         android:layout_height="0dp"

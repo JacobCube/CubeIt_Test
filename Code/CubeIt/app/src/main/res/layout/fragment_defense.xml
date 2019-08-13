@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/defense_bg"
+    android:animateLayoutChanges="true"
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
@@ -46,15 +47,15 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.25" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInfoSpells"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:focusable="false"
         android:focusableInTouchMode="false"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
         android:maxWidth="200dp"
-        android:focusable="false"
         android:maxHeight="50dp"
         android:minWidth="40dp"
         android:minHeight="40dp"
@@ -64,7 +65,7 @@
         app:layout_constraintEnd_toStartOf="@+id/chosen_listView"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/choosing_listview"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBarDefense" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewError" />
 
     <ListView
         android:id="@+id/choosing_listview"
@@ -86,17 +87,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
         android:maxHeight="40dp"
         android:text="error"
         android:textAlignment="center"
         android:textColor="@android:color/holo_red_light"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/chosen_listView"
         app:layout_constraintHorizontal_bias="0.512"
-        app:layout_constraintStart_toEndOf="@+id/choosing_listview" />
+        app:layout_constraintStart_toEndOf="@+id/choosing_listview"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewBarDefense" />
 
 
     <android.support.constraint.Guideline

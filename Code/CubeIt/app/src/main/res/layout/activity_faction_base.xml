@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutStory"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:screenOrientation="sensorLandscape">
+
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tabLayoutFaction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDarker"
+        android:maxHeight="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabSelectedTextColor="@color/loginColor_2"
+        app:tabTextColor="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewFactionBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@color/loginColor" />
+
+    <cz.cubeit.cubeit.StoryViewPager
+        android:id="@+id/viewPagerFaction"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/loginColor"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </cz.cubeit.cubeit.StoryViewPager>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline141"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+
+    <ImageView
+        android:id="@+id/imageViewMenuUpFaction"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:rotation="180"
+        android:tint="@color/loginColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline141"
+        app:srcCompat="@drawable/setting3rows" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutMenuFaction"
+        android:layout_width="0dp"
+        android:layout_height="85dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
+
+    <ImageView
+        android:id="@+id/homeButtonBackFaction"
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyspellslotlarge"
+        android:backgroundTint="@color/colorPrimary"
+        android:src="@drawable/home_button"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</android.support.constraint.ConstraintLayout>

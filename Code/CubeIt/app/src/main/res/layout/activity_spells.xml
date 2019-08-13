@@ -5,6 +5,7 @@
     android:id="@+id/layoutSpells"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
@@ -19,19 +20,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
-
-    <ImageView
-        android:id="@+id/homeButtonBackSpells"
-        android:layout_width="75dp"
-        android:layout_height="0dp"
-        android:background="@drawable/emptyspellslotlarge"
-        android:backgroundTint="@color/colorPrimary"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-
- android:src="@drawable/home_button" />
 
     <ImageView
         android:id="@+id/imageViewMenuUpSpells"
@@ -59,5 +47,18 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.93" />
+
+    <ImageView
+        android:id="@+id/homeButtonBackSpells"
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:background="@drawable/emptyspellslotlarge"
+        android:backgroundTint="@color/colorPrimary"
+        android:src="@drawable/home_button"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

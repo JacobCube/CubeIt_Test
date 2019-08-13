@@ -5,6 +5,7 @@
     android:id="@+id/layoutFightSystem"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape"
     tools:context=".FightSystem">
@@ -16,10 +17,10 @@
         android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@color/colorSecondary" />
 
     <ImageView
@@ -159,6 +160,38 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline28"
         app:layout_constraintStart_toStartOf="@+id/guideline20"
         app:layout_constraintTop_toTopOf="@+id/guideline31" />
+
+    <ImageView
+        android:id="@+id/spellFightEnemy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:alpha="0"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline63"
+        app:layout_constraintStart_toStartOf="@+id/guideline62"
+        app:layout_constraintTop_toTopOf="@+id/guideline43" />
+
+    <ImageView
+        android:id="@+id/spellFightPlayer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:alpha="0"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline196"
+        app:layout_constraintStart_toStartOf="@+id/guideline195"
+        app:layout_constraintTop_toTopOf="@+id/guideline43" />
 
     <ImageView
         android:id="@+id/Spell1"
@@ -344,6 +377,13 @@
         app:layout_constraintGuide_percent="0.87" />
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline63"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.73" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline19"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -450,6 +490,13 @@
         app:layout_constraintGuide_percent="0.665" />
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline62"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.61" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline20"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -491,8 +538,36 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.215" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline195"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.27" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline196"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.39" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline197"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.525" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline198"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.465" />
+
     <TextView
-        android:id="@+id/textPlayer"
+        android:id="@+id/textViewPlayerHealth"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="2dp"
@@ -506,7 +581,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline38" />
 
     <TextView
-        android:id="@+id/textEnemy"
+        android:id="@+id/textViewEnemyHealth"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginEnd="2dp"
@@ -528,12 +603,13 @@
         android:textAlignment="textStart"
         android:textColor="@android:color/holo_red_light"
         android:textSize="18sp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline31"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/energyTextView"
+        android:id="@+id/textViewPlayerEnergy"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="2dp"
@@ -548,7 +624,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <TextView
-        android:id="@+id/energyEnemyTextView"
+        android:id="@+id/textViewEnemyEnergy"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginEnd="2dp"
@@ -570,7 +646,7 @@
         app:layout_constraintStart_toStartOf="@+id/textViewError" />
 
     <ImageView
-        android:id="@+id/enemyUsedSpell"
+        android:id="@+id/imageViewEnemyUsedSpell"
         android:layout_width="65dp"
         android:layout_height="65dp"
         android:layout_marginTop="4dp"
@@ -583,7 +659,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imageViewFightBars" />
 
     <ImageView
-        android:id="@+id/playerUsedSpell"
+        android:id="@+id/imageViewPlayerUsedSpell"
         android:layout_width="65dp"
         android:layout_height="65dp"
         android:layout_marginTop="4dp"
@@ -656,6 +732,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.302" />
+        app:layout_constraintGuide_percent="0.3" />
+
+    <ImageView
+        android:id="@+id/imageViewFightSurrender"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline197"
+        app:layout_constraintStart_toStartOf="@+id/guideline198"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/white_flag" />
 
 </android.support.constraint.ConstraintLayout>

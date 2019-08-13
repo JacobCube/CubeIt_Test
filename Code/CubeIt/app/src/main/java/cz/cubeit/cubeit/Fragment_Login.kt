@@ -2,6 +2,7 @@ package cz.cubeit.cubeit
 
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -15,17 +16,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_login.view.*
 
-var player:Player = Player()
-var textViewLog: TextView? = null
-
 class FragmentLogin : Fragment()  {
+    private var dialog: AlertDialog? = null
+
 
     @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -38,10 +37,10 @@ class FragmentLogin : Fragment()  {
         opts.inScaled = false
         view.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
 
-        if(readFileText(view.context, "rememberMe.data") == "1"){
+        if(SystemFlow.readFileText(view.context, "rememberMe.data") == "1"){
             view.checkBoxStayLogged.isChecked = true
-            if(readFileText(view.context, "emailLogin.data") != "0")view.inputEmailLogin.setText(readFileText(view.context, "emailLogin.data"))
-            if(readFileText(view.context, "emailLogin.data") != "0")view.inputPassLogin.setText(readFileText(view.context, "passwordLogin.data"))
+            if(SystemFlow.readFileText(view.context, "emailLogin.data") != "0")view.inputEmailLogin.setText(SystemFlow.readFileText(view.context, "emailLogin.data"))
+            if(SystemFlow.readFileText(view.context, "emailLogin.data") != "0")view.inputPassLogin.setText(SystemFlow.readFileText(view.context, "passwordLogin.data"))
         }
 
         val auth = FirebaseAuth.getInstance()
@@ -64,78 +63,94 @@ class FragmentLogin : Fragment()  {
             val isConnected: Boolean = activeNetwork?.isConnected == true
 
             startActivity(intentSplash)
-            loadingStatus = LoadingStatus.LOGGING
+            Data.loadingStatus = LoadingStatus.LOGGING
 
             if (userEmail.isEmpty() || userPassword.isEmpty()) {
                 handler.postDelayed({showNotification("Error", "Please fill out all fields.")},100)
-                loadingStatus = LoadingStatus.CLOSELOADING
+                Data.loadingStatus = LoadingStatus.CLOSELOADING
             }
             if (!isConnected){
                 handler.postDelayed({showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")},100)
-                loadingStatus = LoadingStatus.CLOSELOADING
+                Data.loadingStatus = LoadingStatus.CLOSELOADING
             }
 
-            loadGlobalData(view.context).addOnSuccessListener{
+            val db = FirebaseFirestore.getInstance()
+            db.collection("Server").document("Generic").get().addOnSuccessListener {
+                if(it.getString("Status") == "on"){
+                    Data.loadGlobalData(view.context).addOnSuccessListener{
 
-                if (appVersion > BuildConfig.VERSION_CODE){
-                    loadingStatus = LoadingStatus.CLOSELOADING
-                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned $appVersion)")},100)
-                }
+                        if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE){
+                            Data.loadingStatus = LoadingStatus.CLOSELOADING
+                            handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})")},100)
+                        }
 
-                if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && appVersion <= BuildConfig.VERSION_CODE && isConnected){
-                    auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener{ task ->
-                        if (task.isSuccessful) {
-                            if(checkBoxStayLogged.isChecked){
-                                writeFileText(view.context, "emailLogin.data", userEmail)
-                                writeFileText(view.context, "passwordLogin.data", userPassword)
-                                writeFileText(view.context, "rememberMe.data", "1")
-                            }else{
-                                writeFileText(view.context, "emailLogin.data", "")
-                                writeFileText(view.context, "passwordLogin.data", "")
-                                writeFileText(view.context, "rememberMe.data", "0")
-                            }
+                        if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected){
+                            Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
 
-                            if(textViewLog!= null){
-                                textViewLog!!.text = resources.getString(R.string.loading_log, "Your profile information")
-                            }
-                            val user = auth.currentUser
+                            auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener{ task ->
+                                if (task.isSuccessful) {
+                                    if(checkBoxStayLogged.isChecked){
+                                        SystemFlow.writeFileText(view.context, "emailLogin.data", userEmail)
+                                        SystemFlow.writeFileText(view.context, "passwordLogin.data", userPassword)
+                                        SystemFlow.writeFileText(view.context, "rememberMe.data", "1")
+                                    }else{
+                                        SystemFlow.writeFileText(view.context, "emailLogin.data", "")
+                                        SystemFlow.writeFileText(view.context, "passwordLogin.data", "")
+                                        SystemFlow.writeFileText(view.context, "rememberMe.data", "0")
+                                    }
+                                    val user = auth.currentUser
 
-                            player.userSession = user!!
+                                    Data.player.userSession = user!!
 
-                            val db = FirebaseFirestore.getInstance()
+                                    db.collection("users").whereEqualTo("userId", user.uid).limit(1)
+                                            .get()
+                                            .addOnSuccessListener { querySnapshot ->
+                                                try {
 
-                            db.collection("users").whereEqualTo("userId", user.uid).limit(1)
-                                    .get()
-                                    .addOnSuccessListener { querySnapshot ->
-                                        try {
+                                                    val document: DocumentSnapshot = querySnapshot.documents[0]
+                                                    Data.player.username = document.getString("username")!!
 
-                                            val document: DocumentSnapshot = querySnapshot.documents[0]
-                                            player.username = document.getString("username")!!
-
-                                            player.loadPlayer().addOnSuccessListener {
-                                                if(player.newPlayer){
-                                                    loadingStatus = LoadingStatus.CLOSELOADING
-                                                    val intent = Intent(view.context, Activity_Character_Customization::class.java)
-                                                    startActivity(intent)
-                                                }else {
-                                                    player.online = true
-                                                    player.toLoadPlayer().uploadSingleItem("online").addOnSuccessListener {
-                                                        loadingStatus = LoadingStatus.LOGGED
+                                                    Data.player.loadPlayer().addOnSuccessListener {
+                                                        if(Data.player.newPlayer){
+                                                            Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                                            val intent = Intent(view.context, Activity_Character_Customization::class.java)
+                                                            startActivity(intent)
+                                                        }else {
+                                                            Data.player.init(view.context)
+                                                            Data.player.online = true
+                                                            Data.player.uploadSingleItem("online").addOnSuccessListener {
+                                                                Data.loadingStatus = LoadingStatus.LOGGED
+                                                            }
+                                                        }
                                                     }
+
+                                                }catch (e:IndexOutOfBoundsException){
+                                                    showNotification("Oops", "We're unable to find you in our database. Are you sure you have an account?")
                                                 }
                                             }
-
-                                        }catch (e:IndexOutOfBoundsException){
-                                            showNotification("Oops", "We're unable to find you in our database. Are you sure you have an account?")
-                                        }
-                                    }
-                        } else {
-                            loadingStatus = LoadingStatus.CLOSELOADING
-                            showNotification("Oops", exceptionFormatter(task.exception.toString()))
-                            Log.d("Debug", task.exception.toString())
-                        }
+                                } else {
+                                    Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                    showNotification("Oops", SystemFlow.exceptionFormatter(task.exception.toString()))
+                                    Log.d("Debug", task.exception.toString())
+                                }
+                            }
+                        }else Data.loadingStatus = LoadingStatus.CLOSELOADING
                     }
-                }else loadingStatus = LoadingStatus.CLOSELOADING
+                }else {
+                    Data.loadingStatus = LoadingStatus.CLOSELOADING
+
+                    val builder = AlertDialog.Builder(view.context)
+                    builder.setTitle("Server not available")
+                    builder.setMessage("Server is currently ${it.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(it.getBoolean("ShowDsc")!!)it.getString("ExternalDsc") else "")
+                    if(dialog == null)dialog = builder.create()
+                    dialog!!.setCanceledOnTouchOutside(false)
+                    dialog!!.setCancelable(false)
+
+                    dialog!!.setButton(Dialog.BUTTON_POSITIVE, "OK") { dialogX, _ ->
+                        dialogX.dismiss()
+                    }
+                    if(!dialog!!.isShowing)dialog!!.show()
+                }
             }
         }
 

@@ -5,15 +5,14 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
 import android.support.v4.view.ViewPager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import kotlinx.android.synthetic.main.fragment_adventure_overview.view.*
 import kotlinx.android.synthetic.main.row_adventure_overview.view.*
+
 
 class Fragment_Adventure_overview : Fragment() {
 
@@ -24,29 +23,36 @@ class Fragment_Adventure_overview : Fragment() {
     private var filterCoins: Boolean = true
     private var overviewList: MutableList<Quest> = mutableListOf()
 
-    fun resetAdapter(){
-        activity!!.supportFragmentManager.beginTransaction().detach(this).commit()
-        activity!!.supportFragmentManager.beginTransaction().attach(this).commit()
-        activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, this).commitNow()
-    }
+    fun resetAdapter(notifyDataSeChanged: Boolean = false){
+        (activity as Adventure).overviewList = if(notifyDataSeChanged){
+            Data.player.currentSurfaces[0].quests.asSequence().plus(Data.player.currentSurfaces[1].quests.asSequence()).plus(Data.player.currentSurfaces[2].quests.asSequence()).plus(Data.player.currentSurfaces[3].quests.asSequence()).plus(Data.player.currentSurfaces[4].quests.asSequence()).plus(Data.player.currentSurfaces[5].quests.asSequence()).toMutableList()
+        }else{
+            this.overviewList
+        }
+        (activity as Adventure).overviewFilterDifficulty = this.filterDifficulty
+        (activity as Adventure).overviewFilterExperience = this.filterExperience
+        (activity as Adventure).overviewFilterItem = this.filterItem
+        (activity as Adventure).overviewFilterCoins = this.filterCoins
 
-    override fun onStop() {
-        super.onStop()
-        overviewList = player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList()
-        (adapter as AdventureQuestsOverview).updateList(overviewList)
-    }
+        val fragment = this
 
-    override fun onSaveInstanceState(outState: Bundle) {
+        activity!!.supportFragmentManager.beginTransaction().detach(this).attach(fragment).commit()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_adventure_overview, container, false)
 
-        overviewList = player.currentSurfaces[0].quests.asSequence().plus(player.currentSurfaces[1].quests.asSequence()).plus(player.currentSurfaces[2].quests.asSequence()).plus(player.currentSurfaces[3].quests.asSequence()).plus(player.currentSurfaces[4].quests.asSequence()).plus(player.currentSurfaces[5].quests.asSequence()).toMutableList()
+        overviewList = if((activity as Adventure).overviewList != null){
+            this.filterDifficulty = (activity as Adventure).overviewFilterDifficulty
+            this.filterExperience = (activity as Adventure).overviewFilterExperience
+            this.filterItem = (activity as Adventure).overviewFilterItem
+            this.filterCoins = (activity as Adventure).overviewFilterCoins
+            (activity as Adventure).overviewList!!
+        }else{
+            Data.player.currentSurfaces[0].quests.asSequence().plus(Data.player.currentSurfaces[1].quests.asSequence()).plus(Data.player.currentSurfaces[2].quests.asSequence()).plus(Data.player.currentSurfaces[3].quests.asSequence()).plus(Data.player.currentSurfaces[4].quests.asSequence()).plus(Data.player.currentSurfaces[5].quests.asSequence()).toMutableList()
+        }
 
-        adapter = AdventureQuestsOverview(overviewList, view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure), view.listViewAdventureOverview, this, activity!!)
-
-        view.listViewAdventureOverview.adapter = adapter
+        view.listViewAdventureOverview.adapter = AdventureQuestsOverview(overviewList, view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure), view.listViewAdventureOverview, this, activity!!)
         view.listViewAdventureOverview.smoothScrollByOffset(2)
 
         view.textViewAdventureOverviewCoins.setOnClickListener {
@@ -72,7 +78,12 @@ class Fragment_Adventure_overview : Fragment() {
                 overviewList.sortBy{ it.money }
                 true
             }
-            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            activity!!.runOnUiThread {
+                view.listViewAdventureOverview.invalidate()
+                view.listViewAdventureOverview.postInvalidate()
+                (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).notifyDataSetChanged()
+            }
+
             //resetAdapter()
         }
 
@@ -99,7 +110,11 @@ class Fragment_Adventure_overview : Fragment() {
                 overviewList.sortBy{ it.level }
                 true
             }
-            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            activity!!.runOnUiThread {
+                view.listViewAdventureOverview.invalidate()
+                view.listViewAdventureOverview.postInvalidate()
+                (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).notifyDataSetChanged()
+            }
             //resetAdapter()
         }
 
@@ -126,7 +141,11 @@ class Fragment_Adventure_overview : Fragment() {
                 overviewList.sortBy{ it.experience }
                 true
             }
-            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            activity!!.runOnUiThread {
+                view.listViewAdventureOverview.invalidate()
+                view.listViewAdventureOverview.postInvalidate()
+                (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).notifyDataSetChanged()
+            }
             //resetAdapter()
         }
 
@@ -153,7 +172,11 @@ class Fragment_Adventure_overview : Fragment() {
                 overviewList.sortBy{ it.reward.item?.price }
                 true
             }
-            (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).updateList(overviewList)
+            activity!!.runOnUiThread {
+                view.listViewAdventureOverview.invalidate()
+                view.listViewAdventureOverview.postInvalidate()
+                (view.listViewAdventureOverview.adapter as AdventureQuestsOverview).notifyDataSetChanged()
+            }
             //resetAdapter()
         }
 
@@ -173,11 +196,6 @@ class AdventureQuestsOverview(var sideQuestsAdventure: MutableList<Quest>, val c
 
     override fun getItem(position: Int): Any {
         return "TEST STRING"
-    }
-
-    fun updateList(list: MutableList<Quest>){
-        this.sideQuestsAdventure = list
-        notifyDataSetChanged()
     }
 
     @SuppressLint("SetTextI18n")
@@ -216,7 +234,13 @@ class AdventureQuestsOverview(var sideQuestsAdventure: MutableList<Quest>, val c
         }
         viewHolder.textViewExperience.text = "${sideQuestsAdventure[position].experience} xp"
         viewHolder.textViewMoney.text = "${sideQuestsAdventure[position].money} coins"
-        viewHolder.imageViewAdventureOverview.setImageResource(if(sideQuestsAdventure[position].reward.item != null){sideQuestsAdventure[position].reward.item!!.drawable}else 0)
+        if(sideQuestsAdventure[position].reward.item != null){
+            viewHolder.imageViewAdventureOverview.setImageResource(sideQuestsAdventure[position].reward.item!!.drawable)
+            viewHolder.imageViewAdventureOverview.setBackgroundResource(sideQuestsAdventure[position].reward.item!!.getBackground())
+        }else{
+            viewHolder.imageViewAdventureOverview.setImageResource(0)
+            viewHolder.imageViewAdventureOverview.setBackgroundResource(0)
+        }
         viewHolder.imageViewBackground.setImageResource(when(sideQuestsAdventure[position].surface){
             0 -> R.drawable.blue_window
             1 -> R.drawable.orange_window
@@ -228,7 +252,7 @@ class AdventureQuestsOverview(var sideQuestsAdventure: MutableList<Quest>, val c
         })
 
         rowMain.setOnClickListener {
-            if(!loadingActiveQuest){
+            if(!Data.loadingActiveQuest){
                 handler.removeCallbacksAndMessages(null)
                 when(sideQuestsAdventure[position].surface){
                     0 -> Adventure().changeSurface(0, viewPager)
@@ -246,7 +270,7 @@ class AdventureQuestsOverview(var sideQuestsAdventure: MutableList<Quest>, val c
                         break
                     }
                 }
-                handler.postDelayed({Adventure().onClickQuestSideQuest(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview)}, 100)
+                handler.postDelayed({Adventure().onClickQuestOverview(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview)}, 100)
             }
 
         }

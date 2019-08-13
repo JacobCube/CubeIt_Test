@@ -11,11 +11,8 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
-import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.util.DisplayMetrics
 import android.util.Log
@@ -45,6 +42,7 @@ class Activity_Character : AppCompatActivity() {
     var animatorStatsUp = ValueAnimator()
     var animatorStatsDown = ValueAnimator()
     var statsShowed = false
+    var statsLocked = false
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -68,10 +66,10 @@ class Activity_Character : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        player.syncStats()
-        progressBarCharacterXp.progress = player.experience
-        progressBarCharacterXp.max = (player.level * 0.75 * (8 * (player.level*0.8) * (3))).toInt()
-        textViewCharacterLevel.text = player.level.toString()
+        Data.player.syncStats()
+        progressBarCharacterXp.progress = Data.player.experience
+        progressBarCharacterXp.max = (Data.player.level * 0.75 * (8 * (Data.player.level*0.8) * (3))).toInt()
+        textViewCharacterLevel.text = Data.player.level.toString()
         textViewCharacterXp.text = progressBarCharacterXp.progress.toString() + " / " + progressBarCharacterXp.max.toString()
     }
 
@@ -92,7 +90,7 @@ class Activity_Character : AppCompatActivity() {
             }
 
         }
-        if(!viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt()) && statsShowed && !animatorStatsDown.isRunning){
+        if(!viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt()) && statsShowed && !animatorStatsDown.isRunning && !statsLocked){
 
             animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
                 duration = 800
@@ -124,13 +122,14 @@ class Activity_Character : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
-        player.syncStats()
+        Data.player.syncStats()
         setContentView(R.layout.activity_character)
         textViewInfoItem.movementMethod = ScrollingMovementMethod()
+        Data.newLevel = false
 
-        progressBarCharacterXp.progress = player.experience
-        progressBarCharacterXp.max = (player.level * 0.75 * (8 * (player.level*0.8) * (3))).toInt()
-        textViewCharacterLevel.text = player.level.toString()
+        progressBarCharacterXp.progress = Data.player.experience
+        progressBarCharacterXp.max = (Data.player.level * 0.75 * (8 * (Data.player.level*0.8) * (3))).toInt()
+        textViewCharacterLevel.text = Data.player.level.toString()
         textViewCharacterXp.text = progressBarCharacterXp.progress.toString() + " / " + progressBarCharacterXp.max.toString()
 
 
@@ -166,9 +165,9 @@ class Activity_Character : AppCompatActivity() {
 
         val bagViewV = findViewById<View>(R.id.imageViewCharacterBag)
 
-        if(player.backpackRunes[0]!=null){
-            buttonBag0.setImageResource(player.backpackRunes[0]!!.drawable)
-            buttonBag0.setBackgroundResource(player.backpackRunes[0]!!.getBackground())
+        if(Data.player.backpackRunes[0]!=null){
+            buttonBag0.setImageResource(Data.player.backpackRunes[0]!!.drawable)
+            buttonBag0.setBackgroundResource(Data.player.backpackRunes[0]!!.getBackground())
             buttonBag0.isEnabled = true
             buttonBag0.isClickable = false
         }else{
@@ -177,9 +176,9 @@ class Activity_Character : AppCompatActivity() {
             buttonBag0.isEnabled = false
             buttonBag0.isClickable = true
         }
-        if(player.backpackRunes[1]!=null){
-            buttonBag1.setBackgroundResource(player.backpackRunes[1]!!.getBackground())
-            buttonBag1.setImageResource(player.backpackRunes[1]!!.drawable)
+        if(Data.player.backpackRunes[1]!=null){
+            buttonBag1.setBackgroundResource(Data.player.backpackRunes[1]!!.getBackground())
+            buttonBag1.setImageResource(Data.player.backpackRunes[1]!!.drawable)
             buttonBag1.isEnabled = true
             buttonBag1.isClickable = true
         } else{
@@ -226,7 +225,7 @@ class Activity_Character : AppCompatActivity() {
 
                     /*if(index!=null){
 
-                        val button: ImageView = when (player.inventory[index]?.slot) {
+                        val button: ImageView = when (Data.player.inventory[index]?.slot) {
                             0 -> fragmentCharacterProfile.profile_EquipItem0
                             1 -> fragmentCharacterProfile.profile_EquipItem1
                             2 -> fragmentCharacterProfile.profile_EquipItem2
@@ -241,22 +240,22 @@ class Activity_Character : AppCompatActivity() {
                         }
                         when (event.result) {
                             true -> {
-                                if(player.inventory[index] is Wearable || player.inventory[index] is Weapon) {
-                                    val tempMemory: Item?
+                                if(Data.player.inventory[index] is Wearable || Data.player.inventory[index] is Weapon) {
+                                    val Memory: Item?
 
-                                    if (player.equip[player.inventory[index]!!.slot] == null) {
-                                        player.inventory[index]?.drawable?.let { button.setImageResource(it) }
+                                    if (Data.player.equip[Data.player.inventory[index]!!.slot] == null) {
+                                        Data.player.inventory[index]?.drawable?.let { button.setImageResource(it) }
                                         button.isEnabled = true
-                                        player.equip[player.inventory[index]!!.slot] = player.inventory[index]
-                                        player.inventory[index] = null
+                                        Data.player.equip[Data.player.inventory[index]!!.slot] = Data.player.inventory[index]
+                                        Data.player.inventory[index] = null
                                     } else {
-                                        player.inventory[index]?.drawable?.let { button.setImageResource(it) }
+                                        Data.player.inventory[index]?.drawable?.let { button.setImageResource(it) }
                                         button.isEnabled = true
-                                        val item1 = player.inventory[index]
-                                        tempMemory = player.equip[item1?.slot ?: 0]
-                                        val item2 = player.inventory[index]
-                                        player.equip[item2?.slot ?: 0] = player.inventory[index]
-                                        player.inventory[index] = tempMemory
+                                        val item1 = Data.player.inventory[index]
+                                        Memory = Data.player.equip[item1?.slot ?: 0]
+                                        val item2 = Data.player.inventory[index]
+                                        Data.player.equip[item2?.slot ?: 0] = Data.player.inventory[index]
+                                        Data.player.inventory[index] = Memory
                                     }
                                 }
                             }
@@ -325,9 +324,9 @@ class Activity_Character : AppCompatActivity() {
 
                     val index = ClipDataIndex
 
-                    if(index !=null&& player.inventory[index] is Runes) {
+                    if(index !=null&& Data.player.inventory[index] is Runes) {
 
-                        val button: ImageView = when (player.inventory[index]!!.slot) {
+                        val button: ImageView = when (Data.player.inventory[index]!!.slot) {
                             10 -> buttonBag0
                             11 -> buttonBag1
                             else -> buttonBag0
@@ -337,41 +336,41 @@ class Activity_Character : AppCompatActivity() {
                             true -> {
                                 val tempMemory: Item?
 
-                                if (player.backpackRunes[player.inventory[index]!!.slot-10] == null) {
-                                    button.setImageResource(player.inventory[index]!!.drawable)
-                                    button.setBackgroundResource(player.inventory[index]!!.getBackground())
+                                if (Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] == null) {
+                                    button.setImageResource(Data.player.inventory[index]!!.drawable)
+                                    button.setBackgroundResource(Data.player.inventory[index]!!.getBackground())
                                     button.isEnabled = true
-                                    player.backpackRunes[player.inventory[index]!!.slot-10] = (player.inventory[index] as Runes)
-                                    player.inventory[index] = null
+                                    Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] = (Data.player.inventory[index] as Runes)
+                                    Data.player.inventory[index] = null
                                 } else {
-                                    if(abs(player.backpackRunes[player.inventory[index]!!.slot-10]!!.inventorySlots - player.inventory[index]!!.inventorySlots) > 0){
+                                    if(abs(Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]!!.inventorySlots - Data.player.inventory[index]!!.inventorySlots) > 0){
                                         var tempEmptySpaces = 0
-                                        for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
-                                            if(player.inventory[i] == null){
+                                        for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
+                                            if(Data.player.inventory[i] == null){
                                                 tempEmptySpaces++
                                             }
                                         }
 
-                                        if(tempEmptySpaces > abs(player.backpackRunes[player.inventory[index]!!.slot-10]!!.inventorySlots - player.inventory[index]!!.inventorySlots)){
-                                            for(i in (player.inventory.size-1-abs(player.backpackRunes[player.inventory[index]!!.slot-10]!!.inventorySlots - player.inventory[index]!!.inventorySlots)) until player.inventory.size){
-                                                if(player.inventory[i]!=null){
-                                                    val tempItem = player.inventory[i]
-                                                    player.inventory[i] = null
-                                                    player.inventory[player.inventory.indexOf(null)] = tempItem
+                                        if(tempEmptySpaces > abs(Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]!!.inventorySlots - Data.player.inventory[index]!!.inventorySlots)){
+                                            for(i in (Data.player.inventory.size-1-abs(Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]!!.inventorySlots - Data.player.inventory[index]!!.inventorySlots)) until Data.player.inventory.size){
+                                                if(Data.player.inventory[i]!=null){
+                                                    val tempItem = Data.player.inventory[i]
+                                                    Data.player.inventory[i] = null
+                                                    Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
                                                 }
                                             }
-                                            button.setImageResource(player.inventory[index]!!.drawable)
+                                            button.setImageResource(Data.player.inventory[index]!!.drawable)
                                             button.isEnabled = true
-                                            tempMemory = player.backpackRunes[player.inventory[index]!!.slot-10]
-                                            player.backpackRunes[player.inventory[index]!!.slot-10] = (player.inventory[index] as Runes)
-                                            player.inventory[index] = tempMemory
+                                            tempMemory = Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]
+                                            Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] = (Data.player.inventory[index] as Runes)
+                                            Data.player.inventory[index] = tempMemory
                                         }
                                     }else{
-                                        button.setImageResource(player.inventory[index]!!.drawable)
+                                        button.setImageResource(Data.player.inventory[index]!!.drawable)
                                         button.isEnabled = true
-                                        tempMemory = player.backpackRunes[player.inventory[index]!!.slot-10]
-                                        player.backpackRunes[player.inventory[index]!!.slot-10] = (player.inventory[index] as Runes)
-                                        player.inventory[index] = tempMemory
+                                        tempMemory = Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]
+                                        Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] = (Data.player.inventory[index] as Runes)
+                                        Data.player.inventory[index] = tempMemory
                                     }
                                 }
                             }
@@ -462,36 +461,36 @@ class Activity_Character : AppCompatActivity() {
                                             1 -> buttonBag1
                                             else -> buttonBag0
                                         }
-                                        if (player.backpackRunes[index!!] != null) {
-                                            if(player.backpackRunes[0]!!.inventorySlots > 0){
+                                        if (Data.player.backpackRunes[index!!] != null) {
+                                            if(Data.player.backpackRunes[0]!!.inventorySlots > 0){
                                                 var tempEmptySpaces = 0
-                                                for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
-                                                    if(player.inventory[i] == null){
+                                                for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
+                                                    if(Data.player.inventory[i] == null){
                                                         tempEmptySpaces++
                                                     }
                                                 }
-                                                if(tempEmptySpaces > player.backpackRunes[0]!!.inventorySlots){
-                                                    if(player.inventory.contains(null)){
-                                                        for(i in (player.inventory.size-1-player.backpackRunes[0]!!.inventorySlots) until player.inventory.size){
-                                                            if(player.inventory[i]!=null){
-                                                                val tempItem = player.inventory[i]
-                                                                player.inventory[i] = null
-                                                                player.inventory[player.inventory.indexOf(null)] = tempItem
+                                                if(tempEmptySpaces > Data.player.backpackRunes[0]!!.inventorySlots){
+                                                    if(Data.player.inventory.contains(null)){
+                                                        for(i in (Data.player.inventory.size-1-Data.player.backpackRunes[0]!!.inventorySlots) until Data.player.inventory.size){
+                                                            if(Data.player.inventory[i]!=null){
+                                                                val tempItem = Data.player.inventory[i]
+                                                                Data.player.inventory[i] = null
+                                                                Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
                                                             }
                                                         }
 
                                                         buttonBag0.setImageResource(R.drawable.emptyslot)
-                                                        player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
-                                                        player.backpackRunes[0] = null
+                                                        Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
+                                                        Data.player.backpackRunes[0] = null
                                                         buttonBag0.isEnabled = false
                                                         (inventoryListView.adapter as InventoryView).dragItemSync()
                                                     }
                                                 }
                                             }else{
-                                                if(player.inventory.contains(null)){
+                                                if(Data.player.inventory.contains(null)){
                                                     buttonBag0.setImageResource(R.drawable.emptyslot)
-                                                    player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
-                                                    player.backpackRunes[0] = null
+                                                    Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
+                                                    Data.player.backpackRunes[0] = null
                                                     buttonBag0.isEnabled = false
                                                     (inventoryListView.adapter as InventoryView).dragItemSync()
                                                 }
@@ -519,42 +518,42 @@ class Activity_Character : AppCompatActivity() {
                 super.onClick()
                 //if(!hidden && lastClicked=="runes0"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                 lastClicked = "runes0"
-                textViewInfoItem.setHTMLText(player.backpackRunes[0]?.getStats()!!)
+                textViewInfoItem.setHTMLText(Data.player.backpackRunes[0]?.getStats()!!)
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(player.backpackRunes[0]!!.inventorySlots > 0){
+                if(Data.player.backpackRunes[0]!!.inventorySlots > 0){
                     var tempEmptySpaces = 0
-                    for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
-                        if(player.inventory[i] == null){
+                    for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
+                        if(Data.player.inventory[i] == null){
                             tempEmptySpaces++
                         }
                     }
-                    if(tempEmptySpaces > player.backpackRunes[0]!!.inventorySlots){
-                        if(player.inventory.contains(null)){
-                            for(i in (player.inventory.size-1-player.backpackRunes[0]!!.inventorySlots) until player.inventory.size){
-                                if(player.inventory[i]!=null){
-                                    val tempItem = player.inventory[i]
-                                    player.inventory[i] = null
-                                    player.inventory[player.inventory.indexOf(null)] = tempItem
+                    if(tempEmptySpaces > Data.player.backpackRunes[0]!!.inventorySlots){
+                        if(Data.player.inventory.contains(null)){
+                            for(i in (Data.player.inventory.size-1-Data.player.backpackRunes[0]!!.inventorySlots) until Data.player.inventory.size){
+                                if(Data.player.inventory[i]!=null){
+                                    val tempItem = Data.player.inventory[i]
+                                    Data.player.inventory[i] = null
+                                    Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
                                 }
                             }
 
                             buttonBag0.setImageResource(0)
                             buttonBag0.setBackgroundResource(R.drawable.emptyslot)
-                            player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
-                            player.backpackRunes[0] = null
+                            Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
+                            Data.player.backpackRunes[0] = null
                             buttonBag0.isEnabled = false
                             (inventoryListView.adapter as InventoryView).dragItemSync()
                         }
                     }
                 }else{
-                    if(player.inventory.contains(null)){
+                    if(Data.player.inventory.contains(null)){
                         buttonBag0.setImageResource(0)
                         buttonBag0.setBackgroundResource(R.drawable.emptyslot)
-                        player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[0]
-                        player.backpackRunes[0] = null
+                        Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
+                        Data.player.backpackRunes[0] = null
                         buttonBag0.isEnabled = false
                         (inventoryListView.adapter as InventoryView).dragItemSync()
                     }
@@ -568,7 +567,7 @@ class Activity_Character : AppCompatActivity() {
 
                 val item = ClipData.Item("Runes0")
                 ClipDataIndex = 0
-                draggedItem = player.backpackRunes[0]
+                draggedItem = Data.player.backpackRunes[0]
                 buttonBag0.setImageResource(0)
 
                 val dragData = ClipData(
@@ -593,42 +592,42 @@ class Activity_Character : AppCompatActivity() {
                 super.onClick()
                 //if(!hidden && lastClicked=="runes1"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                 lastClicked = "runes1"
-                textViewInfoItem.setHTMLText(player.backpackRunes[1]?.getStats()!!)
+                textViewInfoItem.setHTMLText(Data.player.backpackRunes[1]?.getStats()!!)
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(player.backpackRunes[1]!!.inventorySlots > 0){
+                if(Data.player.backpackRunes[1]!!.inventorySlots > 0){
                     var tempEmptySpaces = 0
-                    for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
-                        if(player.inventory[i] == null){
+                    for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
+                        if(Data.player.inventory[i] == null){
                             tempEmptySpaces++
                         }
                     }
-                    if(tempEmptySpaces > player.backpackRunes[1]!!.inventorySlots){
-                        if(player.inventory.contains(null)){
-                            for(i in (player.inventory.size-1-player.backpackRunes[1]!!.inventorySlots) until player.inventory.size){
-                                if(player.inventory[i]!=null){
-                                    val tempItem = player.inventory[i]
-                                    player.inventory[i] = null
-                                    player.inventory[player.inventory.indexOf(null)] = tempItem
+                    if(tempEmptySpaces > Data.player.backpackRunes[1]!!.inventorySlots){
+                        if(Data.player.inventory.contains(null)){
+                            for(i in (Data.player.inventory.size-1-Data.player.backpackRunes[1]!!.inventorySlots) until Data.player.inventory.size){
+                                if(Data.player.inventory[i]!=null){
+                                    val tempItem = Data.player.inventory[i]
+                                    Data.player.inventory[i] = null
+                                    Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
                                 }
                             }
 
                             buttonBag1.setImageResource(0)
                             buttonBag0.setBackgroundResource(R.drawable.emptyslot)
-                            player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[1]
-                            player.backpackRunes[1] = null
+                            Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[1]
+                            Data.player.backpackRunes[1] = null
                             buttonBag1.isEnabled = false
                             (inventoryListView.adapter as InventoryView).dragItemSync()
                         }
                     }
                 }else{
-                    if(player.inventory.contains(null)){
+                    if(Data.player.inventory.contains(null)){
                         buttonBag1.setImageResource(0)
                         buttonBag0.setBackgroundResource(R.drawable.emptyslot)
-                        player.inventory[player.inventory.indexOf(null)] = player.backpackRunes[1]
-                        player.backpackRunes[1] = null
+                        Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[1]
+                        Data.player.backpackRunes[1] = null
                         buttonBag1.isEnabled = false
                         (inventoryListView.adapter as InventoryView).dragItemSync()
                     }
@@ -641,7 +640,7 @@ class Activity_Character : AppCompatActivity() {
 
                 val item = ClipData.Item("Runes1")
                 ClipDataIndex = 1
-                draggedItem = player.backpackRunes[1]
+                draggedItem = Data.player.backpackRunes[1]
                 buttonBag1.setImageResource(0)
 
                 // Create a new ClipData using the tag as a label, the plain text MIME type, and
@@ -664,7 +663,7 @@ class Activity_Character : AppCompatActivity() {
                 )
             }*/
         })
-        inventoryListView.adapter = InventoryView(frameLayoutCharacterStats, hidden, animUpText!!, animDownText!!, player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, supportFragmentManager, equipDragListener, runesDragListener, bagViewV,frameLayoutCharacterProfile, this)
+        inventoryListView.adapter = InventoryView(frameLayoutCharacterStats, hidden, animUpText!!, animDownText!!, Data.player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, supportFragmentManager, equipDragListener, runesDragListener, bagViewV,frameLayoutCharacterProfile, this)
     }
 
     private class InventoryView(val frameLayoutCharacterStats: FrameLayout, var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: CustomTextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val supportFragmentManager:FragmentManager, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
@@ -713,10 +712,10 @@ class Activity_Character : AppCompatActivity() {
                     3->viewHolder.buttonInventory4
                     else->viewHolder.buttonInventory1
                 }
-                if(index+i<player.inventory.size){
+                if(index+i<Data.player.inventory.size){
                     if(playerC.inventory[index+i]!=null){
-                        tempSlot.setImageResource(player.inventory[index+i]!!.drawable)
-                        tempSlot.setBackgroundResource(player.inventory[index+i]!!.getBackground())
+                        tempSlot.setImageResource(Data.player.inventory[index+i]!!.drawable)
+                        tempSlot.setBackgroundResource(Data.player.inventory[index+i]!!.getBackground())
                         tempSlot.isEnabled = true
                     }else{
                         tempSlot.setImageResource(0)
@@ -981,7 +980,7 @@ class Activity_Character : AppCompatActivity() {
                 else -> buttonBag0
             }
 
-            if(playerC.inventory[index]!!.charClass == player.charClassIndex || playerC.inventory[index]!!.charClass == 0){
+            if(playerC.inventory[index]!!.charClass == Data.player.charClassIndex || playerC.inventory[index]!!.charClass == 0){
                 when(playerC.inventory[index]){
                     is Runes ->{
                         if (playerC.backpackRunes[playerC.inventory[index]!!.slot-10] == null) {
@@ -993,18 +992,18 @@ class Activity_Character : AppCompatActivity() {
                         } else {
                             if(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots > playerC.inventory[index]!!.inventorySlots){
                                 var tempEmptySpaces = 0
-                                for(i in 0 until player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem player.inventoryslot - item.inventoryslots
-                                    if(player.inventory[i] == null){
+                                for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
+                                    if(Data.player.inventory[i] == null){
                                         tempEmptySpaces++
                                     }
                                 }
 
                                 if(tempEmptySpaces > playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots){
-                                    for(i in (player.inventory.size-1-abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)) until player.inventory.size){
-                                        if(player.inventory[i]!=null){
-                                            val tempItem = player.inventory[i]
-                                            player.inventory[i] = null
-                                            player.inventory[player.inventory.indexOf(null)] = tempItem
+                                    for(i in (Data.player.inventory.size-1-abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)) until Data.player.inventory.size){
+                                        if(Data.player.inventory[i]!=null){
+                                            val tempItem = Data.player.inventory[i]
+                                            Data.player.inventory[i] = null
+                                            Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
                                         }
                                     }
                                     button.setImageResource(playerC.inventory[index]!!.drawable)
@@ -1059,10 +1058,10 @@ class Activity_Character : AppCompatActivity() {
     fun onUnEquip(view:View){
         val index = view.tag.toString().toInt()
         ++clicks
-        if (clicks == 2&&lastClicked=="equip$index"&& player.inventory.contains(null)) {
+        if (clicks == 2&&lastClicked=="equip$index"&& Data.player.inventory.contains(null)) {
 
-            player.inventory[player.inventory.indexOf(null)] = player.equip[index]
-            player.equip[index] = null
+            Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.equip[index]
+            Data.player.equip[index] = null
             view.isEnabled = false
             (view as ImageView).setImageResource(0)
             view.setBackgroundResource(R.drawable.emptyslot)
@@ -1072,8 +1071,8 @@ class Activity_Character : AppCompatActivity() {
         } else if (clicks == 1) {                                            //SINGLE CLICK
             //if(!hidden && lastClicked=="equip$index"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
             lastClicked="equip$index"
-            if(player.equip[index]!=null){
-                textViewInfoItem.setHTMLText(player.equip[index]?.getStats()!!)
+            if(Data.player.equip[index]!=null){
+                textViewInfoItem.setHTMLText(Data.player.equip[index]?.getStats()!!)
             }
         }
         handler.postDelayed({

@@ -25,7 +25,6 @@ class Activity_Shop : AppCompatActivity(){
 
     private var hidden = false
     var displayY = 0.0
-    var originalCoinY:Float = 0f
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -68,9 +67,9 @@ class Activity_Shop : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
-        player.syncStats()
+        Data.player.syncStats()
         setContentView(R.layout.activity_shop)
-        textViewOverviewRowMoney.text = player.money.toString()
+        textViewShopMoney.text = Data.player.money.toString()
         textViewInfoItem.movementMethod = ScrollingMovementMethod()
 
         val opts = BitmapFactory.Options()
@@ -83,7 +82,7 @@ class Activity_Shop : AppCompatActivity(){
                 R.anim.animation_shop_text_down)
 
         textViewInfoItem.startAnimation(animDownText)
-        originalCoinY = imageViewShopCoin.y
+        val originalCoinY = imageViewShopCoin.y
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -99,43 +98,52 @@ class Activity_Shop : AppCompatActivity(){
             }
         }
 
+        listViewShopInventory.adapter = ShopInventory(hidden, animUpText, animDownText, Data.player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewShopInventory, textViewShopMoney)
+        listViewShopOffers.adapter = ShopOffer(hidden, animUpText, animDownText, Data.player, textViewInfoItem, bubleDialogShop, imageViewShopBubbleBg, listViewShopInventory.adapter as ShopInventory, this, textViewShopMoney)
 
-        listViewInventoryShop.adapter = ShopInventory(hidden, animUpText, animDownText, player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewInventoryShop, textViewOverviewRowMoney)
-        listViewShop.adapter = ShopOffer(hidden, animUpText, animDownText, player, textViewInfoItem, bubleDialogShop, listViewInventoryShop.adapter as ShopInventory, this, textViewOverviewRowMoney)
+        var animationRefresh = ValueAnimator()
 
         shopOfferRefresh.setOnClickListener {refresh: View ->
-            val moneyReq = player.level * 10
-            if(player.money >= moneyReq){
-                player.money -= moneyReq
-                for(i in 0 until player.shopOffer.size){
-                    player.shopOffer[i] = generateItem(player)
-                    (listViewShop.adapter as ShopOffer).notifyDataSetChanged()
+            val moneyReq = Data.player.level * 10
+
+            if(!animationRefresh.isRunning){
+                if(Data.player.money >= moneyReq){
+                    Data.player.money -= moneyReq
+                    for(i in 0 until Data.player.shopOffer.size){
+                        Data.player.shopOffer[i] = GameFlow.generateItem(Data.player)
+                        (listViewShopOffers.adapter as ShopOffer).notifyDataSetChanged()
+                    }
+                    lastClicked = ""
+
+                    textViewShopMoney.text = Data.player.money.toString()
+                    textViewShopCoin.text = (moneyReq*-1).toString()
+
+                    animationRefresh = ValueAnimator.ofFloat(originalCoinY, refresh.y).apply {
+                        duration = 400
+                        addUpdateListener {
+                            imageViewShopCoin.y = it.animatedValue as Float
+                            textViewShopCoin.y = it.animatedValue as Float - textViewShopCoin.height
+                        }
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationRepeat(animation: Animator?) {
+                            }
+
+                            override fun onAnimationCancel(animation: Animator?) {
+                            }
+
+                            override fun onAnimationStart(animation: Animator?) {
+                                imageViewShopCoin.visibility = View.VISIBLE
+                                textViewShopCoin.visibility = View.VISIBLE
+                            }
+
+                            override fun onAnimationEnd(animation: Animator?) {
+                                imageViewShopCoin.visibility = View.GONE
+                                textViewShopCoin.visibility = View.GONE
+                            }
+                        })
+                        start()
+                    }
                 }
-                lastClicked = ""
-            }
-            textViewOverviewRowMoney.text = player.money.toString()
-
-            ValueAnimator.ofFloat(originalCoinY, refresh.y).apply {
-                duration = 400
-                addUpdateListener {
-                    imageViewShopCoin.y = it.animatedValue as Float
-                }
-                addListener(object : Animator.AnimatorListener {
-                    override fun onAnimationRepeat(animation: Animator?) {
-                    }
-
-                    override fun onAnimationCancel(animation: Animator?) {
-                    }
-
-                    override fun onAnimationStart(animation: Animator?) {
-                        imageViewShopCoin.visibility = View.VISIBLE
-                    }
-
-                    override fun onAnimationEnd(animation: Animator?) {
-                        imageViewShopCoin.visibility = View.INVISIBLE
-                    }
-                })
-                start()
             }
         }
     }
@@ -255,7 +263,7 @@ class Activity_Shop : AppCompatActivity(){
         private class ViewHolder(val buttonInventory1:ImageView, val buttonInventory2:ImageView, val buttonInventory3:ImageView, val buttonInventory4:ImageView)
     }
 
-    private class ShopOffer(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, val player:Player, val textViewInfoItem: CustomTextView, val bubleDialogShop:TextView, val InventoryShop:BaseAdapter, private val context:Context, val textViewMoney: TextView) : BaseAdapter() {
+    private class ShopOffer(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, val player:Player, val textViewInfoItem: CustomTextView, val bubbleDialogShop:TextView, val bubbleDialogBg: ImageView, val InventoryShop:BaseAdapter, private val context:Context, val textViewMoney: TextView) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 2
@@ -294,8 +302,8 @@ class Activity_Shop : AppCompatActivity(){
                     3->viewHolder.buttonOffer4
                     else->viewHolder.buttonOffer1
                 }.apply {
-                    setImageResource(player.shopOffer[index+i]!!.drawable)
-                    setBackgroundResource(player.shopOffer[index+i]!!.getBackground())
+                    setImageResource(Data.player.shopOffer[index+i]!!.drawable)
+                    setBackgroundResource(Data.player.shopOffer[index+i]!!.getBackground())
                 }
             }
 
@@ -304,12 +312,12 @@ class Activity_Shop : AppCompatActivity(){
                     super.onClick()
                     //if(!hidden && lastClicked==="offer0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer0$position"
-                    textViewInfoItem.setHTMLText(player.shopOffer[index]?.getStatsCompare()!!)
+                    textViewInfoItem.setHTMLText(Data.player.shopOffer[index]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index, player, bubleDialogShop, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -320,12 +328,12 @@ class Activity_Shop : AppCompatActivity(){
                     super.onClick()
                     //if(!hidden && lastClicked==="offer1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer1$position"
-                    textViewInfoItem.setHTMLText(player.shopOffer[index+1]?.getStatsCompare()!!)
+                    textViewInfoItem.setHTMLText(Data.player.shopOffer[index+1]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+1, player, bubleDialogShop, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index+1, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -336,12 +344,12 @@ class Activity_Shop : AppCompatActivity(){
                     super.onClick()
                     //if(!hidden && lastClicked==="offer2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer2$position"
-                    textViewInfoItem.setHTMLText(player.shopOffer[index+2]?.getStatsCompare()!!)
+                    textViewInfoItem.setHTMLText(Data.player.shopOffer[index+2]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+2, player, bubleDialogShop, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index+2, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -352,12 +360,12 @@ class Activity_Shop : AppCompatActivity(){
                     super.onClick()
                     //if(!hidden && lastClicked==="offer3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
                     lastClicked="offer3$position"
-                    textViewInfoItem.setHTMLText(player.shopOffer[index+3]?.getStatsCompare()!!)
+                    textViewInfoItem.setHTMLText(Data.player.shopOffer[index+3]?.getStatsCompare()!!)
                 }
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+3, player, bubleDialogShop, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index+3, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -375,14 +383,14 @@ class Activity_Shop : AppCompatActivity(){
             val buttonYes:Button = view.findViewById(R.id.buttonYes)
             val buttonNo:Button = view.findViewById(R.id.buttonCloseDialog)
             val info:TextView = view.findViewById(R.id.textViewInfo)
-            info.text = "Are you sure you want to sell ${player.inventory[index]?.name} ?"
+            info.text = "Are you sure you want to sell ${Data.player.inventory[index]?.name} ?"
             window.isOutsideTouchable = false
             window.isFocusable = true
             buttonYes.setOnClickListener {
-                player.money+=player.inventory[index]!!.price
-                player.inventory[index]=null
+                Data.player.money+=Data.player.inventory[index]!!.price
+                Data.player.inventory[index]=null
                 (listViewInventoryShop.adapter as ShopInventory).notifyDataSetChanged()
-                textViewMoney.text = player.money.toString()
+                textViewMoney.text = Data.player.money.toString()
                 textViewInfoItem.visibility = View.INVISIBLE
                 window.dismiss()
             }
@@ -392,26 +400,28 @@ class Activity_Shop : AppCompatActivity(){
             window.showAtLocation(view, Gravity.CENTER,0,0)
         }
 
-        private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, textViewInfoItem:TextView, textViewMoney: TextView){
-            if(player.money>=player.shopOffer[index]!!.price){
-                if(player.inventory.contains(null)){
+        private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, errorBg: ImageView, textViewInfoItem:TextView, textViewMoney: TextView){
+            if(Data.player.money>=Data.player.shopOffer[index]!!.price){
+                if(Data.player.inventory.contains(null)){
                     error.visibility = View.INVISIBLE
-                    player.money-=player.shopOffer[index]!!.price
-                    textViewMoney.text = player.money.toString()
-                    player.shopOffer[index]!!.price/=2
-                    player.inventory[player.inventory.indexOf(null)] = player.shopOffer[index]
-                    player.shopOffer[index] = generateItem(player)
+                    errorBg.visibility = View.INVISIBLE
+                    Data.player.money-=Data.player.shopOffer[index]!!.price
+                    textViewMoney.text = Data.player.money.toString()
+                    Data.player.shopOffer[index]!!.price/=2
+                    Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.shopOffer[index]
+                    Data.player.shopOffer[index] = GameFlow.generateItem(player)
                     textViewInfoItem.visibility = View.INVISIBLE
                 }else{
-                    bubbleDialogShop(message = "Are you getting fat ? Or is it because of the amount of items you have ?", error = error)
+                    bubbleDialogShop(message = "Are you getting fat ? Or is it because of the amount of items you have ?", error = error, errorBg =  errorBg)
                 }
             }else{
-                bubbleDialogShop(message = "Not enough coins!", error = error)
+                bubbleDialogShop(message = "Not enough coins!", error = error, errorBg =  errorBg)
             }
         }
 
-        private fun bubbleDialogShop(message: String, error: TextView){
+        private fun bubbleDialogShop(message: String, error: TextView, errorBg: ImageView){
             error.visibility = View.VISIBLE
+            errorBg.visibility = View.VISIBLE
             error.text = message
         }
     }

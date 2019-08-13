@@ -5,6 +5,7 @@
     android:id="@+id/layoutMarket"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
@@ -95,6 +96,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Search..."
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
@@ -129,14 +131,14 @@
         android:id="@+id/imageViewMarketBarBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/colorSecondary"
+        android:paddingBottom="1dp"
         android:scaleType="fitXY"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toStartOf="@+id/guideline85"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textViewMarketBarSeller"
-        app:srcCompat="@color/loginColor"
-        android:paddingBottom="1dp"
-        android:background="@color/colorSecondary"/>
+        app:srcCompat="@color/loginColor" />
 
     <TextView
         android:id="@+id/textViewMarketBarSeller"
@@ -144,8 +146,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="1dp"
         android:text=" seller"
-        android:textStyle="bold"
         android:textColor="@color/colorThird"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toStartOf="@+id/guideline176"
         app:layout_constraintHorizontal_bias="0.0"
@@ -162,8 +164,8 @@
         android:focusable="true"
         android:gravity="center_horizontal"
         android:text="price"
-        android:textStyle="bold"
         android:textColor="@color/colorThird"
+        android:textStyle="bold"
         android:tint="@color/colorThird"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toStartOf="@+id/guideline85"
@@ -179,9 +181,9 @@
         android:clickable="true"
         android:focusable="true"
         android:gravity="center_horizontal"
-        android:text="expiry date"
-        android:textStyle="bold"
+        android:text="exp. date"
         android:textColor="@color/colorThird"
+        android:textStyle="bold"
         android:tint="@color/colorThird"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toStartOf="@+id/guideline185"
@@ -196,8 +198,8 @@
         android:layout_marginBottom="1dp"
         android:gravity="center_horizontal"
         android:text="item"
-        android:textStyle="bold"
         android:textColor="@color/colorThird"
+        android:textStyle="bold"
         android:tint="@color/colorThird"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toStartOf="@+id/guideline177"
@@ -212,10 +214,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
         android:layout_marginBottom="1dp"
+        android:gravity="center_horizontal"
         android:text="description"
         android:textColor="@color/colorThird"
         android:textStyle="bold"
-        android:gravity="center_horizontal"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toStartOf="@+id/guideline179"
         app:layout_constraintHorizontal_bias="0.0"
@@ -244,9 +246,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:background="@drawable/stats_info"
         android:gravity="center_horizontal"
         android:text="test info"
-        android:background="@drawable/stats_info"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/guideline184"
         app:layout_constraintStart_toStartOf="parent"
@@ -319,11 +321,11 @@
         android:background="@drawable/emptyspellslotlarge"
         android:backgroundTint="@color/colorPrimary"
         android:src="@drawable/home_button"
+        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
 
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/imageViewMenuUpMarket"
@@ -345,5 +347,18 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewMarketMoney"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="coins"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline182"
+        app:layout_constraintEnd_toStartOf="@+id/guideline138"
+        app:layout_constraintStart_toStartOf="@+id/guideline85"
+        app:layout_constraintTop_toBottomOf="@+id/editTextMarketSearch" />
 
 </android.support.constraint.ConstraintLayout>

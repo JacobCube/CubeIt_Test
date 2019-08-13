@@ -39,38 +39,38 @@ class Fragment_Register : Fragment() {
         }
 
         view.buttonRegister.setOnClickListener {
-            val intentSplash = Intent(view.context, Activity_Splash_Screen::class.java)
-            loadingStatus = LoadingStatus.LOGGING
+            val splashScreen = Activity_Splash_Screen()
+            val intentSplash = Intent(view.context, splashScreen::class.java)
+            Data.loadingStatus = LoadingStatus.LOGGING
             val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+            val isConnected: Boolean = activeNetwork?.isConnected == true
+
 
             startActivity(intentSplash)
-            loadingStatus = LoadingStatus.LOGGING
+            Data.loadingStatus = LoadingStatus.LOGGING
 
             if (!isConnected){
-                loadingStatus = LoadingStatus.CLOSELOADING
+                Data.loadingStatus = LoadingStatus.CLOSELOADING
                 handler.postDelayed({showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")},100)
             }
             if (inputPassReg.text.toString() != inputRePassReg.text.toString()){
-                loadingStatus = LoadingStatus.CLOSELOADING
+                Data.loadingStatus = LoadingStatus.CLOSELOADING
                 handler.postDelayed({showNotification("Oops", "Passwords must match")},100)
             }
 
-            loadGlobalData(view.context).addOnSuccessListener {
-                if (appVersion > BuildConfig.VERSION_CODE){
-                    loadingStatus = LoadingStatus.CLOSELOADING
-                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned $appVersion)")},100)
+            Data.loadGlobalData(view.context).addOnSuccessListener {
+                if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE){
+                    Data.loadingStatus = LoadingStatus.CLOSELOADING
+                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha, versioned ${GenericDB.AppInfo.appVersion})")},100)
                 }
 
-                if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && appVersion <= BuildConfig.VERSION_CODE && isConnected) {
+                if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
                     userPassword = view.inputPassReg.text.toString()
 
                     Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener{ task: Task<AuthResult> ->
                         if (task.isSuccessful) {
-                            if(textViewLog!= null){
-                                textViewLog!!.text = resources.getString(R.string.loading_log, "Your profile information")
-                            }
+                            Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
 
                             val user = Auth!!.currentUser
                             user!!.sendEmailVerification()
@@ -78,10 +78,11 @@ class Fragment_Register : Fragment() {
 
                             val tempPlayer = Player()
                             tempPlayer.username = view.inputUsernameReg.text.toString()
+                            //tempPlayer.userSession = user
 
-                            tempPlayer.toLoadPlayer().createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnSuccessListener {
-                                player.username = view.inputUsernameReg.text.toString()
-                                player.loadPlayer().addOnSuccessListener {
+                            tempPlayer.createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnSuccessListener {
+                                Data.player.username = view.inputUsernameReg.text.toString()
+                                Data.player.loadPlayer().addOnSuccessListener {
                                     val intent = Intent(view.context, Activity_Character_Customization::class.java)
                                     startActivity(intent)
                                     //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
@@ -90,16 +91,16 @@ class Fragment_Register : Fragment() {
 
                         }else {
                             try {
-                                showNotification("Oops", exceptionFormatter(task.result.toString()))
+                                showNotification("Oops", SystemFlow.exceptionFormatter(task.result.toString()))
                             }
                             catch (e:Exception){
                                 showNotification("Oops", "An account with this email already exists!")
                             }
                         }
-                        loadingStatus = LoadingStatus.CLOSELOADING
+                        Data.loadingStatus = LoadingStatus.CLOSELOADING
                     }
                 } else {
-                    loadingStatus = LoadingStatus.CLOSELOADING
+                    Data.loadingStatus = LoadingStatus.CLOSELOADING
                     showNotification("Alert", "Please enter a valid email address or password")
                 }
             }

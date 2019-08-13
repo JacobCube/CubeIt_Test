@@ -5,9 +5,11 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.text.Html
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_character_stats.view.*
 
@@ -17,14 +19,29 @@ class Fragment_Character_stats : Fragment() {
 
     /*override fun onDetach() {
         super.onDetach()
-        textViewStats.setHTMLText(player.syncStats())
+        textViewStats.setHTMLText(Data.player.syncStats())
     }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_character_stats, container, false)
 
         textViewStats = view.textViewFragmentStats
-        view.textViewFragmentStats.setHTMLText(player.syncStats())
+        view.textViewFragmentStats.setHTMLText(Data.player.syncStats())
+        if((activity as Activity_Character).statsLocked){
+            view.imageViewFragmentStatsLock.setColorFilter(R.color.black)
+        }else {
+            view.imageViewFragmentStatsLock.clearColorFilter()
+        }
+
+        view.imageViewFragmentStatsLock.setOnClickListener {
+            (activity as Activity_Character).statsLocked = if((activity as Activity_Character).statsLocked){
+                (it as ImageView).clearColorFilter()
+                false
+            }else {
+                (it as ImageView).setColorFilter(R.color.black)
+                true
+            }
+        }
 
         return view
     }

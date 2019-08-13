@@ -19,6 +19,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterUntilDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -40,6 +41,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterItem" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterCoins"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -59,6 +61,7 @@
         app:layout_constraintTop_toTopOf="@+id/imageViewMarketRegisterItem" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterCubeCoins"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -78,6 +81,7 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketRegisterCoins" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterLowerCoins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -100,6 +104,7 @@
         app:layout_constraintTop_toBottomOf="@+id/checkBoxMarketRegister" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterLowerCubeCoins"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

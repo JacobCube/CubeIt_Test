@@ -331,7 +331,7 @@
 
     <Button
         android:id="@+id/buttonHomeMarket"
-        style="@style/AppTheme.Button"
+        style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -339,6 +339,17 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline1110"
         app:layout_constraintStart_toStartOf="@+id/guideline119"
         app:layout_constraintTop_toTopOf="@+id/guideline1124" />
+
+    <Button
+        android:id="@+id/buttonHomeFaction"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="faction"
+        app:layout_constraintBottom_toTopOf="@+id/guideline113"
+        app:layout_constraintEnd_toStartOf="@+id/guideline112"
+        app:layout_constraintStart_toStartOf="@+id/guideline111" />
 
 
 </android.support.constraint.ConstraintLayout>

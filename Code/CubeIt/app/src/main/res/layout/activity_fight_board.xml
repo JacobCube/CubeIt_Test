@@ -85,6 +85,7 @@
         app:srcCompat="@drawable/search_icon" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -129,6 +130,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:gravity="center_horizontal"
+        android:textStyle="bold"
         android:text="nickname"
         android:textColor="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
@@ -141,6 +143,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:text="position"
+        android:textStyle="bold"
         android:textColor="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
         app:layout_constraintEnd_toStartOf="@+id/guideline174"
@@ -153,6 +156,7 @@
         android:layout_height="0dp"
         android:gravity="center_horizontal"
         android:text="fame"
+        android:textStyle="bold"
         android:textColor="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
         app:layout_constraintEnd_toEndOf="parent"
@@ -165,6 +169,7 @@
         android:layout_height="0dp"
         android:gravity="center_horizontal"
         android:text="lvl"
+        android:textStyle="bold"
         android:textColor="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
         app:layout_constraintEnd_toStartOf="@+id/guideline155"
@@ -196,7 +201,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
 
-        app:layout_constraintTop_toTopOf="parent" />
+        />
 
     <ImageView
         android:id="@+id/imageViewLoadingBoard"
@@ -262,16 +267,54 @@
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightBoardCompare"
-        android:layout_width="0dp"
-        android:gravity="center_horizontal"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:visibility="gone"
-        android:textSize="18sp"
-        android:textColor="@color/colorSecondary"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:layout_marginTop="8dp"
         android:background="@color/loginColor"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/frameLayoutFightProfile"
-        app:layout_constraintEnd_toStartOf="@+id/guideline85"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="@+id/guideline175" />
+        app:layout_constraintTop_toTopOf="@+id/guideline175"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightBoardPageInc"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewFightBoardPage"
+        app:layout_constraintStart_toEndOf="@+id/textViewFightBoardPage"
+        app:layout_constraintTop_toTopOf="@+id/textViewFightBoardPage"
+        app:srcCompat="@drawable/right_arrow" />
+
+    <ImageView
+        android:id="@+id/imageViewFightBoardPageDec"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewFightBoardPage"
+        app:layout_constraintEnd_toStartOf="@+id/textViewFightBoardPage"
+        app:layout_constraintTop_toTopOf="@+id/textViewFightBoardPage"
+        app:srcCompat="@drawable/left_arrow" />
+
+    <TextView
+        android:id="@+id/textViewFightBoardPage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="1"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/listViewPlayers"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewLoadingBoard"
+        app:layout_constraintStart_toStartOf="@+id/imageViewLoadingBoard" />
 
 </android.support.constraint.ConstraintLayout>

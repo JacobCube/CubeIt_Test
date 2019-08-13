@@ -3,25 +3,20 @@ package cz.cubeit.cubeit
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
+import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_settings.*
-import kotlinx.android.synthetic.main.fragment_menu_bar.*
-import kotlinx.android.synthetic.main.fragment_menu_bar.view.*
-import kotlin.math.abs
 
 
 class ActivitySettings : AppCompatActivity(){
 
     var displayY = 0.0
-    lateinit var frameLayoutMenu: FrameLayout
+    private lateinit var frameLayoutMenu: FrameLayout
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -68,15 +63,19 @@ class ActivitySettings : AppCompatActivity(){
 
         supportFragmentManager.beginTransaction().add(R.id.frameLayoutBugReport, Fragment_Bug_report()).commitNow()
 
-        switchNotifications.isChecked = player.notifications
-        switchSounds.isChecked = player.music
-        switchAppearOnTop.isChecked = player.appearOnTop
+        switchNotifications.isChecked = Data.player.notifications
+        switchSounds.isChecked = Data.player.music
+        switchAppearOnTop.isChecked = Data.player.appearOnTop
 
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
         displayY = dm.heightPixels.toDouble()
+
+        frameLayoutMenu = frameLayoutMenuSettings
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuSettings, Fragment_Menu_Bar.newInstance(R.id.imageViewActivitySettings, R.id.frameLayoutMenuSettings, R.id.homeButtonBackSettings, R.id.imageViewMenuUpSettings)).commitNow()
+        frameLayoutMenuSettings.y = dm.heightPixels.toFloat()
 
         val displayY = dm.heightPixels.toDouble()
 
@@ -86,24 +85,41 @@ class ActivitySettings : AppCompatActivity(){
             }
         }
 
+        seekBarSettingsTextSize.progress = (Data.player.textSize - 16f).toInt()
+        textViewSettingsSeekBar.textSize = Data.player.textSize
+
+        seekBarSettingsTextSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+
+            override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
+                textViewSettingsSeekBar.textSize = (16f) + i.toFloat()
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                Data.player.textSize = (16f) + seekBar.progress.toFloat()
+                SystemFlow.writeFileText(this@ActivitySettings, "textSize.data", Data.player.textSize.toString())
+            }
+        })
 
         switchSounds.setOnCheckedChangeListener { _, isChecked ->
-            val svc = Intent(this, bgMusic::class.java)
+            val svc = Intent(this, Data.bgMusic::class.java)
             if(isChecked){
                 startService(svc)
             }else{
                 stopService(svc)
-                bgMusic.stopSelf()
+                Data.bgMusic.stopSelf()
             }
-            player.music = isChecked
+            Data.player.music = isChecked
         }
 
         switchNotifications.setOnCheckedChangeListener { _, isChecked ->
-            player.notifications = isChecked
+            Data.player.notifications = isChecked
         }
 
         switchAppearOnTop.setOnCheckedChangeListener { _, isChecked ->
-            player.appearOnTop = isChecked
+            Data.player.appearOnTop = isChecked
         }
 
         imageViewBugIcon.layoutParams.height = (displayY/10 * 1.8).toInt()
@@ -133,8 +149,5 @@ class ActivitySettings : AppCompatActivity(){
                 }
             }
         }
-
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuSettings, Fragment_Menu_Bar.newInstance(R.id.imageViewActivitySettings, R.id.frameLayoutMenuSettings, R.id.homeButtonBackSettings, R.id.imageViewMenuUpSettings)).commitNow()
-        frameLayoutMenuSettings.y = dm.heightPixels.toFloat()
     }
 }

@@ -8,7 +8,6 @@ import android.content.res.Resources
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
-import android.os.PersistableBundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
@@ -34,6 +33,12 @@ class Adventure : AppCompatActivity() {
     var displayY: Double = 0.0
     var progressAnimator: ValueAnimator? = null
     private var overViewOpened = false
+
+    var overviewList: MutableList<Quest>? = null        //sort of a bundle
+    var overviewFilterDifficulty: Boolean = true
+    var overviewFilterExperience: Boolean = true
+    var overviewFilterItem: Boolean = true
+    var overviewFilterCoins: Boolean = true
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -74,10 +79,6 @@ class Adventure : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
-    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commit()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
@@ -92,13 +93,13 @@ class Adventure : AppCompatActivity() {
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commit()
 
-        player.checkForQuest().addOnSuccessListener {
-            if(activeQuest != null){
+        Data.player.checkForQuest().addOnSuccessListener {
+            if(Data.activeQuest != null){
                 progressAdventureQuest.visibility = View.VISIBLE
                 progressAdventureQuest.y = -progressAdventureQuest.height.toFloat()
                 textViewQuestProgress.y = -progressAdventureQuest.height.toFloat()
                 textViewQuestProgress.text = "0"
-                progressAdventureQuest.max = activeQuest!!.quest.secondsLength*1000
+                progressAdventureQuest.max = Data.activeQuest!!.quest.secondsLength*1000
 
                 ValueAnimator.ofFloat(progressAdventureQuest.y, 4f).apply{
                     duration = 800
@@ -112,28 +113,41 @@ class Adventure : AppCompatActivity() {
                 Timer().scheduleAtFixedRate(object : TimerTask() {
                     override fun run() {
                         runOnUiThread {
-                            if(activeQuest == null){
+                            if(Data.activeQuest == null){
                                 this.cancel()
-                                if(progressAnimator != null)progressAnimator!!.end()
+                                progressAnimator?.end()
                             }else{
                                 textViewQuestProgress.visibility = View.VISIBLE
 
                                 val date = java.util.Calendar.getInstance().time
-                                activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(activeQuest!!.endTime.time - date.time).toInt()
-                                progressAdventureQuest.progress = (activeQuest!!.quest.secondsLength - activeQuest!!.secondsLeft)*1000
-                                if(activeQuest!!.endTime <= date){                                  //je podle lokálního času konec questu?
-                                    player.checkForQuest().addOnSuccessListener {                   //zkontroluj to podle databáze
-                                        if(activeQuest!!.completed){
+                                Data.activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(Data.activeQuest!!.endTime.time - date.time).toInt()
+                                progressAdventureQuest.progress = (Data.activeQuest!!.quest.secondsLength - Data.activeQuest!!.secondsLeft)*1000
+                                if(Data.activeQuest!!.endTime <= date){                                  //je podle lokálního času konec questu?
+                                    Data.player.checkForQuest().addOnSuccessListener {                   //zkontroluj to podle databáze
+                                        if(Data.activeQuest!!.completed){
                                             this.cancel()
                                             textViewQuestProgress.text = "Quest completed!"
+                                            progressAdventureQuest.setOnClickListener {
+
+                                                val intent = Intent(this@Adventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
+                                                intent.putExtra("reward", Data.activeQuest!!.quest.reward)
+                                                intent.putExtra("difficulty", Data.activeQuest!!.quest.level)
+                                                startActivity(intent)
+
+                                                //isNPC: Boolean, difficulty: Int, npcID: String, enemy: String, reward: Reward
+                                            }
+                                        }else{
+                                            progressAdventureQuest.setOnClickListener {
+                                                onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
+                                            }
                                         }
                                     }
                                 }
-                                textViewQuestProgress.text = activeQuest!!.quest.getLength()
+                                textViewQuestProgress.text = Data.activeQuest!!.getLength()
 
                                 if(progressAnimator == null){
                                     progressAnimator = ValueAnimator.ofInt(progressAdventureQuest.progress, progressAdventureQuest.max).apply{
-                                        duration = max((activeQuest!!.secondsLeft*1000).toLong(), 1)
+                                        duration = max((Data.activeQuest!!.secondsLeft*1000).toLong(), 1)
                                         addUpdateListener {
                                             progressAdventureQuest.progress = it.animatedValue as Int
                                         }
@@ -145,6 +159,8 @@ class Adventure : AppCompatActivity() {
                     }
                 }, 0, 1000) //reschedule every 1000 milliseconds
             }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Error occurred during loading current quest!", Toast.LENGTH_LONG).show()
         }
 
 
@@ -161,10 +177,6 @@ class Adventure : AppCompatActivity() {
 
         var iconSideQuestsAnim = ValueAnimator()
 
-        progressAdventureQuest.setOnClickListener {
-            onClickQuestSideQuest(0,0, this, activeQuest?.quest, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
-        }
-
         sideQuestsIcon.setOnClickListener {
             if(iconSideQuestsAnim.isRunning)iconSideQuestsAnim.pause()
             overViewOpened = if(!overViewOpened){
@@ -172,8 +184,21 @@ class Adventure : AppCompatActivity() {
                     duration = 800
                     addUpdateListener {
                         sideQuestsIcon.x = it.animatedValue as Float
-                        frameLayoutAdventureOverview.x = it.animatedValue as Float + sideQuestsIcon.width.toFloat() + 4f
+                        frameLayoutAdventureOverview.x = it.animatedValue as Float + sideQuestsIcon.width.toFloat() + 6f
                     }
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationStart(animation: Animator) {
+                            sideQuestsIcon.isEnabled = false
+                        }
+                        override fun onAnimationEnd(animation: Animator) {
+                            sideQuestsIcon.isEnabled = true
+                        }
+                        override fun onAnimationCancel(animation: Animator) {
+                        }
+                        override fun onAnimationRepeat(animation: Animator) {
+                        }
+                    }
+                    )
                     start()
                 }
                 true
@@ -182,8 +207,21 @@ class Adventure : AppCompatActivity() {
                     duration = 800
                     addUpdateListener {
                         sideQuestsIcon.x = it.animatedValue as Float
-                        frameLayoutAdventureOverview.x = it.animatedValue as Float + sideQuestsIcon.width.toFloat() + 4f
+                        frameLayoutAdventureOverview.x = it.animatedValue as Float + sideQuestsIcon.width.toFloat() + 6f
                     }
+                    addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {
+                                sideQuestsIcon.isEnabled = false
+                            }
+                            override fun onAnimationEnd(animation: Animator) {
+                                sideQuestsIcon.isEnabled = true
+                            }
+                            override fun onAnimationCancel(animation: Animator) {
+                            }
+                            override fun onAnimationRepeat(animation: Animator) {
+                            }
+                        }
+                    )
                     start()
                 }
                 false
@@ -203,11 +241,6 @@ class Adventure : AppCompatActivity() {
         handler.postDelayed({viewPagerAdventure.setCurrentItem(surfaceIndex, true) }, 10)
     }
 
-    override fun onStart() {
-        super.onStart()
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commitNow()
-    }
-
     fun onClickQuest(view: View){
         val index = view.toString()[view.toString().length - 2].toString().toInt()-1
         val surface = view.toString()[view.toString().length - 8].toString().toInt()
@@ -222,7 +255,7 @@ class Adventure : AppCompatActivity() {
         val textViewStats: CustomTextView = viewPop.textViewItemStats
         textViewQuest.movementMethod = ScrollingMovementMethod()
 
-        val quest:Quest = player.currentSurfaces[surface].quests[index]
+        val quest:Quest = Data.player.currentSurfaces[surface].quests[index]
 
         if (quest.reward.item != null) {
             imageViewAdventure.setImageResource(quest.reward.item!!.drawable)
@@ -254,28 +287,28 @@ class Adventure : AppCompatActivity() {
 
         buttonAccept.isEnabled = false
 
-        if(!loadingActiveQuest){
-            buttonAccept.isEnabled = activeQuest == null
+        if(!Data.loadingActiveQuest){
+            buttonAccept.isEnabled = Data.activeQuest == null
         }
         window.isOutsideTouchable = false
         window.isFocusable = true
         buttonAccept.setOnClickListener {
-                if(!loadingActiveQuest && activeQuest == null){
-                    player.createActiveQuest(quest).addOnSuccessListener {
+                if(!Data.loadingActiveQuest && Data.activeQuest == null){
+                    Data.player.createActiveQuest(quest).addOnSuccessListener {
 
-                        for(i in 0 until player.currentSurfaces[surface].quests.size){
-                            player.currentSurfaces[surface].quests[i] = Quest(surface = surface).generate()
+                        for(i in 0 until Data.player.currentSurfaces[surface].quests.size){
+                            Data.player.currentSurfaces[surface].quests[i] = Quest(surface = surface).generate()
                         }
 
                         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commitNow()
 
-                        if(activeQuest != null){
+                        if(Data.activeQuest != null){
                             progressAdventureQuest.visibility = View.VISIBLE
                             textViewQuestProgress.visibility = View.VISIBLE
                             progressAdventureQuest.y = -progressAdventureQuest.height.toFloat()
                             textViewQuestProgress.y = -progressAdventureQuest.height.toFloat()
                             textViewQuestProgress.text = "0"
-                            progressAdventureQuest.max = activeQuest!!.quest.secondsLength*1000
+                            progressAdventureQuest.max = Data.activeQuest!!.quest.secondsLength*1000
 
                             ValueAnimator.ofFloat(progressAdventureQuest.y, 4f).apply{
                                 duration = 800
@@ -289,28 +322,28 @@ class Adventure : AppCompatActivity() {
                             Timer().scheduleAtFixedRate(object : TimerTask() {
                                 override fun run() {
                                     runOnUiThread {
-                                        if(activeQuest == null){
+                                        if(Data.activeQuest == null){
                                             this.cancel()
-                                            if(progressAnimator != null)progressAnimator!!.end()
+                                            progressAnimator?.end()
                                         }else{
                                             textViewQuestProgress.visibility = View.VISIBLE
 
                                             val date = java.util.Calendar.getInstance().time
-                                            activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(activeQuest!!.endTime.time - date.time).toInt()
-                                            progressAdventureQuest.progress = (activeQuest!!.quest.secondsLength - activeQuest!!.secondsLeft)*1000
-                                            if(activeQuest!!.endTime <= date){
-                                                player.checkForQuest().addOnSuccessListener {
-                                                    if(activeQuest!!.completed){
+                                            Data.activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(Data.activeQuest!!.endTime.time - date.time).toInt()
+                                            progressAdventureQuest.progress = (Data.activeQuest!!.quest.secondsLength - Data.activeQuest!!.secondsLeft)*1000
+                                            if(Data.activeQuest!!.endTime <= date){
+                                                Data.player.checkForQuest().addOnSuccessListener {
+                                                    if(Data.activeQuest!!.completed){
                                                         this.cancel()
                                                         textViewQuestProgress.text = "Quest completed!"
                                                     }
                                                 }
                                             }
-                                            textViewQuestProgress.text = activeQuest!!.quest.getLength()
+                                            textViewQuestProgress.text = Data.activeQuest!!.getLength()
 
                                             if(progressAnimator == null){
                                                 progressAnimator = ValueAnimator.ofInt(progressAdventureQuest.progress, progressAdventureQuest.max).apply{
-                                                    duration = max((activeQuest!!.secondsLeft*1000).toLong(), 1)
+                                                    duration = max((Data.activeQuest!!.secondsLeft*1000).toLong(), 1)
                                                     addUpdateListener {
                                                         progressAdventureQuest.progress = it.animatedValue as Int
                                                     }
@@ -334,7 +367,7 @@ class Adventure : AppCompatActivity() {
         window.showAtLocation(view, Gravity.CENTER,0,0)
     }
 
-    fun onClickQuestSideQuest(surface:Int, index:Int, context:Context, questIn: Quest? = null, progressAdventureQuest: ProgressBar, textViewQuestProgress: TextView, viewPopQuest: View, viewPagerAdventure: ViewPager, fromFragment: Boolean, fragmentOverview: Fragment?){
+    fun onClickQuestOverview(surface:Int, index:Int, context:Context, questA: Quest? = null, questIn: Quest? = null, progressAdventureQuest: ProgressBar, textViewQuestProgress: TextView, viewPopQuest: View, viewPagerAdventure: ViewPager, fromFragment: Boolean, fragmentOverview: Fragment?){
         val window = PopupWindow(context)
         window.elevation = 0.0f
         window.contentView = viewPopQuest
@@ -345,10 +378,11 @@ class Adventure : AppCompatActivity() {
         val textViewStats: CustomTextView = viewPopQuest.textViewItemStats
         textViewQuest.movementMethod = ScrollingMovementMethod()
 
-        val quest:Quest = questIn ?: player.currentSurfaces[surface].quests[index]
+        val quest:Quest = questA ?: questIn?: Data.player.currentSurfaces[surface].quests[index]
 
         if (quest.reward.item != null) {
             imageViewAdventure.setImageResource(quest.reward.item!!.drawable)
+            imageViewAdventure.setBackgroundResource(quest.reward.item!!.getBackground())
             imageViewAdventure.isClickable = true
             imageViewAdventure.isEnabled = true
 
@@ -359,6 +393,7 @@ class Adventure : AppCompatActivity() {
                 else -> quest.reward.item
             }
         } else {
+            imageViewAdventure.setBackgroundResource(0)
             imageViewAdventure.setImageResource(0)
             imageViewAdventure.isClickable = false
             imageViewAdventure.isEnabled = false
@@ -373,6 +408,7 @@ class Adventure : AppCompatActivity() {
         }
 
         window.setOnDismissListener {
+            (fragmentOverview as Fragment_Adventure_overview).resetAdapter()
             window.dismiss()
         }
 
@@ -380,28 +416,28 @@ class Adventure : AppCompatActivity() {
         window.isFocusable = true
 
         buttonAccept.setOnClickListener {
-            if(!loadingActiveQuest && activeQuest == null){
-                        player.createActiveQuest(quest).addOnSuccessListener {
+            if(!Data.loadingActiveQuest && Data.activeQuest == null){
+                        Data.player.createActiveQuest(quest).addOnSuccessListener {
 
-                            for(i in 0 until player.currentSurfaces[surface].quests.size){
-                                player.currentSurfaces[surface].quests[i] = Quest(surface = surface).generate()
+                            for(i in 0 until Data.player.currentSurfaces[surface].quests.size){
+                                Data.player.currentSurfaces[surface].quests[i] = Quest(surface = surface).generate()
                             }
 
 
-                            (fragmentOverview as Fragment_Adventure_overview).resetAdapter()
+                            if(questA == null)(fragmentOverview as Fragment_Adventure_overview).resetAdapter(true)
                             /*if(!fromFragment){
                                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commitNow()
                             }else{
 
                             }*/
 
-                            if(activeQuest != null){
+                            if(Data.activeQuest != null){
                                 progressAdventureQuest.visibility = View.VISIBLE
                                 textViewQuestProgress.visibility = View.VISIBLE
                                 progressAdventureQuest.y = -progressAdventureQuest.height.toFloat()
                                 textViewQuestProgress.y = -progressAdventureQuest.height.toFloat()
                                 textViewQuestProgress.text = "0"
-                                progressAdventureQuest.max = activeQuest!!.quest.secondsLength*1000
+                                progressAdventureQuest.max = Data.activeQuest!!.quest.secondsLength*1000
 
                                 ValueAnimator.ofFloat(progressAdventureQuest.y, 4f).apply{
                                     duration = 800
@@ -415,26 +451,26 @@ class Adventure : AppCompatActivity() {
                                 Timer().scheduleAtFixedRate(object : TimerTask() {
                                     override fun run() {
                                         runOnUiThread {
-                                            if(activeQuest == null){
+                                            if(Data.activeQuest == null){
                                                 this.cancel()
-                                                if(progressAnimator != null)progressAnimator!!.end()
+                                                progressAnimator?.end()
                                             }else{
                                                 val date = java.util.Calendar.getInstance().time
-                                                activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(activeQuest!!.endTime.time - date.time).toInt()
-                                                progressAdventureQuest.progress = (activeQuest!!.quest.secondsLength - activeQuest!!.secondsLeft)*1000
-                                                if(activeQuest!!.endTime <= date){
-                                                    player.checkForQuest().addOnSuccessListener {
-                                                        if(activeQuest!!.completed){
+                                                Data.activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(Data.activeQuest!!.endTime.time - date.time).toInt()
+                                                progressAdventureQuest.progress = (Data.activeQuest!!.quest.secondsLength - Data.activeQuest!!.secondsLeft)*1000
+                                                if(Data.activeQuest!!.endTime <= date){
+                                                    Data.player.checkForQuest().addOnSuccessListener {
+                                                        if(Data.activeQuest!!.completed){
                                                             this.cancel()
                                                             textViewQuestProgress.text = "Quest completed!"
                                                         }
                                                     }
                                                 }
-                                                textViewQuestProgress.text = activeQuest!!.quest.getLength()
+                                                textViewQuestProgress.text = Data.activeQuest!!.getLength()
 
                                                 if(progressAnimator == null){
                                                     progressAnimator = ValueAnimator.ofInt(progressAdventureQuest.progress, progressAdventureQuest.max).apply{
-                                                        duration = max((activeQuest!!.secondsLeft*1000).toLong(), 1)
+                                                        duration = max((Data.activeQuest!!.secondsLeft*1000).toLong(), 1)
                                                         addUpdateListener {
                                                             progressAdventureQuest.progress = it.animatedValue as Int
                                                         }
@@ -451,53 +487,53 @@ class Adventure : AppCompatActivity() {
             window.dismiss()
         }
 
-        buttonAccept.isEnabled = activeQuest == null
-        if(activeQuest != null && activeQuest!!.completed && questIn != null){
+        /*
+        buttonAccept.isEnabled = Data.activeQuest == null
+        if(Data.activeQuest != null && Data.activeQuest!!.completed && questA != null){
             buttonAccept.text = "Get"
             buttonAccept.isEnabled = true
             buttonAccept.setOnClickListener {
-                if(!rewarding){
-                    rewarding = true
-                    player.checkForQuest().addOnSuccessListener {
-                        if(activeQuest != null && activeQuest!!.completed){
-                            val tempReward = activeQuest!!.quest.reward
+                buttonAccept.isEnabled = false
 
-                            activeQuest!!.delete().addOnSuccessListener {
-                                tempReward.receive()
-                                rewarding = false
+                Data.player.checkForQuest().addOnSuccessListener {
+                    if(Data.activeQuest != null && Data.activeQuest!!.completed){
+                        val tempReward = Data.activeQuest!!.quest.reward
 
-                                ValueAnimator.ofFloat(progressAdventureQuest.y, progressAdventureQuest.y - (progressAdventureQuest.height + 4f)).apply{
-                                    duration = 800
-                                    addUpdateListener {
-                                        progressAdventureQuest.y = it.animatedValue as Float
-                                        textViewQuestProgress.y = it.animatedValue as Float
-                                    }
-                                    addListener(object : Animator.AnimatorListener {
-                                        override fun onAnimationRepeat(animation: Animator?) {
-                                        }
+                        Data.activeQuest!!.delete().addOnSuccessListener {
+                            tempReward.receive()
+                            rewarding = false
 
-                                        override fun onAnimationCancel(animation: Animator?) {
-                                        }
-
-                                        override fun onAnimationStart(animation: Animator?) {
-                                        }
-
-                                        override fun onAnimationEnd(animation: Animator?) {
-                                            progressAdventureQuest.visibility = View.GONE
-                                            textViewQuestProgress.visibility = View.GONE
-                                        }
-
-                                    })
-
-                                    start()
+                            ValueAnimator.ofFloat(progressAdventureQuest.y, progressAdventureQuest.y - (progressAdventureQuest.height + 4f)).apply{
+                                duration = 800
+                                addUpdateListener {
+                                    progressAdventureQuest.y = it.animatedValue as Float
+                                    textViewQuestProgress.y = it.animatedValue as Float
                                 }
+                                addListener(object : Animator.AnimatorListener {
+                                    override fun onAnimationRepeat(animation: Animator?) {
+                                    }
+
+                                    override fun onAnimationCancel(animation: Animator?) {
+                                    }
+
+                                    override fun onAnimationStart(animation: Animator?) {
+                                    }
+
+                                    override fun onAnimationEnd(animation: Animator?) {
+                                        progressAdventureQuest.visibility = View.GONE
+                                        textViewQuestProgress.visibility = View.GONE
+                                    }
+
+                                })
+
+                                start()
                             }
                         }
                     }
                 }
                 window.dismiss()
             }
-        }
+        }*/
 
         buttonClose.setOnClickListener {
             window.dismiss()
@@ -511,13 +547,14 @@ class Adventure : AppCompatActivity() {
 class ViewPagerAdapterAdventure internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
+        val drawable = Data.surfaces[position].background
         return when(position) {
-            0 -> Fragment_Adventure_First()
-            1 -> Fragment_Adventure_Second()
-            2 -> Fragment_Adventure_Third()
-            3 -> Fragment_Adventure_Fourth()
-            4 -> Fragment_Adventure_Fifth()
-            5 -> Fragment_Adventure_Sixth()
+            0 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_1, drawable, 0)
+            1 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_2, drawable, 1)
+            2 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_3, drawable, 2)
+            3 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_4, drawable, 3)
+            4 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_5, drawable, 4)
+            5 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_6, drawable, 5)
             else -> null
         }
     }

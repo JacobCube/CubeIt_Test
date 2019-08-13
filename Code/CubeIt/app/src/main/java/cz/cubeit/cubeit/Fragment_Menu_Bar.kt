@@ -16,6 +16,7 @@ import android.widget.ImageView
 import kotlinx.android.synthetic.main.fragment_menu_bar.view.*
 import kotlin.math.abs
 import android.view.MotionEvent
+import kotlin.math.min
 
 
 class Fragment_Menu_Bar : Fragment() {
@@ -37,11 +38,11 @@ class Fragment_Menu_Bar : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        this.refresh()
         var toWhite = ValueAnimator()
         var toYellow = ValueAnimator()
 
-        if(activeQuest != null && viewMenu.buttonAdventure.isEnabled && activeQuest!!.completed){
-
+        if(Data.activeQuest != null && viewMenu.buttonAdventure.isEnabled && Data.activeQuest!!.completed){
             toYellow = ValueAnimator.ofInt(0, 255).apply{
                 duration = 800
                 addUpdateListener {
@@ -94,11 +95,74 @@ class Fragment_Menu_Bar : Fragment() {
         }
     }
 
+    fun refresh(){
+        var toWhite = ValueAnimator()
+        var toYellow =  ValueAnimator()
+        if(Data.newLevel && viewMenu.buttonCharacter.isEnabled){
+
+            toYellow = ValueAnimator.ofInt(0, 255).apply{
+                duration = 800
+                addUpdateListener {
+                    if(toWhite.isRunning)toWhite.cancel()
+                    viewMenu.buttonCharacter.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        toWhite.start()
+                    }
+
+                })
+            }
+            toWhite = ValueAnimator.ofInt(255, 0).apply{
+                duration = 800
+                addUpdateListener {
+                    if(toYellow.isRunning)toYellow.cancel()
+                    viewMenu.buttonCharacter.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        toYellow.start()
+                    }
+                })
+            }
+            toYellow.start()
+
+            if(toYellow.isRunning)toYellow.end()
+            if(toWhite.isRunning)toWhite.end()
+            viewMenu.buttonCharacter.setColorFilter(android.R.color.white)
+            viewMenu.buttonCharacter.drawable.clearColorFilter()
+        }else{
+            if(toYellow.isRunning)toYellow.end()
+            if(toWhite.isRunning)toWhite.end()
+            viewMenu.buttonCharacter.setColorFilter(android.R.color.white)
+            viewMenu.buttonCharacter.drawable.clearColorFilter()
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_menu_bar, container, false)
 
         viewMenu = view
+        this.refresh()
 
             view.buttonAdventure.setOnClickListener {
                 val intent = Intent(view.context, Adventure::class.java)
@@ -155,7 +219,7 @@ class Fragment_Menu_Bar : Fragment() {
         var toWhite = ValueAnimator()
         var toYellow = ValueAnimator()
 
-        if(activeQuest != null && view.buttonAdventure.isEnabled && activeQuest!!.completed){
+        if(Data.activeQuest != null && view.buttonAdventure.isEnabled && Data.activeQuest!!.completed){
 
             toYellow = ValueAnimator.ofInt(0, 255).apply{
                 duration = 800
@@ -315,7 +379,7 @@ class Fragment_Menu_Bar : Fragment() {
                                     rootIcon.y = ((originalY + (motionEvent.rawY - initialTouchY)) / 3)
                                     rootIcon.alpha = (((originalY + (motionEvent.rawY - initialTouchY).toInt()) / (displayY / 100) / 100) * 3).toFloat()
                                     rootIcon.rotation = (0.9 * (originalY + (initialTouchY - motionEvent.rawY).toInt() / ((displayY / 2) / 100))).toFloat()
-                                    rootIcon.drawable.setColorFilter(Color.rgb(255, 255, (2.55 * abs((originalY + (motionEvent.rawY - initialTouchY)).toInt() / ((displayY / 10 * 5) / 100) - 100)).toInt()), PorterDuff.Mode.MULTIPLY)
+                                    rootIcon.drawable.setColorFilter(Color.rgb(255, 255, min((2.55 * abs((originalY + (motionEvent.rawY - initialTouchY)).toInt() / ((displayY / 10 * 5) / 100) - 100)).toInt(), 255)), PorterDuff.Mode.MULTIPLY)
                                     rootIcon.requestLayout()
                                 }
                                 2 -> {

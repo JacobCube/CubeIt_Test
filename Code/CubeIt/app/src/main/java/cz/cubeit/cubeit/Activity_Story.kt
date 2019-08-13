@@ -2,10 +2,7 @@ package cz.cubeit.cubeit
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.content.Intent
 import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -14,9 +11,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.activity_story.*
-import kotlin.math.abs
 
 class Activity_Story: AppCompatActivity(){
 
@@ -85,7 +80,7 @@ class Activity_Story: AppCompatActivity(){
         opts.inScaled = false
         imageViewStoryBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.story_bg, opts))
 
-        storyQuests.add(StoryQuest(
+        Data.storyQuests.add(StoryQuest(
                 ID = "0001",
                 name = "Quest name",
                 chapter = 1,
@@ -112,7 +107,7 @@ class Activity_Story: AppCompatActivity(){
                                 images = mutableListOf(StoryImage("90002", 0, 0), StoryImage("90003", 0, 0)))
                 )
         ))
-        storyQuests.add(StoryQuest(
+        Data.storyQuests.add(StoryQuest(
                 ID = "0002",
                 name = "Quest name",
                 chapter = 1,
@@ -143,7 +138,7 @@ class Activity_Story: AppCompatActivity(){
     }
 
     fun startStory(): Boolean{
-        return if(player.currentStoryQuest != null){
+        return if(Data.player.currentStoryQuest != null){
             ValueAnimator.ofFloat(frameLayoutStoryOverview.x, frameLayoutStoryOverview.x + frameLayoutStoryOverview.width.toFloat()).apply {
                 duration = 1000
                 addUpdateListener {

@@ -20,8 +20,7 @@
         android:allowBackup="true">
         <activity
             android:name=".Home"
-            android:screenOrientation="sensorLandscape">
-        </activity>
+            android:screenOrientation="sensorLandscape"/>
         <activity
             android:name=".Activity_Character"
             android:screenOrientation="sensorLandscape"/>
@@ -30,6 +29,12 @@
             android:screenOrientation="sensorLandscape"/>
         <activity
             android:name=".FightSystem"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".Activity_Faction_Base"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".FightSystemNPC"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ActivitySettings"
@@ -43,9 +48,6 @@
         <activity
             android:name=".Spells"
             android:screenOrientation="sensorLandscape" />
-        <activity
-            android:name=".ActivityAuctionMenu"
-            android:screenOrientation="sensorLandscape"/>
         <activity
             android:name=".Activity_Character_Customization"
             android:screenOrientation="sensorLandscape" />
@@ -66,7 +68,6 @@
             android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

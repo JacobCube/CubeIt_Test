@@ -11,11 +11,20 @@
     <color name="progress_hp">#B31914</color>
     <color name="progress_energy">#FFBE07</color>
     <color name="loginColor">#1E1C27</color>
+    <color name="loginColor_2">#383849</color>
+    <color name="black">#000000</color>
+    <color name="dark_gray">#686868</color>
     <color name="stunThird">#860704</color>
     <color name="experience">#2835A5</color>
+    <color name="factionBg">#8888B3</color>
+    <color name="factionInbox">#D88406</color>
     <color name="pop_up_bg">#494949</color>
     <color name="character_dark">#898989</color>
     <color name="loginColor_light">#504F4F</color>
+
+    <color name="leaderboard_first">#FFDF00</color>
+    <color name="leaderboard_second">#C0C0C0</color>
+    <color name="leaderboard_third">#cd7f32</color>
 
     <color name="itemborder">#535353</color>
     <color name="itemborder_poor">#535353</color>

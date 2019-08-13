@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFragmentCharacterStats"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/loginColor"
+    android:configChanges="orientation"
+    android:screenOrientation="sensorLandscape">
+
+
+    <TextView
+        android:id="@+id/textViewLeaderBoardFirst3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Third place"
+        android:textColor="@color/leaderboard_third"
+        android:textSize="22sp"
+        app:layout_constraintStart_toStartOf="@+id/guideline201"
+        app:layout_constraintTop_toBottomOf="@+id/textViewLeaderBoardSecond" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline201"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <TextView
+        android:id="@+id/textViewLeaderBoardFirst"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="First place"
+        android:textColor="@color/leaderboard_first"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="@+id/textViewLeaderBoardTitle"
+        app:layout_constraintStart_toStartOf="@+id/textViewLeaderBoardTitle"
+        app:layout_constraintTop_toTopOf="@+id/guideline202" />
+
+    <TextView
+        android:id="@+id/textViewLeaderBoardSecond"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Second place"
+        android:textColor="@color/leaderboard_second"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline201"
+        app:layout_constraintTop_toBottomOf="@+id/textViewLeaderBoardFirst" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline202"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.22" />
+
+    <TextView
+        android:id="@+id/textViewLeaderBoardTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="This Week's legends"
+        android:textColor="@color/colorSecondary"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline202"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</android.support.constraint.ConstraintLayout>

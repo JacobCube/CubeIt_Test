@@ -37,7 +37,7 @@ class FragmentInboxMessage : Fragment() {
         val view:View = inflater.inflate(R.layout.fragment_inbox_message, container, false)
         /*val opts = BitmapFactory.Options()
         opts.inScaled = false
-        view.surface1.setImageBitmap(BitmapFactory.decodeResource(resources, surfaces[0].background, opts))*/
+        view.surface1.setImageBitmap(BitmapFactory.decodeResource(resources, Data.surfaces[0].background, opts))*/
 
         view.editTextInboxContent.movementMethod = ScrollingMovementMethod()
 
@@ -86,7 +86,7 @@ class FragmentInboxMessage : Fragment() {
                 window.isOutsideTouchable = false
                 window.isFocusable = true
                 buttonYes.setOnClickListener {
-                    player.removeInbox(chosenMail.ID)
+                    Data.player.removeInbox(chosenMail.ID)
                     currentCategory.messages.remove(chosenMail)
                     (activity!! as Activity_Inbox).refreshCategory()
                     activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
@@ -121,7 +121,7 @@ class FragmentInboxMessage : Fragment() {
                 }
 
                 view.buttonInboxMessageGet.setOnClickListener {
-                    if(player.inventory.contains(null)){
+                    if(Data.player.inventory.contains(null)){
                         view.buttonInboxMessageGet.isEnabled = false
                         chosenMail.reward!!.receive()
                         chosenMail.reward = null
@@ -132,10 +132,10 @@ class FragmentInboxMessage : Fragment() {
                             }
                         }
                         (activity!! as Activity_Inbox).refreshCategory()
-                        player.uploadMessage(chosenMail).addOnSuccessListener {
+                        Data.player.uploadMessage(chosenMail).addOnSuccessListener {
                             activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = chosenMail.priority, messageObject = chosenMail.subject, messageContent = chosenMail.content, messageSender = chosenMail.sender)).commit()
                         }
-                        player.removeInbox(chosenMail.ID)
+                        Data.player.removeInbox(chosenMail.ID)
                         currentCategory.messages.remove(chosenMail)
                     }else{
                         Toast.makeText(view.context, "No space in inventory!", Toast.LENGTH_SHORT).show()
@@ -147,7 +147,7 @@ class FragmentInboxMessage : Fragment() {
         }else if(arguments?.getString("type")=="reply"){
 
 
-            view.textViewInboxMessageSender.text = "from ${player.username}"
+            view.textViewInboxMessageSender.text = "from ${Data.player.username}"
 
 
             view.editTextInboxReciever.setText(chosenMail.sender)
@@ -163,12 +163,12 @@ class FragmentInboxMessage : Fragment() {
                             if(view.editTextInboxContent.text.toString()!=""){
                                 view.editTextInboxContent.setBackgroundResource(R.color.loginColor)
 
-                                player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
+                                Data.player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
                                         priority = view.spinnerInboxPriority.selectedItemPosition,
                                         receiver = view.editTextInboxReciever.text.toString(),
                                         subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nig", "I'm an racist idiot"),
                                         content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nig", "I'm an racist idiot"),
-                                        sender = player.username
+                                        sender = Data.player.username
                                 )).addOnSuccessListener {
                                     Toast.makeText(view.context, "Message to ${view.editTextInboxReciever.text} has been sent", Toast.LENGTH_LONG).show()
                                 }.continueWithTask {
@@ -178,11 +178,11 @@ class FragmentInboxMessage : Fragment() {
                                             receiver = view.editTextInboxReciever.text.toString(),
                                             subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
                                             content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
-                                            sender = player.username
+                                            sender = Data.player.username
                                     )
                                     temp.status = MessageStatus.Sent
-                                    inboxCategories[2].messages.add(temp)
-                                    player.writeInbox(player.username, temp)
+                                    Data.inboxCategories[2].messages.add(temp)
+                                    Data.player.writeInbox(Data.player.username, temp)
                                 }
 
                                 activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
@@ -207,7 +207,7 @@ class FragmentInboxMessage : Fragment() {
             }
 
         }else{
-            view.textViewInboxMessageSender.text = "from ${player.username}"
+            view.textViewInboxMessageSender.text = "from ${Data.player.username}"
             view.editTextInboxReciever.setText(arguments?.getString("receiver"))
 
             view.imageViewInboxSend.setOnClickListener {
@@ -220,12 +220,12 @@ class FragmentInboxMessage : Fragment() {
                             if(view.editTextInboxContent.text.toString()!=""){
                                 view.editTextInboxContent.setBackgroundResource(R.color.loginColor)
 
-                                player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
+                                Data.player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
                                         priority = view.spinnerInboxPriority.selectedItemPosition,
                                         receiver = view.editTextInboxReciever.text.toString(),
                                         subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
                                         content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
-                                        sender = player.username
+                                        sender = Data.player.username
                                 )).addOnSuccessListener {
                                     Toast.makeText(view.context, "Message to ${view.editTextInboxReciever.text} has been sent", Toast.LENGTH_LONG).show()
                                 }.continueWithTask {
@@ -235,11 +235,11 @@ class FragmentInboxMessage : Fragment() {
                                             receiver = view.editTextInboxReciever.text.toString(),
                                             subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
                                             content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
-                                            sender = player.username
+                                            sender = Data.player.username
                                     )
                                     temp.status = MessageStatus.Sent
-                                    inboxCategories[2].messages.add(temp)
-                                    player.writeInbox(player.username, temp)
+                                    Data.inboxCategories[2].messages.add(temp)
+                                    Data.player.writeInbox(Data.player.username, temp)
                                 }
 
                                 activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()

@@ -1,5 +1,8 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package cz.cubeit.cubeit
 
+import android.app.Activity
 import android.app.Service
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
@@ -12,11 +15,12 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
-import android.os.Parcelable
 import android.provider.Settings
 import android.support.v4.app.Fragment
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v4.view.ViewPager
 import android.text.Html
+import android.text.method.ScrollingMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -29,29 +33,15 @@ import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
 import java.io.*
-import java.lang.Math.abs
+import java.lang.Math.*
 import java.util.*
 import kotlin.collections.HashMap
 import java.util.concurrent.TimeUnit
 
-var playerListReturn: MutableList<Player> = mutableListOf()
-//returned list of players in order to show them in fight board Base adapter(list)
-
-var appVersion: Int = 0
-
-var loadingStatus = LoadingStatus.LOGGING
-
-var activeQuest: ActiveQuest? = null
-
-var rewarding: Boolean = false
-
-val bgMusic = BackgroundSoundService()
-
-lateinit var inbox: MutableList<InboxMessage>
-
-var loadingActiveQuest: Boolean = false
-
-var inboxCategories: MutableList<InboxCategory> = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory(name = "Spam"))
+/*
+TODO simulace jízdy metrem - uživatel zadá příkaz v době, kdy je připojený k internetu, z něco se však postupně odpojuje, toto by bylo aplikované u callů s vyšší priritou v rámci uživatelské přátelskosti,
+splnění mise by takovým callem určitě byl - využít možnosti firebasu / případně používat lokální úložiště jako cache nebo přímo cache
+*/
 
 var drawableStorage = hashMapOf(
 //fixes bug: whenever project directory changes in drawables,
@@ -106,6 +96,11 @@ var drawableStorage = hashMapOf(
         , "07505" to R.drawable.charclass8_07505
         , "07506" to R.drawable.charclass8_07506
 
+        //profile pics
+        , "50000" to R.drawable.profile_pic_cat_0
+        , "50001" to R.drawable.profile_pic_cat_1
+        , "50002" to R.drawable.profile_pic_cat_2
+
         //others
         , "90000" to R.drawable.map0
         , "90001" to R.drawable.map1
@@ -125,156 +120,318 @@ var drawableStorage = hashMapOf(
 
 )
 
-fun getStoryFragment(fragmentID: String, instanceID: String, slideNum: Int): Fragment {          //fragmentID - number of fragment, slideNum
-    return when (fragmentID) {
-        "0" -> Fragment_Story_Quest_Template_0.newInstance(instanceID, slideNum)
-        "1" -> Fragment_Story_Quest_Template_1.newInstance(instanceID, slideNum)
-        else -> Fragment_Story_Quest_Template_0.newInstance(instanceID, slideNum)
-    }
+fun MutableList<FactionMember>.findMember(usernameX: String): FactionMember?{
+    return if(this.any { it.username == usernameX }) this.filter { it.username == usernameX }[0] else null
 }
 
-class LoadSpells(
-        var ID: String = "0",
-        var spells: MutableList<Spell> = mutableListOf()
-) : Serializable{
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
+object Data {
+    var player: Player = Player()
+
+    var spellClasses: MutableList<LoadSpells> = mutableListOf()
+
+    var itemClasses: MutableList<LoadItems> = mutableListOf()
+
+    var charClasses: MutableList<CharClass> = mutableListOf()
+
+    var surfaces: List<Surface> = listOf()
+
+    var storyQuests: MutableList<StoryQuest> = mutableListOf()
+
+    var npcs: HashMap<String, NPC> = hashMapOf()        //id - NPC
+
+    var loadingStatus = LoadingStatus.LOGGING
+
+    var activeQuest: ActiveQuest? = null
+
+    val bgMusic = BackgroundSoundService()
+
+    lateinit var inbox: MutableList<InboxMessage>
+
+    var loadingActiveQuest: Boolean = false
+
+    var inboxCategories: MutableList<InboxCategory> = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Faction", color = R.color.factionInbox), InboxCategory(name = "Allies", color = R.color.itemborder_very_rare),InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory(name = "Spam"))
+
+    var newLevel = false
+
+    fun logOut(context: Activity) {
+        val intentSplash = Intent(context.baseContext, Activity_Splash_Screen::class.java)
+        intentSplash.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        loadingStatus = LoadingStatus.LOGGING
+        context.startActivity(intentSplash)
+
+        this.player.online = false
+        this.player.uploadPlayer().addOnSuccessListener {
+            if(this.bgMusic.mediaPlayer.isPlaying){
+                val svc = Intent(context.baseContext, this.bgMusic::class.java)
+                context.stopService(svc)
+            }
+            context.overridePendingTransition(0,0)
+        }
+
+
+        activeQuest = null
+        inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Faction", color = R.color.factionInbox), InboxCategory(name = "Allies", color = R.color.itemborder_very_rare),InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory(name = "Spam"))
+        activeQuest = null
+        player = Player()
+        inbox = mutableListOf()
+        FightBoard.playerListReturn = mutableListOf()
+        loadingStatus = LoadingStatus.UNLOGGED
     }
 
-    override fun hashCode(): Int {
-        var result = ID.hashCode()
-        result = 31 * result + spells.hashCode()
-        return result
-    }
+    fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Items"))
 
-}
+        return db.collection("GenericDB").document("AppInfo").get().addOnSuccessListener { itGeneric ->
 
-class LoadItems(
-        var ID: String = "0",
-        var items: MutableList<Item> = mutableListOf()
-) : Serializable{
+            if(itGeneric.toObject(GenericDB.AppInfo::class.java) != null){
+                GenericDB.AppInfo.updateData(itGeneric.toObject(GenericDB.AppInfo::class.java)!!)
 
-    override fun hashCode(): Int {
-        var result = ID.hashCode()
-        result = 31 * result + items.hashCode()
-        return result
-    }
+                if(GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE){
 
-}
+                    Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Balanced rates"))
 
-var spellClasses: MutableList<LoadSpells> = mutableListOf()
+                    db.collection("globalDataChecksum").document("balance").get().addOnSuccessListener {
+                        GenericDB.Balance.updateData(if (SystemFlow.readObject(context, "balance.data") != 0) SystemFlow.readObject(context, "balance.data") as GenericDB.Balance else GenericDB.Balance)
+                        val dbChecksum = (it.get("checksum") as Long).toInt()
 
-var itemClasses: MutableList<LoadItems> = mutableListOf()
+                        Log.d("balance.checksum", GenericDB.Balance.hashCode().toString())
+                        if (dbChecksum != GenericDB.Balance.hashCode()) {      //is local stored data equal to current state of database?
+                            if (it.toObject(GenericDB.Balance::class.java) != null) {
+                                db.collection("GenericDB").document("Balance").get().addOnSuccessListener {itBalance: DocumentSnapshot ->
+                                    GenericDB.Balance.updateData(itBalance.toObject(GenericDB.Balance::class.java)!!)
+                                    SystemFlow.writeObject(context, "balance.data", GenericDB.Balance)            //write updated data to local storage
+                                    Log.d("balance", "loaded from firebase, rewritten")
+                                }
+                            }
+                        } else {
+                            try {
+                                GenericDB.Balance.updateData(if (SystemFlow.readObject(context, "balance.data") != 0) SystemFlow.readObject(context, "balance.data") as GenericDB.Balance else GenericDB.Balance)
+                            } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
+                                if (it.toObject(GenericDB.Balance::class.java) != null) {
+                                    db.collection("GenericDB").document("Balance").get().addOnSuccessListener {
+                                        GenericDB.Balance.updateData(it.toObject(GenericDB.Balance::class.java)!!)
+                                        SystemFlow.writeObject(context, "balance.data", GenericDB.Balance)            //write updated data to local storage
+                                    }
+                                }
+                            }
+                        }
+                    }.continueWithTask {
+                        Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Items"))
 
-var charClasses: MutableList<CharClass> = mutableListOf()
+                        db.collection("globalDataChecksum").document("items").get().addOnSuccessListener {
+                            itemClasses = if (SystemFlow.readObject(context, "items.data") != 0) SystemFlow.readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
+                            val dbChecksum = (it.get("checksum") as Long).toInt()
 
-var surfaces: List<Surface> = listOf()
+                            Log.d("itemclass.checksum", itemClasses.hashCode().toString())
+                            if (dbChecksum != itemClasses.hashCode()) {      //is local stored data equal to current state of database?
+                                db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
+                                    val loadItemClasses = itItems.toObjects(LoadItems::class.java)
 
-var storyQuests: MutableList<StoryQuest> = mutableListOf()
+                                    itemClasses = mutableListOf()
+                                    for (i in 0 until loadItemClasses.size) {
+                                        itemClasses.add(LoadItems())
+                                    }
 
-var npcs: MutableList<NPC> = mutableListOf()
+                                    for (i in 0 until loadItemClasses.size) {
+                                        for (j in 0 until loadItemClasses[i].items.size) {
+                                            itemClasses[i].items.add(when (loadItemClasses[i].items[j].type) {
+                                                "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
+                                                "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
+                                                "Runes" -> (loadItemClasses[i].items[j]).toRune()
+                                                "Item" -> loadItemClasses[i].items[j]
+                                                else -> Item(inName = "Error item, report this please")
+                                            })
+                                        }
+                                    }
+                                    SystemFlow.writeObject(context, "items.data", itemClasses)            //write updated data to local storage
+                                    Log.d("items", "loaded from firebase, rewritten")
+                                    //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
+                                }
+                            } else {
+                                try {
+                                    itemClasses = if (SystemFlow.readObject(context, "items.data") != 0) SystemFlow.readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
+                                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
+                                    db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
+                                        val loadItemClasses = itItems.toObjects(LoadItems::class.java)
 
+                                        itemClasses = mutableListOf()
+                                        for (i in 0 until loadItemClasses.size) {
+                                            itemClasses.add(LoadItems())
+                                        }
 
-fun logOut() {
-    activeQuest = null
-    inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory(name = "Spam"))
-    activeQuest = null
-    playerListReturn = mutableListOf()
-    player = Player()
-    inbox = mutableListOf()
+                                        for (i in 0 until loadItemClasses.size) {
+                                            for (j in 0 until loadItemClasses[i].items.size) {
+                                                itemClasses[i].items.add(when (loadItemClasses[i].items[j].type) {
+                                                    "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
+                                                    "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
+                                                    "Runes" -> (loadItemClasses[i].items[j]).toRune()
+                                                    "Item" -> loadItemClasses[i].items[j]
+                                                    else -> Item(inName = "Error item, report this please")
+                                                })
+                                            }
+                                        }
+                                        SystemFlow.writeObject(context, "items.data", itemClasses)            //write updated data to local storage
+                                        //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
+                                    }
+                                }
+                            }
+                        }
+                    }.continueWithTask {
+                        Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Spells"))
 
-    loadingStatus = LoadingStatus.UNLOGGED
-}
+                        db.collection("globalDataChecksum").document("spells").get().addOnSuccessListener {
+                            spellClasses = if (SystemFlow.readObject(context, "spells.data") != 0) SystemFlow.readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
+                            val dbChecksum = (it.get("checksum") as Long).toInt()
 
-fun <K, V> getKey(map: Map<K, V>, value: V): K? {           //hashmap helper - get key by its value
-    for ((key, value1) in map) {
-        if (value == value1) {
-            return key
+                            Log.d("spellclass.checksum", spellClasses.hashCode().toString())
+                            if (dbChecksum != spellClasses.hashCode()) {      //is local stored data equal to current state of database?
+                                db.collection("spells").get().addOnSuccessListener { itSpells ->
+                                    spellClasses = itSpells.toObjects(LoadSpells::class.java)
+                                    SystemFlow.writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
+                                    Log.d("spells", "loaded from firebase, rewritten")
+                                    //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
+                                }
+                            } else {
+                                try {
+                                    spellClasses = if (SystemFlow.readObject(context, "spells.data") != 0) SystemFlow.readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
+                                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
+                                    db.collection("spells").get().addOnSuccessListener { itSpells ->
+                                        spellClasses = itSpells.toObjects(LoadSpells::class.java)
+                                        SystemFlow.writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
+                                        //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
+                                    }
+                                }
+                            }
+                        }
+                    }.continueWithTask {
+                        Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Characters"))
+
+                        db.collection("globalDataChecksum").document("charclasses").get().addOnSuccessListener {
+                            charClasses = if (SystemFlow.readObject(context, "charclasses.data") != 0) SystemFlow.readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
+                            val dbChecksum = (it.get("checksum") as Long).toInt()
+
+                            Log.d("charclass.checksum", charClasses.hashCode().toString())
+                            if (dbChecksum != charClasses.hashCode()) {      //is local stored data equal to current state of database?
+                                db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
+                                    charClasses = itCharclasses.toObjects(CharClass::class.java)
+                                    SystemFlow.writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
+                                    Log.d("charclasses", "loaded from firebase, rewritten")
+                                    //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
+                                }
+                            } else {
+                                try {
+                                    charClasses = if (SystemFlow.readObject(context, "charclasses.data") != 0) SystemFlow.readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
+                                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
+                                    db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
+                                        charClasses = itCharclasses.toObjects(CharClass::class.java)
+                                        SystemFlow.writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
+                                        //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
+                                    }
+                                }
+                            }
+                        }
+                    }.continueWithTask {
+                        Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "NPCs"))
+
+                        db.collection("globalDataChecksum").document("npcs").get().addOnSuccessListener {
+                            npcs = if (SystemFlow.readObject(context, "npcs.data") != 0) SystemFlow.readObject(context, "npcs.data") as HashMap<String, NPC> else hashMapOf()
+                            val dbChecksum = (it.get("checksum") as Long).toInt()
+
+                            Log.d("npcs.checksum", npcs.hashCode().toString())
+                            if (dbChecksum != npcs.hashCode()) {      //is local stored data equal to current state of database?
+                                db.collection("npcs").get().addOnSuccessListener { itNpcs ->
+                                    val tempNpcs = itNpcs.toObjects(NPC::class.java)
+                                    for(npcItem in tempNpcs){
+                                        npcs.put(npcItem.ID, npcItem)
+                                    }
+                                    SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
+                                    Log.d("npcs", "loaded from firebase, rewritten")
+                                    //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
+                                }
+                            } else {
+                                try {
+                                    npcs = if (SystemFlow.readObject(context, "npcs.data") != 0) SystemFlow.readObject(context, "npcs.data") as HashMap<String, NPC> else hashMapOf()
+                                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
+                                    db.collection("npcs").get().addOnSuccessListener { itNpcs ->
+                                        val tempNpcs = itNpcs.toObjects(NPC::class.java)
+                                        for(npcItem in tempNpcs){
+                                            npcs.put(npcItem.ID, npcItem)
+                                        }
+                                        SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
+                                        //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
+                                    }
+                                }
+                            }
+                        }
+                    }.continueWithTask {
+                        Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Adventure quests"))
+
+                        db.collection("globalDataChecksum").document("surfaces").get().addOnSuccessListener {
+                            surfaces = if (SystemFlow.readObject(context, "surfaces.data") != 0) SystemFlow.readObject(context, "surfaces.data") as List<Surface> else listOf()
+                            val dbChecksum = (it.get("checksum") as Long).toInt()
+
+                            Log.d("surfaces.checksum", surfaces.hashCode().toString())
+                            if (dbChecksum != surfaces.hashCode()) {      //is local stored data equal to current state of database?
+                                db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
+                                    surfaces = itSurfaces.toObjects(Surface::class.java)
+                                    SystemFlow.writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
+                                    Log.d("surfaces", "loaded from firebase, rewritten")
+                                    //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
+                                }
+                            } else {
+                                try {
+                                    surfaces = if (SystemFlow.readObject(context, "surfaces.data") != 0) SystemFlow.readObject(context, "surfaces.data") as List<Surface> else listOf()
+                                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
+                                    db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
+                                        surfaces = itSurfaces.toObjects(Surface::class.java)
+                                        SystemFlow.writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
+                                        //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
+                                    }
+                                }
+                            }
+                        }
+                    }.continueWithTask {
+                        Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Stories"))
+
+                        db.collection("globalDataChecksum").document("story").get().addOnSuccessListener {
+                            storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
+                            val dbChecksum = (it.get("checksum") as Long).toInt()
+
+                            Log.d("storyquests.checksum", storyQuests.hashCode().toString())
+                            if (dbChecksum != storyQuests.hashCode()) {      //is local stored data equal to current state of database?
+                                db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
+                                    storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
+                                    SystemFlow.writeObject(context, "story.data", storyQuests)         //write updated data to local storage
+                                    Log.d("story", "loaded from Firebase, rewritten")
+                                    //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
+                                }
+                            } else {
+                                try {
+                                    storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
+                                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
+                                    db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
+                                        storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
+                                        SystemFlow.writeObject(context, "story.data", storyQuests)         //write updated data to local storage
+                                        //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
         }
     }
-    return null
-}
 
+    fun loadGlobalDataCloud(): Task<DocumentSnapshot> {         //just for testing - loading all the global data without any statements just from database
+        val db = FirebaseFirestore.getInstance()
 
-@Throws(IOException::class)
-fun writeObject(context: Context, fileName: String, objectG: Any) {
-    val fos = context.openFileOutput(fileName, Context.MODE_PRIVATE)
-    val oos = ObjectOutputStream(fos)
-    oos.reset()
-    oos.writeObject(objectG)
-    oos.close()
-    fos.close()
-}
-
-@Throws(IOException::class, ClassNotFoundException::class)
-fun readObject(context: Context, fileName: String): Any {
-    val file = context.getFileStreamPath(fileName)
-    if (!file.exists()) {
-        file.createNewFile()
-    }
-    val fis = context.openFileInput(fileName)
-    return if (file.readText() != "") {
-        val ois = ObjectInputStream(fis)
-        try{
-            ois.readObject()
-        }catch(e1: InvalidClassException){
-            return  0
-        }
-    } else {
-        0
-    }
-}
-
-fun readFileText(context: Context, fileName: String): String {
-    val file = context.getFileStreamPath(fileName)
-    if (!file.exists() || file.readText() == "") {
-        file.createNewFile()
-        file.writeText("0")
-    }
-    return file.readText()
-}
-
-fun writeFileText(context: Context, fileName: String, content: String) {
-    val file = context.getFileStreamPath(fileName)
-    file.delete()
-    file.createNewFile()
-    file.writeText(content)
-}
-
-fun Int.safeDivider(n2: Int): Int {
-    return if (this != 0 && n2 != 0) {
-        this / n2
-    } else {
-        0
-    }
-}
-
-fun Double.safeDivider(n2: Double): Double {
-    return if (this != 0.0 && n2 != 0.0) {
-        this / n2
-    } else {
-        0.0
-    }
-}
-
-fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
-    val db = FirebaseFirestore.getInstance()
-
-    /*val storyQuestsCheckSum: Int = readFileText(context, "storyCheckSum.data").toInt()
-    val itemClassesCheckSum: Int = readFileText(context, "itemsCheckSum.data").toInt()
-    val spellClassesCheckSum: Int = readFileText(context, "spellsCheckSum.data").toInt()
-    val charClassesCheckSum: Int = readFileText(context, "charclassesCheckSum.data").toInt()
-    val npcsCheckSum: Int = readFileText(context, "npcsCheckSum.data").toInt()
-    val surfacesCheckSum: Int = readFileText(context, "surfacesCheckSum.data").toInt()*/
-
-    if (textViewLog != null) {
-        textViewLog!!.text = context.resources.getString(R.string.loading_log, "Items")
-    }
-    return db.collection("globalDataChecksum").document("items").get().addOnSuccessListener {
-        itemClasses = if (readObject(context, "items.data") != 0) readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
-        val dbChecksum = (it.get("checksum") as Long).toInt()
-
-        if (dbChecksum != itemClasses.hashCode()) {      //is local stored data equal to current state of database?
+        return db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
+            storyQuests = itStory.toObjects(StoryQuest::class.java)
+        }.continueWithTask {
             db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
                 val loadItemClasses = itItems.toObjects(LoadItems::class.java)
 
@@ -294,469 +451,586 @@ fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
                         })
                     }
                 }
-                writeObject(context, "items.data", itemClasses)            //write updated data to local storage
-                //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
+            }
+        }.continueWithTask {
+            db.collection("spells").get().addOnSuccessListener {
+                spellClasses = it.toObjects(LoadSpells::class.java)
+            }
+        }.continueWithTask {
+            db.collection("charclasses").get().addOnSuccessListener {
+                charClasses = it.toObjects(CharClass::class.java)
+            }
+        }.continueWithTask {
+            db.collection("npcs").get().addOnSuccessListener {
+                val tempNpcs = it.toObjects(NPC::class.java)
+                for(npcItem in tempNpcs){
+                    npcs.put(npcItem.ID, npcItem)
+                }
+            }
+        }.continueWithTask {
+            db.collection("surfaces").get().addOnSuccessListener {
+                surfaces = it.toObjects(Surface::class.java)
+            }
+        }.continueWithTask {
+            db.collection("app_Generic_Info").document("reqversion").get().addOnSuccessListener {
+                GenericDB.AppInfo.appVersion = (it.get("version") as Long).toInt()
+            }
+        }
+    }
+
+    fun uploadGlobalChecksums() {
+        val db = FirebaseFirestore.getInstance()
+        val checksumRef = db.collection("globalDataChecksum")
+
+        checksumRef.document("story")
+                .set(hashMapOf<String, Any?>(
+                        "checksum" to Data.storyQuests.hashCode()
+                )).addOnSuccessListener {
+                    Log.d("COMPLETED story: ", "checksum")
+                }.addOnFailureListener {
+                    Log.d("story checksum: ", "${it.cause}")
+                }
+        checksumRef.document("items")
+                .set(hashMapOf<String, Any?>(
+                        "checksum" to Data.itemClasses.hashCode()
+                )).addOnSuccessListener {
+                    Log.d("COMPLETED items: ", "checksum")
+                }.addOnFailureListener {
+                    Log.d("items checksum: ", "${it.cause}")
+                }
+        checksumRef.document("spells")
+                .set(hashMapOf<String, Any?>(
+                        "checksum" to Data.spellClasses.hashCode()
+                )).addOnSuccessListener {
+                    Log.d("COMPLETED spells: ", "checksum")
+                }.addOnFailureListener {
+                    Log.d("spellclasses checksum: ", "${it.cause}")
+                }
+        checksumRef.document("charclasses")
+                .set(hashMapOf<String, Any?>(
+                        "checksum" to Data.charClasses.hashCode()
+                )).addOnSuccessListener {
+                    Log.d("COMPLETED charclasses: ", "checksum")
+                }.addOnFailureListener {
+                    Log.d("charclasses checksum: ", "${it.cause}")
+                }
+        checksumRef.document("npcs")
+                .set(hashMapOf<String, Any?>(
+                        "checksum" to Data.npcs.hashCode()
+                )).addOnSuccessListener {
+                    Log.d("COMPLETED Data.npcs: ", "checksum")
+                }.addOnFailureListener {
+                    Log.d("Data.npcs checksum: ", "${it.cause}")
+                }
+        checksumRef.document("surfaces")
+                .set(hashMapOf<String, Any?>(
+                        "checksum" to Data.surfaces.hashCode()
+                )).addOnSuccessListener {
+                    Log.d("COMPLETED surfaces: ", "checksum")
+                }.addOnFailureListener {
+                    Log.d("surfaces checksum: ", "${it.cause}")
+                }
+    }
+
+    //import of harcoded data to firebase   -   nepoužívat, je to jen pro ukázku
+    fun uploadGlobalData() {
+        val db = FirebaseFirestore.getInstance()
+        //val storyRef = db.collection("story")
+        val charClassRef = db.collection("charclasses")
+        //val spellsRef = db.collection("spells")
+        val itemsRef = db.collection("items")
+        //val npcsRef = db.collection("Data.npcs")
+        val surfacesRef = db.collection("Data.surfaces")
+
+        /*for(i in 0 until Data.storyQuests.size){                                     //stories
+            storyRef.document(Data.storyQuests[i].id)
+                    .set(hashMapOf<String, Any?>(
+                            "id" to Data.storyQuests[i].id,
+                            "name" to Data.storyQuests[i].name,
+                            "description" to Data.storyQuests[i].description,
+                            "chapter" to Data.storyQuests[i].chapter,
+                            "completed" to Data.storyQuests[i].completed,
+                            "progress" to Data.storyQuests[i].progress,
+                            "slides" to Data.storyQuests[i].slides,
+                            "reward" to Data.storyQuests[i].reward,
+                            "experience" to Data.storyQuests[i].experience,
+                            "coins" to Data.storyQuests[i].coins
+                    )).addOnSuccessListener {
+                        Log.d("COMPLETED story", "$i")
+                    }.addOnFailureListener {
+                        Log.d("story", "${it.cause}")
+                    }
+        }*/
+        for (i in 0 until charClasses.size) {                                     //charclasses
+            charClassRef.document(charClasses[i].ID.toString())
+                    .set(hashMapOf<String, Any?>(
+                            "id" to charClasses[i].ID,
+                            "dmgRatio" to charClasses[i].dmgRatio,
+                            "hpRatio" to charClasses[i].hpRatio,
+                            "staminaRatio" to charClasses[i].staminaRatio,
+                            "blockRatio" to charClasses[i].blockRatio,
+                            "armorRatio" to charClasses[i].armorRatio,
+                            "lifeSteal" to charClasses[i].lifeSteal,
+                            "inDrawable" to charClasses[i].inDrawable,
+                            "itemListIndex" to charClasses[i].itemListIndex,
+                            "spellListIndex" to charClasses[i].spellListIndex,
+                            "name" to charClasses[i].name,
+                            "description" to charClasses[i].description,
+                            "description2" to charClasses[i].description2,
+                            "itemlistUniversalIndex" to charClasses[i].itemlistUniversalIndex,
+                            "spellListUniversalIndex" to charClasses[i].spellListUniversalIndex
+                    )).addOnSuccessListener {
+                        Log.d("COMPLETED charclasses", "$i")
+                    }.addOnFailureListener {
+                        Log.d("charclasses", "${it.cause}")
+                    }
+        }
+        /*for(i in 0 until spellClasses.size){                                     //spells
+            spellsRef.document(spellClasses[i].id)
+                    .set(hashMapOf<String, Any?>(
+                            "id" to spellClasses[i].id,
+                            "spells" to spellClasses[i].spells
+                    )).addOnSuccessListener {
+                        Log.d("COMPLETED spellclasses", "$i")
+                    }.addOnFailureListener {
+                        Log.d("spellclasses", "${it.cause}")
+                    }
+        }*/
+        for (i in 0 until itemClasses.size) {                                     //items
+            itemsRef.document(itemClasses[i].ID)
+                    .set(hashMapOf<String, Any?>(
+                            "id" to itemClasses[i].ID,
+                            "items" to itemClasses[i].items
+                    )).addOnSuccessListener {
+                        Log.d("COMPLETED itemclasses", "$i")
+                    }.addOnFailureListener {
+                        Log.d("itemclasses", "${it.cause}")
+                    }
+        }
+        /*for(i in 0 until npcs.size){                                     //npcs
+            npcsRef.document(npcs[i].id)
+                    .set(hashMapOf<String, Any?>(
+                            "id" to npcs[i].id,
+                            "inDrawable" to npcs[i].inDrawable,
+                            "name" to npcs[i].name,
+                            "difficulty" to npcs[i].difficulty,
+                            "description" to npcs[i].description,
+                            "levelAppearance" to npcs[i].levelAppearance,
+                            "level" to npcs[i].level,
+                            "chosenSpellsDefense" to npcs[i].chosenSpellsDefense,
+                            "power" to npcs[i].power,
+                            "armor" to npcs[i].armor,
+                            "block" to npcs[i].block,
+                            "dmgOverTime" to npcs[i].dmgOverTime,
+                            "lifeSteal" to npcs[i].lifeSteal,
+                            "health" to npcs[i].health,
+                            "energy" to npcs[i].energy
+                    )).addOnSuccessListener {
+                        Log.d("COMPLETED npcs", "$i")
+                    }.addOnFailureListener {
+                        Log.d("npcs", "${it.cause}")
+                    }
+        }*/
+        for (i in 0 until surfaces.size) {                                     //surfaces
+            surfacesRef.document(i.toString())
+                    .set(hashMapOf(
+                            "background" to surfaces[i].inBackground,
+                            "boss" to surfaces[i].boss,
+                            "quests" to surfaces[i].quests
+                    )).addOnSuccessListener {
+                        Log.d("COMPLETED surface", "$i")
+                    }.addOnFailureListener {
+                        Log.d("surface", "${it.cause}")
+                    }
+        }
+    }
+}
+
+object FightBoard{
+    var playerListReturn: MutableList<Player> = mutableListOf()
+//returned list of players in order to show them in fight board Base adapter(list)
+
+    fun getPlayerList(pageNumber: Int): Task<QuerySnapshot> { // returns each page
+
+        val db = FirebaseFirestore.getInstance()
+
+        val upperPlayerRange = pageNumber * 50
+        val lowerPlayerRange = if (pageNumber == 0) 0 else upperPlayerRange - 50
+
+        val docRef = db.collection("users").orderBy("fame")
+                .startAt(upperPlayerRange)
+                .endAt(lowerPlayerRange)
+
+
+        return docRef.get().addOnSuccessListener { querySnapshot ->
+
+            val playerList: MutableList<out Player> = querySnapshot.toObjects(Player()::class.java)
+
+            playerListReturn.clear()
+            for (loadedPlayer in playerList) {
+                playerListReturn.add(loadedPlayer)
+            }
+        }
+    }
+
+    fun getRandomPlayer() {
+        val db = FirebaseFirestore.getInstance() // Loads Firebase functions
+
+        val randomInt = nextInt(0, 3)
+        val docRef = db.collection("users").orderBy("username").limit(4)
+
+
+        docRef.get().addOnSuccessListener { querySnapshot ->
+
+            val playerList: MutableList<out Player> = querySnapshot.toObjects(Player()::class.java)
+
+            val document: DocumentSnapshot = querySnapshot.documents[randomInt]
+
+            val tempUsername = document.getString("username")!!
+        }
+    }
+
+    fun getPlayerByUsername(usernameIn: String) {
+
+        val db = FirebaseFirestore.getInstance() // Loads Firebase functions
+
+        val docRef = db.collection("users").document(usernameIn)
+
+
+        docRef.get().addOnSuccessListener { querySnapshot ->
+
+            val document: DocumentSnapshot = querySnapshot
+
+            val tempUsername = document.getString("username")!!
+        }
+    }
+}
+
+object GameFlow{
+
+    fun getStoryFragment(fragmentID: String, instanceID: String, slideNum: Int): Fragment {          //fragmentID - number of fragment, slideNum
+        return when (fragmentID) {
+            "0" -> Fragment_Story_Quest_Template_0.newInstance(instanceID, slideNum)
+            "1" -> Fragment_Story_Quest_Template_1.newInstance(instanceID, slideNum)
+            else -> Fragment_Story_Quest_Template_0.newInstance(instanceID, slideNum)
+        }
+    }
+
+    fun returnItem(playerX: Player, itemType: String? = null, itemSlot: Int? = null): MutableList<Item?> {
+        val allItems: MutableList<Item?> = (playerX.charClass.itemList.asSequence().plus(playerX.charClass.itemListUniversal.asSequence())).toMutableList()
+        //val allowedItems: MutableList<Item?> = mutableListOf()
+
+        //allItems.sortWith(compareBy { it!!.levelRq })
+        allItems.retainAll { playerX.level > it!!.levelRq - GenericDB.Balance.itemLvlGenBottom && playerX.level < it.levelRq + GenericDB.Balance.itemLvlGenTop}
+        if(itemType != null){
+            allItems.retainAll { it!!.type == itemType}
+        }
+        if(itemSlot != null){
+            allItems.retainAll { it!!.slot == itemSlot}
+        }
+
+        for(i in allItems){
+            Log.d("return item", i!!.getStats())
+        }
+
+        return allItems
+    }
+
+    fun generateItem(playerG: Player, inQuality: Int? = null, itemType: String? = null, itemSlot: Int? = null, itemLevel: Int? = null): Item? {
+
+        val tempArray: MutableList<Item?> = returnItem(playerG, itemType, itemSlot)
+        if(tempArray.size == 0){
+            return null
+        }
+        val itemReturned = tempArray[nextInt(0, tempArray.size)]
+        val itemTemp: Item? = when (itemReturned?.type) {
+            "Weapon" -> Weapon(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
+            "Wearable" -> Wearable(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
+            "Runes" -> Runes(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
+            else -> Item(inName = itemReturned!!.name, inType = itemReturned.type, inCharClass = itemReturned.charClass, inDescription = itemReturned.description, inLevelRq = itemReturned.levelRq, inDrawable = getKey(drawableStorage, itemReturned.drawable)!!, inSlot = itemReturned.slot)
+        }
+        itemTemp!!.levelRq = itemLevel ?: nextInt(playerG.level - 2, playerG.level + 1)
+        if (inQuality == null) {
+            itemTemp.quality = when (nextInt(0, GenericDB.Balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
+                in 0 until GenericDB.Balance.itemQualityPerc["0"]!! -> GenericDB.Balance.itemQualityGenImpact["0"]!!        //39,03%
+                in GenericDB.Balance.itemQualityPerc["0"]!!+1 until GenericDB.Balance.itemQualityPerc["1"]!! -> GenericDB.Balance.itemQualityGenImpact["1"]!!     //27%
+                in GenericDB.Balance.itemQualityPerc["1"]!!+1 until GenericDB.Balance.itemQualityPerc["2"]!! -> GenericDB.Balance.itemQualityGenImpact["2"]!!     //20%
+                in GenericDB.Balance.itemQualityPerc["2"]!!+1 until GenericDB.Balance.itemQualityPerc["3"]!! -> GenericDB.Balance.itemQualityGenImpact["3"]!!     //8,41%
+                in GenericDB.Balance.itemQualityPerc["3"]!!+1 until GenericDB.Balance.itemQualityPerc["4"]!! -> GenericDB.Balance.itemQualityGenImpact["4"]!!     //5%
+                in GenericDB.Balance.itemQualityPerc["4"]!!+1 until GenericDB.Balance.itemQualityPerc["5"]!! -> GenericDB.Balance.itemQualityGenImpact["5"]!!     //0,5%
+                in GenericDB.Balance.itemQualityPerc["5"]!!+1 until GenericDB.Balance.itemQualityPerc["6"]!! -> GenericDB.Balance.itemQualityGenImpact["6"]!!     //0,08%
+                in GenericDB.Balance.itemQualityPerc["6"]!!+1 until GenericDB.Balance.itemQualityPerc["7"]!! -> GenericDB.Balance.itemQualityGenImpact["7"]!!    //0,01%
+                else -> 0
             }
         } else {
-            try {
-                itemClasses = if (readObject(context, "items.data") != 0) readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
-            } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
-                    val loadItemClasses = itItems.toObjects(LoadItems::class.java)
+            itemTemp.quality = inQuality
+        }
 
-                    itemClasses = mutableListOf()
-                    for (i in 0 until loadItemClasses.size) {
-                        itemClasses.add(LoadItems())
-                    }
-
-                    for (i in 0 until loadItemClasses.size) {
-                        for (j in 0 until loadItemClasses[i].items.size) {
-                            itemClasses[i].items.add(when (loadItemClasses[i].items[j].type) {
-                                "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
-                                "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
-                                "Runes" -> (loadItemClasses[i].items[j]).toRune()
-                                "Item" -> loadItemClasses[i].items[j]
-                                else -> Item(inName = "Error item, report this please")
-                            })
+        if (itemTemp.levelRq < 1) itemTemp.levelRq = 1
+        var points = nextInt(itemTemp.levelRq * 3 *(itemTemp.quality + 1), itemTemp.levelRq * 3 * ((itemTemp.quality * 1.25).toInt() + 2))
+        var pointsTemp: Int
+        itemTemp.price = points
+        val numberOfStats = nextInt(1, 9)
+        for (i in 0..numberOfStats) {
+            pointsTemp = nextInt(points / (numberOfStats * 2), points / numberOfStats + 1)
+            when (itemTemp) {
+                is Weapon -> {
+                    when (nextInt(0, if (playerG.charClass.lifeSteal) 4 else 3)) {
+                        0 -> {
+                            itemTemp.power += (pointsTemp * GenericDB.Balance.itemGenPowerRatio).toInt()
+                        }
+                        1 -> {
+                            itemTemp.block += (pointsTemp * GenericDB.Balance.itemGenBlockRatio).toInt()
+                        }
+                        2 -> {
+                            itemTemp.dmgOverTime += (pointsTemp * GenericDB.Balance.itemGenDOTRatio).toInt()
+                        }
+                        3 -> {
+                            itemTemp.lifeSteal += (pointsTemp * GenericDB.Balance.itemGenLSRatio).toInt()
                         }
                     }
-                    writeObject(context, "items.data", itemClasses)            //write updated data to local storage
-                    //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
                 }
-            }
-        }
-    }.continueWithTask {
-        if (textViewLog != null) {
-            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Spells")
-        }
-
-        db.collection("globalDataChecksum").document("spells").get().addOnSuccessListener {
-            spellClasses = if (readObject(context, "spells.data") != 0) readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
-            val dbChecksum = (it.get("checksum") as Long).toInt()
-
-            if (dbChecksum != spellClasses.hashCode()) {      //is local stored data equal to current state of database?
-                db.collection("spells").get().addOnSuccessListener { itSpells ->
-                    spellClasses = itSpells.toObjects(LoadSpells::class.java)
-                    writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
-                    //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
+                is Wearable -> {
+                    when (nextInt(0, 4)) {
+                        0 -> {
+                            itemTemp.armor += (pointsTemp * GenericDB.Balance.itemGenArmorRatio).toInt()
+                        }
+                        1 -> {
+                            itemTemp.block += (pointsTemp * GenericDB.Balance.itemGenBlockRatio).toInt()
+                        }
+                        2 -> {
+                            itemTemp.health += (pointsTemp * GenericDB.Balance.itemGenHealthRatio).toInt()
+                        }
+                        3 -> {
+                            itemTemp.energy += (pointsTemp * GenericDB.Balance.itemGenEnergyRatio).toInt()
+                        }
+                    }
                 }
-            } else {
-                try {
-                    spellClasses = if (readObject(context, "spells.data") != 0) readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
-                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                    db.collection("spells").get().addOnSuccessListener { itSpells ->
-                        spellClasses = itSpells.toObjects(LoadSpells::class.java)
-                        writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
-                        //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
+                is Runes -> {
+                    when (nextInt(0, 4)) {
+                        0 -> {
+                            itemTemp.armor += (pointsTemp * GenericDB.Balance.itemGenArmorRatio).toInt()
+                        }
+                        1 -> {
+                            itemTemp.health += (pointsTemp * GenericDB.Balance.itemGenHealthRatio).toInt()
+                        }
+                        2 -> {
+                            itemTemp.adventureSpeed += (pointsTemp * GenericDB.Balance.itemGenASRatio).toInt()
+                        }
+                        3 -> {
+                            itemTemp.inventorySlots += (pointsTemp * GenericDB.Balance.itemGenISRatio).toInt()
+                        }
                     }
                 }
             }
+            points -= pointsTemp
         }
-    }.continueWithTask {
-        if (textViewLog != null) {
-            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Characters")
+        return itemTemp
+    }
+}
+
+object SystemFlow{
+    var newMessage: Boolean = false
+    var factionChange: Boolean = false
+    
+    @Throws(IOException::class)
+    fun writeObject(context: Context, fileName: String, objectG: Any) {
+        val fos = context.openFileOutput(fileName, Context.MODE_PRIVATE)
+        val oos = ObjectOutputStream(fos)
+        oos.reset()
+        oos.writeObject(objectG)
+        oos.close()
+        fos.close()
+    }
+
+    @Throws(IOException::class, ClassNotFoundException::class)
+    fun readObject(context: Context, fileName: String): Any {
+        val file = context.getFileStreamPath(fileName)
+        if (!file.exists()) {
+            file.createNewFile()
         }
-
-        db.collection("globalDataChecksum").document("charclasses").get().addOnSuccessListener {
-            charClasses = if (readObject(context, "charclasses.data") != 0) readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
-            val dbChecksum = (it.get("checksum") as Long).toInt()
-
-            if (dbChecksum != charClasses.hashCode()) {      //is local stored data equal to current state of database?
-                db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
-                    charClasses = itCharclasses.toObjects(CharClass::class.java)
-                    writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
-                    //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
-                }
-            } else {
-                try {
-                    charClasses = if (readObject(context, "charclasses.data") != 0) readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
-                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                    db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
-                        charClasses = itCharclasses.toObjects(CharClass::class.java)
-                        writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
-                        //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
-                    }
-                }
+        val fis = context.openFileInput(fileName)
+        return if (file.readText() != "") {
+            val ois = ObjectInputStream(fis)
+            try{
+                ois.readObject()
+            }catch(e1: InvalidClassException){
+                return  0
             }
+        } else {
+            0
         }
-    }.continueWithTask {
-        if (textViewLog != null) {
-            textViewLog!!.text = context.resources.getString(R.string.loading_log, "NPCs")
-        }
+    }
 
-        db.collection("globalDataChecksum").document("npcs").get().addOnSuccessListener {
-            npcs = if (readObject(context, "npcs.data") != 0) readObject(context, "npcs.data") as MutableList<NPC> else mutableListOf()
-            val dbChecksum = (it.get("checksum") as Long).toInt()
-
-            if (dbChecksum != npcs.hashCode()) {      //is local stored data equal to current state of database?
-                db.collection("npcs").get().addOnSuccessListener { itNpcs ->
-                    npcs = itNpcs.toObjects(NPC::class.java)
-                    writeObject(context, "npcs.data", npcs)            //write updated data to local storage
-                    //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
-                }
-            } else {
-                try {
-                    npcs = if (readObject(context, "npcs.data") != 0) readObject(context, "npcs.data") as MutableList<NPC> else mutableListOf()
-                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                    db.collection("npcs").get().addOnSuccessListener { itNpcs ->
-                        npcs = itNpcs.toObjects(NPC::class.java)
-                        writeObject(context, "npcs.data", npcs)            //write updated data to local storage
-                        //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
-                    }
-                }
-            }
+    fun readFileText(context: Context, fileName: String): String {
+        val file = context.getFileStreamPath(fileName)
+        if (!file.exists() || file.readText() == "") {
+            file.createNewFile()
+            file.writeText("0")
         }
-    }.continueWithTask {
-        if (textViewLog != null) {
-            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Adventure quests")
-        }
+        return file.readText()
+    }
 
-        db.collection("globalDataChecksum").document("surfaces").get().addOnSuccessListener {
-            surfaces = if (readObject(context, "surfaces.data") != 0) readObject(context, "surfaces.data") as List<Surface> else listOf()
-            val dbChecksum = (it.get("checksum") as Long).toInt()
+    fun writeFileText(context: Context, fileName: String, content: String) {
+        val file = context.getFileStreamPath(fileName)
+        file.delete()
+        file.createNewFile()
+        file.writeText(content)
+    }
 
-            if (dbChecksum != surfaces.hashCode()) {      //is local stored data equal to current state of database?
-                db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
-                    surfaces = itSurfaces.toObjects(Surface::class.java)
-                    writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
-                    //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
-                }
-            } else {
-                try {
-                    surfaces = if (readObject(context, "surfaces.data") != 0) readObject(context, "surfaces.data") as List<Surface> else listOf()
-                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                    db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
-                        surfaces = itSurfaces.toObjects(Surface::class.java)
-                        writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
-                        //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
-                    }
-                }
-            }
-        }
-    }.continueWithTask {
-        if (textViewLog != null) {
-            textViewLog!!.text = context.resources.getString(R.string.loading_log, "Stories")
-        }
+    fun exceptionFormatter(errorIn: String): String {
 
-        db.collection("globalDataChecksum").document("story").get().addOnSuccessListener {
-            storyQuests = if (readObject(context, "story.data") != 0) readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
-            val dbChecksum = (it.get("checksum") as Long).toInt()
+        return if (errorIn.contains("com.google.firebase.auth")) {
 
-            if (dbChecksum != storyQuests.hashCode()) {      //is local stored data equal to current state of database?
-                db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
-                    storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
-                    writeObject(context, "story.data", storyQuests)         //write updated data to local storage
-                    //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
-                }
-            } else {
-                try {
-                    storyQuests = if (readObject(context, "story.data") != 0) readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
-                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                    db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
-                        storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
-                        writeObject(context, "story.data", storyQuests)         //write updated data to local storage
-                        //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
-                    }
-                }
-            }
-        }
-    }.continueWithTask {
-        db.collection("app_Generic_Info").document("reqversion").get().addOnSuccessListener {
-            appVersion = (it.get("version") as Long).toInt()
+            val regex = Regex("com.google.firebase.auth.\\w+: ")
+            errorIn.replace(regex, "Error: ")
+        } else {
+            Log.d("ExceptionFormatterError", "Failed to format exception, falling back to source")
+            errorIn
         }
     }
 }
 
-fun loadGlobalDataCloud(): Task<DocumentSnapshot> {         //just for testing - loading all the global data without any statements just from database
-    val db = FirebaseFirestore.getInstance()
+fun <K, V> getKey(map: Map<K, V>, value: V): K? {           //hashmap helper - get key by its value
+    for ((key, value1) in map) {
+        if (value == value1) {
+            return key
+        }
+    }
+    return null
+}
 
-    return db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
-        storyQuests = itStory.toObjects(StoryQuest::class.java)
-    }.continueWithTask {
-        db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
-            val loadItemClasses = itItems.toObjects(LoadItems::class.java)
-
-            itemClasses = mutableListOf()
-            for (i in 0 until loadItemClasses.size) {
-                itemClasses.add(LoadItems())
-            }
-
-            for (i in 0 until loadItemClasses.size) {
-                for (j in 0 until loadItemClasses[i].items.size) {
-                    itemClasses[i].items.add(when (loadItemClasses[i].items[j].type) {
-                        "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
-                        "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
-                        "Runes" -> (loadItemClasses[i].items[j]).toRune()
-                        "Item" -> loadItemClasses[i].items[j]
-                        else -> Item(inName = "Error item, report this please")
-                    })
-                }
-            }
-        }
-    }.continueWithTask {
-        db.collection("spells").get().addOnSuccessListener {
-            spellClasses = it.toObjects(LoadSpells::class.java)
-        }
-    }.continueWithTask {
-        db.collection("charclasses").get().addOnSuccessListener {
-            charClasses = it.toObjects(CharClass::class.java)
-        }
-    }.continueWithTask {
-        db.collection("npcs").get().addOnSuccessListener {
-            npcs = it.toObjects(NPC::class.java)
-        }
-    }.continueWithTask {
-        db.collection("surfaces").get().addOnSuccessListener {
-            surfaces = it.toObjects(Surface::class.java)
-        }
-    }.continueWithTask {
-        db.collection("app_Generic_Info").document("reqversion").get().addOnSuccessListener {
-            appVersion = (it.get("version") as Long).toInt()
-        }
+fun Int.safeDivider(n2: Int): Int {
+    return if (this != 0 && n2 != 0) {
+        this / n2
+    } else {
+        0
     }
 }
 
-fun uploadGlobalChecksums() {
-    val db = FirebaseFirestore.getInstance()
-    val storyRef = db.collection("globalDataChecksum")
-
-    storyRef.document("story")
-            .set(hashMapOf<String, Any?>(
-                    "checksum" to storyQuests.hashCode()
-            )).addOnSuccessListener {
-                Log.d("COMPLETED story: ", "checksum")
-            }.addOnFailureListener {
-                Log.d("story checksum: ", "${it.cause}")
-            }
-    storyRef.document("items")
-            .set(hashMapOf<String, Any?>(
-                    "checksum" to itemClasses.hashCode()
-            )).addOnSuccessListener {
-                Log.d("COMPLETED items: ", "checksum")
-            }.addOnFailureListener {
-                Log.d("items checksum: ", "${it.cause}")
-            }
-    storyRef.document("spells")
-            .set(hashMapOf<String, Any?>(
-                    "checksum" to spellClasses.hashCode()
-            )).addOnSuccessListener {
-                Log.d("COMPLETED spells: ", "checksum")
-            }.addOnFailureListener {
-                Log.d("spellclasses checksum: ", "${it.cause}")
-            }
-    storyRef.document("charclasses")
-            .set(hashMapOf<String, Any?>(
-                    "checksum" to charClasses.hashCode()
-            )).addOnSuccessListener {
-                Log.d("COMPLETED charclasses: ", "checksum")
-            }.addOnFailureListener {
-                Log.d("charclasses checksum: ", "${it.cause}")
-            }
-    storyRef.document("npcs")
-            .set(hashMapOf<String, Any?>(
-                    "checksum" to npcs.hashCode()
-            )).addOnSuccessListener {
-                Log.d("COMPLETED npcs: ", "checksum")
-            }.addOnFailureListener {
-                Log.d("npcs checksum: ", "${it.cause}")
-            }
-    storyRef.document("surfaces")
-            .set(hashMapOf<String, Any?>(
-                    "checksum" to surfaces.hashCode()
-            )).addOnSuccessListener {
-                Log.d("COMPLETED surfaces: ", "checksum")
-            }.addOnFailureListener {
-                Log.d("surfaces checksum: ", "${it.cause}")
-            }
-}
-
-//import of harcoded data to firebase   -   nepoužívat, je to jen pro ukázku
-fun uploadGlobalData() {
-    val db = FirebaseFirestore.getInstance()
-    //val storyRef = db.collection("story")
-    val charClassRef = db.collection("charclasses")
-    //val spellsRef = db.collection("spells")
-    val itemsRef = db.collection("items")
-    //val npcsRef = db.collection("npcs")
-    val surfacesRef = db.collection("surfaces")
-
-    /*for(i in 0 until storyQuests.size){                                     //stories
-        storyRef.document(storyQuests[i].id)
-                .set(hashMapOf<String, Any?>(
-                        "id" to storyQuests[i].id,
-                        "name" to storyQuests[i].name,
-                        "description" to storyQuests[i].description,
-                        "chapter" to storyQuests[i].chapter,
-                        "completed" to storyQuests[i].completed,
-                        "progress" to storyQuests[i].progress,
-                        "slides" to storyQuests[i].slides,
-                        "reward" to storyQuests[i].reward,
-                        "experience" to storyQuests[i].experience,
-                        "coins" to storyQuests[i].coins
-                )).addOnSuccessListener {
-                    Log.d("COMPLETED story", "$i")
-                }.addOnFailureListener {
-                    Log.d("story", "${it.cause}")
-                }
-    }*/
-    for (i in 0 until charClasses.size) {                                     //charclasses
-        charClassRef.document(charClasses[i].ID.toString())
-                .set(hashMapOf<String, Any?>(
-                        "id" to charClasses[i].ID,
-                        "dmgRatio" to charClasses[i].dmgRatio,
-                        "hpRatio" to charClasses[i].hpRatio,
-                        "staminaRatio" to charClasses[i].staminaRatio,
-                        "blockRatio" to charClasses[i].blockRatio,
-                        "armorRatio" to charClasses[i].armorRatio,
-                        "lifeSteal" to charClasses[i].lifeSteal,
-                        "inDrawable" to charClasses[i].inDrawable,
-                        "itemListIndex" to charClasses[i].itemListIndex,
-                        "spellListIndex" to charClasses[i].spellListIndex,
-                        "name" to charClasses[i].name,
-                        "description" to charClasses[i].description,
-                        "description2" to charClasses[i].description2,
-                        "itemlistUniversalIndex" to charClasses[i].itemlistUniversalIndex,
-                        "spellListUniversalIndex" to charClasses[i].spellListUniversalIndex
-                )).addOnSuccessListener {
-                    Log.d("COMPLETED charclasses", "$i")
-                }.addOnFailureListener {
-                    Log.d("charclasses", "${it.cause}")
-                }
-    }
-    /*for(i in 0 until spellClasses.size){                                     //spells
-        spellsRef.document(spellClasses[i].id)
-                .set(hashMapOf<String, Any?>(
-                        "id" to spellClasses[i].id,
-                        "spells" to spellClasses[i].spells
-                )).addOnSuccessListener {
-                    Log.d("COMPLETED spellclasses", "$i")
-                }.addOnFailureListener {
-                    Log.d("spellclasses", "${it.cause}")
-                }
-    }*/
-    for (i in 0 until itemClasses.size) {                                     //items
-        itemsRef.document(itemClasses[i].ID)
-                .set(hashMapOf<String, Any?>(
-                        "id" to itemClasses[i].ID,
-                        "items" to itemClasses[i].items
-                )).addOnSuccessListener {
-                    Log.d("COMPLETED itemclasses", "$i")
-                }.addOnFailureListener {
-                    Log.d("itemclasses", "${it.cause}")
-                }
-    }
-    /*for(i in 0 until npcs.size){                                     //npcs
-        npcsRef.document(npcs[i].id)
-                .set(hashMapOf<String, Any?>(
-                        "id" to npcs[i].id,
-                        "inDrawable" to npcs[i].inDrawable,
-                        "name" to npcs[i].name,
-                        "difficulty" to npcs[i].difficulty,
-                        "description" to npcs[i].description,
-                        "levelAppearance" to npcs[i].levelAppearance,
-                        "level" to npcs[i].level,
-                        "chosenSpellsDefense" to npcs[i].chosenSpellsDefense,
-                        "power" to npcs[i].power,
-                        "armor" to npcs[i].armor,
-                        "block" to npcs[i].block,
-                        "dmgOverTime" to npcs[i].dmgOverTime,
-                        "lifeSteal" to npcs[i].lifeSteal,
-                        "health" to npcs[i].health,
-                        "energy" to npcs[i].energy
-                )).addOnSuccessListener {
-                    Log.d("COMPLETED npcs", "$i")
-                }.addOnFailureListener {
-                    Log.d("npcs", "${it.cause}")
-                }
-    }*/
-    for (i in 0 until surfaces.size) {                                     //surfaces
-        surfacesRef.document(i.toString())
-                .set(hashMapOf(
-                        "background" to surfaces[i].inBackground,
-                        "boss" to surfaces[i].boss,
-                        "quests" to surfaces[i].quests
-                )).addOnSuccessListener {
-                    Log.d("COMPLETED surface", "$i")
-                }.addOnFailureListener {
-                    Log.d("surface", "${it.cause}")
-                }
+fun Double.safeDivider(n2: Double): Double {
+    return if (this != 0.0 && n2 != 0.0) {
+        this / n2
+    } else {
+        0.0
     }
 }
 
 
-fun getPlayerList(pageNumber: Int): Task<QuerySnapshot> { // returns each page
+object GenericDB{
 
-    val db = FirebaseFirestore.getInstance()
+    object AppInfo{
+        var appVersion: Int = 47
 
-    val upperPlayerRange = pageNumber * 50
-    val lowerPlayerRange = if (pageNumber == 0) 0 else upperPlayerRange - 50
-
-    val docRef = db.collection("users").orderBy("fame")
-            .startAt(upperPlayerRange)
-            .endAt(lowerPlayerRange)
-
-
-    return docRef.get().addOnSuccessListener { querySnapshot ->
-
-        val playerList: MutableList<out LoadPlayer> = querySnapshot.toObjects(LoadPlayer()::class.java)
-
-        val tempList: MutableList<Player> = mutableListOf()
-
-        playerListReturn.clear()
-        for (loadedPlayer in playerList) {
-            playerListReturn.add(loadedPlayer.toPlayer())
+        fun updateData(data: AppInfo){
+            this.appVersion = data.appVersion
         }
     }
-}
 
+    object Balance: Serializable{
+        var NPCRate = hashMapOf(
+                "0" to 0.3
+                ,"1" to 0.35
+                ,"2" to 0.4
+                ,"3" to 0.45
+                ,"4" to 0.5
+                ,"5" to 0.55
+                ,"6" to 0.65
+                ,"7" to 0.75
+                ,"100" to 0.9
+                ,"101" to 1.25
+                ,"102" to 1.5
+        )
+        var itemQualityPerc = hashMapOf(
+                "0" to 3903
+                ,"1" to 6604
+                ,"2" to 8605
+                ,"3" to 9447
+                ,"4" to 9948
+                ,"5" to 9989
+                ,"6" to 9998
+                ,"7" to 10000
+        )
+        var itemQualityGenImpact = hashMapOf(
+                "0" to 0
+                ,"1" to 1
+                ,"2" to 3
+                ,"3" to 5
+                ,"4" to 7
+                ,"5" to 9
+                ,"6" to 11
+                ,"7" to 16
+        )
+        var bossHoursByDifficulty = hashMapOf(
+                "0" to 0
+                ,"1" to 1
+                ,"2" to 3
+                ,"3" to 5
+                ,"4" to 7
+                ,"5" to 9
+                ,"6" to 11
+                ,"7" to 16
+        )
+        var itemLvlGenBottom = 101
+        var itemLvlGenTop = 101
+        var rewardCoinsTop = 5
+        var rewardCoinsBottom = 5
+        var rewardXpTop = 8
+        var rewardXpBottom = 8
+        var itemGenPowerRatio: Double = 1.0
+        var itemGenArmorRatio: Double = 0.5
+        var itemGenHealthRatio: Double = 10.0
+        var itemGenASRatio: Double = 0.13
+        var itemGenBlockRatio: Double = 0.1
+        var itemGenISRatio: Double = 0.1
+        var itemGenEnergyRatio: Double = 0.5
+        var itemGenLSRatio: Double = 1.0
+        var itemGenDOTRatio: Double = 1.0
 
-class CharacterQuest {
-    val description: String = "Default description"
-    val reward: Reward = Reward().generate(player)
-    val rewardText: String = reward.coins.toString()
-}
+        fun updateData(data: Balance){
+            this.NPCRate = data.NPCRate
+            this.itemQualityPerc = data.itemQualityPerc
+            this.itemQualityGenImpact = data.itemQualityGenImpact
 
-class LifecycleListener(val context: Context) : LifecycleObserver {
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onMoveToForeground() {
-        context.stopService(Intent(context, ClassCubeItHeadService::class.java))
-        player.syncStats()
-        if (player.music && player.username != "player" && !bgMusic.mediaPlayer.isPlaying) {
-            val svc = Intent(context, bgMusic::class.java)
-            context.startService(svc)
+            this.itemLvlGenBottom = data.itemLvlGenBottom
+            this.itemLvlGenTop = data.itemLvlGenTop
+            this.rewardCoinsTop = data.rewardCoinsTop
+            this.rewardCoinsBottom = data.rewardCoinsBottom
+            this.rewardXpTop = data.rewardXpTop
+            this.rewardXpBottom = data.rewardXpBottom
+            this.itemGenPowerRatio = data.itemGenPowerRatio
+            this.itemGenArmorRatio = data.itemGenArmorRatio
+            this.itemGenHealthRatio = data.itemGenHealthRatio
+            this.itemGenASRatio = data.itemGenASRatio
+            this.itemGenBlockRatio = data.itemGenBlockRatio
+            this.itemGenISRatio = data.itemGenISRatio
+            this.itemGenEnergyRatio = data.itemGenEnergyRatio
+            this.itemGenLSRatio = data.itemGenLSRatio
+            this.itemGenDOTRatio = data.itemGenDOTRatio
         }
-        player.online = true
-        player.toLoadPlayer().uploadSingleItem("online")
-        if (player.currentStoryQuest != null && player.currentStoryQuest!!.progress == 0) player.currentStoryQuest = null
+
+        override fun hashCode(): Int {
+            var result = itemLvlGenBottom
+            result = 31 * result + NPCRate.hashCode()
+            result = 31 * result + itemQualityPerc.hashCode()
+            result = 31 * result + itemQualityGenImpact.hashCode()
+            result = 31 * result + itemLvlGenTop.hashCode()
+            result = 31 * result + rewardCoinsTop.hashCode()
+            result = 31 * result + rewardCoinsBottom.hashCode()
+            result = 31 * result + rewardXpTop.hashCode()
+            result = 31 * result + rewardXpBottom.hashCode()
+            result = 31 * result + itemGenPowerRatio.hashCode()
+            result = 31 * result + itemGenArmorRatio.hashCode()
+            result = 31 * result + itemGenHealthRatio.hashCode()
+            result = 31 * result + itemGenASRatio.hashCode()
+            result = 31 * result + itemGenBlockRatio.hashCode()
+            result = 31 * result + itemGenISRatio.hashCode()
+            result = 31 * result + itemGenEnergyRatio.hashCode()
+            result = 31 * result + itemGenLSRatio.hashCode()
+            result = 31 * result + itemGenDOTRatio.hashCode()
+            return result
+        }
     }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onMoveToBackground() {
-        if (player.music && bgMusic.mediaPlayer.isPlaying) {
-            val svc = Intent(context, bgMusic::class.java)
-            context.stopService(svc)
-        }
-        player.online = false
-        player.toLoadPlayer().uploadPlayer()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && player.appearOnTop) {
-            if (Settings.canDrawOverlays(context)) {
-                context.startService(Intent(context, ClassCubeItHeadService::class.java))
-            }
-        }
-    }
-}
-
-data class CurrentSurface(
-        var quests: MutableList<Quest> = mutableListOf()
-)
-
-enum class LoadingStatus {
-    LOGGED,
-    UNLOGGED,
-    LOGGING,
-    CLOSELOADING,
-    ENTERFIGHT
 }
 
 class BackgroundSoundService : Service() {
@@ -795,97 +1069,128 @@ class BackgroundSoundService : Service() {
     }
 }
 
+class LifecycleListener(val context: Context) : LifecycleObserver {
 
-fun getRandomPlayer() {
-    val db = FirebaseFirestore.getInstance() // Loads Firebase functions
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onMoveToForeground() {
+        context.stopService(Intent(context, ClassCubeItHeadService::class.java))
+        Data.player.syncStats()
+        if (Data.player.music && Data.player.username != "player" && !Data.bgMusic.mediaPlayer.isPlaying) {
+            val svc = Intent(context, Data.bgMusic::class.java)
+            context.startService(svc)
+        }
+        Data.player.online = true
+        Data.player.uploadSingleItem("online")
+        if (Data.player.currentStoryQuest != null && Data.player.currentStoryQuest!!.progress == 0) Data.player.currentStoryQuest = null
+    }
 
-    val randomInt = nextInt(0, 3)
-    val docRef = db.collection("users").orderBy("username").limit(4)
-
-
-    docRef.get().addOnSuccessListener { querySnapshot ->
-
-        val playerList: MutableList<out LoadPlayer> = querySnapshot.toObjects(LoadPlayer()::class.java)
-
-        val document: DocumentSnapshot = querySnapshot.documents[randomInt]
-
-        val tempUsername = document.getString("username")!!
-
-        returnUsernameHelper(tempUsername)
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onMoveToBackground() {
+        if (Data.player.music && Data.bgMusic.mediaPlayer.isPlaying) {
+            val svc = Intent(context, Data.bgMusic::class.java)
+            context.stopService(svc)
+        }
+        Data.player.online = false
+        Data.player.uploadPlayer()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Data.player.appearOnTop) {
+            if (Settings.canDrawOverlays(context)) {
+                context.startService(Intent(context, ClassCubeItHeadService::class.java))
+            }
+        }
     }
 }
 
-fun getPlayerByUsername(usernameIn: String) {
+class CharacterQuest {
+    val description: String = "Default description"
+    val reward: Reward = Reward().generate(Data.player)
+    val rewardText: String = reward.coins.toString()
+}
 
-    val db = FirebaseFirestore.getInstance() // Loads Firebase functions
+data class CurrentSurface(
+        var quests: MutableList<Quest> = mutableListOf(),
+        var boss: Boss? = null
+):Serializable
 
-    val docRef = db.collection("users").document(usernameIn)
+class LoadSpells(
+        var ID: String = "0",
+        var spells: MutableList<Spell> = mutableListOf()
+) : Serializable{
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other)
+    }
 
-
-    docRef.get().addOnSuccessListener { querySnapshot ->
-
-        val document: DocumentSnapshot = querySnapshot
-
-        val tempUsername = document.getString("username")!!
-
-        returnUsernameHelper(tempUsername)
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + spells.hashCode()
+        return result
     }
 }
 
-fun exceptionFormatter(errorIn: String): String {
+class LoadItems(
+        var ID: String = "0",
+        var items: MutableList<Item> = mutableListOf()
+) : Serializable{
 
-    return if (errorIn.contains("com.google.firebase.auth")) {
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + items.hashCode()
+        return result
+    }
 
-        val regex = Regex("com.google.firebase.auth.\\w+: ")
-        errorIn.replace(regex, "Error: ")
-    } else {
-        Log.d("ExceptionFormatterError", "Failed to format exception, falling back to source")
-        errorIn
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as LoadItems
+
+        if (ID != other.ID) return false
+        if (items != other.items) return false
+
+        return true
     }
 }
 
-fun returnUsernameHelper(input: String): Player {
-
-    val returnPlayer = Player(username = input)
-
-    returnPlayer.loadPlayer()
-
-    return returnPlayer
+enum class LoadingStatus {
+    LOGGED,
+    UNLOGGED,
+    LOGGING,
+    CLOSELOADING,
+    ENTERFIGHT
 }
 
-data class LoadPlayer(
-        var charClass: Int = player.charClass.ID,
+/*data class LoadPlayer(
+        var charClass: Int = Data.player.charClass.id,
         var username: String = "loadPlayer",
-        var level: Int = player.level,
+        var level: Int = Data.player.level,
         val UserId: String = ""
 ) {
-    var look: MutableList<Int> = player.look.toMutableList()
-    var power: Int = player.power
-    var armor: Int = player.armor
-    var block: Double = player.block
-    var dmgOverTime: Int = player.dmgOverTime
-    var lifeSteal: Int = player.lifeSteal
-    var health: Double = player.health
-    var energy: Int = player.energy
-    var adventureSpeed: Int = player.adventureSpeed
-    var inventorySlots: Int = player.inventorySlots
+    var look: MutableList<Int> = Data.player.look.toMutableList()
+    var power: Int = Data.player.power
+    var armor: Int = Data.player.armor
+    var block: Double = Data.player.block
+    var dmgOverTime: Int = Data.player.dmgOverTime
+    var lifeSteal: Int = Data.player.lifeSteal
+    var health: Double = Data.player.health
+    var energy: Int = Data.player.energy
+    var adventureSpeed: Int = Data.player.adventureSpeed
+    var inventorySlots: Int = Data.player.inventorySlots
     var inventory: MutableList<Item?> = mutableListOf()
     var equip: MutableList<Item?> = arrayOfNulls<Item?>(10).toMutableList()
     var backpackRunes: MutableList<Item?> = arrayOfNulls<Item?>(2).toMutableList()
     var learnedSpells: MutableList<Spell?> = mutableListOf()
     var chosenSpellsDefense: MutableList<Spell?> = mutableListOf(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
     var chosenSpellsAttack: MutableList<Spell?> = arrayOfNulls<Spell?>(6).toMutableList()
-    var money: Int = player.money
+    var money: Int = Data.player.money
     var shopOffer: MutableList<Item?> = mutableListOf()
-    var notifications: Boolean = player.notifications
-    var music: Boolean = player.music
+    var notifications: Boolean = Data.player.notifications
+    var music: Boolean = Data.player.music
     var appearOnTop: Boolean = false
     var online: Boolean = true
     var experience: Int = 0
     var fame: Int = 0
     var newPlayer: Boolean = true
     var description: String = ""
-    var currentSurfaces: MutableList<CurrentSurface> = player.currentSurfaces
+    var currentSurfaces: MutableList<CurrentSurface> = Data.player.currentSurfaces
     var storyQuestsCompleted: MutableList<StoryQuest> = mutableListOf()
     var currentStoryQuest: StoryQuest? = null
 
@@ -944,7 +1249,7 @@ data class LoadPlayer(
             }
         }
 
-        tempPlayer.equip = arrayOfNulls(this.equip.size)
+        tempPlayer.equip = arrayOfNulls<Item?>(this.equip.size).toMutableList()
         for (i in 0 until this.equip.size) {
             tempPlayer.equip[i] = when (this.equip[i]?.type) {
                 "Wearable" -> (this.equip[i])!!.toWearable()
@@ -1020,7 +1325,7 @@ data class LoadPlayer(
                 .update(userString)
     }
 
-    fun uploadPlayer(): Task<Void> { // uploads player to Firebase (will need to use userSession)
+    fun uploadPlayer(): Task<Void> { // uploadsData.player to Firebase (will need to use userSession)
         val db = FirebaseFirestore.getInstance()
 
         val userString = HashMap<String, Any?>()
@@ -1030,30 +1335,30 @@ data class LoadPlayer(
         }
 
         var tempNull = 0   //index of first item, which is null
-        var tempEnergy = player.energy - 25
-        for (i in 0 until player.chosenSpellsDefense.size) {  //clean the list from white spaces between items, and items of higher index than is allowed to be
-            if (player.chosenSpellsDefense[i] == null) {
+        var tempEnergy = Data.player.energy - 25
+        for (i in 0 until Data.player.chosenSpellsDefense.size) {  //clean the list from white spaces between items, and items of higher index than is allowed to be
+            if (Data.player.chosenSpellsDefense[i] == null) {
                 tempNull = i
-                for (d in i until player.chosenSpellsDefense.size) {
-                    player.chosenSpellsDefense[d] = null
+                for (d in i until Data.player.chosenSpellsDefense.size) {
+                    Data.player.chosenSpellsDefense[d] = null
                     if (d > 19) {
-                        player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.size - 1)
+                        Data.player.chosenSpellsDefense.removeAt(Data.player.chosenSpellsDefense.size - 1)
                     }
                 }
                 break
             } else {
-                tempEnergy += (25 - player.chosenSpellsDefense[i]!!.energy)
+                tempEnergy += (25 - Data.player.chosenSpellsDefense[i]!!.energy)
             }
         }
 
         while (true) {            //corrects energy usage by the last index, which is nulls, adds new item if it is bigger than limit of the memory
-            if (tempEnergy + 25 < player.energy) {
+            if (tempEnergy + 25 < Data.player.energy) {
                 if (tempNull < 19) {
                     tempEnergy += 25
-                    player.chosenSpellsDefense.add(tempNull, player.learnedSpells[0])
-                    player.chosenSpellsDefense.removeAt(player.chosenSpellsDefense.size - 1)
+                    Data.player.chosenSpellsDefense.add(tempNull, Data.player.learnedSpells[0])
+                    Data.player.chosenSpellsDefense.removeAt(Data.player.chosenSpellsDefense.size - 1)
                 } else {
-                    player.chosenSpellsDefense.add(player.learnedSpells[0])
+                    Data.player.chosenSpellsDefense.add(Data.player.learnedSpells[0])
                 }
             } else break
         }
@@ -1143,28 +1448,37 @@ data class LoadPlayer(
             this.toPlayer().createInbox()
         }
     }
-}
+}*/
 
 open class Player(
         var charClassIndex: Int = 1,
         var username: String = "player",
         var level: Int = 1
-) {
+):Serializable {
     val charClass: CharClass
-        @Exclude get() = charClasses[charClassIndex]
-    var look: Array<Int> = arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        @Exclude get() = Data.charClasses[charClassIndex]
+    var look: MutableList<Int> = mutableListOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     var inventory: MutableList<Item?> = arrayOfNulls<Item?>(8).toMutableList()
-    var equip: Array<Item?> = arrayOfNulls(10)
-    var backpackRunes: Array<Runes?> = arrayOfNulls(2)
+    var equip: MutableList<Item?> = arrayOfNulls<Item?>(10).toMutableList()
+    var backpackRunes: MutableList<Runes?> = arrayOfNulls<Runes?>(2).toMutableList()
     var learnedSpells: MutableList<Spell?> = mutableListOf(Spell(), Spell(), Spell(), Spell(), Spell())
     var chosenSpellsDefense: MutableList<Spell?> = mutableListOf(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
-    var chosenSpellsAttack: Array<Spell?> = arrayOfNulls(6)
+    var chosenSpellsAttack: MutableList<Spell?> = arrayOfNulls<Spell?>(6).toMutableList()
     var money: Int = 100
     var cubeCoins: Int = 0
-    var shopOffer: Array<Item?> = arrayOf(Item(), Item(), Item(), Item(), Item(), Item(), Item(), Item())
+    var shopOffer: MutableList<Item?> = mutableListOf(Item(), Item(), Item(), Item(), Item(), Item(), Item(), Item())
     var notifications: Boolean = true
     var music: Boolean = true
     var experience: Int = 0
+        set(value){
+            field = value
+            val neededXp = (this.level * 0.75 * (8 * this.level * 0.8 * 3)).toInt()
+            if (field >= neededXp) {
+                this.level++
+                field -= neededXp
+                Data.newLevel = true
+            }
+        }
     var appearOnTop: Boolean = false
     var description: String = ""
     var currentSurfaces: MutableList<CurrentSurface> = mutableListOf()
@@ -1186,80 +1500,218 @@ open class Player(
         }
     var inventorySlots: Int = 8
     var fame: Int = 0
-    var newPlayer: Boolean = true
-    var online: Boolean = true
-    @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key)
     var drawableExt: Int = 0
     var storyQuestsCompleted: MutableList<StoryQuest> = mutableListOf()
+    var factionName: String = ""
+    var factionID: Int? = null
+    var factionRole: FactionRole? = null
+    @Exclude var faction: Faction? = null
     var currentStoryQuest: StoryQuest? = null
-
-    fun toLoadPlayer(): LoadPlayer {
-        val tempLoadedPlayer = LoadPlayer()
-
-        tempLoadedPlayer.username = this.username
-        tempLoadedPlayer.look = this.look.toMutableList()
-        tempLoadedPlayer.level = this.level
-        tempLoadedPlayer.charClass = this.charClass.ID
-        tempLoadedPlayer.power = this.power
-        tempLoadedPlayer.armor = this.armor
-        tempLoadedPlayer.block = this.block
-        tempLoadedPlayer.dmgOverTime = this.dmgOverTime
-        tempLoadedPlayer.lifeSteal = this.lifeSteal
-        tempLoadedPlayer.health = this.health
-        tempLoadedPlayer.energy = this.energy
-        tempLoadedPlayer.adventureSpeed = this.adventureSpeed
-        tempLoadedPlayer.inventorySlots = this.inventorySlots
-        tempLoadedPlayer.notifications = this.notifications
-        tempLoadedPlayer.music = this.music
-        tempLoadedPlayer.money = this.money
-        tempLoadedPlayer.appearOnTop = this.appearOnTop
-        tempLoadedPlayer.online = this.online
-        tempLoadedPlayer.experience = this.experience
-        tempLoadedPlayer.newPlayer = this.newPlayer
-        tempLoadedPlayer.fame = this.fame
-        tempLoadedPlayer.description = this.description
-        tempLoadedPlayer.storyQuestsCompleted = this.storyQuestsCompleted
-        tempLoadedPlayer.currentStoryQuest = this.currentStoryQuest
-
-        tempLoadedPlayer.inventory.clear()
-        for (i in 0 until this.inventory.size) {
-            tempLoadedPlayer.inventory.add(if (this.inventory[i] != null) this.inventory[i]!! else null)
-        }
-        tempLoadedPlayer.equip.clear()
-        for (i in 0 until this.equip.size) {
-            tempLoadedPlayer.equip.add(if (this.equip[i] != null) this.equip[i]!! else null)
-        }
-        tempLoadedPlayer.backpackRunes.clear()
-        for (i in 0 until this.backpackRunes.size) {
-            tempLoadedPlayer.backpackRunes.add(if (this.backpackRunes[i] != null) this.backpackRunes[i]!! else null)
-        }
-        tempLoadedPlayer.learnedSpells.clear()
-        for (i in 0 until this.learnedSpells.size) {
-            tempLoadedPlayer.learnedSpells.add(if (this.learnedSpells[i] != null) {
-                this.learnedSpells[i]!!
-            } else null)
-        }
-        tempLoadedPlayer.chosenSpellsDefense.clear()
-        for (i in 0 until this.chosenSpellsDefense.size) {
-            tempLoadedPlayer.chosenSpellsDefense.add(if (this.chosenSpellsDefense[i] != null) this.chosenSpellsDefense[i]!! else null)
-        }
-        tempLoadedPlayer.chosenSpellsAttack.clear()
-        for (i in 0 until this.chosenSpellsAttack.size) {
-            tempLoadedPlayer.chosenSpellsAttack.add(if (this.chosenSpellsAttack[i] != null) this.chosenSpellsAttack[i]!! else null)
-        }
-        tempLoadedPlayer.shopOffer.clear()
-        for (i in 0 until this.shopOffer.size) {
-            tempLoadedPlayer.shopOffer.add(if (this.shopOffer[i] != null) this.shopOffer[i]!! else null)
+    var newPlayer: Boolean = true
+    var online: Boolean = true
+    var allies: MutableList<String> = mutableListOf("MexxFM")
+    var inviteBy: String? = null
+    var profilePicDrawableIn: String = "00000"
+    val profilePicDrawable: Int
+        get(){
+            return drawableStorage[profilePicDrawableIn]!!
         }
 
-        tempLoadedPlayer.currentSurfaces = this.currentSurfaces
+    @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - problem with Serializabling
+    @Exclude var textSize: Float = 16f
 
-        return tempLoadedPlayer
+    fun init(context: Context){
+        if(SystemFlow.readFileText(context, "textSize.data") != "0") textSize = SystemFlow.readFileText(context, "textSize.data").toFloat()
+    }
+    /*object Inventory{
+
+    }
+    object Equip{
+
+    }*/
+
+    fun uploadSingleItem(item: String): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        val userStringHelper: HashMap<String, Any?> = hashMapOf(
+                "username" to this.username,
+                "look" to this.look,
+                "level" to this.level,
+                "charClass" to this.charClass,
+                "power" to this.power,
+                "armor" to this.armor,
+                "block" to this.block,
+                "dmgOverTime" to this.dmgOverTime,
+                "lifeSteal" to this.lifeSteal,
+                "health" to this.health,
+                "energy" to this.energy,
+                "adventureSpeed" to this.adventureSpeed,
+                "inventorySlots" to this.inventorySlots,
+                "inventory" to this.inventory,
+                "equip" to this.equip,
+                "backpackRunes" to this.backpackRunes,
+                "learnedSpells" to this.learnedSpells,
+                "chosenSpellsDefense" to this.chosenSpellsDefense,
+                "chosenSpellsAttack" to this.chosenSpellsAttack,
+                "coins" to this.money,
+                "shopOffer" to this.shopOffer,
+                "notifications" to this.notifications,
+                "music" to this.music,
+                "currentSurfaces" to this.currentSurfaces,
+                "appearOnTop" to this.appearOnTop,
+                "experience" to this.experience,
+                "fame" to this.fame,
+                "online" to this.online,
+                "newPlayer" to this.newPlayer,
+                "description" to this.description,
+                "lastLogin" to FieldValue.serverTimestamp()
+        )
+
+        val userString = HashMap<String, Any?>()
+        userString[item] = userStringHelper[item]
+
+        return db.collection("users").document(this.username)
+                .update(userString)
+    }
+
+    fun uploadPlayer(): Task<Void> { // uploadsData.player to Firebase (will need to use userSession)
+        val db = FirebaseFirestore.getInstance()
+
+        val userString = HashMap<String, Any?>()
+
+        if (this.chosenSpellsDefense[0] == null) {
+            this.chosenSpellsDefense[0] = this.charClass.spellList[0]
+        }
+
+        var tempNull = 0   //index of first item, which is null
+        var tempEnergy = this.energy - 25
+        for (i in 0 until this.chosenSpellsDefense.size) {  //clean the list from white spaces between items, and items of higher index than is allowed to be
+            if (this.chosenSpellsDefense[i] == null) {
+                tempNull = i
+                for (d in i until this.chosenSpellsDefense.size) {
+                    this.chosenSpellsDefense[d] = null
+                    if (d > 19) {
+                        this.chosenSpellsDefense.removeAt(this.chosenSpellsDefense.size - 1)
+                    }
+                }
+                break
+            } else {
+                tempEnergy += (25 - Data.player.chosenSpellsDefense[i]!!.energy)
+            }
+        }
+
+        while (true) {            //corrects energy usage by the last index, which is nulls, adds new item if it is bigger than limit of the memory
+            if (tempEnergy + 25 < this.energy) {
+                if (tempNull < 19) {
+                    tempEnergy += 25
+                    this.chosenSpellsDefense.add(tempNull, this.learnedSpells[0])
+                    this.chosenSpellsDefense.removeAt(this.chosenSpellsDefense.size - 1)
+                } else {
+                    this.chosenSpellsDefense.add(this.learnedSpells[0])
+                }
+            } else break
+        }
+
+        userString["username"] = this.username
+        userString["look"] = this.look
+        userString["level"] = this.level
+        userString["charClassIndex"] = this.charClassIndex
+        userString["power"] = this.power
+        userString["armor"] = this.armor
+        userString["block"] = this.block
+        userString["dmgOverTime"] = this.dmgOverTime
+        userString["lifeSteal"] = this.lifeSteal
+        userString["health"] = this.health
+        userString["energy"] = this.energy
+        userString["adventureSpeed"] = this.adventureSpeed
+        userString["inventorySlots"] = this.inventorySlots
+        userString["inventory"] = this.inventory
+        userString["equip"] = this.equip
+        userString["backpackRunes"] = this.backpackRunes
+        userString["learnedSpells"] = this.learnedSpells
+        userString["chosenSpellsDefense"] = this.chosenSpellsDefense
+        userString["chosenSpellsAttack"] = this.chosenSpellsAttack
+        userString["money"] = this.money
+        userString["shopOffer"] = this.shopOffer
+        userString["notifications"] = this.notifications
+        userString["music"] = this.music
+        userString["currentSurfaces"] = this.currentSurfaces
+        userString["appearOnTop"] = this.appearOnTop
+        userString["experience"] = this.experience
+        userString["fame"] = this.fame
+        userString["online"] = this.online
+        userString["newPlayer"] = this.newPlayer
+        userString["description"] = this.description
+        userString["storyQuestsCompleted"] = this.storyQuestsCompleted
+        userString["currentStoryQuest"] = this.currentStoryQuest
+        userString["drawableExt"] = this.drawableExt
+        userString["factionName"] = this.factionName
+        userString["factionID"] = this.factionID
+        userString["factionRole"] = this.factionRole
+        userString["allies"] = this.allies
+        userString["inviteBy"] = this.inviteBy
+        userString["profilePicDrawableIn"] = this.profilePicDrawableIn
+
+
+        userString["lastLogin"] = FieldValue.serverTimestamp()
+
+        return db.collection("users").document(this.username)
+                .update(userString)
+    }
+
+    fun createPlayer(inUserId: String, username: String): Task<Task<Void>> { // Call only once per player, Creates user document in Firebase
+        val db = FirebaseFirestore.getInstance()
+
+        val userString = HashMap<String, Any?>()
+
+        userString["username"] = this.username
+        userString["userId"] = inUserId
+        userString["look"] = this.look
+        userString["level"] = this.level
+        userString["charClassIndex"] = this.charClassIndex
+        userString["power"] = this.power
+        userString["armor"] = this.armor
+        userString["block"] = this.block
+        userString["dmgOverTime"] = this.dmgOverTime
+        userString["lifeSteal"] = this.lifeSteal
+        userString["health"] = this.health
+        userString["energy"] = this.energy
+        userString["adventureSpeed"] = this.adventureSpeed
+        userString["inventorySlots"] = this.inventorySlots
+        userString["inventory"] = this.inventory
+        userString["equip"] = this.equip
+        userString["backpackRunes"] = this.backpackRunes
+        userString["learnedSpells"] = this.learnedSpells
+        userString["chosenSpellsDefense"] = this.chosenSpellsDefense
+        userString["chosenSpellsAttack"] = this.chosenSpellsAttack
+        userString["coins"] = this.money
+        userString["shopOffer"] = this.shopOffer
+        userString["notifications"] = this.notifications
+        userString["music"] = this.music
+        userString["currentSurfaces"] = this.currentSurfaces
+        userString["appearOnTop"] = this.appearOnTop
+        userString["experience"] = this.experience
+        userString["fame"] = this.fame
+        userString["description"] = this.description
+        userString["newPlayer"] = this.newPlayer
+        userString["lastLogin"] = FieldValue.serverTimestamp()
+        userString["storyQuestsCompleted"] = this.storyQuestsCompleted
+        userString["currentStoryQuest"] = this.currentStoryQuest
+        userString["drawableExt"] = this.drawableExt
+        userString["factionName"] = this.factionName
+        userString["factionID"] = this.factionID
+        userString["factionRole"] = this.factionRole
+        userString["allies"] = this.allies
+        userString["inviteBy"] = this.inviteBy
+        userString["profilePicDrawableIn"] = this.profilePicDrawableIn
+
+        return db.collection("users").document(username).set(userString).continueWithTask {
+            this.createInbox()
+        }
     }
 
     fun checkForQuest(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
-        loadingActiveQuest = true
+        Data.loadingActiveQuest = true
 
         val docRef = db.collection("users").document(this.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
@@ -1273,13 +1725,13 @@ open class Player(
         }.continueWithTask {
             docRef.document("quest").get().addOnSuccessListener {
 
-                activeQuest = it.toObject(ActiveQuest::class.java, behaviour)
+                Data.activeQuest = it.toObject(ActiveQuest::class.java, behaviour)
 
-                if (activeQuest != null) {
+                if (Data.activeQuest != null) {
 
-                    val item = activeQuest!!.quest.reward.item      //fixing the item type conversion problem
+                    val item = Data.activeQuest!!.quest.reward.item      //fixing the item type conversion problem
                     if (item != null) {
-                        activeQuest!!.quest.reward.item = when (item.type) {
+                        Data.activeQuest!!.quest.reward.item = when (item.type) {
                             "Wearable" -> item.toWearable()
                             "Weapon" -> item.toWeapon()
                             "Runes" -> item.toRune()
@@ -1287,21 +1739,21 @@ open class Player(
                         }
                     }
 
-                    activeQuest!!.completed = activeQuest != null && activeQuest!!.endTime <= currentTime
-                    activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(currentTime.time - activeQuest!!.endTime.time).toInt()
+                    Data.activeQuest!!.completed = Data.activeQuest != null && Data.activeQuest!!.endTime <= currentTime
+                    Data.activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(currentTime.time - Data.activeQuest!!.endTime.time).toInt()
                 }
             }
         }.addOnSuccessListener {
-            loadingActiveQuest = false
+            Data.loadingActiveQuest = false
         }
     }
 
     fun createActiveQuest(quest: Quest): Task<Void> {
-        loadingActiveQuest = true
+        Data.loadingActiveQuest = true
 
-        activeQuest = ActiveQuest(quest = quest)
-        return activeQuest!!.initialize().addOnSuccessListener {
-            loadingActiveQuest = false
+        Data.activeQuest = ActiveQuest(quest = quest)
+        return Data.activeQuest!!.initialize().addOnSuccessListener {
+            Data.loadingActiveQuest = false
         }
     }
 
@@ -1310,20 +1762,20 @@ open class Player(
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox").orderBy("sentTime", Query.Direction.DESCENDING)
 
-        inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory("Market"),InboxCategory(name = "Spam"))
+        Data.inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory("Market"),InboxCategory(name = "Spam"))
 
         return docRef.get().addOnSuccessListener {
-            inbox = it.toObjects(InboxMessage::class.java)
+            Data.inbox = it.toObjects(InboxMessage::class.java)
 
-            for (message in inbox) {
+            for (message in Data.inbox) {
                 when (message.status) {
-                    MessageStatus.New -> inboxCategories[0].messages
-                    MessageStatus.Read -> inboxCategories[1].messages
-                    MessageStatus.Sent -> inboxCategories[2].messages
-                    MessageStatus.Fight -> inboxCategories[3].messages
-                    MessageStatus.Market -> inboxCategories[4].messages
-                    MessageStatus.Spam -> inboxCategories[5].messages
-                    else -> inboxCategories[5].messages
+                    MessageStatus.New -> Data.inboxCategories[0].messages
+                    MessageStatus.Read -> Data.inboxCategories[1].messages
+                    MessageStatus.Sent -> Data.inboxCategories[2].messages
+                    MessageStatus.Fight -> Data.inboxCategories[3].messages
+                    MessageStatus.Market -> Data.inboxCategories[4].messages
+                    MessageStatus.Spam -> Data.inboxCategories[5].messages
+                    else -> Data.inboxCategories[5].messages
                 }.add(message)
             }
         }
@@ -1340,17 +1792,18 @@ open class Player(
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox")
 
-        inbox = mutableListOf(InboxMessage(ID = 1, priority = 2, sender = "Admin team", receiver = this.username, content = "Welcome, \n we're are really glad you chose us to entertain you!\n If you have any questions or you're interested in the upcoming updates and news going on follow us on social media as @cubeit_app or shown in the loading screen\n Most importantly have fun.\nYour CubeIt team"))
+        Data.inbox = mutableListOf(InboxMessage(ID = 1, priority = 2, sender = "Admin team", receiver = this.username, content = "Welcome, \n we're are really glad you chose us to entertain you!\n If you have any questions or you're interested in the upcoming updates and news going on follow us on social media as @cubeit_app or shown in the loading screen\n Most importantly have fun.\nYour CubeIt team"))
 
-        return inbox[0].initialize().continueWith {
-            docRef.document(inbox[0].ID.toString()).set(inbox[0])
+        return Data.inbox[0].initialize().continueWith {
+            docRef.document(Data.inbox[0].ID.toString()).set(Data.inbox[0])
         }
     }
 
-    fun writeInbox(receiver: String, message: InboxMessage = InboxMessage(sender = this.username, receiver = "MexxFM")): Task<Task<Void>> {
+    fun writeInbox(receiver: String, message: InboxMessage = InboxMessage(sender = this.username, receiver = "MexxFM"), fightResult: Boolean? = null): Task<Task<Void>> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(receiver).collection("Inbox")
 
+        message.fightResult = fightResult
         var temp: MutableList<InboxMessage>
         return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
             temp = it.toObjects(InboxMessage::class.java)
@@ -1389,20 +1842,32 @@ open class Player(
         }
     }
 
-    fun loadPlayer(): Task<QuerySnapshot> { // loads the player from Firebase
+    fun loadFaction(): Task<DocumentSnapshot>{
+        val db = FirebaseFirestore.getInstance()
+
+        return db.collection("factions").document(this.factionID.toString()).get().addOnSuccessListener {
+            val temp = it.toObject(Faction::class.java)
+            if(temp != null && temp.contains(this.username)){
+                this.faction = temp
+                this.factionName = temp.name
+            }
+        }
+    }
+
+    fun loadPlayer(): Task<QuerySnapshot> { // loads theData.player from Firebase
         val db = FirebaseFirestore.getInstance()
 
         val playerRef = db.collection("users").document(this.username)
 
         return playerRef.get().addOnSuccessListener { documentSnapshot ->
 
-            val loadedPlayer: LoadPlayer? = documentSnapshot.toObject(LoadPlayer()::class.java)
+            val loadedPlayer: Player? = documentSnapshot.toObject(Player()::class.java)
 
             if (loadedPlayer != null) {
 
                 this.username = loadedPlayer.username
                 this.level = loadedPlayer.level
-                this.charClassIndex = loadedPlayer.charClass
+                this.charClassIndex = loadedPlayer.charClassIndex
                 this.power = loadedPlayer.power
                 this.armor = loadedPlayer.armor
                 this.block = loadedPlayer.block
@@ -1451,7 +1916,7 @@ open class Player(
                     }
                 }
 
-                this.equip = arrayOfNulls(loadedPlayer.equip.size)
+                this.equip = arrayOfNulls<Item?>(loadedPlayer.equip.size).toMutableList()
                 for (i in 0 until loadedPlayer.equip.size) {
                     this.equip[i] = when (loadedPlayer.equip[i]?.type) {
                         "Wearable" -> (loadedPlayer.equip[i])!!.toWearable()
@@ -1480,11 +1945,18 @@ open class Player(
                 }
 
                 this.currentSurfaces = loadedPlayer.currentSurfaces
+                this.drawableExt = loadedPlayer.drawableExt
+                this.factionName = loadedPlayer.factionName
+                this.factionID = loadedPlayer.factionID
+                this.factionRole = loadedPlayer.factionRole
+                this.allies = loadedPlayer.allies
+                this.inviteBy = loadedPlayer.inviteBy
+                this.profilePicDrawableIn = loadedPlayer.profilePicDrawableIn
             }
         }.continueWithTask {
-            val docRef = db.collection("users").document(player.username).collection("ActiveQuest")
+            val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
             docRef.document("quest").get().addOnSuccessListener {
-                activeQuest = it.toObject(ActiveQuest::class.java)
+                Data.activeQuest = it.toObject(ActiveQuest::class.java)
             }
         }.continueWithTask {
             checkForQuest()
@@ -1532,12 +2004,12 @@ open class Player(
         }
 
         this.health = (health * this.charClass.hpRatio).toInt().toDouble()
-        this.armor = ((armor * this.charClass.armorRatio).safeDivider(this.level.toDouble() * 2)).toInt()
-        this.block = ((block * this.charClass.blockRatio).safeDivider(this.level.toDouble() * 2)).toInt().toDouble()
+        this.armor = min(((armor * this.charClass.armorRatio).safeDivider(this.level.toDouble() * 2)).toInt(), this.charClass.armorLimit)
+        this.block = min(((block * this.charClass.blockRatio).safeDivider(this.level.toDouble() * 2)).toInt().toDouble(), this.charClass.blockLimit)
         this.power = (power * this.charClass.dmgRatio).toInt()
         this.energy = (energy * this.charClass.staminaRatio).toInt()
         this.dmgOverTime = (dmgOverTime * this.charClass.dmgRatio).toInt()
-        this.lifeSteal = lifeSteal.safeDivider(this.level * 2)
+        this.lifeSteal = min(lifeSteal.safeDivider(this.level * 2), this.charClass.lifeStealLimit)
         this.adventureSpeed = adventureSpeed.safeDivider(this.level / 2)
         this.inventorySlots = inventorySlots
 
@@ -1555,12 +2027,6 @@ open class Player(
                 break
             }
             this.inventory[i] = tempInventory[i]
-        }
-
-        val neededXp = (player.level * 0.75 * (8 * (player.level * 0.8) * (3))).toInt()
-        if (player.experience >= neededXp) {
-            player.level++
-            player.experience -= neededXp
         }
 
         return ("HP: ${this.health}<br/>+(" +
@@ -1603,10 +2069,58 @@ open class Player(
                 ")<br/>Adventure speed: ${this.adventureSpeed}<br/>" +
                 "Inventory slots: ${this.inventorySlots}")
     }
+
+    fun compareMeWith(playerX: Player): String {
+        return (
+                "HP: "+if (this.health >= playerX.health) {
+                    "<font color='green'>${(this.health).toInt()}</font>"
+                } else {
+                    "<font color='red'>${(this.health).toInt()}</font>"
+                } + "<br/><br/>" +
+
+                        "Energy: "+if (this.energy >= playerX.energy) {
+                    "<font color='green'>${this.energy}</font>"
+                } else {
+                    "<font color='red'>${this.energy}</font>"
+                } + "<br/><br/>" +
+
+                        "Armor: "+if (this.armor >= playerX.armor) {
+                    "<font color='green'>${this.armor}</font>"
+                } else {
+                    "<font color='red'>${this.armor}</font>"
+                } + "<br/><br/>" +
+
+                        "Block: "+if (this.block >= playerX.block) {
+                    "<font color='green'>${this.block}</font>"
+                } else {
+                    "<font color='red'>${this.block}</font>"
+                } + "<br/><br/>" +
+
+                        "Power: "+if (this.power >= playerX.power) {
+                    "<font color='green'>${this.power}</font>"
+                } else {
+                    "<font color='red'>${this.power}</font>"
+                } + "<br/><br/>" +
+
+                        "DMG over time: "+if (this.dmgOverTime >= playerX.dmgOverTime) {
+                    "<font color='green'>${this.dmgOverTime}</font>"
+                } else {
+                    "<font color='red'>${this.dmgOverTime}</font>"
+                } + "<br/>" +
+
+                        "Lifesteal: "+if (this.lifeSteal >= playerX.lifeSteal) {
+                    "<font color='green'>${this.lifeSteal}</font>"
+                } else {
+                    "<font color='red'>${this.lifeSteal}</font>"
+                } + "<br/>" +
+
+                        "Adventure speed: ${this.adventureSpeed}<br/>" +
+                        "Inventory slots: ${this.inventorySlots}")
+    }
 }
 
 class ActiveQuest(
-        var quest: Quest = Quest().generate()
+        var quest: Quest = Quest()
 ) {
     @Exclude private var df: Calendar = Calendar.getInstance()
     lateinit var startTime: Date
@@ -1614,9 +2128,9 @@ class ActiveQuest(
     var secondsLeft: Int = 0
     var completed: Boolean = false
 
-    @Exclude fun initialize(): Task<Void> {
+    fun initialize(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("users").document(player.username).collection("ActiveQuest")
+        val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
         return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
@@ -1635,8 +2149,16 @@ class ActiveQuest(
 
     fun delete(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
-        activeQuest = null
-        return db.collection("users").document(player.username).collection("ActiveQuest").document("quest").delete()
+        Data.activeQuest = null
+        return db.collection("users").document(Data.player.username).collection("ActiveQuest").document("quest").delete()
+    }
+
+    @Exclude fun getLength(): String{
+        return when{
+            this.secondsLeft <= 0 -> "00:00"
+            this.secondsLeft.toDouble()%60 <= 9 -> "${this.secondsLeft/60}:0${this.secondsLeft%60}"
+            else -> "${this.secondsLeft/60}:${this.secondsLeft%60}"
+        }
     }
 }
 
@@ -1645,6 +2167,7 @@ class DamageOverTime(
         var dmg: Double = 0.0,
         var type: Int = 0
 ) : Serializable {
+
     override fun equals(other: Any?): Boolean {
         return super.equals(other)
     }
@@ -1654,6 +2177,10 @@ class DamageOverTime(
         result = 31 * result + dmg.hashCode()
         result = 31 * result + type
         return result
+    }
+
+    fun clone(): DamageOverTime{
+        return DamageOverTime(rounds, dmg, type)
     }
 }
 
@@ -1674,12 +2201,20 @@ class Spell(
 ) : Serializable {
     val drawable: Int
         @Exclude get() = drawableStorage[inDrawable]!!
+    var weightRatio: Double = 0.0
+        get(){
+            return if(this.energy == 0){
+                0.01
+            }else{
+                (this.power + (this.dmgOverTime.dmg * this.dmgOverTime.rounds/2)) / this.energy
+            }
+        }
 
     @Exclude fun getStats(): String {
-        var text = "\n${this.name}\nlevel: ${this.level}\n ${this.description}\nstamina: ${this.energy}\npower: ${(this.power * player.power.toDouble() / 4).toInt()}"
+        var text = "\n${this.name}\nlevel: ${this.level}\n ${this.description}\nstamina: ${this.energy}\npower: ${(this.power * Data.player.power.toDouble() / 4).toInt()}"
         if (this.stun != 0) text += "\nstun: +${this.stun}%"
         if (this.block != 1.0) text += "\nblocks ${this.block * 100}%"
-        if (this.dmgOverTime.rounds != 0) text += "\ndamage over time: (\nrounds: ${this.dmgOverTime.rounds}\ndamage: ${(this.dmgOverTime.dmg * player.power / 4).toInt()})"
+        if (this.dmgOverTime.rounds != 0) text += "\ndamage over time: (\nrounds: ${this.dmgOverTime.rounds}\ndamage: ${(this.dmgOverTime.dmg * Data.player.power / 4).toInt()})"
         return text
     }
 
@@ -1706,33 +2241,41 @@ class Spell(
 }
 
 class CharClass(
-        var ID: Int = 1,
-        var dmgRatio: Double = 1.0,
-        var hpRatio: Double = 1.0,
-        var staminaRatio: Double = 1.0,
-        var blockRatio: Double = 0.0,
-        var armorRatio: Double = 0.0,
-        var lifeSteal: Boolean = false,
-        var inDrawable: String = "00200",
-        var itemListIndex: Int = ID,
-        var spellListIndex: Int = ID,
-        var name: String = "",
-        var description: String = "",
-        var description2: String = "",
-        var itemlistUniversalIndex: Int = 0,
-        var spellListUniversalIndex: Int = 0
-
 ) : Serializable {
+    var ID: Int = 1
+    var dmgRatio: Double = 1.0
+    var hpRatio: Double = 1.0
+    var staminaRatio: Double = 1.0
+    var blockRatio: Double = 0.0
+    var armorRatio: Double = 0.0
+    var lifeSteal: Boolean = false
+    var inDrawable: String = "00200"
+    var itemListIndex: Int = ID
+    var spellListIndex: Int = ID
+    var name: String = ""
+    var description: String = ""
+    var description2: String = ""
+    var itemlistUniversalIndex: Int = 0
+    var spellListUniversalIndex: Int = 0
+    var VIP: Boolean = false
+    var xpRatio: Double = 1.0                            //lower = better
+        get(){
+            return if(VIP) 0.75 else 1.0
+        }
+    var blockLimit = 50.0
+    var lifeStealLimit = 50
+    var armorLimit = 50
+
     val drawable
         @Exclude get() = drawableStorage[inDrawable]!!
     val itemList
-        @Exclude get() = itemClasses[itemListIndex].items
+        @Exclude get() = Data.itemClasses[itemListIndex].items
     val spellList
-        @Exclude get() = spellClasses[spellListIndex].spells
+        @Exclude get() = Data.spellClasses[spellListIndex].spells
     val itemListUniversal
-        @Exclude get() = itemClasses[itemlistUniversalIndex].items
+        @Exclude get() = Data.itemClasses[itemlistUniversalIndex].items
     val spellListUniversal
-        @Exclude get() = spellClasses[spellListUniversalIndex].spells
+        @Exclude get() = Data.spellClasses[spellListUniversalIndex].spells
 
     override fun equals(other: Any?): Boolean {
         return super.equals(other)
@@ -1807,14 +2350,14 @@ open class Item(
 
     @Exclude fun getStats(): String {
         var textView = "${this.name}<br/>price: ${this.price}<br/>${when (this.quality) {
-            0 -> "<font color=#535353>Poor</font>"
-            1 -> "<font color=#FFFFFF>Common</font>"
-            2 -> "<font color=#8DD837>Uncommon</font>"
-            3 -> "<font color=#5DBDE9>Rare</font>"
-            4 -> "<font color=#058DCA>Very rare</font>"
-            6 -> "<font color=#9136A2>Epic gamer item</font>"
-            8 -> "<font color=#FF9800>Legendary</font>"
-            11 -> "<font color=#FFE500>Heirloom</font>"
+            GenericDB.Balance.itemQualityGenImpact["0"]!! -> "<font color=#535353>Poor</font>"
+            GenericDB.Balance.itemQualityGenImpact["1"]!! -> "<font color=#FFFFFF>Common</font>"
+            GenericDB.Balance.itemQualityGenImpact["2"]!! -> "<font color=#8DD837>Uncommon</font>"
+            GenericDB.Balance.itemQualityGenImpact["3"]!! -> "<font color=#5DBDE9>Rare</font>"
+            GenericDB.Balance.itemQualityGenImpact["4"]!! -> "<font color=#058DCA>Very rare</font>"
+            GenericDB.Balance.itemQualityGenImpact["5"]!! -> "<font color=#9136A2>Epic gamer item</font>"
+            GenericDB.Balance.itemQualityGenImpact["6"]!! -> "<font color=#FF9800>Legendary</font>"
+            GenericDB.Balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -1846,14 +2389,14 @@ open class Item(
 
     @Exclude fun getStatsCompare(): String {
         var textView = "${this.name}<br/>price: ${this.price}<br/>${when (this.quality) {
-            0 -> "<font color=#535353>Poor</font>"
-            1 -> "<font color=#FFFFFF>Common</font>"
-            2 -> "<font color=#8DD837>Uncommon</font>"
-            3 -> "<font color=#5DBDE9>Rare</font>"
-            4 -> "<font color=#058DCA>Very rare</font>"
-            6 -> "<font color=#9136A2>Epic gamer item</font>"
-            8 -> "<font color=#FF9800>Legendary</font>"
-            11 -> "<font color=#FFE500>Heirloom</font>"
+            GenericDB.Balance.itemQualityGenImpact["0"]!! -> "<font color=#535353>Poor</font>"
+            GenericDB.Balance.itemQualityGenImpact["1"]!! -> "<font color=#FFFFFF>Common</font>"
+            GenericDB.Balance.itemQualityGenImpact["2"]!! -> "<font color=#8DD837>Uncommon</font>"
+            GenericDB.Balance.itemQualityGenImpact["3"]!! -> "<font color=#5DBDE9>Rare</font>"
+            GenericDB.Balance.itemQualityGenImpact["4"]!! -> "<font color=#058DCA>Very rare</font>"
+            GenericDB.Balance.itemQualityGenImpact["5"]!! -> "<font color=#9136A2>Epic gamer item</font>"
+            GenericDB.Balance.itemQualityGenImpact["6"]!! -> "<font color=#FF9800>Legendary</font>"
+            GenericDB.Balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -1872,10 +2415,10 @@ open class Item(
         var tempItem: Item? = null
         when (this) {
             is Runes -> {
-                tempItem = player.backpackRunes[this.slot - 10]
+                tempItem = Data.player.backpackRunes[this.slot - 10]
             }
             is Wearable, is Weapon -> {
-                tempItem = player.equip[this.slot]
+                tempItem = Data.player.equip[this.slot]
             }
         }
 
@@ -1931,14 +2474,14 @@ open class Item(
 
     fun getBackground(): Int{
         return when(this.quality){
-            0 -> R.drawable.emptyslot_poor
-            1 -> R.drawable.emptyslot_common
-            2 -> R.drawable.emptyslot_uncommon
-            3 -> R.drawable.emptyslot_rare
-            4 -> R.drawable.emptyslot_very_rare
-            6 -> R.drawable.emptyslot_epic_gamer_item
-            8 -> R.drawable.emptyslot_legendary
-            11 -> R.drawable.emptyslot_heirloom
+            GenericDB.Balance.itemQualityGenImpact["0"]!! -> R.drawable.emptyslot_poor
+            GenericDB.Balance.itemQualityGenImpact["1"]!! -> R.drawable.emptyslot_common
+            GenericDB.Balance.itemQualityGenImpact["2"]!! -> R.drawable.emptyslot_uncommon
+            GenericDB.Balance.itemQualityGenImpact["3"]!! -> R.drawable.emptyslot_rare
+            GenericDB.Balance.itemQualityGenImpact["4"]!! -> R.drawable.emptyslot_very_rare
+            GenericDB.Balance.itemQualityGenImpact["5"]!! -> R.drawable.emptyslot_epic_gamer_item
+            GenericDB.Balance.itemQualityGenImpact["6"]!! -> R.drawable.emptyslot_legendary
+            GenericDB.Balance.itemQualityGenImpact["7"]!! -> R.drawable.emptyslot_heirloom
             else -> R.drawable.emptyslot
         }
     }
@@ -1988,126 +2531,6 @@ open class Item(
     }
 }
 
-fun returnItem(player: Player): MutableList<Item?> {
-    val allItems: MutableList<Item?> = (player.charClass.itemList.asSequence().plus(player.charClass.itemListUniversal.asSequence())).toMutableList()
-    val allowedItems: MutableList<Item?> = mutableListOf()
-
-    allItems.sortWith(compareBy { it!!.levelRq })                     //pro zjednodušení cyklu se půjde od nejbližšího konce a ukončí se na druhém limitu
-
-    if (abs(allItems.last()!!.levelRq - player.level) <= abs(allItems[0]!!.levelRq - player.level)) {
-        for (item in allItems.lastIndex downTo 0) {
-            if (player.level in allItems[item]!!.levelRq - 100..allItems[item]!!.levelRq + 101) {             //rozptyl je -10 a +10
-                allowedItems.add(allItems[item])
-            } else {
-                if (allItems[item]!!.levelRq + 10 < player.level) {
-                    break
-                }
-            }
-        }
-    } else {
-        for (item in 0..allItems.lastIndex) {
-            if (player.level in allItems[item]!!.levelRq - 100..allItems[item]!!.levelRq + 101) {
-                allowedItems.add(allItems[item])
-            } else {
-                if (allItems[item]!!.levelRq - 10 > player.level) {
-                    break
-                }
-            }
-        }
-    }
-
-    return allowedItems
-}
-
-fun generateItem(playerG: Player, inQuality: Int? = null): Item? {
-
-    val tempArray: MutableList<Item?> = returnItem(playerG)
-    val itemReturned = tempArray[nextInt(0, tempArray.size)]
-    val itemTemp: Item? = when (itemReturned?.type) {
-        "Weapon" -> Weapon(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
-        "Wearable" -> Wearable(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
-        "Runes" -> Runes(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
-        else -> Item(inName = itemReturned!!.name, inType = itemReturned.type, inCharClass = itemReturned.charClass, inDescription = itemReturned.description, inLevelRq = itemReturned.levelRq, inDrawable = getKey(drawableStorage, itemReturned.drawable)!!, inSlot = itemReturned.slot)
-    }
-    itemTemp!!.levelRq = nextInt(playerG.level - 4, playerG.level + 1)
-    if (inQuality == null) {
-        itemTemp.quality = when (nextInt(0, 10001)) {                   //quality of an item by percentage
-            in 0 until 3903 -> 0        //39,03%
-            in 3904 until 6604 -> 1     //27%
-            in 6605 until 8605 -> 2     //20%
-            in 8606 until 9447 -> 3     //8,41%
-            in 9448 until 9948 -> 4     //5%
-            in 9949 until 9989 -> 6     //0,5%
-            in 9990 until 9998 -> 8     //0,08%
-            in 9999 until 10000 -> 11    //0,01%
-            else -> 0
-        }
-    } else {
-        itemTemp.quality = inQuality
-    }
-
-    if (itemTemp.levelRq < 1) itemTemp.levelRq = 1
-    var points = nextInt(itemTemp.levelRq * (itemTemp.quality + 1), itemTemp.levelRq * 2 * (itemTemp.quality + 1))
-    var pointsTemp: Int
-    itemTemp.price = points
-    val numberOfStats = nextInt(1, 9)
-    for (i in 0..numberOfStats) {
-        pointsTemp = nextInt(points / (numberOfStats * 2), points / numberOfStats + 1)
-        when (itemTemp) {
-            is Weapon -> {
-                when (nextInt(0, if (playerG.charClass.lifeSteal) 4 else 3)) {
-                    0 -> {
-                        itemTemp.power += pointsTemp
-                    }
-                    1 -> {
-                        itemTemp.block += pointsTemp / 10
-                    }
-                    2 -> {
-                        itemTemp.dmgOverTime += pointsTemp
-                    }
-                    3 -> {
-                        itemTemp.lifeSteal += pointsTemp
-                    }
-                }
-            }
-            is Wearable -> {
-                when (nextInt(0, 4)) {
-                    0 -> {
-                        itemTemp.armor += pointsTemp
-                    }
-                    1 -> {
-                        itemTemp.block += pointsTemp / 2
-                    }
-                    2 -> {
-                        itemTemp.health += pointsTemp * 10
-                    }
-                    3 -> {
-                        itemTemp.energy += pointsTemp / 2
-                    }
-                }
-            }
-            is Runes -> {
-                when (nextInt(0, 4)) {
-                    0 -> {
-                        itemTemp.armor += pointsTemp / 2
-                    }
-                    1 -> {
-                        itemTemp.health += pointsTemp * 10
-                    }
-                    2 -> {
-                        itemTemp.adventureSpeed += (pointsTemp / 7.5).toInt()
-                    }
-                    3 -> {
-                        itemTemp.inventorySlots += pointsTemp / 10
-                    }
-                }
-            }
-        }
-        points -= pointsTemp
-    }
-    return itemTemp
-}
-
 data class Reward(
         var inType: Int? = null
 ) : Serializable {
@@ -2125,17 +2548,17 @@ data class Reward(
             }
         }
 
-    @Exclude fun generate(inPlayer: Player = player): Reward {
+    @Exclude fun generate(inPlayer: Player = Data.player): Reward {
         if (this.type == null) {
-            this.type = when (nextInt(0, 10001)) {                   //quality of an item by percentage
+            this.type = when (nextInt(0, GenericDB.Balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
                 in 0 until 3903 -> 0        //39,03%
-                in 3904 until 6604 -> 1     //27%
-                in 6605 until 8605 -> 2     //20%
-                in 8606 until 9447 -> 3     //8,41%
-                in 9448 until 9948 -> 4     //5%
-                in 9949 until 9989 -> 5     //0,5%
-                in 9990 until 9998 -> 6     //0,08%
-                in 9999 until 10000 -> 7    //0,01%
+                in GenericDB.Balance.itemQualityPerc["0"]!!+1 until GenericDB.Balance.itemQualityPerc["1"]!! -> 1     //27%
+                in GenericDB.Balance.itemQualityPerc["1"]!!+1 until GenericDB.Balance.itemQualityPerc["2"]!!-> 2     //20%
+                in GenericDB.Balance.itemQualityPerc["2"]!!+1 until GenericDB.Balance.itemQualityPerc["3"]!!-> 3     //8,41%
+                in GenericDB.Balance.itemQualityPerc["3"]!!+1 until GenericDB.Balance.itemQualityPerc["4"]!!-> 4     //5%
+                in GenericDB.Balance.itemQualityPerc["4"]!!+1 until GenericDB.Balance.itemQualityPerc["5"]!!-> 5     //0,5%
+                in GenericDB.Balance.itemQualityPerc["5"]!!+1 until GenericDB.Balance.itemQualityPerc["6"]!!-> 6     //0,08%
+                in GenericDB.Balance.itemQualityPerc["6"]!!+1 until GenericDB.Balance.itemQualityPerc["7"]!!-> 7    //0,01%
                 else -> 0
             }
         }
@@ -2160,20 +2583,19 @@ data class Reward(
             }
         }
         if (nextInt(0, 100) <= ((this.type!! + 1) * 10)) {
-            item = generateItem(inPlayer, this.type)
+            item = GameFlow.generateItem(inPlayer, this.type)
         }
-        coins = nextInt((5 * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), 5 * ((inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
-        experience = nextInt((9 * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), (8 * (inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
+        coins = nextInt((GenericDB.Balance.rewardCoinsBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), GenericDB.Balance.rewardCoinsTop * ((inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
+        experience = nextInt((GenericDB.Balance.rewardXpBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), (GenericDB.Balance.rewardXpTop * (inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
 
         return this
     }
 
-    @Exclude fun receive() {
-        player.money += this.coins
-        player.inventory[player.inventory.indexOf(null)] = this.item
-        player.experience += this.experience
-
-        player.syncStats()
+    @Exclude fun receive(menuFragment: Fragment_Menu_Bar? = null) {
+        Data.player.money += this.coins
+        Data.player.inventory[Data.player.inventory.indexOf(null)] = this.item
+        Data.player.experience += this.experience
+        menuFragment?.refresh()
     }
 
     @Exclude fun getStats(): String {
@@ -2349,7 +2771,7 @@ class StorySlide(
         var images: MutableList<StoryImage> = mutableListOf(),
         var difficulty: Int = 0
 ) : Serializable {
-    var enemy: NPC? = NPC(difficulty = difficulty)
+    var enemy: NPC = NPC()
 
     override fun equals(other: Any?): Boolean {
         return super.equals(other)
@@ -2361,7 +2783,7 @@ class StorySlide(
         result = 31 * result + textContent.hashCode()
         result = 31 * result + images.hashCode()
         result = 31 * result + difficulty
-        result = 31 * result + (enemy?.hashCode() ?: 0)
+        result = 31 * result + (enemy.hashCode())
         return result
     }
 
@@ -2428,7 +2850,7 @@ class MarketOffer(
         val db = FirebaseFirestore.getInstance()
         val df: Calendar = Calendar.getInstance()
 
-        val docRef = db.collection("users").document(player.username)
+        val docRef = db.collection("users").document(Data.player.username)
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
         return docRef.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
@@ -2451,17 +2873,17 @@ class MarketOffer(
         val db = FirebaseFirestore.getInstance()
         val rewardBuyer = Reward()
         val rewardSeller = Reward()
-        player.money -= this.priceCoins
-        player.cubeCoins -= this.priceCubeCoins
-        player.inventory[player.inventory.indexOf(null)] = this.item
+        Data.player.money -= this.priceCoins
+        Data.player.cubeCoins -= this.priceCubeCoins
+        Data.player.inventory[Data.player.inventory.indexOf(null)] = this.item
 
         rewardBuyer.item = this.item
 
         rewardSeller.coins = this.priceCoins
         rewardSeller.cubeCoins = this.priceCubeCoins
 
-        player.writeInbox(this.seller, InboxMessage(status = MessageStatus.Market, receiver = this.seller, sender = this.buyer!!, subject = "Your item ${this.item!!.name} has been bought", content = "${this.buyer} bought your market offer ${this.item!!.name} for ${this.priceCoins} ${if(priceCubeCoins != 0) " and " + this.priceCubeCoins.toString() else ""}.", reward = rewardSeller))
-        //player.writeInbox(this.buyer!!, InboxMessage(status = MessageStatus.Market, receiver = this.buyer!!, sender = this.seller, subject = "You bought an item!", content = "You bought ${this.seller}'s item for ${this.priceCoins} ${if(priceCubeCoins != 0) " and " + this.priceCubeCoins.toString() else ""}.", reward = rewardBuyer))
+        Data.player.writeInbox(this.seller, InboxMessage(status = MessageStatus.Market, receiver = this.seller, sender = this.buyer!!, subject = "Your item ${this.item!!.name} has been bought", content = "${this.buyer} bought your market offer ${this.item!!.name} for ${this.priceCoins} ${if(priceCubeCoins != 0) " and " + this.priceCubeCoins.toString() else ""}.", reward = rewardSeller))
+        //Data.player.writeInbox(this.buyer!!, InboxMessage(status = MessageStatus.Market, receiver = this.buyer!!, sender = this.seller, subject = "You bought an item!", content = "You bought ${this.seller}'s item for ${this.priceCoins} ${if(priceCubeCoins != 0) " and " + this.priceCubeCoins.toString() else ""}.", reward = rewardBuyer))
 
         return db.collection("market").document(this.id.toString()).delete()
     }
@@ -2490,37 +2912,73 @@ class MarketOffer(
             else -> "unspecified"
         }}<br/>item level: ${item?.levelRq}<br/>specification: " +
                 when(item?.slot){
-                   0 -> "Primary weapon"
-                   1 -> "Secondary weapon"
-                   2 -> "Universal 2"
-                   3 -> "Universal 1"
-                   4 -> "Belt"
-                   5 -> "Overall"
-                   6 -> "Boots"
-                   7 -> "Trousers"
-                   8 -> "Chestplate"
-                   9 -> "Hat"
-                   else -> "All types"
-        }
+                    0 -> "Primary weapon"
+                    1 -> "Secondary weapon"
+                    2 -> "Universal 2"
+                    3 -> "Universal 1"
+                    4 -> "Belt"
+                    5 -> "Overall"
+                    6 -> "Boots"
+                    7 -> "Trousers"
+                    8 -> "Chestplate"
+                    9 -> "Hat"
+                    else -> "All types"
+                }
     }
     @Exclude fun getSpecStatsOffer(): String{
         return "Coins: ${this.priceCoins}<br/>CubeCoins: ${this.priceCubeCoins}"
     }
 }
 
-class NPC(
-        var ID: String = "",
-        val inDrawable: String = "00000",
-        var name: String = "",
-        var difficulty: Int = 0,
-        var description: String = "",
-        var levelAppearance: Int = 0,
-        var charClassIndex: Int = 1
+class FightUsedSpell(
+        var source: String = ""
+        ,var spell: Spell = Spell()
+        ,var dmgDealt: Int = 0
+)
+
+class FightLog(
+        var winnerName: String = "",
+        var looserName: String = "",
+        var spellFlow: MutableList<FightUsedSpell> = mutableListOf(),
+        var reward: Reward = Reward(),
+        var fame: Int = 0,
+        var surrenderRound: Int? = null
+){
+    var id: Int = 0
+
+    init {
+        init()
+    }
+
+    private fun init(){
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("FightLog")
+        var temp: MutableList<FightLog>
+        docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            temp = it.toObjects(FightLog::class.java)
+            this.id = if (!temp.isNullOrEmpty()) {
+                temp[0].id + 1
+            } else 1
+        }.continueWithTask {
+            db.collection("FightLog").document(this.id.toString()).set(this)
+        }
+    }
+}
+
+open class NPC(
+        open var ID: String = "1",
+        open var inDrawable: String = "00000",
+        open var inBgDrawable: String = "00000",
+        open var name: String = "",
+        open var description: String = "",
+        open var levelAppearance: Int = 0,
+        open var charClassIndex: Int = 1,
+        open var difficulty: Int? = null
 ) : Serializable {
     val drawable: Int
         @Exclude get() = drawableStorage[inDrawable]!!
     var level: Int = 0
-    var chosenSpellsDefense: MutableList<Spell?> = mutableListOf()
+    var chosenSpellsDefense: MutableList<Spell?> = arrayOfNulls<Spell>(20).toMutableList()
     var power: Int = 40
     var armor: Int = 0
     var block: Double = 0.0
@@ -2529,56 +2987,178 @@ class NPC(
     var health: Double = 175.0
     var energy: Int = 100
     val charClass: CharClass
-        @Exclude get() = charClasses[charClassIndex]
+        @Exclude get() = Data.charClasses[charClassIndex]
+    var allowedSpells = listOf<Spell>()
+    var bgDrawable: Int = 0
+        @Exclude get() = drawableStorage[inBgDrawable]!!
 
-    @Exclude fun generate(): NPC {
-        npcs.sortWith(compareBy { it.levelAppearance })       //pro zjednodušení cyklu se půjde od nejbližšího konce a ukončí se na druhém limitu
-        val allowedNPCS: MutableList<NPC> = mutableListOf()
+    object Memory{
+        var defCounter = 0
+        var playerSpells = mutableListOf<Spell>()
+        var nextSpell = Spell()
+        var savingCounter = 0
+    }
 
-        if (abs(npcs.last().levelAppearance - level) <= abs(npcs[0].levelAppearance - level)) {
-            for (npc in npcs.lastIndex downTo 0) {
-                if (player.level in npcs[npc].levelAppearance - 10..npcs[npc].levelAppearance + 11) {
-                    allowedNPCS.add(npcs[npc])
-                } else {
-                    if (npcs[npc].levelAppearance + 10 < player.level) {
-                        break
-                    }
-                }
-            }
-        } else {
-            for (npc in 0..npcs.lastIndex) {
-                if (player.level in npcs[npc].levelAppearance - 10..npcs[npc].levelAppearance + 11) {
-                    allowedNPCS.add(npcs[npc])
-                } else {
-                    if (npcs[npc].levelAppearance - 10 > player.level) {
-                        break
-                    }
-                }
-            }
+    @Exclude fun generate(difficultyX: Int? = null, playerX: Player): NPC {
+        this.difficulty = difficultyX ?: when (nextInt(0, GenericDB.Balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
+            in 0 until GenericDB.Balance.itemQualityPerc["0"]!! -> 0        //39,03%
+            in GenericDB.Balance.itemQualityPerc["0"]!!+1 until GenericDB.Balance.itemQualityPerc["1"]!! -> 1     //27%
+            in GenericDB.Balance.itemQualityPerc["1"]!!+1 until GenericDB.Balance.itemQualityPerc["2"]!! -> 2     //20%
+            in GenericDB.Balance.itemQualityPerc["2"]!!+1 until GenericDB.Balance.itemQualityPerc["3"]!! -> 3     //8,41%
+            in GenericDB.Balance.itemQualityPerc["3"]!!+1 until GenericDB.Balance.itemQualityPerc["4"]!! -> 4     //5%
+            in GenericDB.Balance.itemQualityPerc["4"]!!+1 until GenericDB.Balance.itemQualityPerc["5"]!! -> 5     //0,5%
+            in GenericDB.Balance.itemQualityPerc["5"]!!+1 until GenericDB.Balance.itemQualityPerc["6"]!! -> 6     //0,08%
+            in GenericDB.Balance.itemQualityPerc["6"]!!+1 until GenericDB.Balance.itemQualityPerc["7"]!! -> 7    //0,01%
+            else -> 0
         }
 
-        val chosenNPC = allowedNPCS[nextInt(0, allowedNPCS.lastIndex)]
-        chosenNPC.level = nextInt(if (levelAppearance <= 3) 1 else levelAppearance - 3, levelAppearance + 2)
-
-
-        val balanceRate: Double = when (difficulty) {
-            0 -> 0.4
-            1 -> 0.45
-            2 -> 0.5
-            3 -> 0.55
-            4 -> 0.7
-            5 -> 0.8
-            6 -> 1.0
-            7 -> 1.25
-            else -> {
-                0.4
-            }
+        val allowedNPCs: MutableList<NPC> = mutableListOf()
+        allowedNPCs.addAll(Data.npcs.values)
+        //allowedNPCs.filter { it.levelAppearance < Data.player.level +10 && it.levelAppearance > Data.player.level -10 }         //TODO
+        val chosenNPC = if(Data.npcs.values.isNullOrEmpty()){
+            NPC()
+        }else {
+            allowedNPCs[nextInt(0, allowedNPCs.size)]
         }
+        chosenNPC.level = nextInt(if (playerX.level <= 3) 1 else playerX.level - 3, playerX.level + 1)
+        this.charClassIndex = chosenNPC.charClassIndex
+        this.description = chosenNPC.description
+        this.inDrawable = chosenNPC.inDrawable
+        this.inBgDrawable = chosenNPC.inBgDrawable
+        this.levelAppearance = chosenNPC.levelAppearance
+
+        val tempPlayer = chosenNPC.toPlayer()
+        tempPlayer.equip = mutableListOf(
+                GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 0, itemType = "Weapon")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 1, itemType = "Weapon")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 2, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 3, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 4, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 5, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 6, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 7, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 8, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 9, itemType = "Wearable")
+        )
+
+        tempPlayer.backpackRunes = mutableListOf(
+                GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 10, itemType = "Runes")!!.toRune()
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 11, itemType = "Runes")!!.toRune()
+        )
+        tempPlayer.syncStats()
+        this.applyStats(tempPlayer)
+
+        this.allowedSpells = this.charClass.spellList.filter{it.level <= this@NPC.level}.toList().sortedByDescending { it.weightRatio }
 
         return this
     }
 
-    fun toPlayer(): Player {                 //temporary solution
+    fun init(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        var temp: MutableList<NPC>
+
+        return db.collection("Data.npcs").orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            temp = it.toObjects(NPC::class.java)
+            this.ID = (if (!temp.isNullOrEmpty()) {
+                temp[0].ID + 1
+            } else 1).toString()
+        }.continueWithTask {
+            db.collection("Data.npcs").document(this.ID).set(this)
+        }
+    }
+
+    fun calcSpell(playerFight: FightSystemNPC.FightPlayer, playerSpell: Spell, round: Int, playerStun: Int, energyX: Int){
+
+        val calcAvg = mutableListOf<Int>()
+        for(i in playerFight.playerFight.charClass.spellList){
+            calcAvg.add(i.energy)
+        }
+        val avgEnergy = calcAvg.average() * 1.25
+        val stunSpells = this.allowedSpells.asSequence().filter { it.stun > 0 }.toList().sortedByDescending{ it.stun }
+        val availableSpells: List<Spell>
+
+        val playerSpells: MutableList<Spell> = mutableListOf()
+        playerSpells.addAll( playerFight.playerFight.chosenSpellsAttack.filterNotNull().toMutableList() )
+        playerSpells.add( playerFight.playerFight.learnedSpells[0]!! )
+        playerSpells.add( playerFight.playerFight.learnedSpells[1]!! )
+        playerSpells.sortByDescending { it.energy }
+
+        Memory.nextSpell = if(abs(100 - playerStun) <= (stunSpells[0].stun * 1.2) && abs(100 - playerStun) >= (stunSpells[0].stun * 0.8)){
+            stunSpells[if(stunSpells.size < 4){
+                0
+            }else {
+                nextInt(0, 2)
+            }]
+        }else {
+            this.allowedSpells[if(this.allowedSpells.size < 4){
+                0
+            }else {
+                nextInt(0, 3)
+            }]
+        }
+
+        if(Memory.savingCounter >= 4){
+            availableSpells = this.allowedSpells.asSequence().filter { it.energy <= energyX }.toList().sortedByDescending { it.weightRatio }
+            this.chosenSpellsDefense[round] = availableSpells[if(availableSpells.size < 4){
+                0
+            }else {
+                nextInt(0, 2)
+            }]
+            Memory.savingCounter = 0
+            Memory.playerSpells.add(playerSpell)
+
+            Log.d(round.toString(), "I chose "+chosenSpellsDefense[round]?.getStats())
+            return
+        }
+
+        if( (playerFight.energy >= (avgEnergy * 0.9) && playerFight.energy <= (avgEnergy * 1.1)) || (playerSpells.indexOf(playerSpell) <= 1 && playerFight.energy >= playerSpell.energy) ){
+
+            if( Memory.defCounter >= 2 && !(playerSpells.indexOf(playerSpell) <= 1 && playerFight.energy >= playerSpell.energy) ){
+                Memory.defCounter = nextInt(1, 2)
+
+                this.chosenSpellsDefense[round] = if(energyX >= Memory.nextSpell.energy){
+                    Memory.savingCounter = 0
+                    Memory.nextSpell
+                }else {
+                    Memory.savingCounter++
+                    this.charClass.spellList[0]
+                }
+
+            }else {
+                Memory.defCounter++
+                Memory.savingCounter++
+                this.chosenSpellsDefense[round] = charClass.spellList[1]
+            }
+
+        }else {
+            Memory.defCounter = 0
+            this.chosenSpellsDefense[round] = if(energyX >= Memory.nextSpell.energy){
+                Memory.savingCounter = 0
+                Memory.nextSpell
+            }else {
+                Memory.savingCounter++
+                this.charClass.spellList[0]
+            }
+        }
+        Memory.playerSpells.add(playerSpell)
+        Log.d(round.toString(), "I chose "+chosenSpellsDefense[round]?.getStats())
+    }
+
+    fun applyStats(playerX: Player){
+        val balanceRate: Double = GenericDB.Balance.NPCRate[this.difficulty.toString()]!!
+        if(playerX.level <= 4)balanceRate * 0.01
+
+        level = playerX.level
+        power = (playerX.power * balanceRate).toInt()
+        armor = (playerX.armor * balanceRate).toInt()
+        block = playerX.block * balanceRate
+        dmgOverTime = (playerX.dmgOverTime * balanceRate).toInt()
+        lifeSteal = (playerX.lifeSteal * balanceRate).toInt()
+        health = playerX.health * balanceRate
+        energy = (playerX.energy * balanceRate).toInt()
+    }
+
+    fun toPlayer(): Player {                 //probably temporary solution because of the fightsystem
         val npcPlayer = Player(this.charClassIndex, this.name, this.level)
 
         npcPlayer.drawableExt = this.drawable
@@ -2595,26 +3175,6 @@ class NPC(
         npcPlayer.energy = this.energy
 
         return npcPlayer
-    }
-
-    override fun hashCode(): Int {
-        var result = ID.hashCode()
-        result = 31 * result + inDrawable.hashCode()
-        result = 31 * result + name.hashCode()
-        result = 31 * result + difficulty
-        result = 31 * result + description.hashCode()
-        result = 31 * result + levelAppearance
-        result = 31 * result + charClassIndex
-        result = 31 * result + level
-        result = 31 * result + chosenSpellsDefense.hashCode()
-        result = 31 * result + power
-        result = 31 * result + armor
-        result = 31 * result + block.hashCode()
-        result = 31 * result + dmgOverTime
-        result = 31 * result + lifeSteal
-        result = 31 * result + health.hashCode()
-        result = 31 * result + energy
-        return result
     }
 
     override fun equals(other: Any?): Boolean {
@@ -2642,6 +3202,70 @@ class NPC(
 
         return true
     }
+
+    override fun hashCode(): Int {
+        var result = ID.hashCode()
+        result = 31 * result + inDrawable.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + levelAppearance
+        result = 31 * result + charClassIndex
+        result = 31 * result + (difficulty ?: 0)
+        result = 31 * result + level
+        result = 31 * result + chosenSpellsDefense.hashCode()
+        result = 31 * result + power
+        result = 31 * result + armor
+        result = 31 * result + block.hashCode()
+        result = 31 * result + dmgOverTime
+        result = 31 * result + lifeSteal
+        result = 31 * result + health.hashCode()
+        result = 31 * result + energy
+        return result
+    }
+}
+
+class Boss(
+        override var ID: String = "",
+        override var inDrawable: String = "00000",
+        override var inBgDrawable: String = "00000",
+        override var name: String = "",
+        override var description: String = "",
+        override var levelAppearance: Int = 0,
+        override var charClassIndex: Int = 1,
+        override var difficulty: Int? = 7,
+        var surface: Int = 0
+): NPC(ID, inDrawable, inBgDrawable, name, description, levelAppearance, charClassIndex, difficulty){
+    var captured: Date = java.util.Calendar.getInstance().time
+    var decayTime: Date = java.util.Calendar.getInstance().time
+    @Exclude private var df: Calendar = Calendar.getInstance()
+
+    fun getTimeLeft(): String {
+        val temp = TimeUnit.MILLISECONDS.toSeconds(decayTime.time - java.util.Calendar.getInstance().time.time).toInt()
+
+        return when{
+            temp <= 0 -> "00:00"
+            temp.toDouble()%60 <= 9 -> "${temp/60}:0${temp%60}"
+            else -> "${temp/60}:${temp%60}"
+        }
+    }
+
+    private fun initialize(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+
+        return db.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
+            db.collection("ActiveQuest").document("timeStamp").get().addOnSuccessListener {
+                captured = it.getDate("timeStamp", behaviour)!!
+                df.time = captured
+                df.add(Calendar.HOUR, GenericDB.Balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!)
+                decayTime = df.time
+
+                Data.player.currentSurfaces[this.surface].boss = this
+            }.continueWithTask {
+                Data.player.uploadSingleItem("currentSurfaces")
+            }
+        }
+    }
 }
 
 class Quest(
@@ -2657,10 +3281,10 @@ class Quest(
     var secondsLength: Int = 62
 
     @Exclude fun generate(difficulty: Int? = null): Quest {
-        reward = difficulty?.let { Reward(it).generate(player) } ?: Reward().generate(player)
-        val randQuest = surfaces[surface].quests.values.toTypedArray()[nextInt(0, surfaces[surface].quests.values.size)]
+        reward = difficulty?.let { Reward(it).generate(Data.player) } ?: Reward().generate(Data.player)
+        val randQuest = Data.surfaces[surface].quests.values.toTypedArray()[nextInt(0, Data.surfaces[surface].quests.values.size)]
 
-        secondsLength = ((reward.type!!.toDouble() + 2 - (((reward.type!!.toDouble() + 2) / 100) * player.adventureSpeed.toDouble())) * 60).toInt()
+        secondsLength = ((reward.type!!.toDouble() + 2 - (((reward.type!!.toDouble() + 2) / 100) * Data.player.adventureSpeed.toDouble())) * 60).toInt()
 
         this.name = randQuest.name
         this.description = randQuest.description
@@ -2672,15 +3296,7 @@ class Quest(
     }
 
     fun refresh() {
-        secondsLength = ((reward.type!!.toDouble() + 2 - (((reward.type!!.toDouble() + 2) / 100) * player.adventureSpeed.toDouble())) * 60).toInt()
-    }
-
-    @Exclude fun getLength(): String{
-        return when{
-            this.secondsLength <= 0 -> "0:00"
-            this.secondsLength.toDouble()%60 <= 9 -> "${this.secondsLength/60}:0${this.secondsLength%60}"
-            else -> "${this.secondsLength/60}:${this.secondsLength%60}"
-        }
+        secondsLength = ((reward.type!!.toDouble() + 2 - (((reward.type!!.toDouble() + 2) / 100) * Data.player.adventureSpeed.toDouble())) * 60).toInt()
     }
 
     @Exclude fun getStats(resources: Resources): String {
@@ -2724,9 +3340,18 @@ class Quest(
 
 class CustomTextView : TextView {
 
+    enum class SizeType{
+        small,
+        adaptive,
+        title
+    }
+
     private var mText: CharSequence? = null
     private var mIndex: Int = 0
     private var mDelay: Long = 50
+    private var customFont: Int = R.font.average_sans
+    private var customTextSize: Float = Data.player.textSize
+    var fontSizeType: SizeType = SizeType.adaptive
 
     private val mHandler = Handler()
     private val characterAdder = object : Runnable {
@@ -2738,10 +3363,25 @@ class CustomTextView : TextView {
         }
     }
 
+    init {
+        textSize = when(fontSizeType){
+            SizeType.small -> Data.player.textSize - 4f
+            SizeType.adaptive -> Data.player.textSize
+            SizeType.title -> Data.player.textSize + 10f
+        }
+
+        this.movementMethod = ScrollingMovementMethod()
+        this.typeface = ResourcesCompat.getFont(context, customFont)
+    }
 
     constructor(context: Context) : super(context) {}
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
+
+    fun setFont(fontID: Int){
+        this.customFont = fontID
+        this.typeface = ResourcesCompat.getFont(context, customFont)
+    }
 
     fun animateText(text: CharSequence) {
         mText = text
@@ -2756,7 +3396,7 @@ class CustomTextView : TextView {
         mDelay = millis
     }
 
-    fun skip(){
+    fun skipAnimation(){
         mHandler.removeCallbacksAndMessages(null)
     }
 
@@ -2803,10 +3443,16 @@ class InboxMessage(
 ) {
     var sentTime: Date = java.util.Calendar.getInstance().time
     var deleteTime: FieldValue? = null
+    var fightResult: Boolean? = null                 //colored text TODO
+        set(value){
+            if(status == MessageStatus.Fight){
+                field = value
+            }
+        }
 
     fun initialize(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("users").document(player.username).collection("ActiveQuest")
+        val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
         return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
@@ -2818,25 +3464,25 @@ class InboxMessage(
 
     fun changeStatus(status: MessageStatus) {
         when (this.status) {
-            MessageStatus.New -> inboxCategories[0].messages.remove(this)
-            MessageStatus.Read -> inboxCategories[1].messages.remove(this)
-            MessageStatus.Sent -> inboxCategories[2].messages.remove(this)
-            MessageStatus.Fight -> inboxCategories[3].messages.remove(this)
-            MessageStatus.Spam -> inboxCategories[4].messages.remove(this)
-            else -> inboxCategories[4].messages.remove(this)
+            MessageStatus.New -> Data.inboxCategories[0].messages.remove(this)
+            MessageStatus.Read -> Data.inboxCategories[1].messages.remove(this)
+            MessageStatus.Sent -> Data.inboxCategories[2].messages.remove(this)
+            MessageStatus.Fight -> Data.inboxCategories[3].messages.remove(this)
+            MessageStatus.Spam -> Data.inboxCategories[4].messages.remove(this)
+            else -> Data.inboxCategories[4].messages.remove(this)
         }
         when (status) {
-            MessageStatus.New -> inboxCategories[0].messages.add(this)
-            MessageStatus.Read -> inboxCategories[1].messages.add(this)
-            MessageStatus.Sent -> inboxCategories[2].messages.add(this)
-            MessageStatus.Fight -> inboxCategories[3].messages.add(this)
-            MessageStatus.Spam -> inboxCategories[4].messages.add(this)
-            else -> inboxCategories[4].messages.add(this)
+            MessageStatus.New -> Data.inboxCategories[0].messages.add(this)
+            MessageStatus.Read -> Data.inboxCategories[1].messages.add(this)
+            MessageStatus.Sent -> Data.inboxCategories[2].messages.add(this)
+            MessageStatus.Fight -> Data.inboxCategories[3].messages.add(this)
+            MessageStatus.Spam -> Data.inboxCategories[4].messages.add(this)
+            else -> Data.inboxCategories[4].messages.add(this)
         }
         this.status = status
         if (status == MessageStatus.Deleted) deleteTime = FieldValue.serverTimestamp()
 
-        player.uploadMessage(this)
+        Data.player.uploadMessage(this)
     }
 }
 
@@ -2847,7 +3493,9 @@ enum class MessageStatus {
     Spam,
     Sent,
     Fight,
-    Market
+    Market,
+    Faction,
+    Allies
 }
 
 /*enum class ItemType{
@@ -2859,15 +3507,11 @@ enum class MessageStatus {
 
 class Surface(
         val inBackground: String = "90000",
-        val boss: NPC? = null,
+        val boss: Boss? = null,
         val quests: HashMap<String, Quest> = hashMapOf()
 ) : Serializable {
     val background: Int
         @Exclude get() = drawableStorage[inBackground]!!
-
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
 
     override fun hashCode(): Int {
         var result = inBackground.hashCode()
@@ -2875,4 +3519,207 @@ class Surface(
         result = 31 * result + quests.hashCode()
         return result
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Surface
+
+        if (inBackground != other.inBackground) return false
+        if (boss != other.boss) return false
+        if (quests != other.quests) return false
+
+        return true
+    }
+}
+
+class FightBoardFilter(
+        var username: String? = "",
+        var position: Int? = 0,
+        var lvlFrom: Int? = 0,
+        var lvlTo: Int? = 0,
+        var active: Boolean? = false,
+        var characterIndex: Int? = 0
+)
+
+enum class FactionRole{
+    MEMBER,
+    MODERATOR,
+    LEADER;
+
+    fun getDrawable(): Int{
+        return when(this){
+            MODERATOR -> R.drawable.honor_icon
+            LEADER -> R.drawable.crown_icon
+            else -> 0
+        }
+    }
+}
+
+data class FactionMember(
+        var username: String = "",
+        var role: FactionRole = FactionRole.MEMBER
+        //var faction: Faction = Faction("")
+): Comparable<FactionMember>, Serializable{
+    var captureDate: Date = java.util.Calendar.getInstance().time
+    var profilePictureID: String = nextInt(50000, 50003).toString()
+    val profilePicture: Int
+        get(){
+            return drawableStorage[profilePictureID]!!
+        }
+    val membershipLength: Int                   //days
+        get(){
+            return ((java.util.Calendar.getInstance().time.time - captureDate.time) / 1000 / 60 / 60 / 24).toInt()
+        }
+    var goldGiven: Long = 0
+    var activeDate: Date = captureDate
+    var level: Int = 1
+
+    override fun compareTo(other: FactionMember): Int {
+        return when{
+            this.role.ordinal < other.role.ordinal -> -1
+            this.role.ordinal == other.role.ordinal -> 0
+            this.role.ordinal > other.role.ordinal -> 1
+            else -> -1
+        }
+    }
+
+    fun getShortDesc(): String{
+        return this.username + " - " + this.level.toString()
+    }
+
+    fun promote(faction: Faction): Task<Void> {
+        this.role = when{
+            this.role == FactionRole.MEMBER -> FactionRole.MODERATOR
+            this.role == FactionRole.MODERATOR ->{
+                faction.leader = this.username
+                FactionRole.LEADER
+            }
+            else -> this.role
+        }
+        return faction.upload()
+    }
+    fun demote(faction: Faction): Task<Void> {
+        this.role = when{
+            this.role == FactionRole.MEMBER -> {
+                this.kick(faction)
+                this.role
+            }
+            this.role == FactionRole.MODERATOR -> FactionRole.MEMBER
+            else -> this.role
+        }
+        return faction.upload()
+    }
+    fun kick(faction: Faction): Task<Void> {
+        faction.members.remove(this)
+        return faction.upload()
+    }
+
+    private fun initialize(){
+
+    }
+}
+
+class Faction(                     //TODO activity  TODO Firebase rules
+        var name: String = "template",
+        var description: String = "",
+        var leader: String = Data.player.username
+): Serializable{
+    var ID: Int = 0
+    var members: MutableList<FactionMember> = mutableListOf(FactionMember(leader, FactionRole.LEADER))
+    var allyFactions: MutableList<Int> = mutableListOf()
+    var enemyFactions: MutableList<Int> = mutableListOf()
+    var pendingInvitations: MutableList<String> = mutableListOf()
+    var taxPerDay: Int = 0
+    var level: Int = 1
+    var experience: Int = 0
+    var gold: Int = 0
+    var warnMessage: String = "Read the rules again!"
+
+    @Exclude var returnList: MutableList<Player> = mutableListOf()
+    @Exclude var returnedPlayer: Player? = null
+
+    operator fun contains(username: String): Boolean{
+        return this.members.any { it.username == username }
+    }
+
+    fun getMemberDesc(index: Int): String{                //description related to the Faction - gold, membership length etc.
+        val member = this.members[index]
+        val givenGoldDay = member.goldGiven.toInt().safeDivider(member.membershipLength)
+
+        return "${member.username} - ${member.role.name}" + "<br/>active: " + member.activeDate.toLocaleString() + "<br/>gold given: " + when{
+            givenGoldDay > this.taxPerDay -> "<font color='green'> ${member.goldGiven}</font>"
+            givenGoldDay < this.taxPerDay -> "<font color='red'> ${member.goldGiven}</font>"
+            else -> "<font color='grey'> ${member.goldGiven}</font>"
+        }+ "<br/>membership: ${member.membershipLength} days<br/>"
+    }
+
+    fun upload(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("factions").document(this.ID.toString())
+
+        val dataMap: HashMap<String, Any?> = hashMapOf(
+                "name"          to this.name,
+                "description"   to   this.description,
+                "leader"       to   this.leader,
+                "members"       to   this.members,
+                "allyFactions"  to   this.allyFactions,
+                "enemyFactions"  to   this.enemyFactions,
+                "pendingInvitations"  to   this.pendingInvitations,
+                "taxPerDay"  to   this.taxPerDay,
+                "level"  to   this.level,
+                "experience"  to   this.experience,
+                "gold" to this.gold,
+                "warnMessage" to this.warnMessage
+        )
+
+        return docRef.update(dataMap)
+    }
+
+    @Exclude fun initialize(): Task<Task<Void>> {
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("factions")
+
+        var temp: MutableList<Faction>
+        return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            temp = it.toObjects(Faction::class.java)
+            this.ID = if (!temp.isNullOrEmpty()) {
+                temp[0].ID + 1
+            } else 1
+        }.continueWith {
+            docRef.document(this.ID.toString()).set(this)
+        }
+    }
+
+    /*
+    * var temp: MutableList<InboxMessage>
+        return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            temp = it.toObjects(InboxMessage::class.java)
+            message.id = if (!temp.isNullOrEmpty()) {
+                temp[0].id + 1
+            } else 1
+        }.continueWithTask {
+            message.initialize()
+        }
+    * */
+
+    @Exclude fun getMemberOfIndex(index: Int): Task<QuerySnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("users")
+
+        return docRef.whereEqualTo("username", this.members[index]).limit(1).get().addOnSuccessListener {
+            this.returnedPlayer = it.toObjects(Player::class.java)[index]
+        }
+    }
+
+    @Exclude fun getAllyFactions(collection: Collection<Int>){
+
+    }
+}
+
+enum class ServerStatus{
+    on,
+    off,
+    restarting
 }

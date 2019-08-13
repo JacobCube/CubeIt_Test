@@ -1,6 +1,7 @@
 package cz.cubeit.cubeit
 
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -18,18 +19,22 @@ import android.widget.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.android.synthetic.main.activity_fight_board.*
+import kotlinx.android.synthetic.main.pop_up_board_filter.*
 import kotlinx.android.synthetic.main.pop_up_board_filter.view.*
+import kotlinx.android.synthetic.main.pop_up_board_filter.view.editTextBoardUsername
+import kotlinx.android.synthetic.main.pop_up_market_filter.*
 import kotlinx.android.synthetic.main.row_fight_board.view.*
 import kotlin.math.min
-
-var pickedPlayer:Player? = null
-private var changeFragment = 0
 
 class ActivityFightBoard: AppCompatActivity(){
 
     lateinit var textViewBoardCompare: CustomTextView
     private var currentPage:Int = 0
     var displayY = 0.0
+    var filter: FightBoardFilter? = null
+    var pickedPlayer:Player? = null
+    var changeFragment = 0
+    lateinit var frameLayoutFightProfileTemp: FrameLayout
 
     override fun onBackPressed() {
         pickedPlayer = null
@@ -76,7 +81,7 @@ class ActivityFightBoard: AppCompatActivity(){
             }
 
         }
-        if(!viewRectCompare.contains(ev.rawX.toInt(), ev.rawY.toInt())/* && !viewRectCompareCharacter.contains(ev.rawX.toInt(), ev.rawY.toInt())*/){
+        if(!viewRectCompare.contains(ev.rawX.toInt(), ev.rawY.toInt()) && !viewRectCompareCharacter.contains(ev.rawX.toInt(), ev.rawY.toInt())){
             textViewBoardCompare.visibility = View.GONE
         }
         return super.dispatchTouchEvent(ev)
@@ -86,8 +91,10 @@ class ActivityFightBoard: AppCompatActivity(){
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_fight_board)
+        val extraUsername = intent.getStringExtra("username")
 
-        pickedPlayer = player
+        frameLayoutFightProfileTemp = frameLayoutFightProfile
+        textViewFightBoardPage.text = currentPage.toString()
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -95,7 +102,16 @@ class ActivityFightBoard: AppCompatActivity(){
         textViewBoardCompare = textViewFightBoardCompare
         textViewFightBoardCompare.movementMethod = ScrollingMovementMethod()
 
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull")).commit()
+        if(extraUsername != null){
+            val temp = Player(username = extraUsername)
+            temp.loadPlayer().addOnSuccessListener {
+                pickedPlayer = temp
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull", pickedPlayer)).commit()
+            }
+        }else {
+            pickedPlayer = Data.player
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Leaderboard()).commit()
+        }
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
 
         val dm = DisplayMetrics()
@@ -135,36 +151,48 @@ class ActivityFightBoard: AppCompatActivity(){
         rotateAnimation.repeatCount = Animation.INFINITE
         imageViewLoadingBoard.startAnimation(rotateAnimation)
 
-        getPlayerList(currentPage).addOnSuccessListener {
-            listViewPlayers.adapter = FightBoardPlayerList(playerListReturn, currentPage, supportFragmentManager)
+        FightBoard.getPlayerList(currentPage).addOnSuccessListener {
+            listViewPlayers.adapter = FightBoardPlayerList(FightBoard.playerListReturn, currentPage, supportFragmentManager, this)
+            (listViewPlayers.adapter as FightBoardPlayerList).changeTextSize(Data.player.textSize)
             rotateAnimation.cancel()
         }.addOnFailureListener {
             Toast.makeText(this, "Failed loading data. Please, check your internet connection", Toast.LENGTH_LONG).show()
             rotateAnimation.cancel()
         }
 
+        /*imageViewFightBoardPageDec.setOnClickListener {                           //too high data flow
+            currentPage--
+            (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
+        }
+
+        imageViewFightBoardPageInc.setOnClickListener {
+            currentPage++
+            (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
+        }*/
+
         imageViewSearchIconBoard.setOnClickListener {
             val db = FirebaseFirestore.getInstance()
 
             rotateAnimation.start()
-            playerListReturn.clear()
 
             if(editTextBoardSearch.text.matches(Regex("d+.*"))){
                 val index = editTextBoardSearch.text.toString().toIntOrNull()
 
                 if(index != null){
+                    FightBoard.playerListReturn.clear()
+
                     val docRef = db.collection("users").orderBy("position")
                             .startAt((index.minus(24)).toString())
                             .endAt((index.plus(25)))
 
                     docRef.get().addOnSuccessListener { querySnapshot ->
-                        val tempList = querySnapshot.toObjects(LoadPlayer()::class.java)
+                        val tempList = querySnapshot.toObjects(Player()::class.java)
 
                         for (loadedPlayer in tempList)
                         {
-                            playerListReturn.add(loadedPlayer.toPlayer())
+                            FightBoard.playerListReturn.add(loadedPlayer)
                         }
-                        playerListReturn.sortBy { it.fame }
+                        FightBoard.playerListReturn.sortBy { it.fame }
                         rotateAnimation.cancel()
                         (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
                     }.addOnFailureListener {
@@ -179,17 +207,19 @@ class ActivityFightBoard: AppCompatActivity(){
                 }
             }else{
                 if(!editTextBoardSearch.text.isNullOrBlank()) {
+                    FightBoard.playerListReturn.clear()
+
                     val docRef = db.collection("users")
                             .whereGreaterThanOrEqualTo("username", editTextBoardSearch.text.toString())
 
                     docRef.limit(50).get().addOnSuccessListener { querySnapshot ->
-                        val tempList = querySnapshot.toObjects(LoadPlayer()::class.java)
+                        val tempList = querySnapshot.toObjects(Player()::class.java)
 
                         for (loadedPlayer in tempList)
                         {
-                            playerListReturn.add(loadedPlayer.toPlayer())
+                            FightBoard.playerListReturn.add(loadedPlayer)
                         }
-                        playerListReturn.sortBy { it.fame }
+                        FightBoard.playerListReturn.sortBy { it.fame }
                         rotateAnimation.cancel()
                         (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
                     }.addOnFailureListener {
@@ -204,7 +234,7 @@ class ActivityFightBoard: AppCompatActivity(){
                 }
             }
 
-            //playerListReturn =
+            //FightBoard.playerListReturn =
             (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
         }
 
@@ -238,15 +268,24 @@ class ActivityFightBoard: AppCompatActivity(){
                 spinner.adapter = adapter
             }
 
+            if(filter != null){
+                username.setText(filter!!.username.orEmpty())
+                position.setText(filter!!.position.toString())
+                lvlFrom.setText(filter!!.lvlFrom.toString())
+                lvlTo.setText(filter!!.lvlTo.toString())
+                active.isChecked = filter?.active ?: false
+                spinner.setSelection(filter?.characterIndex ?: 0)
+            }
+
             buttonApply.setOnClickListener {
-                playerListReturn.clear()
+                FightBoard.playerListReturn.clear()
                 (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
                 imageViewLoadingBoard.startAnimation(rotateAnimation)
 
                 var docRef: Query =  if(spinner.selectedItemPosition == 0){
                     db.collection("users")
                 }else{
-                    db.collection("users").whereEqualTo("charClass", (spinner.selectedItemPosition-1))
+                    db.collection("users").whereEqualTo("charClass", (spinner.selectedItemPosition))
                 }
 
 
@@ -265,7 +304,7 @@ class ActivityFightBoard: AppCompatActivity(){
                 }
 
                 docRef.limit(100).get().addOnSuccessListener { querySnapshot ->
-                    var tempList = querySnapshot.toObjects(LoadPlayer()::class.java)
+                    var tempList = querySnapshot.toObjects(Player()::class.java)
 
                     if(!lvlFrom.text.isNullOrBlank()){
                         tempList = tempList.filter { it.level >= lvlFrom.text.toString().toInt() }.toMutableList()
@@ -278,7 +317,7 @@ class ActivityFightBoard: AppCompatActivity(){
                     if(!tempList.isNullOrEmpty()){
                         for (i in 0 until min(tempList.size, 50))
                         {
-                            playerListReturn.add(tempList[i].toPlayer())
+                            FightBoard.playerListReturn.add(tempList[i])
                         }
                     }
 
@@ -293,6 +332,14 @@ class ActivityFightBoard: AppCompatActivity(){
                     rotateAnimation.cancel()
                     dialog.show()
                 }
+                filter = FightBoardFilter(
+                        username = username.text.toString(),
+                        position = position.text.toString().toIntOrNull(),
+                        lvlFrom = lvlFrom.text.toString().toIntOrNull(),
+                        lvlTo = lvlTo.toString().toIntOrNull(),
+                        active = active.isChecked,
+                        characterIndex = spinner.selectedItemPosition
+                )
                 window.dismiss()
             }
 
@@ -304,6 +351,7 @@ class ActivityFightBoard: AppCompatActivity(){
             window.isFocusable = true
 
             buttonClose.setOnClickListener {
+                filter = null
                 window.dismiss()
             }
 
@@ -312,22 +360,33 @@ class ActivityFightBoard: AppCompatActivity(){
 
         changeFragmentProfile.setOnClickListener {
             changeFragment = if(changeFragment == 0){
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Stats_Profile.newInstance("notnull")).commit()
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Stats_Profile.newInstance("notnull", pickedPlayer)).commit()
                 1
             }else{
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull")).commit()
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull", pickedPlayer)).commit()
                 0
             }
         }
     }
 
-    fun compareStats(){
-        textViewFightBoardCompare.visibility = if(textViewFightBoardCompare.visibility != View.VISIBLE)View.VISIBLE else View.GONE
-        textViewBoardCompare.setHTMLText(player.syncStats())
+    fun compareStats(playerX: Player){
+        handler.removeCallbacksAndMessages(null)
+        handler.postDelayed(
+                {
+                    textViewFightBoardCompare.visibility = if(textViewFightBoardCompare.visibility != View.VISIBLE)View.VISIBLE else View.GONE
+                    textViewBoardCompare.setHTMLText(Data.player.compareMeWith(playerX))
+                }, 50
+        )
     }
 }
 
-class FightBoardPlayerList(private val players:MutableList<Player>, private val page:Int, private val supportFragmentManager: FragmentManager) : BaseAdapter() {
+class FightBoardPlayerList(private val players:MutableList<Player>, private val page:Int, private val supportFragmentManager: FragmentManager, var parentActivity: Activity) : BaseAdapter() {
+
+    var textSize: Float = 18f
+
+    fun changeTextSize(textSizeX: Float){
+        this.textSize = textSizeX
+    }
 
     override fun getCount(): Int {
         return players.size
@@ -353,6 +412,13 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         } else rowMain = convertView
         val viewHolder = rowMain.tag as ViewHolder
 
+        if(textSize != 18f){
+            viewHolder.textViewPosition.textSize = textSize
+            viewHolder.textViewName.textSize = textSize
+            viewHolder.textViewFame.textSize = textSize
+            viewHolder.textViewBoardLevel.textSize = textSize
+        }
+
         viewHolder.textViewPosition.text = (position+(page*50)+1).toString()
         viewHolder.textViewName.text = players[position].username
         viewHolder.textViewFame.text = players[position].fame.toString()
@@ -360,12 +426,12 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         viewHolder.textViewBoardLevel.text = players[position].level.toString()
 
         viewHolder.rowFightBoard.setOnClickListener {
-            if(changeFragment == 1){
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Stats_Profile.newInstance("notnull")).commit()
+            (parentActivity as ActivityFightBoard).pickedPlayer = players[position]
+            if((parentActivity as ActivityFightBoard).changeFragment == 1){
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Stats_Profile.newInstance("notnull", players[position])).commit()
             }else{
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull")).commit()
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull", players[position])).commit()
             }
-            pickedPlayer = players[position]
         }
 
         return rowMain

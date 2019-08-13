@@ -30,7 +30,7 @@ class Fragment_Market_RegisterOffer : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_market_registeroffer, container, false)
 
-        view.listViewMarketRegisterInventory.adapter = MarketRegisterInventory(player, view.imageViewMarketRegisterItem, view.context, createdOffer, (activity as Activity_Market))
+        view.listViewMarketRegisterInventory.adapter = MarketRegisterInventory(Data.player, view.imageViewMarketRegisterItem, view.context, createdOffer, (activity as Activity_Market))
 
         val window = PopupWindow(context)
         val viewPop:View = layoutInflater.inflate(R.layout.pop_up_item_info, null, false)
@@ -167,21 +167,26 @@ class Fragment_Market_RegisterOffer : Fragment() {
                                     afterExpiryCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
                                 }
                                 expiryDate = SimpleDateFormat("yyyy/MM/dd").parse(view.editTextMarketRegisterUntilDate.text.toString())
-                                seller = player.username
+                                seller = Data.player.username
                                 priceCoins = view.editTextMarketRegisterCoins.text.toString().toInt()
+                                if(priceCoins < createdOffer.item!!.price) priceCoins = createdOffer.item!!.price
                                 priceCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
+                                if(priceCubeCoins < createdOffer.item!!.priceCubeCoins) priceCubeCoins = createdOffer.item!!.priceCubeCoins
                             }
-                            player.inventory[player.inventory.indexOf(createdOffer.item)] = null
-                            player.toLoadPlayer().uploadPlayer().addOnSuccessListener {
-                                player.fileOffer(createdOffer).addOnCompleteListener {
+                            val tempIndex = Data.player.inventory.indexOf(createdOffer.item)
+                            Data.player.inventory[tempIndex] = null
+                            Data.player.uploadPlayer().addOnSuccessListener {
+                                Data.player.fileOffer(createdOffer).addOnCompleteListener {
                                     Toast.makeText(view.context, if (it.isSuccessful) {
                                         "Your offer has been successfully added!"
                                     } else {
-                                        "Your request to add an offer has failed!"
+                                        Data.player.inventory[tempIndex] = createdOffer.item
+                                        Data.player.uploadPlayer()
+                                        "Your request to add offer has failed!"
                                     }, Toast.LENGTH_SHORT).show()
                                 }
                             }.addOnFailureListener {
-                                Toast.makeText(view.context, "Your request to add an offer has failed!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(view.context, "Your request to add offer has failed!", Toast.LENGTH_SHORT).show()
                             }
                             (activity as Activity_Market).closeRegister()
                         }
@@ -241,10 +246,10 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
                 3 -> viewHolder.buttonInventory4
                 else -> viewHolder.buttonInventory1
             }
-            if (index + i < player.inventory.size) {
+            if (index + i < Data.player.inventory.size) {
                 if (playerC.inventory[index + i] != null) {
-                    tempSlot.setImageResource(player.inventory[index + i]!!.drawable)
-                    tempSlot.setBackgroundResource(player.inventory[index + i]!!.getBackground())
+                    tempSlot.setImageResource(Data.player.inventory[index + i]!!.drawable)
+                    tempSlot.setBackgroundResource(Data.player.inventory[index + i]!!.getBackground())
                     tempSlot.isEnabled = true
                 } else {
                     tempSlot.setImageResource(0)

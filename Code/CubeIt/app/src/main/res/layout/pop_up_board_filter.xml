@@ -58,6 +58,7 @@
         app:layout_constraintGuide_percent="0.12" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardUsername"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -82,6 +83,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
     <EditText
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardLevelBottom"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -105,6 +107,7 @@
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardPosition"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -128,6 +131,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
     <EditText
+ android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardLevelTop"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.row_attack.view.*
 class FragmentAttack : Fragment(){
 
     fun onUnChoose(view:View){
-        player.chosenSpellsAttack[view.tag.toString().toInt()-2] = null
+        Data.player.chosenSpellsAttack[view.tag.toString().toInt()-2] = null
         (view as ImageView).setImageResource(0)
     }
 
@@ -34,11 +34,11 @@ class FragmentAttack : Fragment(){
         val spellButtons:Array<ImageView> = arrayOf(view.FragmentSpell0, view.FragmentSpell1,view.FragmentSpell2, view.FragmentSpell3,
                 view.FragmentSpell4, view.FragmentSpell5, view.FragmentSpell6, view.FragmentSpell7)
 
-        spellButtons[0].setImageResource(player.learnedSpells[0]!!.drawable)
-        spellButtons[1].setImageResource(player.learnedSpells[1]!!.drawable)
-        for(i in 0 until player.chosenSpellsAttack.size){
-            if(player.chosenSpellsAttack[i] != null){
-                spellButtons[i+2].setImageResource(player.chosenSpellsAttack[i]!!.drawable)
+        spellButtons[0].setImageResource(Data.player.learnedSpells[0]!!.drawable)
+        spellButtons[1].setImageResource(Data.player.learnedSpells[1]!!.drawable)
+        for(i in 0 until Data.player.chosenSpellsAttack.size){
+            if(Data.player.chosenSpellsAttack[i] != null){
+                spellButtons[i+2].setImageResource(Data.player.chosenSpellsAttack[i]!!.drawable)
                 spellButtons[i+2].isEnabled = true
             }else {
                 spellButtons[i+2].isEnabled = false
@@ -55,7 +55,7 @@ class FragmentAttack : Fragment(){
 
 class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIcon: ImageView, private val spellButtons: Array<ImageView>, private val context: Context): BaseAdapter() {
     override fun getCount(): Int {
-        return if(player.learnedSpells.size/5 < 5) 1 else player.learnedSpells.size/5+1
+        return if(Data.player.learnedSpells.size/5 < 5) 1 else Data.player.learnedSpells.size/5+1
     }
 
     override fun getItemId(position: Int): Long {
@@ -88,8 +88,8 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
                     4->viewHolder.buttonSpellsManagement5
                     else->viewHolder.buttonSpellsManagement1
                 }
-                if((index + i) < player.learnedSpells.size){
-                    tempSpell.setImageResource(player.learnedSpells[index+i]!!.drawable)
+                if((index + i) < Data.player.learnedSpells.size){
+                    tempSpell.setImageResource(Data.player.learnedSpells[index+i]!!.drawable)
                     tempSpell.isEnabled = true
                 }else{
                     tempSpell.isEnabled = false
@@ -103,13 +103,13 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
         viewHolder.buttonSpellsManagement1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
             override fun onClick() {
                 super.onClick()
-                textViewInfoSpell.text = player.learnedSpells[index]?.getStats()
-                imageViewIcon.setImageResource(player.learnedSpells[index]!!.drawable)
+                textViewInfoSpell.text = Data.player.learnedSpells[index]?.getStats()
+                imageViewIcon.setImageResource(Data.player.learnedSpells[index]!!.drawable)
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!player.chosenSpellsAttack.contains(player.learnedSpells[index])){
+                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index])){
                     getClickSpell(index,spellButtons)
                 }
             }
@@ -118,13 +118,13 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
         viewHolder.buttonSpellsManagement2.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
             override fun onClick() {
                 super.onClick()
-                textViewInfoSpell.text = player.learnedSpells[index+1]?.getStats()
-                imageViewIcon.setImageResource(player.learnedSpells[index+1]!!.drawable)
+                textViewInfoSpell.text = Data.player.learnedSpells[index+1]?.getStats()
+                imageViewIcon.setImageResource(Data.player.learnedSpells[index+1]!!.drawable)
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!player.chosenSpellsAttack.contains(player.learnedSpells[index+1])){
+                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+1])){
                     getClickSpell(index+1,spellButtons)
                 }
             }
@@ -133,13 +133,13 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
         viewHolder.buttonSpellsManagement3.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
             override fun onClick() {
                 super.onClick()
-                textViewInfoSpell.text = player.learnedSpells[index+2]?.getStats()
-                imageViewIcon.setImageResource(player.learnedSpells[index+2]!!.drawable)
+                textViewInfoSpell.text = Data.player.learnedSpells[index+2]?.getStats()
+                imageViewIcon.setImageResource(Data.player.learnedSpells[index+2]!!.drawable)
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!player.chosenSpellsAttack.contains(player.learnedSpells[index+2])){
+                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+2])){
                     getClickSpell(index+2,spellButtons)
                 }
             }
@@ -148,13 +148,13 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
         viewHolder.buttonSpellsManagement4.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
             override fun onClick() {
                 super.onClick()
-                textViewInfoSpell.text = player.learnedSpells[index+3]?.getStats()
-                imageViewIcon.setImageResource(player.learnedSpells[index+3]!!.drawable)
+                textViewInfoSpell.text = Data.player.learnedSpells[index+3]?.getStats()
+                imageViewIcon.setImageResource(Data.player.learnedSpells[index+3]!!.drawable)
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!player.chosenSpellsAttack.contains(player.learnedSpells[index+3])){
+                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+3])){
                     getClickSpell(index+3,spellButtons)
                 }
             }
@@ -163,13 +163,13 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
         viewHolder.buttonSpellsManagement5.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
             override fun onClick() {
                 super.onClick()
-                textViewInfoSpell.text = player.learnedSpells[index+4]?.getStats()
-                imageViewIcon.setImageResource(player.learnedSpells[index+4]!!.drawable)
+                textViewInfoSpell.text = Data.player.learnedSpells[index+4]?.getStats()
+                imageViewIcon.setImageResource(Data.player.learnedSpells[index+4]!!.drawable)
             }
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!player.chosenSpellsAttack.contains(player.learnedSpells[index+4])){
+                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+4])){
                     getClickSpell(index+4,spellButtons)
                 }
             }
@@ -180,11 +180,11 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
     }
     companion object {
         private fun getClickSpell(index:Int, spellButtons:Array<ImageView>){
-            if(player.chosenSpellsAttack.contains(null)){
-                val tempIndex = player.chosenSpellsAttack.indexOf(null)
+            if(Data.player.chosenSpellsAttack.contains(null)){
+                val tempIndex = Data.player.chosenSpellsAttack.indexOf(null)
                 if(index!=0&&index!=1) {
-                    player.chosenSpellsAttack[tempIndex] = player.learnedSpells[index]
-                    spellButtons[tempIndex + 2].setImageResource(player.chosenSpellsAttack[tempIndex]!!.drawable)
+                    Data.player.chosenSpellsAttack[tempIndex] = Data.player.learnedSpells[index]
+                    spellButtons[tempIndex + 2].setImageResource(Data.player.chosenSpellsAttack[tempIndex]!!.drawable)
                     spellButtons[tempIndex + 2].isEnabled = true
                 }
             }

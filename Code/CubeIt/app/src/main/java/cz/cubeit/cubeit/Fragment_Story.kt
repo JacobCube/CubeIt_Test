@@ -18,8 +18,8 @@ class Fragment_Story : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewStory = inflater.inflate(R.layout.fragment_story, container, false)
 
-        viewStory.viewPagerStoryQuest.adapter = ViewPagerStoryQuest(childFragmentManager, player.currentStoryQuest!!)
-        viewStory.viewPagerStoryQuest.setCurrentItem(player.currentStoryQuest!!.progress, true)
+        viewStory.viewPagerStoryQuest.adapter = ViewPagerStoryQuest(childFragmentManager, Data.player.currentStoryQuest!!)
+        viewStory.viewPagerStoryQuest.setCurrentItem(Data.player.currentStoryQuest!!.progress, true)
 
         viewStory.viewPagerStoryQuest.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
@@ -27,11 +27,11 @@ class Fragment_Story : Fragment() {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
             }
             override fun onPageSelected(position: Int) {
-                player.currentStoryQuest!!.progress++
+                Data.player.currentStoryQuest!!.progress++
             }
         })
 
-        viewStory.viewPagerStoryQuest.offscreenPageLimit = player.currentStoryQuest!!.slides.size -1
+        viewStory.viewPagerStoryQuest.offscreenPageLimit = Data.player.currentStoryQuest!!.slides.size -1
 
         viewStory.viewPagerStoryQuest.setOnClickListener {
             skipSlide()
@@ -41,19 +41,19 @@ class Fragment_Story : Fragment() {
     }
 
     fun skipSlide(){
-        ++player.currentStoryQuest!!.progress
-        viewStory.viewPagerStoryQuest.setCurrentItem(player.currentStoryQuest!!.progress, true)
+        ++Data.player.currentStoryQuest!!.progress
+        viewStory.viewPagerStoryQuest.setCurrentItem(Data.player.currentStoryQuest!!.progress, true)
     }
     fun skipStory(){
-        player.currentStoryQuest!!.progress = player.currentStoryQuest!!.skipToSlide
-        viewStory.viewPagerStoryQuest.setCurrentItem(player.currentStoryQuest!!.progress, true)
+        Data.player.currentStoryQuest!!.progress = Data.player.currentStoryQuest!!.skipToSlide
+        viewStory.viewPagerStoryQuest.setCurrentItem(Data.player.currentStoryQuest!!.progress, true)
     }
 }
 
 class ViewPagerStoryQuest internal constructor(fm: FragmentManager, private val storyQuest: StoryQuest) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
-        return getStoryFragment(storyQuest.slides[position].inFragment, storyQuest.slides[position].inInstanceID, position)
+        return GameFlow.getStoryFragment(storyQuest.slides[position].inFragment, storyQuest.slides[position].inInstanceID, position)
     }
 
     override fun getCount(): Int {
