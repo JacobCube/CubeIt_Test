@@ -3,8 +3,8 @@ package cz.cubeit.cubeit
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.app.AlertDialog
+import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AlertDialog
 import android.text.Html
 import android.util.Log
 import android.view.LayoutInflater

@@ -8,5 +8,4 @@
     android:background="@color/pop_up_bg"
     android:gravity="center_vertical"
     android:textColor="@android:color/white"
-    android:textSize="14sp"
-    app:barrierMargin="4dp" />
+    android:textSize="14sp"/>

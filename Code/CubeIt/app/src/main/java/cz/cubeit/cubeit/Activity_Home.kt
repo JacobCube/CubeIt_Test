@@ -3,14 +3,14 @@ package cz.cubeit.cubeit
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_home.*
-import android.arch.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import android.provider.Settings
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.util.Log
 import android.view.View
 import com.google.firebase.firestore.FirebaseFirestore

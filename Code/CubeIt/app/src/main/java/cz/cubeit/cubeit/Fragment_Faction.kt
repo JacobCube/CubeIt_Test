@@ -5,8 +5,8 @@ import android.content.Intent
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.app.TaskStackBuilder
+import androidx.fragment.app.Fragment
+import androidx.core.app.TaskStackBuilder
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -74,9 +74,22 @@ class Fragment_Faction: Fragment(){
                 view.buttonFactionApply.visibility = View.GONE
             }
 
-            Log.d("currentInstance", currentInstanceOfFaction!!.description)
+            view.textViewFactionInfoDesc.setHTMLText(currentInstanceOfFaction!!.getInfoDesc())
             view.textViewFactionDescription.setHTMLText(currentInstanceOfFaction!!.description)
             view.textViewFactionTitle.text = currentInstanceOfFaction!!.name
+            view.textViewFactionGold.text = resources.getString(R.string.faction_gold, currentInstanceOfFaction!!.gold.toString())
+
+            view.imageViewFactionGoldPlus.setOnClickListener {
+                view.editTextFactionGold.setText(if(view.editTextFactionGold.text.isEmpty()){
+                    "0"
+                } else{
+                    val temp = view.editTextFactionGold.text.toString().toInt()
+                    (temp + temp/8).toString()
+                } )
+            }
+            view.buttonFactionGoldOk.setOnClickListener {
+
+            }
             if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
         }
 

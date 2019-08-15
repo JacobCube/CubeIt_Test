@@ -4,9 +4,9 @@ package cz.cubeit.cubeit
 
 import android.app.Activity
 import android.app.Service
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -16,9 +16,9 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.provider.Settings
-import android.support.v4.app.Fragment
-import android.support.v4.content.res.ResourcesCompat
-import android.support.v4.view.ViewPager
+import androidx.fragment.app.Fragment
+import androidx.core.content.res.ResourcesCompat
+import androidx.viewpager.widget.ViewPager
 import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.util.AttributeSet
@@ -1516,6 +1516,7 @@ open class Player(
         get(){
             return drawableStorage[profilePicDrawableIn]!!
         }
+    var gold: Int = 0
 
     @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - problem with Serializabling
     @Exclude var textSize: Float = 16f
@@ -1523,12 +1524,11 @@ open class Player(
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize.data") != "0") textSize = SystemFlow.readFileText(context, "textSize.data").toFloat()
     }
-    /*object Inventory{
 
+    fun changeMyStatus(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("factions").document(this.factionID.toString()).update("members", FieldValue.arrayUnion(this.faction.members))
     }
-    object Equip{
-
-    }*/
 
     fun uploadSingleItem(item: String): Task<Void> {
         val db = FirebaseFirestore.getInstance()
@@ -1650,6 +1650,7 @@ open class Player(
         userString["allies"] = this.allies
         userString["inviteBy"] = this.inviteBy
         userString["profilePicDrawableIn"] = this.profilePicDrawableIn
+        userString["gold"] = this.gold
 
 
         userString["lastLogin"] = FieldValue.serverTimestamp()
@@ -1703,6 +1704,7 @@ open class Player(
         userString["allies"] = this.allies
         userString["inviteBy"] = this.inviteBy
         userString["profilePicDrawableIn"] = this.profilePicDrawableIn
+        userString["gold"] = this.gold
 
         return db.collection("users").document(username).set(userString).continueWithTask {
             this.createInbox()
@@ -1952,6 +1954,7 @@ open class Player(
                 this.allies = loadedPlayer.allies
                 this.inviteBy = loadedPlayer.inviteBy
                 this.profilePicDrawableIn = loadedPlayer.profilePicDrawableIn
+                this.gold = loadedPlayer.gold
             }
         }.continueWithTask {
             val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
@@ -3673,8 +3676,11 @@ class Faction(                     //TODO activity  TODO Firebase rules
                 "gold" to this.gold,
                 "warnMessage" to this.warnMessage
         )
-
         return docRef.update(dataMap)
+    }
+
+    fun getInfoDesc(): String{
+        return "Level: ${this.level}<br/>Experience: ${this.experience}<br/>Tax: ${this.taxPerDay} / day"
     }
 
     @Exclude fun initialize(): Task<Task<Void>> {

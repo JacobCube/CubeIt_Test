@@ -5,9 +5,9 @@ import android.content.Intent
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentPagerAdapter
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentPagerAdapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,34 +25,20 @@ class Fragment_Faction_Edit : Fragment() {
     lateinit var invited: BaseAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view:View = inflater.inflate(R.layout.fragment_fraction_create, container, false)
+        val view:View = inflater.inflate(R.layout.fragment_fraction_edit, container, false)
 
-        /*view.listViewFactionCreateAllies.adapter = FactionMemberList(this, inviteAllies, true)
-        view.listViewFactionCreateInvited.adapter = FactionMemberList(this, faction.pendingInvitations, false)
+        if(Data.player.faction == null)(activity as Activity_Faction_Base).changePage(2)
 
-        allies = (view.listViewFactionCreateAllies.adapter as FactionMemberList)
-        invited = (view.listViewFactionCreateInvited.adapter as FactionMemberList)
+        else{
+            view.listViewFactionCreateAllies.adapter = FactionMemberList(this, inviteAllies, true, resources)
+            view.listViewFactionCreateInvited.adapter = FactionMemberList(this, Data.player.faction!!.pendingInvitations, false, resources)
 
-        if(Data.player.factionID == null){
-            view.buttonFactionCreateCreate.setOnClickListener {viewButton: View ->
-                faction.initialize().addOnSuccessListener {
-                    faction.taxPerDay = view.editTextFactionCreateTax.toString().toIntOrNull() ?: 0
-                    faction.name = view.editTextFactionCreateName.text.toString()
-                    faction.description = view.editTextFactionCreateDescription.text.toString()
+            allies = (view.listViewFactionCreateAllies.adapter as FactionMemberList)
+            invited = (view.listViewFactionCreateInvited.adapter as FactionMemberList)
 
-                    viewButton.isEnabled = false
-                    Data.player.faction = faction
-                    Data.player.factionRole = FactionRole.LEADER
-                    Data.player.factionName = faction.name
-                    Data.player.factionID = faction.ID
-                    faction.upload().addOnSuccessListener {
-                        (activity as Activity_Faction_Base).changePage(2)
-                    }.continueWith {
-                        Data.player.uploadPlayer()
-                    }
-                }
-            }
-        }*/
+
+        }
+
         return view
     }
 
@@ -62,7 +48,7 @@ class Fragment_Faction_Edit : Fragment() {
     }
 
 
-    /*class FactionMemberList(val activity: Fragment_Faction_Edit, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true) : BaseAdapter() {
+    class FactionMemberList(val activity: Fragment_Faction_Edit, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true, val resources: Resources) : BaseAdapter() {
 
         override fun getCount(): Int {
             return collection.size
@@ -92,14 +78,12 @@ class Fragment_Faction_Edit : Fragment() {
             val opts = BitmapFactory.Options()
             opts.inScaled = false
 
-            viewHolder.symbol.apply {
-                if(add){
-                    setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.plus_icon, opts))
-                    setColorFilter(android.R.color.holo_green_light)
-                }else {
-                    setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.minus_icon, opts))
-                    setColorFilter(android.R.color.holo_red_light)
-                }
+            if(add){
+                viewHolder.symbol.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.plus_icon, opts))
+                viewHolder.symbol.setColorFilter(android.R.color.holo_green_light)
+            }else {
+                viewHolder.symbol.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.minus_icon, opts))
+                viewHolder.symbol.setColorFilter(android.R.color.holo_red_light)
             }
             viewHolder.username.text = collection[position]
 
@@ -107,11 +91,11 @@ class Fragment_Faction_Edit : Fragment() {
                 rowMain.isEnabled = false
                 handler.postDelayed({rowMain.isEnabled = true}, 50)
                 if(add){
-                    activity.faction.pendingInvitations.add(collection[position])
+                    Data.player.faction!!.pendingInvitations.add(collection[position])
                     activity.inviteAllies.remove(collection[position])
                 }else {
                     activity.inviteAllies.add(collection[position])
-                    activity.faction.pendingInvitations.remove(collection[position])
+                    Data.player.faction!!.pendingInvitations.remove(collection[position])
                 }
                 activity.update()
             }
@@ -119,5 +103,5 @@ class Fragment_Faction_Edit : Fragment() {
             return rowMain
         }
         private class ViewHolder(val symbol: ImageView, val username: TextView)
-    }*/
+    }
 }

@@ -2,7 +2,7 @@ package cz.cubeit.cubeit
 
 import android.animation.ValueAnimator
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.view.animation.Animation
 import kotlinx.android.synthetic.main.activity_splash_screen.*

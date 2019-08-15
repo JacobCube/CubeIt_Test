@@ -18,6 +18,7 @@
     <string name="loading_log">%1$s have started loading…</string>
     <string name="filter_down">%1$s 0x25BC</string>
     <string name="filter_up">%1$s 0x25B2</string>
+    <string name="faction_gold">Gold: %1$s</string>
 
     <string name="quest_title"><big><font face="normal" color="#C0B02D">%1$s</font></big></string>
     <string name="quest_number"><font face="normal" color="#C0B02D">%1$d</font></string>
