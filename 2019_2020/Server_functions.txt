@@ -1,0 +1,7 @@
+                        
+1) Changes in global data trigger checksum calculator.
+2) Changes in global fight log trigger - change player's properties based on the log.
+3) Every day trigger (shop reset, adventure surfaces, tournaments, ...) - turn off server
+4) Web listener (releases, ...)
+5) In app messages, push in messages, notifications in general
+6) Action on loading from document? - when any faction is loaded - clear the log older than 7 days...
