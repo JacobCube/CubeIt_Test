@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AlertDialog
 import android.view.LayoutInflater
@@ -68,10 +69,10 @@ class Fragment_Register : Fragment() {
                 if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
                     userPassword = view.inputPassReg.text.toString()
 
+                    Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
+
                     Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener{ task: Task<AuthResult> ->
                         if (task.isSuccessful) {
-                            Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
-
                             val user = Auth!!.currentUser
                             user!!.sendEmailVerification()
                             Toast.makeText(view.context, "Please confirm your account by clicking on the link sent to your email address!", Toast.LENGTH_SHORT).show()
@@ -83,9 +84,12 @@ class Fragment_Register : Fragment() {
                             tempPlayer.createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnSuccessListener {
                                 Data.player.username = view.inputUsernameReg.text.toString()
                                 Data.player.loadPlayer().addOnSuccessListener {
+                                    Data.loadingStatus = LoadingStatus.REGISTERED
                                     val intent = Intent(view.context, Activity_Character_Customization::class.java)
                                     startActivity(intent)
                                     //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
+                                }.addOnFailureListener {
+                                    Log.d("loadplayer", it.message)
                                 }
                             }
 
@@ -96,8 +100,8 @@ class Fragment_Register : Fragment() {
                             catch (e:Exception){
                                 showNotification("Oops", "An account with this email already exists!")
                             }
+                            Data.loadingStatus = LoadingStatus.CLOSELOADING
                         }
-                        Data.loadingStatus = LoadingStatus.CLOSELOADING
                     }
                 } else {
                     Data.loadingStatus = LoadingStatus.CLOSELOADING

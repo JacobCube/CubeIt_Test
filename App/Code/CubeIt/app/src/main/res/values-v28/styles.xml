@@ -12,11 +12,14 @@
         <item name="android:backgroundTint">@color/loginColor</item>
         <item name="android:textColor">@color/colorSecondary</item>
         <item name="android:gestureColor">@color/colorSecondary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/average_sans</item>
         <item name="android:buttonCornerRadius">8dp</item>
     </style>
 
     <style name="FactionPopupMenu" parent="@android:style/Widget.PopupMenu">
         <item name="android:popupBackground">@color/loginColor</item>
         <item name="android:textColor">@color/colorSecondary</item>
+        <item name="android:background">@color/loginColor</item>
     </style>
 </resources>

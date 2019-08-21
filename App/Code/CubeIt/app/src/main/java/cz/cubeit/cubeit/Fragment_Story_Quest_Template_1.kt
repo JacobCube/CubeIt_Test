@@ -1,6 +1,8 @@
 package cz.cubeit.cubeit
 
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.Gravity
@@ -8,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_story_quest_template_1.view.*
@@ -63,10 +66,11 @@ class Fragment_Story_Quest_Template_1 : Fragment() {
             val window = PopupWindow(context)
             window.contentView = viewP
             val buttonYes: Button = viewP.buttonYes
-            val buttonNo:Button = viewP.buttonCloseDialog
+            val buttonNo: ImageView = viewP.buttonCloseDialog
             val info: TextView = viewP.textViewInfo
             info.text = "Are you sure?"
             window.isOutsideTouchable = false
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window.isFocusable = true
             buttonYes.setOnClickListener {
                 (this.parentFragment as Fragment_Story).skipStory()

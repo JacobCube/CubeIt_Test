@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -36,6 +37,7 @@ class Fragment_Market_RegisterOffer : Fragment() {
         val viewPop:View = layoutInflater.inflate(R.layout.pop_up_item_info, null, false)
         window.elevation = 0.0f
         window.contentView = viewPop
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         window.setOnDismissListener {
             window.dismiss()
@@ -274,6 +276,7 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
         }
         window.isOutsideTouchable = false
         window.isFocusable = true
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         viewPop.textViewItemInfo.movementMethod = ScrollingMovementMethod()
 

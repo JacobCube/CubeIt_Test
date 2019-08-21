@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layoutFragmentFractionCreate"
+    android:id="@+id/layoutFragmentFractionEdit"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
@@ -10,7 +10,7 @@
 
 
     <ImageView
-        android:id="@+id/imageViewFactionCreateBg"
+        android:id="@+id/imageViewFactionEditBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/factionBg"
@@ -27,20 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.93" />
-
-    <Button
-        android:id="@+id/buttonFactionCreateCreate"
-        style="@style/AppTheme.Button.Dark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Create"
-        android:padding="20dp"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline203" />
+        app:layout_constraintGuide_percent="0.97" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline61"
@@ -56,23 +43,26 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.575" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline216"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.785" />
+
     <EditText
-        android:id="@+id/editTextFactionCreateName"
+        android:id="@+id/editTextFactionEditName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:background="@drawable/text_bg_dark"
         android:ems="10"
+        android:enabled="false"
         android:hint="Name"
         android:imeOptions="flagNoExtractUi"
         android:inputType="text"
-        android:nextFocusLeft="@+id/editTextInboxDateTo"
-        android:nextFocusRight="@+id/editTextInboxDateTo"
-        android:nextFocusUp="@+id/editTextInboxDateTo"
-        android:nextFocusDown="@+id/editTextInboxDateTo"
-        android:nextFocusForward="@+id/editTextInboxDateTo"
         android:paddingStart="15dp"
-        android:paddingTop="15dp"
+        android:paddingTop="5dp"
         android:paddingEnd="5dp"
         android:paddingBottom="5dp"
         android:textColor="@android:color/white"
@@ -83,7 +73,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editTextFactionCreateTax"
+        android:id="@+id/editTextFactionEditTax"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -92,11 +82,6 @@
         android:hint="Tax per day"
         android:imeOptions="flagNoExtractUi"
         android:inputType="number"
-        android:nextFocusLeft="@+id/editTextInboxSubject"
-        android:nextFocusRight="@+id/editTextInboxSubject"
-        android:nextFocusUp="@+id/editTextInboxSubject"
-        android:nextFocusDown="@+id/editTextInboxSubject"
-        android:nextFocusForward="@+id/editTextInboxSubject"
         android:paddingStart="5dp"
         android:paddingTop="10dp"
         android:paddingEnd="0dp"
@@ -116,21 +101,16 @@
         app:layout_constraintGuide_percent="0.37" />
 
     <EditText
-        android:id="@+id/editTextFactionCreateDescription"
+        android:id="@+id/editTextFactionEditDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="2dp"
+        android:layout_marginBottom="4dp"
         android:background="@drawable/text_bg_dark"
         android:ems="10"
         android:gravity="start"
         android:hint="Description"
         android:imeOptions="flagNoExtractUi"
         android:inputType="text"
-        android:nextFocusLeft="@+id/buttonAccept"
-        android:nextFocusRight="@+id/buttonAccept"
-        android:nextFocusUp="@+id/buttonAccept"
-        android:nextFocusDown="@+id/buttonAccept"
-        android:nextFocusForward="@+id/buttonAccept"
         android:paddingStart="5dp"
         android:paddingTop="10dp"
         android:paddingEnd="0dp"
@@ -138,43 +118,93 @@
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonFactionCreateCreate"
+        app:layout_constraintBottom_toTopOf="@+id/listViewFactionEditInvited"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/editTextFactionCreateTax"
-        app:layout_constraintTop_toBottomOf="@+id/checkBoxFactionCreateAllies" />
+        app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxFactionEditAllies" />
+
+    <EditText
+        android:id="@+id/editTextFactionEditWarnMsg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/text_bg_dark"
+        android:ems="10"
+        android:gravity="start"
+        android:hint="Warn message"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="text"
+        android:paddingStart="5dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="10dp"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline216"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
+        app:layout_constraintTop_toBottomOf="@+id/editTextFactionEditDescription" />
+
+    <EditText
+        android:id="@+id/editTextFactionEditInvitationMsg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/text_bg_dark"
+        android:ems="10"
+        android:gravity="start"
+        android:hint="Invitation message"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="text"
+        android:paddingStart="5dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="10dp"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
+        app:layout_constraintTop_toTopOf="@+id/guideline216" />
 
     <CheckBox
-        android:id="@+id/checkBoxFactionCreateAllies"
+        android:id="@+id/checkBoxFactionEditAllies"
         style="@android:style/Widget.Material.CompoundButton.CheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:buttonTint="@color/loginColor"
-        android:capitalize="sentences"
         android:text="Open to allies"
-        app:layout_constraintStart_toStartOf="@+id/editTextFactionCreateTax"
-        app:layout_constraintTop_toBottomOf="@+id/editTextFactionCreateTax" />
+        app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
+        app:layout_constraintTop_toBottomOf="@+id/editTextFactionEditTax" />
 
     <ListView
-        android:id="@+id/listViewFactionCreateAllies"
+        android:id="@+id/listViewFactionEditAllies"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
+        android:divider="@null"
+        android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@+id/guideline209"
-        app:layout_constraintEnd_toStartOf="@+id/checkBoxFactionCreateAllies"
+        app:layout_constraintEnd_toStartOf="@+id/checkBoxFactionEditAllies"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextFactionEditName" />
 
     <ListView
-        android:id="@+id/listViewFactionCreateInvited"
+        android:id="@+id/listViewFactionEditInvited"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:divider="@null"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
-        app:layout_constraintStart_toStartOf="@+id/listViewFactionCreateAllies"
+        app:layout_constraintStart_toStartOf="@+id/listViewFactionEditAllies"
         app:layout_constraintTop_toTopOf="@+id/guideline209" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

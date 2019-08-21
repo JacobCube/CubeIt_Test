@@ -211,7 +211,8 @@
         app:layout_constraintHorizontal_bias="0.526"
         app:layout_constraintStart_toStartOf="@+id/guideline147"
         app:layout_constraintTop_toTopOf="@+id/editTextInboxContent"
-        app:srcCompat="@drawable/backpack" />
+        app:srcCompat="@drawable/backpack"
+        tools:visibility="visible" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxItemInfo"
@@ -263,6 +264,38 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline165"
         app:layout_constraintStart_toStartOf="@+id/guideline110"
         app:layout_constraintTop_toTopOf="@+id/guideline84"
-        app:srcCompat="@drawable/head_close" />
+        app:srcCompat="@drawable/head_close"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageAccept"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
+        android:tint="@android:color/holo_green_light"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline84"
+        app:layout_constraintDimensionRatio="H,1:0.75"
+        app:layout_constraintEnd_toStartOf="@+id/guideline165"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:srcCompat="@drawable/completed"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageDecline"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline84"
+        app:layout_constraintDimensionRatio="H,1:0.75"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline165"
+        app:srcCompat="@drawable/decline_icon"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

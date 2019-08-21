@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.BitmapFactory
+import android.graphics.PorterDuff
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -20,7 +21,7 @@ import kotlinx.android.synthetic.main.row_faction_invitation.view.*
 
 class Fragment_Faction_Create : Fragment() {
 
-    val faction = Faction("Template", "", Data.player.username)
+    val faction = Faction("Template", Data.player.username)
     val inviteAllies: MutableList<String> = Data.player.allies.toTypedArray().toMutableList()
     lateinit var allies: BaseAdapter
     lateinit var invited: BaseAdapter
@@ -33,7 +34,7 @@ class Fragment_Faction_Create : Fragment() {
         val view:View = inflater.inflate(R.layout.fragment_fraction_create, container, false)
 
         view.listViewFactionCreateAllies.adapter = FactionMemberList(this, inviteAllies, true)
-        view.listViewFactionCreateInvited.adapter = FactionMemberList(this, faction.pendingInvitations, false)
+        view.listViewFactionCreateInvited.adapter = FactionMemberList(this, faction.pendingInvitationsPlayer, false)
 
         allies = (view.listViewFactionCreateAllies.adapter as FactionMemberList)
         invited = (view.listViewFactionCreateInvited.adapter as FactionMemberList)
@@ -58,6 +59,7 @@ class Fragment_Faction_Create : Fragment() {
                 }
             }
         }
+
         return view
     }
 
@@ -99,11 +101,11 @@ class Fragment_Faction_Create : Fragment() {
 
             viewHolder.symbol.apply {
                 if(add){
-                    setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.plus_icon, opts))
-                    setColorFilter(android.R.color.holo_green_light)
+                    viewHolder.symbol.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.plus_icon, opts))
+                    viewHolder.symbol.drawable.setColorFilter(resources.getColor(R.color.itemborder_uncommon), PorterDuff.Mode.SRC_ATOP)
                 }else {
-                    setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.minus_icon, opts))
-                    setColorFilter(android.R.color.holo_red_light)
+                    viewHolder.symbol.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.minus_icon, opts))
+                    viewHolder.symbol.drawable.setColorFilter(resources.getColor(R.color.progress_hp), PorterDuff.Mode.SRC_ATOP)
                 }
             }
             viewHolder.username.text = collection[position]
@@ -112,11 +114,11 @@ class Fragment_Faction_Create : Fragment() {
                 rowMain.isEnabled = false
                 handler.postDelayed({rowMain.isEnabled = true}, 50)
                 if(add){
-                    activity.faction.pendingInvitations.add(collection[position])
+                    activity.faction.pendingInvitationsPlayer.add(collection[position])
                     activity.inviteAllies.remove(collection[position])
                 }else {
                     activity.inviteAllies.add(collection[position])
-                    activity.faction.pendingInvitations.remove(collection[position])
+                    activity.faction.pendingInvitationsPlayer.remove(collection[position])
                 }
                 activity.update()
             }

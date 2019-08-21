@@ -2,11 +2,10 @@ package cz.cubeit.cubeit
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import androidx.fragment.app.Fragment
-import androidx.core.app.TaskStackBuilder
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -22,6 +21,8 @@ class Fragment_Faction: Fragment(){
     var currentInstanceOfFaction: Faction? = null
     var snapshotListener: ListenerRegistration? = null
     var visible: Boolean = true
+    var dispatchListView: ListView? = null
+    var dispatchTextView: TextView? = null
 
     companion object{
         fun newInstance(ID: String? = null):Fragment_Faction{
@@ -40,11 +41,12 @@ class Fragment_Faction: Fragment(){
     /*override fun onStop() {
         super.onStop()
         snapshotListener?.remove()
-        activity!!.finish()
+        parent!!.finish()
     }*/
 
     override fun onResume() {
         super.onResume()
+        //(activity!! as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.VISIBLE
         visible = true
     }
 
@@ -59,46 +61,76 @@ class Fragment_Faction: Fragment(){
         var myFaction = true
         val view:View = inflater.inflate(R.layout.fragment_faction, container, false)
 
-        fun init(){
+        fun init() {
             view.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, view.textViewFactionMemberInfo, view.context, currentInstanceOfFaction!!.members.filter { it.username == Data.player.username }, myFaction)
-            if(!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER){
+            (view.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
+            if (!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER) {
                 view.buttonFactionAlly.visibility = View.VISIBLE
                 view.buttonFactionEnemy.visibility = View.VISIBLE
                 view.buttonFactionInvade.visibility = View.VISIBLE
-            }else if(!myFaction && Data.player.factionID == null) {
+            } else if (!myFaction && Data.player.factionID == null) {
                 view.buttonFactionApply.visibility = View.VISIBLE
-            }else{
+            } else {
                 view.buttonFactionAlly.visibility = View.GONE
                 view.buttonFactionEnemy.visibility = View.GONE
                 view.buttonFactionInvade.visibility = View.GONE
                 view.buttonFactionApply.visibility = View.GONE
             }
 
+            (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility =
+                    if (myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR)) {
+                        View.VISIBLE
+                    } else View.GONE
+
             view.textViewFactionInfoDesc.setHTMLText(currentInstanceOfFaction!!.getInfoDesc())
             view.textViewFactionDescription.setHTMLText(currentInstanceOfFaction!!.description)
             view.textViewFactionTitle.text = currentInstanceOfFaction!!.name
-            view.textViewFactionGold.text = resources.getString(R.string.faction_gold, currentInstanceOfFaction!!.gold.toString())
 
-            view.imageViewFactionGoldPlus.setOnClickListener {
-                view.editTextFactionGold.setText(if(view.editTextFactionGold.text.isEmpty()){
-                    "0"
-                } else{
-                    val temp = view.editTextFactionGold.text.toString().toInt()
-                    (temp + temp/8).toString()
-                } )
-            }
-            view.buttonFactionGoldOk.setOnClickListener {
+            if(myFaction){
+                view.textViewFactionGold.text = resources.getString(R.string.faction_gold, currentInstanceOfFaction!!.gold.toString())
 
+                view.imageViewFactionGoldPlus.setOnClickListener {
+                    view.editTextFactionGold.setText(if (view.editTextFactionGold.text.isEmpty()) {
+                        "0"
+                    } else {
+                        val temp = view.editTextFactionGold.text.toString().toInt()
+                        (temp + 1 + temp / 8).toString()
+                    })
+                }
+                view.buttonFactionGoldOk.setOnClickListener {
+                    if (view.editTextFactionGold.text.isNotBlank()) {
+                        val amount: Int = view.editTextFactionGold.text.toString().toInt()
+                        if (Data.player.gold >= amount && amount != 0) {
+                            view.editTextFactionGold.setBackgroundResource(0)
+                            Data.player.gold -= amount
+
+                            currentInstanceOfFaction!!.getMember(Data.player.username)!!.goldGiven = amount.toLong()
+                            currentInstanceOfFaction!!.gold += amount
+                            currentInstanceOfFaction!!.actionLog.add(FactionActionLog(Data.player.username, " donated ", "$amount gold"))
+                            currentInstanceOfFaction!!.upload()
+                        } else {
+                            view.editTextFactionGold.setBackgroundResource(R.color.progress_hp)
+                        }
+                    }
+                }
+                view.textViewFactionMemberInfo.text = currentInstanceOfFaction!!.getLog()
+                //if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
+                view.textViewFactionMemberInfo.performClick()
+            }else {
+                view.buttonFactionGoldOk.visibility = View.GONE
+                view.imageViewFactionGoldPlus.visibility = View.GONE
+                view.textViewFactionGold.visibility = View.GONE
+                view.editTextFactionGold.visibility = View.GONE
+                view.textViewFactionMemberInfo.visibility = View.GONE
+                (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
             }
-            if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
         }
 
         Data.loadingStatus = LoadingStatus.LOGGING                           //procesing
         val intent = Intent(activity, Activity_Splash_Screen::class.java)
 
-        Log.d("factionID", SystemFlow.factionChange.toString())
         if(factionID == null || factionID == ""){
-            if(Data.player.faction == null || (SystemFlow.factionChange && currentInstanceOfFaction == null)){
+            if(SystemFlow.factionChange || Data.player.faction == null){
                 startActivity(intent)
                 Data.player.loadFaction().addOnSuccessListener {    //tries to load player's faction
                     currentInstanceOfFaction = Data.player.faction
@@ -106,9 +138,6 @@ class Fragment_Faction: Fragment(){
 
                     if(currentInstanceOfFaction == null){                              //player doesn't have any faction, create new
                         (activity as Activity_Faction_Base).changePage(0)
-                        Data.player.factionName = ""
-                        Data.player.factionID = 0
-                        Data.player.factionRole = null
                     }else {
                         myFaction = true
                         init()
@@ -131,8 +160,12 @@ class Fragment_Faction: Fragment(){
                                 val newFaction = snapshot.toObject(Faction::class.java)
                                 if(newFaction == null) activity!!.finish()
 
-                                currentInstanceOfFaction = newFaction
-                                Data.player.faction = newFaction
+                                if(Data.player.faction != null && Data.player.faction === newFaction!!){
+                                    currentInstanceOfFaction = Data.player.faction
+                                }else {
+                                    currentInstanceOfFaction = newFaction
+                                    Data.player.faction = newFaction
+                                }
                                 init()
                                 if(!visible)SystemFlow.factionChange = true
                                 (view.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
@@ -153,7 +186,6 @@ class Fragment_Faction: Fragment(){
                 currentInstanceOfFaction = Data.player.faction
                 myFaction = true
                 init()
-                SystemFlow.factionChange = false
                 Data.loadingStatus = LoadingStatus.CLOSELOADING
             }
         }else {
@@ -193,9 +225,9 @@ class Fragment_Faction: Fragment(){
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
                 rowMain = layoutInflater.inflate(R.layout.row_faction_members, viewGroup, false)
-                val viewHolder = ViewHolder(rowMain.buttonFactionRow0, rowMain.buttonFactionRow1, rowMain.buttonFactionRow2, rowMain.buttonFactionRow3,
-                                                rowMain.textViewFactionRow0, rowMain.textViewFactionRow1, rowMain.textViewFactionRow2, rowMain.textViewFactionRow3,
-                                                    rowMain.imageViewFactionRowBadge0, rowMain.imageViewFactionRowBadge1, rowMain.imageViewFactionRowBadge2, rowMain.imageViewFactionRowBadge3)
+                val viewHolder = ViewHolder(rowMain.imageViewFactionRow0, rowMain.imageViewFactionRow1, rowMain.imageViewFactionRow2, rowMain.imageViewFactionRow3,
+                        rowMain.textViewFactionRow0, rowMain.textViewFactionRow1, rowMain.textViewFactionRow2, rowMain.textViewFactionRow3,
+                        rowMain.imageViewFactionRowBadge0, rowMain.imageViewFactionRowBadge1, rowMain.imageViewFactionRowBadge2, rowMain.imageViewFactionRowBadge3)
                 rowMain.tag = viewHolder
             } else {
                 rowMain = convertView
@@ -228,6 +260,13 @@ class Fragment_Faction: Fragment(){
 
                 fun initialize(){
                     if((rowIndex + index) < faction.members.size){
+                        val givenGoldDay = faction.members[rowIndex + index].goldGiven.toInt().safeDivider(faction.members[rowIndex + index].membershipLength)
+
+                        img.setBackgroundColor(when {
+                            givenGoldDay > faction.taxPerDay -> R.color.itemborder_uncommon
+                            givenGoldDay < faction.taxPerDay -> R.color.progress_hp
+                            else -> R.color.character_dark
+                        })
                         img.setImageResource(faction.members[rowIndex + index].profilePicture)
                         txt.setHTMLText(faction.members[rowIndex + index].getShortDesc())
                         badge.setImageResource(faction.members[rowIndex + index].role.getDrawable())
@@ -235,13 +274,13 @@ class Fragment_Faction: Fragment(){
                         if(myFaction){
                             img.apply {
                                 setOnClickListener {
+                                    memberDesc.scrollTo(0, 0)
                                     memberDesc.setHTMLText(faction.getMemberDesc(rowIndex + index))
                                 }
 
                                 setOnLongClickListener {
                                     member = faction.members[rowIndex + index]
-                                    if(member.username == Data.player.username)
-                                    showMenu(it, context, member, playerMember, faction, this@FactionMemberList)
+                                    if(member.username != Data.player.username)showMenu(it, context, member, playerMember, faction, this@FactionMemberList)
                                     true
                                 }
                             }
@@ -301,8 +340,8 @@ class Fragment_Faction: Fragment(){
             return rowMain
         }
         private class ViewHolder(val imgMember0: ImageView, val imgMember1: ImageView, val imgMember2: ImageView, val imgMember3: ImageView,
-                                    val txtMember0: CustomTextView, val txtMember1: CustomTextView, val txtMember2: CustomTextView, val txtMember3: CustomTextView,
-                                        val badge0: ImageView, val badge1: ImageView, val badge2: ImageView, val badge3: ImageView)
+                                 val txtMember0: CustomTextView, val txtMember1: CustomTextView, val txtMember2: CustomTextView, val txtMember3: CustomTextView,
+                                 val badge0: ImageView, val badge1: ImageView, val badge2: ImageView, val badge3: ImageView)
 
         companion object {
             fun showMenu(it: View, context: Context, member: FactionMember, playerMember: FactionMember, faction: Faction, parent: BaseAdapter) {
@@ -346,15 +385,16 @@ class Fragment_Faction: Fragment(){
                             context.startActivity(intent)
                         }
                         "Promote" -> {
-                            member.promote(faction)
+                            faction.promoteMember(member, Data.player.username)
                             parent.notifyDataSetChanged()
                         }
                         "Demote" -> {
-                            member.demote(faction)
+                            faction.demoteMember(member, Data.player.username)
                             parent.notifyDataSetChanged()
                         }
                         "Kick" -> {
-                            member.kick(faction)
+                            faction.kickMember(member, Data.player.username)
+                            faction.members.remove(member)
                             parent.notifyDataSetChanged()
                         }
                         "Warn" -> {

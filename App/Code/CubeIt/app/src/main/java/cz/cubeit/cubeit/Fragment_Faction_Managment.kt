@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.app.AlertDialog
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.graphics.PorterDuff
@@ -15,36 +16,31 @@ import kotlinx.android.synthetic.main.fragment_faction_edit.view.*
 import kotlinx.android.synthetic.main.row_faction_invitation.view.*
 
 
-class Fragment_Faction_Edit : Fragment() {
-    var inviteAllies: MutableList<String> = Data.player.allies.toTypedArray().toMutableList()
+class Fragment_Faction_Managment : Fragment() {
+
+    val inviteAllies = Data.player.faction!!.allyFactions
+    val inviteEnemies = Data.player.faction!!.enemyFactions
+    var inviteNeutral: HashMap<Int, String> = hashMapOf()
     lateinit var allies: BaseAdapter
     lateinit var invited: BaseAdapter
-
-    override fun onResume() {
-        super.onResume()
-        //(activity!! as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.VISIBLE
-    }
+    lateinit var neutral: BaseAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view:View = inflater.inflate(R.layout.fragment_faction_edit, container, false)
+        val view:View = inflater.inflate(R.layout.fragment_faction_managment, container, false)
 
         fun init(){
             view.editTextFactionEditDescription.setText(Data.player.faction!!.description)
             view.editTextFactionEditName.setText(Data.player.faction!!.name)
-            view.editTextFactionEditTax.setText(Data.player.faction!!.taxPerDay.toString())
-            view.editTextFactionEditWarnMsg.setText(Data.player.faction!!.warnMessage)
-            view.editTextFactionEditInvitationMsg.setText(Data.player.faction!!.invitationMessage)
+            view.editTextFactionEditTax.setText(Data.player.faction!!.taxPerDay)
 
             (view.listViewFactionEditAllies.adapter as FactionMemberList).notifyDataSetChanged()
             (view.listViewFactionEditInvited.adapter as FactionMemberList).notifyDataSetChanged()
         }
 
-        if(Data.player.faction != null){
-            for(i in inviteAllies.toTypedArray()){
-                if(Data.player.faction!!.pendingInvitationsPlayer.contains(i)) inviteAllies.remove(i)
-            }
-            view.listViewFactionEditAllies.adapter = FactionMemberList(this, inviteAllies, true, resources)
-            view.listViewFactionEditInvited.adapter = FactionMemberList(this, Data.player.faction!!.pendingInvitationsPlayer, false, resources)
+        if(Data.player.faction == null){
+            (activity as Activity_Faction_Base).changePage(0)
+        }else {
+            //view.listViewFactionEditAllies.adapter = FactionMemberList(this, inviteAllies, true, resources)
 
             allies = (view.listViewFactionEditAllies.adapter as FactionMemberList)
             invited = (view.listViewFactionEditInvited.adapter as FactionMemberList)
@@ -65,7 +61,7 @@ class Fragment_Faction_Edit : Fragment() {
     }
 
 
-    class FactionMemberList(val parent: Fragment_Faction_Edit, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true, val resources: Resources) : BaseAdapter() {
+    class FactionMemberList(val activity: Fragment_Faction_Managment, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true, val resources: Resources) : BaseAdapter() {
 
         override fun getCount(): Int {
             return collection.size
@@ -107,16 +103,8 @@ class Fragment_Faction_Edit : Fragment() {
             rowMain.setOnClickListener {
                 rowMain.isEnabled = false
                 handler.postDelayed({rowMain.isEnabled = true}, 50)
-                if(add){
-                    (parent.activity!! as Activity_Faction_Base).inviteList.add(collection[position])
-                    Data.player.faction!!.pendingInvitationsPlayer.add(collection[position])
-                    parent.inviteAllies.remove(collection[position])
-                }else {
-                    parent.inviteAllies.add(collection[position])
-                    (parent.activity!! as Activity_Faction_Base).inviteList.remove(collection[position])
-                    Data.player.faction!!.pendingInvitationsPlayer.remove(collection[position])
-                }
-                parent.update()
+
+                activity.update()
             }
 
             return rowMain

@@ -42,6 +42,7 @@
         android:id="@+id/textViewProfileLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="4dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
         android:text="1"
@@ -57,7 +58,6 @@
         android:id="@+id/profile_stats"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
@@ -65,7 +65,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline145" />
+        app:layout_constraintTop_toTopOf="@+id/guideline219" />
 
     <TextView
         android:id="@+id/profile_description"
@@ -73,9 +73,11 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:textColor="@color/colorSecondary"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline79"
@@ -84,14 +86,29 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.1" />
 
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline217"
+        app:layout_constraintTop_toTopOf="parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </androidx.core.widget.NestedScrollView>
+
     <ImageView
         android:id="@+id/profile_stats_fight"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:src="@drawable/battle"
-        app:layout_constraintBottom_toTopOf="@+id/guideline145"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline217"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
@@ -100,11 +117,40 @@
         android:layout_height="0dp"
         android:layout_marginTop="4dp"
         android:src="@drawable/compare_icon"
-        app:layout_constraintBottom_toTopOf="@+id/guideline170"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline217"
         app:layout_constraintTop_toTopOf="@+id/guideline145"
         app:tint="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewProfileStatsAlly"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/friend_icon"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:tint="@android:color/holo_green_light"
+        android:tintMode="add"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline217"
+        app:layout_constraintTop_toBottomOf="@+id/profile_stats_compare" />
+
+    <ImageView
+        android:id="@+id/imageViewProfileStatsFaction"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/faction_invite_icon"
+        android:tint="@android:color/holo_orange_dark"
+        android:tintMode="add"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline217"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewProfileStatsAlly" />
 
     <ImageView
         android:id="@+id/imageViewProfileMail"
@@ -124,10 +170,31 @@
         app:layout_constraintGuide_percent="0.18" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline170"
+        android:id="@+id/guideline219"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.36" />
+        app:layout_constraintGuide_percent="0.26" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline217"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <TextView
+        android:id="@+id/textViewProfileStatsFaction"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text=""
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline219"
+        app:layout_constraintEnd_toStartOf="@+id/guideline217"
+        app:layout_constraintStart_toEndOf="@+id/imageViewProfileMail"
+        app:layout_constraintTop_toTopOf="@+id/guideline145" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

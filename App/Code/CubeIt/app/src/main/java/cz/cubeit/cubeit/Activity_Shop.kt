@@ -6,7 +6,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
@@ -16,6 +18,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_shop.*
+import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_shop_inventory.view.*
 import kotlinx.android.synthetic.main.row_shop_offer.view.*
 
@@ -380,12 +383,13 @@ class Activity_Shop : AppCompatActivity(){
         private fun getDoubleClick(index:Int, context:Context, view:View, listViewInventoryShop:ListView, player:Player, textViewMoney:TextView, textViewInfoItem:TextView){
             val window = PopupWindow(context)
             window.contentView = view
-            val buttonYes:Button = view.findViewById(R.id.buttonYes)
-            val buttonNo:Button = view.findViewById(R.id.buttonCloseDialog)
-            val info:TextView = view.findViewById(R.id.textViewInfo)
+            val buttonYes:Button = view.buttonYes
+            val buttonNo:ImageView = view.buttonCloseDialog
+            val info:TextView = view.textViewInfo
             info.text = "Are you sure you want to sell ${Data.player.inventory[index]?.name} ?"
             window.isOutsideTouchable = false
             window.isFocusable = true
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             buttonYes.setOnClickListener {
                 Data.player.money+=Data.player.inventory[index]!!.price
                 Data.player.inventory[index]=null

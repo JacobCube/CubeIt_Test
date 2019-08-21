@@ -2,6 +2,7 @@ package cz.cubeit.cubeit
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
@@ -37,6 +38,7 @@ class Activity_Character_Customization: AppCompatActivity(){
                 handler.postDelayed({hideSystemUI()},1000)
             }
         }
+        Log.d("character customization", "entered")
 
         var viewPagerPosition = nextInt(0, 7)
         viewPagerCharacterCustomization.currentItem = viewPagerPosition
@@ -130,7 +132,7 @@ class Activity_Character_Customization: AppCompatActivity(){
 class ViewPagerCharacterCustomization internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
     override fun getItem(position: Int): Fragment? {
-        val drawable = Data.charClasses[position].drawable
+        val drawable = Data.charClasses[position+1].drawable
         return Fragment_Character.newInstance(drawable)
     }
 

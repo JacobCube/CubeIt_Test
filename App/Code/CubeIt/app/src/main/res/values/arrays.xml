@@ -14,10 +14,13 @@
 
     <string-array name="inbox_category">
         <item>Category</item>
-        <item><FONT COLOR='#C0B02D\'>Unread</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>New</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>Faction</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>Allies</FONT></item>
         <item><FONT COLOR='#C0B02D\'>Read</FONT></item>
         <item><FONT COLOR='#C0B02D\'>Sent</FONT></item>
         <item><FONT COLOR='#C0B02D\'>Fights</FONT></item>
+        <item><FONT COLOR='#C0B02D\'>Market</FONT></item>
         <item><FONT COLOR='#C0B02D\'>Spam</FONT></item>
     </string-array>
 

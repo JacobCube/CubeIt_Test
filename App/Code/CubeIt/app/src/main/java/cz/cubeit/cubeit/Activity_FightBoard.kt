@@ -143,7 +143,7 @@ class ActivityFightBoard: AppCompatActivity(){
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                imageViewLoadingBoard.visibility = View.INVISIBLE
+                imageViewLoadingBoard.visibility = View.GONE
             }
         })
 
@@ -406,7 +406,7 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         if (convertView == null) {
             val layoutInflater = LayoutInflater.from(viewGroup!!.context)
             rowMain = layoutInflater.inflate(R.layout.row_fight_board, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewFame, rowMain.textViewPosition, rowMain.rowFightBoard, rowMain.imageViewBoardRowActive, rowMain.textViewBoardLevel)
+            val viewHolder = ViewHolder(rowMain.textViewName, rowMain.textViewFame, rowMain.textViewPosition, rowMain.rowFightBoard, rowMain.imageViewBoardRowActive, rowMain.textViewBoardLevel, rowMain.textViewBoardRowFaction)
             rowMain.tag = viewHolder
 
         } else rowMain = convertView
@@ -424,6 +424,7 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         viewHolder.textViewFame.text = players[position].fame.toString()
         viewHolder.imageViewBoardRowActive.visibility = if(players[position].online)View.VISIBLE else View.GONE
         viewHolder.textViewBoardLevel.text = players[position].level.toString()
+        viewHolder.textViewBoardRowFaction.text = players[position].factionName
 
         viewHolder.rowFightBoard.setOnClickListener {
             (parentActivity as ActivityFightBoard).pickedPlayer = players[position]
@@ -437,5 +438,5 @@ class FightBoardPlayerList(private val players:MutableList<Player>, private val 
         return rowMain
     }
 
-    private class ViewHolder(var textViewName:TextView, var textViewFame:TextView, var textViewPosition:TextView, val rowFightBoard:ImageView, val imageViewBoardRowActive:ImageView, val textViewBoardLevel: TextView)
+    private class ViewHolder(var textViewName:TextView, var textViewFame:TextView, var textViewPosition:TextView, val rowFightBoard:ImageView, val imageViewBoardRowActive:ImageView, val textViewBoardLevel: TextView, val textViewBoardRowFaction: TextView)
 }

@@ -4,7 +4,9 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.core.content.ContextCompat.startActivity
 import androidx.appcompat.app.AppCompatActivity
@@ -386,6 +388,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                 val viewPopBuy:View = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
                 windowBuy.elevation = 0.0f
                 windowBuy.contentView = viewPopBuy
+                windowBuy.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
                 windowBuy.isOutsideTouchable = false
                 windowBuy.isFocusable = true
@@ -465,7 +468,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                 val viewPopBuy:View = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
                 windowBuy.elevation = 0.0f
                 windowBuy.contentView = viewPopBuy
-
+                windowBuy.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 windowBuy.isOutsideTouchable = false
                 windowBuy.isFocusable = true
 

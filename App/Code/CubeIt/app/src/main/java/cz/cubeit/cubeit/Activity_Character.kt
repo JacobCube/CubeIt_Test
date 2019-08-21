@@ -76,6 +76,7 @@ class Activity_Character : AppCompatActivity() {
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val viewRect = Rect()
         val viewRectStats = Rect()
+
         frameLayoutCharacterStats.getGlobalVisibleRect(viewRectStats)
         frameLayoutMenuCharacter.getGlobalVisibleRect(viewRect)
 
@@ -1081,51 +1082,53 @@ class Activity_Character : AppCompatActivity() {
     }
     fun onCharacterClicked(view: View){
 
-        if(!statsShowed){
-            animatorStatsUp = ValueAnimator.ofFloat(frameLayoutCharacterStats.y, 0f).apply {
-                duration = 800
-                addUpdateListener {
-                    frameLayoutCharacterStats.y = it.animatedValue as Float
+        if(!statsLocked){
+            if(!statsShowed){
+                animatorStatsUp = ValueAnimator.ofFloat(frameLayoutCharacterStats.y, 0f).apply {
+                    duration = 800
+                    addUpdateListener {
+                        frameLayoutCharacterStats.y = it.animatedValue as Float
+                    }
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            statsShowed = true
+                        }
+
+                    })
+                    start()
                 }
-                addListener(object : Animator.AnimatorListener {
-                    override fun onAnimationRepeat(animation: Animator?) {
+            }else{
+                animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
+                    duration = 800
+                    addUpdateListener {
+                        frameLayoutCharacterStats.y = it.animatedValue as Float
                     }
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
+                        }
 
-                    override fun onAnimationCancel(animation: Animator?) {
-                    }
+                        override fun onAnimationCancel(animation: Animator?) {
+                        }
 
-                    override fun onAnimationStart(animation: Animator?) {
-                    }
+                        override fun onAnimationStart(animation: Animator?) {
+                        }
 
-                    override fun onAnimationEnd(animation: Animator?) {
-                        statsShowed = true
-                    }
+                        override fun onAnimationEnd(animation: Animator?) {
+                            statsShowed = false
+                        }
 
-                })
-                start()
-            }
-        }else{
-            animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
-                duration = 800
-                addUpdateListener {
-                    frameLayoutCharacterStats.y = it.animatedValue as Float
+                    })
+                    start()
                 }
-                addListener(object : Animator.AnimatorListener {
-                    override fun onAnimationRepeat(animation: Animator?) {
-                    }
-
-                    override fun onAnimationCancel(animation: Animator?) {
-                    }
-
-                    override fun onAnimationStart(animation: Animator?) {
-                    }
-
-                    override fun onAnimationEnd(animation: Animator?) {
-                        statsShowed = false
-                    }
-
-                })
-                start()
             }
         }
     }

@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.Typeface
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
@@ -149,9 +150,19 @@ object Data {
 
     var loadingActiveQuest: Boolean = false
 
-    var inboxCategories: MutableList<InboxCategory> = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Faction", color = R.color.factionInbox), InboxCategory(name = "Allies", color = R.color.itemborder_very_rare),InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory(name = "Spam"))
+    var inboxCategories: HashMap<MessageStatus, InboxCategory> = hashMapOf(
+            MessageStatus.New to InboxCategory(name = "New", ID = 0),
+            MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
+            MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
+            MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
+            MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
+            MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
+            MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
+            MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
 
     var newLevel = false
+
+    var factionStatusChanged: Boolean = false
 
     fun logOut(context: Activity) {
         val intentSplash = Intent(context.baseContext, Activity_Splash_Screen::class.java)
@@ -170,7 +181,15 @@ object Data {
 
 
         activeQuest = null
-        inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Faction", color = R.color.factionInbox), InboxCategory(name = "Allies", color = R.color.itemborder_very_rare),InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory(name = "Spam"))
+        inboxCategories = hashMapOf(
+                MessageStatus.New to InboxCategory(name = "New", ID = 0),
+                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
+                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
+                MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
+                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
+                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
+                MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
+                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
         activeQuest = null
         player = Player()
         inbox = mutableListOf()
@@ -189,7 +208,7 @@ object Data {
 
                 if(GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE){
 
-                    Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Balanced rates"))
+                    Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Balance rates"))
 
                     db.collection("globalDataChecksum").document("balance").get().addOnSuccessListener {
                         GenericDB.Balance.updateData(if (SystemFlow.readObject(context, "balance.data") != 0) SystemFlow.readObject(context, "balance.data") as GenericDB.Balance else GenericDB.Balance)
@@ -419,10 +438,8 @@ object Data {
                             }
                         }
                     }
-
                 }
             }
-
         }
     }
 
@@ -1155,6 +1172,7 @@ enum class LoadingStatus {
     UNLOGGED,
     LOGGING,
     CLOSELOADING,
+    REGISTERED,
     ENTERFIGHT
 }
 
@@ -1502,10 +1520,19 @@ open class Player(
     var fame: Int = 0
     var drawableExt: Int = 0
     var storyQuestsCompleted: MutableList<StoryQuest> = mutableListOf()
-    var factionName: String = ""
+    var factionName: String? = null
     var factionID: Int? = null
     var factionRole: FactionRole? = null
     @Exclude var faction: Faction? = null
+        set(value){
+            field = value
+            this.factionName = field?.name
+            this.factionID = field?.ID
+            this.factionRole = field?.getMember(this.username)?.role
+        }
+        @Exclude get(){
+            return field
+        }
     var currentStoryQuest: StoryQuest? = null
     var newPlayer: Boolean = true
     var online: Boolean = true
@@ -1525,9 +1552,18 @@ open class Player(
         if(SystemFlow.readFileText(context, "textSize.data") != "0") textSize = SystemFlow.readFileText(context, "textSize.data").toFloat()
     }
 
-    fun changeMyStatus(): Task<Void> {
+    fun changeFactionStatus(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
-        return db.collection("factions").document(this.factionID.toString()).update("members", FieldValue.arrayUnion(this.faction.members))
+        val docRef = db.collection("factions").document(this.factionID.toString())
+        return if(this.faction!!.members.filter { it.username == this.username }.size > 1){
+            docRef.update("members", FieldValue.arrayRemove(this.faction?.getMember(this.username)))
+        }else {
+            docRef.update("members", FieldValue.arrayRemove(this.faction?.getMember(this.username))).continueWithTask {
+                docRef.update("members", FieldValue.arrayUnion(this.faction?.getMember(this.username)?.refresh())).addOnSuccessListener {
+                    Data.factionStatusChanged = true
+                }
+            }
+        }
     }
 
     fun uploadSingleItem(item: String): Task<Void> {
@@ -1764,21 +1800,21 @@ open class Player(
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox").orderBy("sentTime", Query.Direction.DESCENDING)
 
-        Data.inboxCategories = mutableListOf(InboxCategory(name = "Unread"), InboxCategory(name = "Read"), InboxCategory(name = "Sent"), InboxCategory(name = "Fights"), InboxCategory("Market"),InboxCategory(name = "Spam"))
+        Data.inboxCategories = hashMapOf(
+                MessageStatus.New to InboxCategory(name = "New", ID = 0),
+                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
+                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
+                MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
+                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
+                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
+                MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
+                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
 
         return docRef.get().addOnSuccessListener {
             Data.inbox = it.toObjects(InboxMessage::class.java)
 
             for (message in Data.inbox) {
-                when (message.status) {
-                    MessageStatus.New -> Data.inboxCategories[0].messages
-                    MessageStatus.Read -> Data.inboxCategories[1].messages
-                    MessageStatus.Sent -> Data.inboxCategories[2].messages
-                    MessageStatus.Fight -> Data.inboxCategories[3].messages
-                    MessageStatus.Market -> Data.inboxCategories[4].messages
-                    MessageStatus.Spam -> Data.inboxCategories[5].messages
-                    else -> Data.inboxCategories[5].messages
-                }.add(message)
+                Data.inboxCategories[message.status]!!.messages.add(message)
             }
         }
     }
@@ -1852,6 +1888,9 @@ open class Player(
             if(temp != null && temp.contains(this.username)){
                 this.faction = temp
                 this.factionName = temp.name
+                this.factionRole = temp.getMember(this.username)!!.role
+            }else {
+                this.faction = null
             }
         }
     }
@@ -1963,6 +2002,8 @@ open class Player(
             }
         }.continueWithTask {
             checkForQuest()
+        }.continueWithTask {
+            loadFaction()
         }.continueWithTask {
             loadInbox()
         }
@@ -2949,11 +2990,7 @@ class FightLog(
 ){
     var id: Int = 0
 
-    init {
-        init()
-    }
-
-    private fun init(){
+    fun init(){
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("FightLog")
         var temp: MutableList<FightLog>
@@ -3062,9 +3099,9 @@ open class NPC(
 
         return db.collection("Data.npcs").orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
             temp = it.toObjects(NPC::class.java)
-            this.ID = (if (!temp.isNullOrEmpty()) {
-                temp[0].ID + 1
-            } else 1).toString()
+            this.ID = if (!temp.isNullOrEmpty()) {
+                (temp[0].ID + 1).toString()
+            } else "1"
         }.continueWithTask {
             db.collection("Data.npcs").document(this.ID).set(this)
         }
@@ -3372,9 +3409,10 @@ class CustomTextView : TextView {
             SizeType.adaptive -> Data.player.textSize
             SizeType.title -> Data.player.textSize + 10f
         }
-
+        this.setPadding(4, 4, 4, 4)
         this.movementMethod = ScrollingMovementMethod()
         this.typeface = ResourcesCompat.getFont(context, customFont)
+        this.setTypeface(this.typeface, Typeface.BOLD)
     }
 
     constructor(context: Context) : super(context) {}
@@ -3429,7 +3467,7 @@ class StoryViewPager : ViewPager {      //disabling the ViewPager!s swipe
 class InboxCategory(
         var name: String = "My category",
         var color: Int = Color.BLUE,
-        val ID: String = "0001",
+        val ID: Int = 0,
         var messages: MutableList<InboxMessage> = mutableListOf()
 )
 
@@ -3442,7 +3480,9 @@ class InboxMessage(
         var ID: Int = 1,
         var category: String = "0001",
         var reward: Reward? = null,
-        var status: MessageStatus = MessageStatus.New
+        var status: MessageStatus = MessageStatus.New,
+        var isInvitation1: Boolean = false,
+        var invitation: Invitation = Invitation("","","",InvitationType.factionAlly)
 ) {
     var sentTime: Date = java.util.Calendar.getInstance().time
     var deleteTime: FieldValue? = null
@@ -3465,25 +3505,11 @@ class InboxMessage(
         }
     }
 
-    fun changeStatus(status: MessageStatus) {
-        when (this.status) {
-            MessageStatus.New -> Data.inboxCategories[0].messages.remove(this)
-            MessageStatus.Read -> Data.inboxCategories[1].messages.remove(this)
-            MessageStatus.Sent -> Data.inboxCategories[2].messages.remove(this)
-            MessageStatus.Fight -> Data.inboxCategories[3].messages.remove(this)
-            MessageStatus.Spam -> Data.inboxCategories[4].messages.remove(this)
-            else -> Data.inboxCategories[4].messages.remove(this)
-        }
-        when (status) {
-            MessageStatus.New -> Data.inboxCategories[0].messages.add(this)
-            MessageStatus.Read -> Data.inboxCategories[1].messages.add(this)
-            MessageStatus.Sent -> Data.inboxCategories[2].messages.add(this)
-            MessageStatus.Fight -> Data.inboxCategories[3].messages.add(this)
-            MessageStatus.Spam -> Data.inboxCategories[4].messages.add(this)
-            else -> Data.inboxCategories[4].messages.add(this)
-        }
-        this.status = status
-        if (status == MessageStatus.Deleted) deleteTime = FieldValue.serverTimestamp()
+    fun changeStatus(statusX: MessageStatus) {
+        Data.inboxCategories[this.status]!!.messages.remove(this)
+        Data.inboxCategories[statusX]!!.messages.add(this)
+        this.status = statusX
+        if (statusX == MessageStatus.Deleted) deleteTime = FieldValue.serverTimestamp()
 
         Data.player.uploadMessage(this)
     }
@@ -3562,7 +3588,8 @@ enum class FactionRole{
 
 data class FactionMember(
         var username: String = "",
-        var role: FactionRole = FactionRole.MEMBER
+        var role: FactionRole = FactionRole.MEMBER,
+        var level: Int = 1
         //var faction: Faction = Faction("")
 ): Comparable<FactionMember>, Serializable{
     var captureDate: Date = java.util.Calendar.getInstance().time
@@ -3577,7 +3604,6 @@ data class FactionMember(
         }
     var goldGiven: Long = 0
     var activeDate: Date = captureDate
-    var level: Int = 1
 
     override fun compareTo(other: FactionMember): Int {
         return when{
@@ -3592,53 +3618,55 @@ data class FactionMember(
         return this.username + " - " + this.level.toString()
     }
 
-    fun promote(faction: Faction): Task<Void> {
-        this.role = when{
-            this.role == FactionRole.MEMBER -> FactionRole.MODERATOR
-            this.role == FactionRole.MODERATOR ->{
-                faction.leader = this.username
-                FactionRole.LEADER
-            }
-            else -> this.role
-        }
-        return faction.upload()
-    }
-    fun demote(faction: Faction): Task<Void> {
-        this.role = when{
-            this.role == FactionRole.MEMBER -> {
-                this.kick(faction)
-                this.role
-            }
-            this.role == FactionRole.MODERATOR -> FactionRole.MEMBER
-            else -> this.role
-        }
-        return faction.upload()
-    }
-    fun kick(faction: Faction): Task<Void> {
-        faction.members.remove(this)
-        return faction.upload()
-    }
-
-    private fun initialize(){
-
+    fun refresh(): FactionMember{
+        this.activeDate = java.util.Calendar.getInstance().time
+        this.level = Data.player.level
+        return this
     }
 }
 
-class Faction(                     //TODO activity  TODO Firebase rules
+class FactionActionLog(
+        var caller: String = "Leader",
+        var action: String = " promoted ",
+        var receiver: String = "leader"
+): Serializable{
+    var captured: Date = java.util.Calendar.getInstance().time
+    @Exclude fun getDesc(): String{
+        return this.captured.toLocaleString() + ": " + this.caller + this.action + this.receiver
+    }
+}
+
+class Faction(                     //TODO parent, invitations  TODO Firebase rules
         var name: String = "template",
-        var description: String = "",
         var leader: String = Data.player.username
 ): Serializable{
+    var description: String = ""
+        set(value){
+            field = value
+            this.actionLog.add(FactionActionLog("", "Description has been changed to ", value))
+        }
     var ID: Int = 0
     var members: MutableList<FactionMember> = mutableListOf(FactionMember(leader, FactionRole.LEADER))
-    var allyFactions: MutableList<Int> = mutableListOf()
-    var enemyFactions: MutableList<Int> = mutableListOf()
-    var pendingInvitations: MutableList<String> = mutableListOf()
+    var allyFactions: HashMap<String, String> = hashMapOf()
+    var enemyFactions: HashMap<String, String> = hashMapOf()
+    var pendingInvitationsPlayer: MutableList<String> = mutableListOf()
+    var pendingInvitationsFaction: HashMap<String, String> = hashMapOf()
     var taxPerDay: Int = 0
+        set(value){
+            field = value
+            this.actionLog.add(FactionActionLog("", "Tax per day has been changed to ", value.toString()))
+        }
     var level: Int = 1
+        set(value){
+            field = value
+            this.actionLog.add(FactionActionLog("", "Level up!  ", value.toString()))
+        }
     var experience: Int = 0
     var gold: Int = 0
     var warnMessage: String = "Read the rules again!"
+    var invitationMessage: String = "You have been invited to ${this.name}!"
+    var actionLog: MutableList<FactionActionLog> = mutableListOf(FactionActionLog(this.leader, " created faction ", this.name))
+    var openToAllies: Boolean = false
 
     @Exclude var returnList: MutableList<Player> = mutableListOf()
     @Exclude var returnedPlayer: Player? = null
@@ -3647,7 +3675,7 @@ class Faction(                     //TODO activity  TODO Firebase rules
         return this.members.any { it.username == username }
     }
 
-    fun getMemberDesc(index: Int): String{                //description related to the Faction - gold, membership length etc.
+    @Exclude fun getMemberDesc(index: Int): String{                //description related to the Faction - gold, membership length etc.
         val member = this.members[index]
         val givenGoldDay = member.goldGiven.toInt().safeDivider(member.membershipLength)
 
@@ -3658,29 +3686,70 @@ class Faction(                     //TODO activity  TODO Firebase rules
         }+ "<br/>membership: ${member.membershipLength} days<br/>"
     }
 
+    fun kickMember(member: FactionMember, caller: String){
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("factions").document(this.ID.toString())
+        this.actionLog.add(FactionActionLog(caller, " kicked ", member.username))
+        docRef.update("members", FieldValue.arrayRemove(member))
+    }
+
+    fun promoteMember(member: FactionMember, caller: String){
+        member.role = when{
+            member.role == FactionRole.MEMBER -> FactionRole.MODERATOR
+            member.role == FactionRole.MODERATOR ->{
+                this.leader = member.username
+                FactionRole.LEADER
+            }
+            else -> member.role
+        }
+        this.actionLog.add(FactionActionLog(caller, " promoted ", member.username))
+        this.upload()
+    }
+
+    fun demoteMember(member: FactionMember, caller: String){
+        member.role = when{
+            member.role == FactionRole.MEMBER -> {
+                this.kickMember(member, caller)
+                member.role
+            }
+            member.role == FactionRole.MODERATOR -> FactionRole.MEMBER
+            else -> member.role
+        }
+        this.actionLog.add(FactionActionLog(caller, " demoted ", member.username))
+        this.upload()
+    }
+
     fun upload(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("factions").document(this.ID.toString())
 
         val dataMap: HashMap<String, Any?> = hashMapOf(
-                "name"          to this.name,
-                "description"   to   this.description,
-                "leader"       to   this.leader,
-                "members"       to   this.members,
-                "allyFactions"  to   this.allyFactions,
-                "enemyFactions"  to   this.enemyFactions,
-                "pendingInvitations"  to   this.pendingInvitations,
-                "taxPerDay"  to   this.taxPerDay,
-                "level"  to   this.level,
-                "experience"  to   this.experience,
+                "name" to this.name,
+                "description" to this.description,
+                "leader" to this.leader,
+                "members" to this.members,
+                "allyFactions" to this.allyFactions,
+                "enemyFactions" to this.enemyFactions,
+                "pendingInvitationsPlayer" to this.pendingInvitationsPlayer,
+                "pendingInvitationsFaction" to this.pendingInvitationsFaction,
+                "taxPerDay" to this.taxPerDay,
+                "level" to this.level,
+                "experience" to this.experience,
                 "gold" to this.gold,
-                "warnMessage" to this.warnMessage
+                "warnMessage" to this.warnMessage,
+                "actionLog" to this.actionLog,
+                "invitationMessage" to this.invitationMessage,
+                "openToAllies" to this.openToAllies
         )
         return docRef.update(dataMap)
     }
 
-    fun getInfoDesc(): String{
+    @Exclude fun getInfoDesc(): String{
         return "Level: ${this.level}<br/>Experience: ${this.experience}<br/>Tax: ${this.taxPerDay} / day"
+    }
+
+    @Exclude fun getMember(usernameX: String): FactionMember?{
+        return if(this.members.any { it.username == usernameX }) this.members.filter { it.username == usernameX }[0] else null
     }
 
     @Exclude fun initialize(): Task<Task<Void>> {
@@ -3719,9 +3788,77 @@ class Faction(                     //TODO activity  TODO Firebase rules
         }
     }
 
-    @Exclude fun getAllyFactions(collection: Collection<Int>){
-
+    @Exclude fun getLog(): String{
+        var string = ""
+        for(i in this.actionLog){
+            string += i.getDesc() + "\n"
+        }
+        return string
     }
+}
+
+class Invitation(
+        var caller: String = "no one?",
+        var message: String = " invited you to faction ",
+        var subject: String = "Horde",
+        var type: InvitationType = InvitationType.ally,
+        var factionID: Int = 0,
+        var factionName: String = "Faction"
+){
+
+    fun accept(){
+        val db = FirebaseFirestore.getInstance()
+
+        when(this.type){
+            InvitationType.faction -> {
+                db.collection("factions").document(this.factionID.toString()).get().addOnSuccessListener {
+                    val temp: MutableList<String> = it.get("pendingInvitationsPlayer") as MutableList<String>
+                    if(temp.contains(Data.player.username)){
+                        db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
+                        db.collection("factions").document(this.factionID.toString()).update("members", FieldValue.arrayUnion(FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level)))
+                        Data.player.factionRole = FactionRole.MEMBER
+                        Data.player.factionID = this.factionID
+                        Data.player.factionName = this.factionName
+                    }
+                }
+            }
+            InvitationType.ally -> {
+                Data.player.allies.add(caller)
+            }
+            InvitationType.factionAlly -> {
+                if(Data.player.faction != null){
+                    db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsFaction", FieldValue.arrayRemove(Data.player.faction!!.name)).continueWithTask {
+                        db.collection("factions").document(this.factionID.toString()).update("allyFactions", Data.player.faction!!.ID.toString() to Data.player.faction!!.name)
+                    }.continueWithTask {
+                        db.collection("factions").document(Data.player.faction!!.ID.toString()).update("allyFactions", this.factionID.toString() to this.factionName)
+                    }
+                    Data.player.faction!!.allyFactions.put(this.factionID.toString(), this.factionName)
+                }
+            }
+        }
+    }
+
+    fun decline(){
+        val db = FirebaseFirestore.getInstance()
+
+        when(this.type){
+            InvitationType.faction -> {
+                db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
+            }
+            InvitationType.ally -> {
+            }
+            InvitationType.factionAlly -> {
+                db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsFaction", FieldValue.arrayRemove(Data.player.faction!!.name))
+            }
+        }
+    }
+}
+
+enum class InvitationType{
+    faction,
+    ally,
+    factionAlly
+
 }
 
 enum class ServerStatus{

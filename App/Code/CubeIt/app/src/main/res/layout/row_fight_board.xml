@@ -27,8 +27,20 @@
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline156"
+        app:layout_constraintEnd_toStartOf="@+id/guideline170"
         app:layout_constraintStart_toStartOf="@+id/guideline75"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewBoardRowFaction"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/textViewBoardLevel"
+        app:layout_constraintStart_toStartOf="@+id/guideline170"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -59,11 +71,18 @@
         app:layout_constraintGuide_percent="0.666666" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline170"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.46" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline75"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.2" />
+        app:layout_constraintGuide_percent="0.13" />
 
     <TextView
         android:id="@+id/textViewBoardLevel"

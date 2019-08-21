@@ -9,10 +9,12 @@ import kotlinx.android.synthetic.main.activity_splash_screen.*
 import android.view.animation.RotateAnimation
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
 import android.app.Activity
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import android.widget.TextView
 import kotlin.random.Random.Default.nextInt
 
@@ -85,6 +87,9 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
         textViewSplashText.text = splashTexts[nextInt(0, splashTexts.size)]
 
+        /*val animSet: AnimatorSet = AnimatorSet()
+        animSet.playTogether()*/
+
         val rotateAnimation = RotateAnimation(
                 0f, 1080f,
                 Animation.RELATIVE_TO_SELF, 0.5f,
@@ -119,6 +124,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
             }
 
             override fun onAnimationRepeat(animation: Animation?) {
+                Log.d("status", Data.loadingStatus.toString())
                 if(!keepSplash){
                     when(Data.loadingStatus){
                         LoadingStatus.LOGGED -> {
@@ -133,6 +139,11 @@ class Activity_Splash_Screen: AppCompatActivity(){
                         }
                         LoadingStatus.CLOSELOADING -> {
                             finish()
+                        }
+                        LoadingStatus.REGISTERED -> {
+                            val intent = Intent(this@Activity_Splash_Screen, Activity_Character_Customization()::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            startActivity(intent)
                         }
                         /*LoadingStatus.ENTERFIGHT -> {
                             finish()

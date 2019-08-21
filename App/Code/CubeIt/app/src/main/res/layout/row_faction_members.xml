@@ -8,7 +8,7 @@
     android:screenOrientation="sensorLandscape">
 
     <ImageView
-        android:id="@+id/buttonFactionRow0"
+        android:id="@+id/imageViewFactionRow0"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/loginColor"
@@ -23,7 +23,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/buttonFactionRow1"
+        android:id="@+id/imageViewFactionRow1"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/loginColor"
@@ -37,7 +37,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/buttonFactionRow2"
+        android:id="@+id/imageViewFactionRow2"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/loginColor"
@@ -51,7 +51,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/buttonFactionRow3"
+        android:id="@+id/imageViewFactionRow3"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/loginColor"
@@ -100,7 +100,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="@+id/buttonFactionRow0"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewFactionRow0"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="parent" />
 

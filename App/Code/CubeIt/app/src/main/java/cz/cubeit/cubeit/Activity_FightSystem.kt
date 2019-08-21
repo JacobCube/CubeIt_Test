@@ -6,11 +6,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.Animation
@@ -29,10 +33,10 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
     private var roundCounter = 0
         set(value){
-            if (value == enemy.enemy.chosenSpellsDefense.size || enemy.enemy.chosenSpellsDefense[value] == null){
-                field = 0
+            field = if (value == enemy.enemy.chosenSpellsDefense.size || enemy.enemy.chosenSpellsDefense[value] == null){
+                0
             }else{
-                field = value
+                value
             }
         }
     private var fightEnded:Boolean = false
@@ -40,11 +44,28 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
     private var displayX = 0
     private var spellFlowLog = mutableListOf<FightUsedSpell>()
     private var surrender = false
+    private var lastClicked: ImageView? = null
+    private lateinit var textViewStats: TextView
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val viewRectButton = Rect()
+        val viewRectStats = Rect()
+        if(textViewStats.visibility == View.VISIBLE){
+            textViewStats.getGlobalVisibleRect(viewRectStats)
+            lastClicked!!.getGlobalVisibleRect(viewRectButton)
+
+            if (!viewRectButton.contains(ev.rawX.toInt(), ev.rawY.toInt()) && !viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                textViewStats.visibility = View.INVISIBLE
+                lastClicked = null
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 
     override fun onBackPressed() {
     }
 
-    override fun onPause() {            //if user puts activity to sleep before fight has ended => save state of fight to Bundle
+    override fun onPause() {            //if user puts parent to sleep before fight has ended => save state of fight to Bundle
         super.onPause()
     }
 
@@ -52,7 +73,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         super.onResume()
     }
 
-    override fun onDestroy() {          //if user destroys activity before fight has ended => he lost the fight
+    override fun onDestroy() {          //if user destroys parent before fight has ended => he lost the fight
         super.onDestroy()
         if(!fightEnded && playerFight.playerFight.username != enemy.enemy.username){
             surrender = true
@@ -498,6 +519,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         windowManager.defaultDisplay.getMetrics(dm)
         displayY = dm.heightPixels
         displayX = dm.widthPixels
+        textViewStats = textViewSpellSpecs
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -545,6 +567,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell0
                 textViewSpellSpecs.text = playerFight.playerFight.learnedSpells[0]!!.getStats()
             }
 
@@ -562,6 +586,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell1
                 textViewSpellSpecs.text = playerFight.playerFight.learnedSpells[1]!!.getStats()
             }
 
@@ -578,6 +604,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell2
                 textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[0]?.getStats()
             }
 
@@ -594,6 +622,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell3
                 textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[1]?.getStats()
             }
 
@@ -610,6 +640,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell4
                 textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[2]?.getStats()
             }
 
@@ -626,6 +658,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell5
                 textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[3]?.getStats()
             }
 
@@ -642,6 +676,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell6
                 textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[4]?.getStats()
             }
 
@@ -657,6 +693,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             override fun onClick() {
                 super.onClick()
+                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                lastClicked = Spell7
                 textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[5]?.getStats()
             }
 
@@ -674,11 +712,12 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             val window = PopupWindow(this)
             window.contentView = viewS
             val buttonYes: Button = viewS.buttonYes
-            val buttonNo:Button = viewS.buttonCloseDialog
+            val buttonNo:ImageView = viewS.buttonCloseDialog
             val info: TextView = viewS.textViewInfo
             info.text = "Are you sure?"
             window.isOutsideTouchable = false
             window.isFocusable = true
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             buttonYes.setOnClickListener {
                 surrender = true
                 endOfFight(enemy.enemy, spellFightEnemy)
@@ -835,6 +874,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
     @SuppressLint("SetTextI18n")
     private fun endOfFight(winner:Player, view: View) {
+        if(fightEnded)return; finish()
         fightEnded = true
 
         val window = PopupWindow(this)
@@ -843,10 +883,11 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         window.contentView = viewPop
         val textViewQuest: CustomTextView = viewPop.textViewQuest
         val buttonAccept: Button = viewPop.buttonAccept
-        val buttonClose: Button = viewPop.buttonCloseDialog
+        val buttonClose: ImageView = viewPop.buttonCloseDialog
         val imageItem: ImageView = viewPop.imageViewAdventure
         val textViewStats: CustomTextView = viewPop.textViewItemStats
-
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        textViewQuest.fontSizeType = CustomTextView.SizeType.title
         var reward: Reward? = Reward().generate(winner)
         val playerName = playerFight.playerFight.username
         val enemyName = enemy.enemy.username
@@ -859,7 +900,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             this.overridePendingTransition(0, 0)
         } else {                                                                    //revenge bonus?, other bonuses? TODO
 
-            var looserName: String
+            val looserName: String
 
             if (winner.username == playerName) {
                 if (enemy.enemy.fame <= fameGained) fameGained = enemy.enemy.fame
@@ -881,12 +922,13 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
 
             val log = FightLog(winnerName = winner.username, looserName = looserName, spellFlow = spellFlowLog, reward = reward!!, fame = fameGained, surrenderRound = if(surrender)roundCounter else null)
+            log.init()
             if(surrender)finish()
 
             textViewQuest.text = "${winner.username} won" +
                     "\n and earned:" +
                     "\n${reward.getStats()}" +
-                    "\n\nand $fameGained fame points"
+                    "\nand $fameGained fame points"
 
             window.isOutsideTouchable = false
             window.isFocusable = true
@@ -915,7 +957,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             if (reward.item != null) {
                 imageItem.setImageResource(reward.item!!.drawable)
-                imageItem.isClickable = true
+                imageItem.visibility = View.VISIBLE
                 imageItem.isEnabled = true
 
                 imageItem.setOnClickListener {

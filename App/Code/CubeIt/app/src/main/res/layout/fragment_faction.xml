@@ -92,13 +92,13 @@
         android:id="@+id/textViewFactionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="Faction x"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/guideline203"
         app:layout_constraintStart_toStartOf="@+id/guideline206"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/imageViewFactionBgFragment" />
 
     <Button
         android:id="@+id/buttonFactionInvade"
@@ -148,6 +148,7 @@
         android:id="@+id/textViewFactionMemberInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:gravity="bottom"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:background="@drawable/text_bg_dark"
@@ -166,7 +167,7 @@
         android:id="@+id/textViewFactionInfoDesc"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="16dp"
         android:gravity="center"
         android:text="level : 1\n xp: 500/ 5000\n tax: 5000/ day"
         android:textStyle="bold"
@@ -200,11 +201,11 @@
 
     <ImageView
         android:id="@+id/imageViewFactionGoldPlus"
-        app:layout_constraintDimensionRatio="H,1:1"
-        android:tint="@color/loginColor"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:tint="@color/loginColor"
         app:layout_constraintBottom_toBottomOf="@+id/editTextFactionGold"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toEndOf="@+id/editTextFactionGold"
         app:layout_constraintTop_toTopOf="@+id/editTextFactionGold"
         app:srcCompat="@drawable/plus_icon" />

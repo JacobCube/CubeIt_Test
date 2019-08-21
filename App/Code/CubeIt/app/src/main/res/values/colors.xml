@@ -16,11 +16,13 @@
     <color name="dark_gray">#686868</color>
     <color name="stunThird">#860704</color>
     <color name="experience">#2835A5</color>
-    <color name="factionBg">#8888B3</color>
+    <color name="factionBg">#8F8FC0</color>
     <color name="factionInbox">#D88406</color>
     <color name="pop_up_bg">#494949</color>
     <color name="character_dark">#898989</color>
     <color name="loginColor_light">#504F4F</color>
+    <color name="bg_basic_white">#FDFDFD</color>
+    <color name="grey_light">#ECECEC</color>
 
     <color name="leaderboard_first">#FFDF00</color>
     <color name="leaderboard_second">#C0C0C0</color>

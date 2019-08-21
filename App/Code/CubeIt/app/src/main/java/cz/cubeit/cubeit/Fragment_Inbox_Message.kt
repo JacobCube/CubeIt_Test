@@ -2,6 +2,7 @@ package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.text.method.ScrollingMovementMethod
@@ -17,7 +18,7 @@ import kotlinx.android.synthetic.main.popup_dialog.view.*
 class FragmentInboxMessage : Fragment() {
 
     companion object{
-        fun newInstance(msgType:String = "read", messagePriority: Int = 1, messageObject: String = "Object", messageContent: String = "Content", messageSender: String = "Newsletter", messageReceiver: String = ""):FragmentInboxMessage{
+        fun newInstance(msgType:String = "read", messagePriority: Int = 1, messageObject: String = "Object", messageContent: String = "Content", messageSender: String = "Newsletter", messageReceiver: String = "", invitation: Boolean = false):FragmentInboxMessage{
             val fragment = FragmentInboxMessage()
             val args = Bundle()
             args.putString("type", msgType)
@@ -26,6 +27,7 @@ class FragmentInboxMessage : Fragment() {
             args.putString("content", messageContent)
             args.putInt("priority", messagePriority)
             args.putString("receiver", messageReceiver)
+            args.putBoolean("invitation", invitation)
             fragment.arguments = args
             return fragment
         }
@@ -55,17 +57,43 @@ class FragmentInboxMessage : Fragment() {
 
         if(arguments?.getString("type")=="read"){
 
+            if((activity as Activity_Inbox).chosenMail.isInvitation1 && Data.player.factionID == null){
+                view.imageViewInboxMessageAccept.apply {
+                    visibility = if(Data.player.factionID == null) View.VISIBLE else View.GONE
+                    setOnClickListener {
+                        (activity as Activity_Inbox).chosenMail.invitation.accept()
+                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                        (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
+                        (activity!! as Activity_Inbox).refreshCategory()
+                        activity!!.supportFragmentManager.beginTransaction().remove(this@FragmentInboxMessage).commitNow()
+                    }
+                }
+                view.imageViewInboxMessageDecline.apply {
+                    visibility = View.VISIBLE
+                    setOnClickListener {
+                        (activity as Activity_Inbox).chosenMail.invitation.decline()
+                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                        (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
+                        (activity!! as Activity_Inbox).refreshCategory()
+                        activity!!.supportFragmentManager.beginTransaction().remove(this@FragmentInboxMessage).commitNow()
+                    }
+                }
+            }else {
+                view.imageViewInboxMessageDecline.visibility = View.GONE
+                view.imageViewInboxMessageAccept.visibility = View.GONE
+            }
+
             view.spinnerInboxPriority.setSelection(arguments?.getInt("priority")!!)
             view.spinnerInboxPriority.isEnabled = false
             view.editTextInboxSubject.setText(arguments?.getString("object"))
             view.editTextInboxSubject.isEnabled = false
-            view.editTextInboxReciever.setText("to ${chosenMail.receiver}")
+            view.editTextInboxReciever.setText("to ${(activity as Activity_Inbox).chosenMail.receiver}")
             view.editTextInboxReciever.isEnabled = false
             view.editTextInboxContent.setText(arguments?.getString("content")!!)
             view.editTextInboxContent.isEnabled = false
-            view.textViewInboxMessageSender.text = "from ${chosenMail.sender}"
+            view.textViewInboxMessageSender.text = "from ${(activity as Activity_Inbox).chosenMail.sender}"
 
-            view.textViewInboxMessageTime.text = chosenMail.sentTime.toString()
+            view.textViewInboxMessageTime.text = (activity as Activity_Inbox).chosenMail.sentTime.toString()
 
             view.imageViewInboxSend.setOnClickListener {
                 activity!!.supportFragmentManager.beginTransaction().detach(this).commit()
@@ -80,14 +108,15 @@ class FragmentInboxMessage : Fragment() {
                 val window = PopupWindow(context)
                 window.contentView = viewP
                 val buttonYes: Button = viewP.buttonYes
-                val buttonNo:Button = viewP.buttonCloseDialog
+                val buttonNo:ImageView = viewP.buttonCloseDialog
                 val info:TextView = viewP.textViewInfo
                 info.text = "Are you sure?"
                 window.isOutsideTouchable = false
                 window.isFocusable = true
+                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 buttonYes.setOnClickListener {
-                    Data.player.removeInbox(chosenMail.ID)
-                    currentCategory.messages.remove(chosenMail)
+                    Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                    (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
                     (activity!! as Activity_Inbox).refreshCategory()
                     activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
                     window.dismiss()
@@ -98,23 +127,23 @@ class FragmentInboxMessage : Fragment() {
                 window.showAtLocation(viewP, Gravity.CENTER,0,0)
             }
 
-            if(chosenMail.reward != null){
+            if((activity as Activity_Inbox).chosenMail.reward != null){
                 view.buttonInboxMessageGet.visibility = View.VISIBLE
                 view.buttonInboxMessageGet.isEnabled = true
                 view.textViewInboxMessageCoins.visibility = View.VISIBLE
                 view.textViewInboxMessageCubeCoins.visibility = View.VISIBLE
                 view.textViewInboxMessageXp.visibility = View.VISIBLE
-                view.textViewInboxMessageCoins.text = "coins: ${chosenMail.reward!!.coins}"
-                view.textViewInboxMessageCubeCoins.text = "CubeCoins: ${chosenMail.reward!!.cubeCoins}"
-                view.textViewInboxMessageXp.text = "experience: ${chosenMail.reward!!.experience}"
+                view.textViewInboxMessageCoins.text = "coins: ${(activity as Activity_Inbox).chosenMail.reward!!.coins}"
+                view.textViewInboxMessageCubeCoins.text = "CubeCoins: ${(activity as Activity_Inbox).chosenMail.reward!!.cubeCoins}"
+                view.textViewInboxMessageXp.text = "experience: ${(activity as Activity_Inbox).chosenMail.reward!!.experience}"
 
-                if(chosenMail.reward!!.item != null){
+                if((activity as Activity_Inbox).chosenMail.reward!!.item != null){
                     view.imageViewInboxMessageItem.visibility = View.VISIBLE
-                    view.imageViewInboxMessageItem.setImageResource(chosenMail.reward!!.item!!.drawable)
+                    view.imageViewInboxMessageItem.setImageResource((activity as Activity_Inbox).chosenMail.reward!!.item!!.drawable)
 
                     view.imageViewInboxMessageItem.setOnClickListener {
                         view.textViewInboxItemInfo.visibility = if(view.textViewInboxItemInfo.visibility == View.GONE){
-                            view.textViewInboxItemInfo.setHTMLText(chosenMail.reward!!.item!!.getStatsCompare())
+                            view.textViewInboxItemInfo.setHTMLText((activity as Activity_Inbox).chosenMail.reward!!.item!!.getStatsCompare())
                             View.VISIBLE
                         } else View.GONE
                     }
@@ -123,20 +152,20 @@ class FragmentInboxMessage : Fragment() {
                 view.buttonInboxMessageGet.setOnClickListener {
                     if(Data.player.inventory.contains(null)){
                         view.buttonInboxMessageGet.isEnabled = false
-                        chosenMail.reward!!.receive()
-                        chosenMail.reward = null
+                        (activity as Activity_Inbox).chosenMail.reward!!.receive()
+                        (activity as Activity_Inbox).chosenMail.reward = null
 
-                        for(message in currentCategory.messages){
-                            if(message.ID == chosenMail.ID){
+                        for(message in (activity as Activity_Inbox).currentCategory.messages){
+                            if(message.ID == (activity as Activity_Inbox).chosenMail.ID){
                                 message.reward = null
                             }
                         }
                         (activity!! as Activity_Inbox).refreshCategory()
-                        Data.player.uploadMessage(chosenMail).addOnSuccessListener {
-                            activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = chosenMail.priority, messageObject = chosenMail.subject, messageContent = chosenMail.content, messageSender = chosenMail.sender)).commit()
+                        Data.player.uploadMessage((activity as Activity_Inbox).chosenMail).addOnSuccessListener {
+                            activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = (activity as Activity_Inbox).chosenMail.priority, messageObject = (activity as Activity_Inbox).chosenMail.subject, messageContent = (activity as Activity_Inbox).chosenMail.content, messageSender = (activity as Activity_Inbox).chosenMail.sender)).commit()
                         }
-                        Data.player.removeInbox(chosenMail.ID)
-                        currentCategory.messages.remove(chosenMail)
+                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                        (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
                     }else{
                         Toast.makeText(view.context, "No space in inventory!", Toast.LENGTH_SHORT).show()
                     }
@@ -150,8 +179,8 @@ class FragmentInboxMessage : Fragment() {
             view.textViewInboxMessageSender.text = "from ${Data.player.username}"
 
 
-            view.editTextInboxReciever.setText(chosenMail.sender)
-            view.editTextInboxSubject.setText("RE: ${chosenMail.subject}")
+            view.editTextInboxReciever.setText((activity as Activity_Inbox).chosenMail.sender)
+            view.editTextInboxSubject.setText("RE: ${(activity as Activity_Inbox).chosenMail.subject}")
 
             view.imageViewInboxSend.setOnClickListener {
                 if(view.spinnerInboxPriority.selectedItem.toString().isNotEmpty()){
@@ -181,7 +210,7 @@ class FragmentInboxMessage : Fragment() {
                                             sender = Data.player.username
                                     )
                                     temp.status = MessageStatus.Sent
-                                    Data.inboxCategories[2].messages.add(temp)
+                                    Data.inboxCategories[MessageStatus.Sent]!!.messages.add(temp)
                                     Data.player.writeInbox(Data.player.username, temp)
                                 }
 
@@ -238,7 +267,7 @@ class FragmentInboxMessage : Fragment() {
                                             sender = Data.player.username
                                     )
                                     temp.status = MessageStatus.Sent
-                                    Data.inboxCategories[2].messages.add(temp)
+                                    Data.inboxCategories[MessageStatus.Sent]!!.messages.add(temp)
                                     Data.player.writeInbox(Data.player.username, temp)
                                 }
 

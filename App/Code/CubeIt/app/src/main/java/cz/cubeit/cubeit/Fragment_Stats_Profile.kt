@@ -2,16 +2,19 @@ package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.os.Build
+import android.graphics.Paint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_stats_profile.view.*
+import android.graphics.Paint.UNDERLINE_TEXT_FLAG
+
+
 
 class Fragment_Stats_Profile : Fragment() {
 
@@ -51,6 +54,34 @@ class Fragment_Stats_Profile : Fragment() {
             view.imageViewProfileMail.visibility = View.GONE
             view.profile_stats_compare.visibility = View.GONE
             view.profile_stats_fight.visibility = View.GONE
+            view.imageViewProfileStatsAlly.visibility = View.GONE
+            view.imageViewProfileStatsFaction.visibility = View.GONE
+        }else {
+            if(playerProfile.factionName != null){
+                view.textViewProfileStatsFaction.text = playerProfile.factionName.toString()
+                view.textViewProfileStatsFaction.paintFlags = view.textViewProfileStatsFaction.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                view.textViewProfileStatsFaction.setOnClickListener {
+                    val intent = Intent(view.context, Activity_Faction_Base()::class.java)
+                    intent.putExtra("id", playerProfile.factionID.toString())
+                    startActivity(intent)
+                }
+            }
+            if(Data.player.allies.contains(playerProfile.username)) view.imageViewProfileStatsAlly.visibility = View.GONE
+            if(Data.player.factionID == null || Data.player.factionRole == FactionRole.MEMBER || playerProfile.factionID != null || Data.player.faction!!.pendingInvitationsPlayer.contains(playerProfile.username)) view.imageViewProfileStatsFaction.visibility = View.GONE
+        }
+
+        view.imageViewProfileStatsFaction.setOnClickListener {
+            view.imageViewProfileStatsFaction.visibility = View.GONE
+            val db = FirebaseFirestore.getInstance()
+            Data.player.faction!!.pendingInvitationsPlayer.add(playerProfile.username)
+            db.collection("factions").document(Data.player.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayUnion(playerProfile.username))
+            Data.player.writeInbox(playerProfile.username, InboxMessage(status = MessageStatus.Faction, receiver = playerProfile.username, sender = Data.player.username, subject = "${Data.player.faction!!.name} invited you.", content = Data.player.faction!!.invitationMessage, isInvitation1 = true, invitation = Invitation(Data.player.username, " invited you to faction ", Data.player.faction!!.name, InvitationType.faction, Data.player.factionID!!, Data.player.factionName!!)))
+        }
+
+        view.imageViewProfileStatsAlly.setOnClickListener {
+            view.imageViewProfileStatsAlly.visibility = View.GONE
+            Data.player.allies.add(playerProfile.username)
+            Data.player.writeInbox(playerProfile.username, InboxMessage(status = MessageStatus.Allies, receiver = playerProfile.username, sender = Data.player.username, subject = "Ally request from ${Data.player.username}", content = "${Data.player.username} wants to become your ally. \n If you accept, ${Data.player.username} can invite you to various events and factions.", isInvitation1 = true, invitation = Invitation(Data.player.username, " wants to become your ", "ally", InvitationType.ally, 0, "")))
         }
 
         view.profile_stats_fight.setOnClickListener {

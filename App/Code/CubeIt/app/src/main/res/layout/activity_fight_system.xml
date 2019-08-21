@@ -640,10 +640,19 @@
         android:id="@+id/textViewSpellSpecs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/text_bg_dark"
+        android:textColor="@color/grey_light"
         android:textAlignment="center"
+        android:paddingTop="2dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/textViewError"
         app:layout_constraintEnd_toEndOf="@+id/textViewError"
-        app:layout_constraintStart_toStartOf="@+id/textViewError" />
+        app:layout_constraintStart_toStartOf="@+id/textViewError"
+        tools:text="test text"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/imageViewEnemyUsedSpell"

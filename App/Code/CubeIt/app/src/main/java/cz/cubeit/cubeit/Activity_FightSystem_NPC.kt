@@ -6,11 +6,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.Animation
@@ -41,6 +45,25 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
     private var fightEnded:Boolean = false
     private var displayY = 0
     private var displayX = 0
+    private var lastClicked: ImageView? = null
+    private lateinit var textViewStats: TextView
+
+    //textViewSpellSpecs
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val viewRectButton = Rect()
+        val viewRectStats = Rect()
+        if(textViewStats.visibility == View.VISIBLE){
+            textViewStats.getGlobalVisibleRect(viewRectStats)
+            lastClicked!!.getGlobalVisibleRect(viewRectButton)
+
+            if (!viewRectButton.contains(ev.rawX.toInt(), ev.rawY.toInt()) && !viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                textViewStats.visibility = View.INVISIBLE
+                lastClicked = null
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 
     override fun onBackPressed() {
         imageViewFightSurrenderNPC.callOnClick()
@@ -389,6 +412,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         }
         hideSystemUI()
         setContentView(R.layout.activity_fight_system_npc)
+        textViewStats = textViewSpellSpecsNPC
 
         playerFight = FightPlayer(Data.player)
 
@@ -451,7 +475,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.learnedSpells[0]!!.getStats()
+                if(lastClicked == Spell0NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell0NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.learnedSpells[0]!!.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -468,7 +499,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.learnedSpells[1]!!.getStats()
+                if(lastClicked == Spell1NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell1NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.learnedSpells[1]!!.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -484,7 +522,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[0]?.getStats()
+                if(lastClicked == Spell2NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell2NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[0]?.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -500,7 +545,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[1]?.getStats()
+                if(lastClicked == Spell3NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell3NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[1]?.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -516,7 +568,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[2]?.getStats()
+                if(lastClicked == Spell4NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell4NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[2]?.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -532,7 +591,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[3]?.getStats()
+                if(lastClicked == Spell5NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell5NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[3]?.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -548,7 +614,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[4]?.getStats()
+                if(lastClicked == Spell6NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell6NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[4]?.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -563,7 +636,14 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onClick() {
                 super.onClick()
-                textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[5]?.getStats()
+                if(lastClicked == Spell7NPC){
+                    textViewSpellSpecsNPC.visibility = View.INVISIBLE
+                    lastClicked = null
+                }else {
+                    textViewSpellSpecsNPC.visibility = View.VISIBLE
+                    lastClicked = Spell7NPC
+                    textViewSpellSpecsNPC.text = playerFight.playerFight.chosenSpellsAttack[5]?.getStats()
+                }
             }
 
             override fun onDoubleClick() {
@@ -580,11 +660,12 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             val window = PopupWindow(this)
             window.contentView = viewS
             val buttonYes: Button = viewS.buttonYes
-            val buttonNo:Button = viewS.buttonCloseDialog
+            val buttonNo:ImageView = viewS.buttonCloseDialog
             val info: TextView = viewS.textViewInfo
             info.text = "Are you sure?"
             window.isOutsideTouchable = false
             window.isFocusable = true
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             buttonYes.setOnClickListener {
                 endOfFight(false, spellFightEnemyNPC)
                 window.dismiss()
@@ -738,9 +819,11 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         window.contentView = viewPop
         val textViewQuest: CustomTextView = viewPop.textViewQuest
         val buttonAccept: Button = viewPop.buttonAccept
-        val buttonClose: Button = viewPop.buttonCloseDialog
+        val buttonClose: ImageView = viewPop.buttonCloseDialog
         val imageItem: ImageView = viewPop.imageViewAdventure
         val textViewStats: CustomTextView = viewPop.textViewItemStats
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        textViewQuest.fontSizeType = CustomTextView.SizeType.title
 
         if(completed) {
             textViewQuest.text = "You won\n and earned:\n${reward?.getStats()
@@ -783,7 +866,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
         if (reward?.item != null && completed) {
             imageItem.setImageResource(reward!!.item!!.drawable)
-            imageItem.isClickable = true
+            imageItem.visibility = View.VISIBLE
             imageItem.isEnabled = true
 
             imageItem.setOnClickListener {

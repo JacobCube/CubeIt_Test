@@ -5,7 +5,9 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
+import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.Fragment
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
 import kotlinx.android.synthetic.main.activity_adventure.*
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.*
 import android.widget.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
@@ -126,21 +129,18 @@ class Adventure : AppCompatActivity() {
                                     Data.player.checkForQuest().addOnSuccessListener {                   //zkontroluj to podle databáze
                                         if(Data.activeQuest!!.completed){
                                             this.cancel()
-                                            textViewQuestProgress.text = "Quest completed!"
-                                            progressAdventureQuest.setOnClickListener {
-
-                                                val intent = Intent(this@Adventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
-                                                intent.putExtra("reward", Data.activeQuest!!.quest.reward)
-                                                intent.putExtra("difficulty", Data.activeQuest!!.quest.level)
-                                                startActivity(intent)
-
-                                                //isNPC: Boolean, difficulty: Int, npcID: String, enemy: String, reward: Reward
-                                            }
-                                        }else{
-                                            progressAdventureQuest.setOnClickListener {
-                                                onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
-                                            }
+                                            textViewQuestProgress.text = "Quest's completed!"
                                         }
+                                    }
+                                }
+                                progressAdventureQuest.setOnClickListener {
+                                    if(Data.activeQuest!!.completed){
+                                        val intent = Intent(this@Adventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
+                                        intent.putExtra("reward", Data.activeQuest!!.quest.reward)
+                                        intent.putExtra("difficulty", Data.activeQuest!!.quest.level)
+                                        startActivity(intent)
+                                    }else {
+                                        onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
                                     }
                                 }
                                 textViewQuestProgress.text = Data.activeQuest!!.getLength()
@@ -250,16 +250,17 @@ class Adventure : AppCompatActivity() {
         window.contentView = viewPop
         val textViewQuest: CustomTextView = viewPop.textViewQuest
         val buttonAccept: Button = viewPop.buttonAccept
-        val buttonClose: Button = viewPop.buttonCloseDialog
+        val buttonClose: ImageView = viewPop.buttonCloseDialog
         val imageViewAdventure: ImageView = viewPop.imageViewAdventure
         val textViewStats: CustomTextView = viewPop.textViewItemStats
-        textViewQuest.movementMethod = ScrollingMovementMethod()
+        textViewQuest.fontSizeType = CustomTextView.SizeType.title
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val quest:Quest = Data.player.currentSurfaces[surface].quests[index]
 
         if (quest.reward.item != null) {
             imageViewAdventure.setImageResource(quest.reward.item!!.drawable)
-            imageViewAdventure.isClickable = true
+            imageViewAdventure.visibility = View.VISIBLE
             imageViewAdventure.isEnabled = true
 
             quest.reward.item = when(quest.reward.item!!.type){
@@ -284,8 +285,6 @@ class Adventure : AppCompatActivity() {
         window.setOnDismissListener {
             window.dismiss()
         }
-
-        buttonAccept.isEnabled = false
 
         if(!Data.loadingActiveQuest){
             buttonAccept.isEnabled = Data.activeQuest == null
@@ -373,10 +372,11 @@ class Adventure : AppCompatActivity() {
         window.contentView = viewPopQuest
         val textViewQuest: CustomTextView = viewPopQuest.textViewQuest
         val buttonAccept: Button = viewPopQuest.buttonAccept
-        val buttonClose: Button = viewPopQuest.buttonCloseDialog
+        val buttonClose: ImageView = viewPopQuest.buttonCloseDialog
         val imageViewAdventure: ImageView = viewPopQuest.imageViewAdventure
         val textViewStats: CustomTextView = viewPopQuest.textViewItemStats
-        textViewQuest.movementMethod = ScrollingMovementMethod()
+        textViewQuest.fontSizeType = CustomTextView.SizeType.title
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val quest:Quest = questA ?: questIn?: Data.player.currentSurfaces[surface].quests[index]
 
@@ -415,6 +415,7 @@ class Adventure : AppCompatActivity() {
         window.isOutsideTouchable = false
         window.isFocusable = true
 
+        if(Data.activeQuest == null) buttonAccept.isEnabled = false
         buttonAccept.setOnClickListener {
             if(!Data.loadingActiveQuest && Data.activeQuest == null){
                         Data.player.createActiveQuest(quest).addOnSuccessListener {

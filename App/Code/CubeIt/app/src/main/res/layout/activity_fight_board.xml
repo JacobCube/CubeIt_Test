@@ -61,6 +61,13 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.18" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline218"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.26" />
+
     <ImageView
         android:id="@+id/imageViewActionBar"
         android:layout_width="0dp"
@@ -269,17 +276,16 @@
         android:id="@+id/textViewFightBoardCompare"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:layout_marginTop="8dp"
         android:background="@color/loginColor"
         android:gravity="center_horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/frameLayoutFightProfile"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="@+id/guideline175"
+        app:layout_constraintTop_toTopOf="@+id/guideline218"
         tools:visibility="visible" />
 
     <ImageView

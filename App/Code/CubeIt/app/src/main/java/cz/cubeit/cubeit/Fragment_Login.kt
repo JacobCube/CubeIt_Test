@@ -111,15 +111,34 @@ class FragmentLogin : Fragment()  {
                                                     Data.player.username = document.getString("username")!!
 
                                                     Data.player.loadPlayer().addOnSuccessListener {
-                                                        if(Data.player.newPlayer){
-                                                            Data.loadingStatus = LoadingStatus.CLOSELOADING
-                                                            val intent = Intent(view.context, Activity_Character_Customization::class.java)
-                                                            startActivity(intent)
-                                                        }else {
-                                                            Data.player.init(view.context)
-                                                            Data.player.online = true
-                                                            Data.player.uploadSingleItem("online").addOnSuccessListener {
-                                                                Data.loadingStatus = LoadingStatus.LOGGED
+                                                    }.continueWithTask {
+                                                        Data.player.loadFaction().addOnSuccessListener {
+                                                            if(Data.player.faction != null){
+                                                                Data.player.changeFactionStatus().addOnSuccessListener {
+                                                                    if(Data.player.newPlayer){
+                                                                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                                                        val intent = Intent(view.context, Activity_Character_Customization::class.java)
+                                                                        startActivity(intent)
+                                                                    }else {
+                                                                        Data.player.init(view.context)
+                                                                        Data.player.online = true
+                                                                        Data.player.uploadSingleItem("online").addOnSuccessListener {
+                                                                            Data.loadingStatus = LoadingStatus.LOGGED
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }else {
+                                                                if(Data.player.newPlayer){
+                                                                    Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                                                    val intent = Intent(view.context, Activity_Character_Customization::class.java)
+                                                                    startActivity(intent)
+                                                                }else {
+                                                                    Data.player.init(view.context)
+                                                                    Data.player.online = true
+                                                                    Data.player.uploadSingleItem("online").addOnSuccessListener {
+                                                                        Data.loadingStatus = LoadingStatus.LOGGED
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }

@@ -66,8 +66,7 @@ class FragmentDefense : Fragment(){
             startActivity(intent)
             //Activity().overridePendingTransition(0,0)
         }
-
-        view.textViewInfoSpells.movementMethod = ScrollingMovementMethod()
+        view.textViewInfoSpells.fontSizeType = CustomTextView.SizeType.title
 
         view.chosen_listView.adapter = ChosenSpellsView(Data.player)
         view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)

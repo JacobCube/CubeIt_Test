@@ -20,12 +20,12 @@ import java.time.ZoneId
 import java.util.*
 
 
-var currentCategory:InboxCategory = InboxCategory()
-lateinit var chosenMail: InboxMessage
-
 class Activity_Inbox : AppCompatActivity(){
 
     lateinit var messagesAdapter: Adapter
+    lateinit var categories: Adapter
+    var currentCategory:InboxCategory = InboxCategory()
+    lateinit var chosenMail: InboxMessage
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -63,15 +63,6 @@ class Activity_Inbox : AppCompatActivity(){
         }
 
         Data.player.loadInbox().addOnSuccessListener {
-
-            imageViewInboxIcon.setOnClickListener {                                     //REFRESHES EVERYTHING
-                //Data.player.loadPlayer().addOnSuccessListener {
-                (listViewInboxCategories.adapter as AdapterInboxCategories).refresh()
-                (listViewInboxMessages.adapter as AdapterInboxMessages).refresh()
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "write")).commitNow()
-                //}
-            }
-
             imageViewInboxArrowBack.setOnClickListener {
                 if(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)!=null){
                     supportFragmentManager.beginTransaction().apply {
@@ -86,6 +77,10 @@ class Activity_Inbox : AppCompatActivity(){
                 }
             }
 
+            imageViewInboxIcon.setOnClickListener {
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "write")).commit()
+            }
+
             imageViewInboxStartSearch.setOnClickListener {
                 val inboxList = currentCategory
                 if(!editTextInboxSearch.text.isNullOrBlank()){
@@ -95,8 +90,9 @@ class Activity_Inbox : AppCompatActivity(){
                 (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
             }
 
-            listViewInboxMessages.adapter = AdapterInboxMessages(Data.inbox, frameLayoutInbox, supportFragmentManager)
-            listViewInboxCategories.adapter = AdapterInboxCategories(listViewInboxMessages.adapter, frameLayoutInbox, supportFragmentManager)
+            listViewInboxMessages.adapter = AdapterInboxMessages(Data.inbox, frameLayoutInbox, supportFragmentManager, this)
+            listViewInboxCategories.adapter = AdapterInboxCategories(listViewInboxMessages.adapter, frameLayoutInbox, supportFragmentManager, this)
+            categories = listViewInboxCategories.adapter
             messagesAdapter = listViewInboxMessages.adapter
 
             imageViewInboxFilter.setOnClickListener { view ->
@@ -158,7 +154,16 @@ class Activity_Inbox : AppCompatActivity(){
                     var inboxList: MutableList<InboxMessage> = if(spinnerCategory.selectedItemPosition == 0){
                         Data.inbox
                     }else{
-                        Data.inboxCategories[spinnerCategory.selectedItemPosition-1].messages
+                        when(spinnerCategory.selectedItemPosition){
+                            1 -> Data.inboxCategories[MessageStatus.New]!!.messages
+                            2 -> Data.inboxCategories[MessageStatus.Faction]!!.messages
+                            3 -> Data.inboxCategories[MessageStatus.Allies]!!.messages
+                            4 -> Data.inboxCategories[MessageStatus.Read]!!.messages
+                            5 -> Data.inboxCategories[MessageStatus.Sent]!!.messages
+                            6 -> Data.inboxCategories[MessageStatus.Fight]!!.messages
+                            7 -> Data.inboxCategories[MessageStatus.Market]!!.messages
+                            else -> Data.inboxCategories[MessageStatus.Spam]!!.messages
+                        }
                     }
 
                     if(!dateFrom.text.isNullOrBlank()){
@@ -206,137 +211,141 @@ class Activity_Inbox : AppCompatActivity(){
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "write", messageReceiver = intent.extras?.getString("receiver")!!)).commit()
         }
     }
-}
 
-class AdapterInboxCategories(var adapterMessages:Adapter, val frameLayoutInbox: FrameLayout, val supportFragmentManager: FragmentManager) : BaseAdapter() {
+    class AdapterInboxCategories(var adapterMessages:Adapter, val frameLayoutInbox: FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox) : BaseAdapter() {
 
-    override fun getCount(): Int {
-        return Data.inboxCategories.size
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getItem(position: Int): Any {
-        return Data.inboxCategories[position]
-    }
-
-    fun refresh(){
-        notifyDataSetChanged()
-    }
-
-    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
-        val rowMain: View
-
-        if (convertView == null) {
-            val layoutInflater = LayoutInflater.from(viewGroup!!.context)
-            rowMain = layoutInflater.inflate(R.layout.row_inbox_category, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.textViewInboxCategory, rowMain.imageViewInboxCategoryNew, rowMain.imageViewInboxCategoryBg, rowMain.textViewInboxCategoryNumber)
-            rowMain.tag = viewHolder
-
-        } else rowMain = convertView
-        val viewHolder = rowMain.tag as ViewHolder
-
-        viewHolder.textViewInboxCategory.text = Data.inboxCategories[position].name
-        viewHolder.textViewInboxCategoryNumber.text = Data.inboxCategories[position].messages.size.toString()
-
-        var isNew = false
-        for(message in Data.inboxCategories[position].messages){
-            if(message.status == MessageStatus.New){
-                isNew = true
-                viewHolder.imageViewInboxCategoryNew.apply {
-                    setColorFilter(Data.inboxCategories[position].color)
-                    alpha = 1f
-                }
-                break
-            }
-        }
-        if(!isNew){
-            viewHolder.imageViewInboxCategoryNew.setImageResource(0)
+        override fun getCount(): Int {
+            return Data.inboxCategories.size
         }
 
-        if(Data.inboxCategories[position] != currentCategory) viewHolder.imageViewInboxCategoryBg.setBackgroundColor(Color.TRANSPARENT)
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
 
-        viewHolder.imageViewInboxCategoryBg.setOnClickListener {
-            supportFragmentManager.beginTransaction().apply {
-                supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)?.let { it1 -> remove(it1) }
-                setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
-                commitNow()
-            }
+        override fun getItem(position: Int): Any {
+            return ""
+        }
 
-            currentCategory = Data.inboxCategories[position]
-            (adapterMessages as AdapterInboxMessages).notifyDataSetChanged()
+        fun refresh(){
             notifyDataSetChanged()
-            viewHolder.imageViewInboxCategoryBg.setBackgroundColor(Color.GRAY)
         }
 
-        return rowMain
-    }
+        override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
+            val rowMain: View
 
-    private class ViewHolder(var textViewInboxCategory: TextView, val imageViewInboxCategoryNew:ImageView, var imageViewInboxCategoryBg: ImageView, val textViewInboxCategoryNumber:TextView)
-}
+            if (convertView == null) {
+                val layoutInflater = LayoutInflater.from(viewGroup!!.context)
+                rowMain = layoutInflater.inflate(R.layout.row_inbox_category, viewGroup, false)
+                val viewHolder = ViewHolder(rowMain.textViewInboxCategory, rowMain.imageViewInboxCategoryNew, rowMain.imageViewInboxCategoryBg, rowMain.textViewInboxCategoryNumber)
+                rowMain.tag = viewHolder
 
-class AdapterInboxMessages(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, val supportFragmentManager: FragmentManager) : BaseAdapter() {
+            } else rowMain = convertView
+            val viewHolder = rowMain.tag as ViewHolder
 
-    override fun getCount(): Int {
-        return currentCategory.messages.size
-    }
+            val inboxCategories = Data.inboxCategories.values.toMutableList()
+            inboxCategories.sortBy { it.ID }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+            viewHolder.textViewInboxCategory.text = inboxCategories[position].name
+            viewHolder.textViewInboxCategoryNumber.text = inboxCategories[position].messages.size.toString()
 
-    override fun getItem(position: Int): Any {
-        return currentCategory.messages.size
-    }
+            var isNew = false
+            for(message in inboxCategories[position].messages){
+                if(message.status == MessageStatus.New){
+                    isNew = true
+                    viewHolder.imageViewInboxCategoryNew.apply {
+                        setColorFilter(inboxCategories[position].color)
+                        alpha = 1f
+                    }
+                    break
+                }
+            }
+            if(!isNew){
+                viewHolder.imageViewInboxCategoryNew.setImageResource(0)
+            }
 
-    fun refresh(){
-        notifyDataSetChanged()
-    }
+            if(inboxCategories[position] != activity.currentCategory) viewHolder.imageViewInboxCategoryBg.setBackgroundColor(Color.TRANSPARENT)
 
-    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
-        val rowMain: View
+            viewHolder.imageViewInboxCategoryBg.setOnClickListener {
+                supportFragmentManager.beginTransaction().apply {
+                    supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)?.let { it1 -> remove(it1) }
+                    setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
+                    commitNow()
+                }
 
-        if (convertView == null) {
-            val layoutInflater = LayoutInflater.from(viewGroup!!.context)
-            rowMain = layoutInflater.inflate(R.layout.row_inbox_messages, viewGroup, false)
-            val viewHolder = ViewHolder(rowMain.textViewInboxMessagesSender, rowMain.textViewInboxSentTime, rowMain.textViewInboxMessagesSubject, rowMain.imageViewInboxMessagesBg, rowMain.textViewInboxMessagesReceiver)
-            rowMain.tag = viewHolder
+                activity.currentCategory = inboxCategories[position]
+                (adapterMessages as AdapterInboxMessages).notifyDataSetChanged()
+                notifyDataSetChanged()
+                viewHolder.imageViewInboxCategoryBg.setBackgroundColor(Color.GRAY)
+            }
 
-        } else rowMain = convertView
-        val viewHolder = rowMain.tag as ViewHolder
-
-        viewHolder.textViewInboxMessages.text = currentCategory.messages[position].subject
-        //viewHolder.textViewInboxSentTime.text = currentCategory.messages[position].sentTime.toString()
-
-        viewHolder.textViewInboxSentTime.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            currentCategory.messages[position].sentTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
-        } else {
-            currentCategory.messages[position].sentTime.toString()
+            return rowMain
         }
 
-        viewHolder.textViewInboxSender.text = currentCategory.messages[position].sender
-        viewHolder.textViewInboxMessagesReceiver.text = currentCategory.messages[position].receiver
-        if(currentCategory.messages[position].status == MessageStatus.New){
-            viewHolder.imageViewInboxMessagesBg.setBackgroundColor(Color.GRAY)
-        }else{
-            viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
+        private class ViewHolder(var textViewInboxCategory: TextView, val imageViewInboxCategoryNew:ImageView, var imageViewInboxCategoryBg: ImageView, val textViewInboxCategoryNumber:TextView)
+    }
+
+    class AdapterInboxMessages(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox) : BaseAdapter() {
+
+        override fun getCount(): Int {
+            return activity.currentCategory.messages.size
         }
 
-        rowMain.setOnClickListener {
-            chosenMail = currentCategory.messages[position]
-            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = currentCategory.messages[position].priority, messageObject = currentCategory.messages[position].subject, messageContent = currentCategory.messages[position].content, messageSender = currentCategory.messages[position].sender)).commit()
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
 
-            if(currentCategory.messages[position].status == MessageStatus.New){
-                currentCategory.messages[position].changeStatus(MessageStatus.Read)
+        override fun getItem(position: Int): Any {
+            return activity.currentCategory.messages.size
+        }
+
+        fun refresh(){
+            notifyDataSetChanged()
+        }
+
+        override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
+            val rowMain: View
+
+            if (convertView == null) {
+                val layoutInflater = LayoutInflater.from(viewGroup!!.context)
+                rowMain = layoutInflater.inflate(R.layout.row_inbox_messages, viewGroup, false)
+                val viewHolder = ViewHolder(rowMain.textViewInboxMessagesSender, rowMain.textViewInboxSentTime, rowMain.textViewInboxMessagesSubject, rowMain.imageViewInboxMessagesBg, rowMain.textViewInboxMessagesReceiver)
+                rowMain.tag = viewHolder
+
+            } else rowMain = convertView
+            val viewHolder = rowMain.tag as ViewHolder
+
+            viewHolder.textViewInboxMessages.text = activity.currentCategory.messages[position].subject
+            //viewHolder.textViewInboxSentTime.text = currentCategory.messages[position].sentTime.toString()
+
+            viewHolder.textViewInboxSentTime.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                activity.currentCategory.messages[position].sentTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
+            } else {
+                activity.currentCategory.messages[position].sentTime.toString()
+            }
+
+            viewHolder.textViewInboxSender.text = activity.currentCategory.messages[position].sender
+            viewHolder.textViewInboxMessagesReceiver.text = activity.currentCategory.messages[position].receiver
+            if(activity.currentCategory.messages[position].status == MessageStatus.New){
+                viewHolder.imageViewInboxMessagesBg.setBackgroundColor(Color.GRAY)
+            }else{
                 viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
             }
-            notifyDataSetChanged()
+
+            rowMain.setOnClickListener {
+                activity.chosenMail = activity.currentCategory.messages[position]
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = activity.currentCategory.messages[position].priority, messageObject = activity.currentCategory.messages[position].subject, messageContent = activity.currentCategory.messages[position].content, messageSender = activity.currentCategory.messages[position].sender)).commit()
+
+                if(activity.currentCategory.messages[position].status == MessageStatus.New){
+                    activity.currentCategory.messages[position].changeStatus(MessageStatus.Read)
+                    viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
+                    (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
+                }
+                notifyDataSetChanged()
+            }
+
+            return rowMain
         }
 
-        return rowMain
+        private class ViewHolder(var textViewInboxSender:TextView, var textViewInboxSentTime:TextView, var textViewInboxMessages: TextView, var imageViewInboxMessagesBg: ImageView, val textViewInboxMessagesReceiver:TextView)
     }
-
-    private class ViewHolder(var textViewInboxSender:TextView, var textViewInboxSentTime:TextView, var textViewInboxMessages: TextView, var imageViewInboxMessagesBg: ImageView, val textViewInboxMessagesReceiver:TextView)
 }
