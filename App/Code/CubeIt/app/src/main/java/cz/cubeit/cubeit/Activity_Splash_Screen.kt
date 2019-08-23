@@ -48,6 +48,11 @@ class Activity_Splash_Screen: AppCompatActivity(){
         if(textViewLog != null)textViewLog!!.text = text
     }
 
+    fun closeLoading(){
+        Data.loadingStatus = LoadingStatus.CLOSELOADING
+        this.finish()
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
@@ -138,7 +143,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                             startActivity(intent)
                         }
                         LoadingStatus.CLOSELOADING -> {
-                            finish()
+                            this@Activity_Splash_Screen.finish()
                         }
                         LoadingStatus.REGISTERED -> {
                             val intent = Intent(this@Activity_Splash_Screen, Activity_Character_Customization()::class.java)
@@ -245,7 +250,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                 startActivity(intent)
                             }
                             LoadingStatus.CLOSELOADING -> {
-                                finish()
+                                this@Activity_Splash_Screen.finish()
                             }
                             else -> {
                             }

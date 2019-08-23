@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -13,8 +14,16 @@ import kotlinx.android.synthetic.main.pop_up_inbox_filter.view.*
 import kotlinx.android.synthetic.main.row_inbox_category.view.*
 import kotlinx.android.synthetic.main.row_inbox_messages.view.*
 import android.app.DatePickerDialog
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.util.Log
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.MetadataChanges
+import com.google.firebase.firestore.Query
+import kotlinx.android.synthetic.main.pop_up_inbox_filter.view.buttonCloseDialog
+import kotlinx.android.synthetic.main.popup_dialog.view.*
+import kotlinx.android.synthetic.main.row_inbox_messages.*
+import kotlinx.android.synthetic.main.row_inbox_messages.view.checkBoxInboxMessagesAction
 import java.text.SimpleDateFormat
 import java.time.ZoneId
 import java.util.*
@@ -26,18 +35,40 @@ class Activity_Inbox : AppCompatActivity(){
     lateinit var categories: Adapter
     var currentCategory:InboxCategory = InboxCategory()
     lateinit var chosenMail: InboxMessage
+    var onTop: Boolean = false
+    var editMode: Boolean = false
+        set(value){
+            field = value
+            editModeMessages = mutableListOf()
+            if(field == false){
+                imageViewInboxActionDelete.visibility = View.GONE
+                imageViewInboxActionMoveTo.visibility = View.GONE
+                textViewInboxActionCounter.visibility = View.GONE
+                imageViewInboxActionCloseEditMode.visibility = View.GONE
+            }
+            refreshCategory()
+        }
+    var editModeMessages: MutableList<InboxMessage> = mutableListOf()
 
     override fun onBackPressed() {
-        val intent = Intent(this, Home::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(intent)
-        this.overridePendingTransition(0,0)
+        if(editMode)editMode = false; this.refreshCategory()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) hideSystemUI()
     }
+
+    override fun onPause() {
+        super.onPause()
+        onTop = false
+    }
+
+    override fun onResume() {
+        super.onResume()
+        onTop = true
+    }
+
     private fun hideSystemUI() {
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -51,29 +82,126 @@ class Activity_Inbox : AppCompatActivity(){
         (messagesAdapter as AdapterInboxMessages).notifyDataSetChanged()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?){
+    @SuppressLint("SetTextI18n")
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_inbox)
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                handler.postDelayed({ hideSystemUI() }, 1000)
             }
         }
 
-        Data.player.loadInbox().addOnSuccessListener {
+        imageViewInboxActionCloseEditMode.setOnClickListener {
+            editMode = false
+        }
+        imageViewInboxActionDelete.setOnClickListener {
+            if(editModeMessages.size >= 1){
+                val viewP = layoutInflater.inflate(R.layout.popup_dialog, null, false)
+                val window = PopupWindow(this)
+                window.contentView = viewP
+                val buttonYes: Button = viewP.findViewById(R.id.buttonYes)
+                val buttonNo: ImageView = viewP.findViewById(R.id.buttonCloseDialog)
+                val info:TextView = viewP.findViewById(R.id.textViewInfo)
+                info.text = "Do you really want to delete selected ${editModeMessages.size} messages?"
+                window.isOutsideTouchable = false
+                window.isFocusable = true
+                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                buttonYes.setOnClickListener {
+                    Data.inbox.removeAll(editModeMessages)
+                    SystemFlow.writeObject(this, "inbox.data", Data.inbox)
+                    Data.inboxCategories = hashMapOf(
+                            MessageStatus.New to InboxCategory(name = "New", ID = 0),
+                            MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
+                            MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
+                            MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
+                            MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
+                            MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
+                            MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
+                            MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
+                    for (message in Data.inbox) {
+                        Data.inboxCategories[message.status]!!.messages.add(message)
+                    }
+                    editMode = false
+                    refreshCategory()
+                    window.dismiss()
+                }
+                buttonNo.setOnClickListener {
+                    window.dismiss()
+                    refreshCategory()
+                }
+                window.showAtLocation(viewP, Gravity.CENTER,0,0)
+            }
+        }
+        imageViewInboxActionMoveTo.setOnClickListener { view ->
+            if(editModeMessages.size >= 1){
+                val wrapper = ContextThemeWrapper(this, R.style.FactionPopupMenu)
+                val popup = PopupMenu(wrapper, view)
+                val inflater = popup.menuInflater
+
+                val popupMenu = popup.menu
+                popupMenu.add("New")
+                popupMenu.add("Faction")
+                popupMenu.add("Allies")
+                popupMenu.add("Read")
+                popupMenu.add("Sent")
+                popupMenu.add("Fights")
+                popupMenu.add("Market")
+                popupMenu.add("Spam")
+
+                popup.setOnMenuItemClickListener {
+                    val status = when(it.title){
+                        "New" -> {
+                            MessageStatus.New
+                        }
+                        "Faction" -> {
+                            MessageStatus.Faction
+                        }
+                        "Allies" -> {
+                            MessageStatus.Allies
+                        }
+                        "Read" -> {
+                            MessageStatus.Read
+                        }
+                        "Sent" -> {
+                            MessageStatus.Sent
+                        }
+                        "Fights" -> {
+                            MessageStatus.Fight
+                        }
+                        "Market" -> {
+                            MessageStatus.Market
+                        }
+                        "Spam" -> {
+                            MessageStatus.Spam
+                        }
+                        else -> MessageStatus.Spam
+                    }
+                    for(i in editModeMessages){
+                        i.changeStatus(status)
+                    }
+                    editMode = false
+                    refreshCategory()
+                    true
+                }
+                popup.show()
+            }
+        }
+
+        fun init() {
             imageViewInboxArrowBack.setOnClickListener {
-                if(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)!=null){
+                if (supportFragmentManager.findFragmentById(R.id.frameLayoutInbox) != null) {
                     supportFragmentManager.beginTransaction().apply {
                         remove(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)!!)
                         setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
                         commitNow()
                     }
-                }else{
+                } else {
                     val intent = Intent(this, cz.cubeit.cubeit.Home::class.java)
                     startActivity(intent)
-                    this.overridePendingTransition(0,0)
+                    this.overridePendingTransition(0, 0)
                 }
             }
 
@@ -83,22 +211,23 @@ class Activity_Inbox : AppCompatActivity(){
 
             imageViewInboxStartSearch.setOnClickListener {
                 val inboxList = currentCategory
-                if(!editTextInboxSearch.text.isNullOrBlank()){
+                if (!editTextInboxSearch.text.isNullOrBlank()) {
                     inboxList.messages = inboxList.messages.filter { it.content.contains(editTextInboxSearch.text) || it.subject.contains(editTextInboxSearch.text) || it.sender.contains(editTextInboxSearch.text) }.toMutableList()
                 }
                 currentCategory = inboxList
                 (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
             }
 
-            listViewInboxMessages.adapter = AdapterInboxMessages(Data.inbox, frameLayoutInbox, supportFragmentManager, this)
+            listViewInboxMessages.adapter = AdapterInboxMessages(Data.inbox, frameLayoutInbox, supportFragmentManager, this, imageViewInboxActionDelete, imageViewInboxActionMoveTo, textViewInboxActionCounter, imageViewInboxActionCloseEditMode)
             listViewInboxCategories.adapter = AdapterInboxCategories(listViewInboxMessages.adapter, frameLayoutInbox, supportFragmentManager, this)
+
             categories = listViewInboxCategories.adapter
             messagesAdapter = listViewInboxMessages.adapter
 
             imageViewInboxFilter.setOnClickListener { view ->
 
                 val window = PopupWindow(this)
-                val viewPop:View = layoutInflater.inflate(R.layout.pop_up_inbox_filter, null, false)
+                val viewPop: View = layoutInflater.inflate(R.layout.pop_up_inbox_filter, null, false)
                 window.elevation = 0.0f
                 window.contentView = viewPop
 
@@ -120,7 +249,7 @@ class Activity_Inbox : AppCompatActivity(){
                     val mm = calendar.get(Calendar.MONTH)
                     val dd = calendar.get(Calendar.DAY_OF_MONTH)
                     val datePicker = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
-                        val date = ("$year/${monthOfYear+1}/$dayOfMonth")
+                        val date = ("$year/${monthOfYear + 1}/$dayOfMonth")
                         dateFrom.setText(date)
                     }, yy, mm, dd)
                     datePicker.show()
@@ -133,7 +262,7 @@ class Activity_Inbox : AppCompatActivity(){
                     val mm = calendar.get(Calendar.MONTH)
                     val dd = calendar.get(Calendar.DAY_OF_MONTH)
                     val datePicker = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
-                        val date = ("$year/${monthOfYear+1}/$dayOfMonth")
+                        val date = ("$year/${monthOfYear + 1}/$dayOfMonth")
                         dateTo.setText(date)
                     }, yy, mm, dd)
                     datePicker.show()
@@ -151,10 +280,10 @@ class Activity_Inbox : AppCompatActivity(){
                 }
 
                 buttonApply.setOnClickListener {
-                    var inboxList: MutableList<InboxMessage> = if(spinnerCategory.selectedItemPosition == 0){
+                    var inboxList: MutableList<InboxMessage> = if (spinnerCategory.selectedItemPosition == 0) {
                         Data.inbox
-                    }else{
-                        when(spinnerCategory.selectedItemPosition){
+                    } else {
+                        when (spinnerCategory.selectedItemPosition) {
                             1 -> Data.inboxCategories[MessageStatus.New]!!.messages
                             2 -> Data.inboxCategories[MessageStatus.Faction]!!.messages
                             3 -> Data.inboxCategories[MessageStatus.Allies]!!.messages
@@ -166,22 +295,22 @@ class Activity_Inbox : AppCompatActivity(){
                         }
                     }
 
-                    if(!dateFrom.text.isNullOrBlank()){
+                    if (!dateFrom.text.isNullOrBlank()) {
                         inboxList = inboxList.filter { it.sentTime >= SimpleDateFormat("yyyy/MM/dd").parse(dateFrom.text.toString()) }.toMutableList()
                     }
-                    if(!dateTo.text.isNullOrBlank()){
+                    if (!dateTo.text.isNullOrBlank()) {
                         inboxList = inboxList.filter { it.sentTime <= SimpleDateFormat("yyyy/MM/dd").parse(dateTo.text.toString()) }.toMutableList()
                     }
-                    if(sender.text.isNullOrBlank()){
+                    if (sender.text.isNullOrBlank()) {
                         inboxList = inboxList.filter { it.sender.contains(sender.text.toString()) }.toMutableList()
                     }
-                    if(receiver.text.isNullOrBlank()){
+                    if (receiver.text.isNullOrBlank()) {
                         inboxList = inboxList.filter { it.receiver.contains(receiver.text.toString()) }.toMutableList()
                     }
-                    if(subject.text.isNullOrBlank()){
+                    if (subject.text.isNullOrBlank()) {
                         inboxList = inboxList.filter { it.subject.contains(subject.text.toString()) }.toMutableList()
                     }
-                    if(content.text.isNullOrBlank()){
+                    if (content.text.isNullOrBlank()) {
                         inboxList = inboxList.filter { it.content.contains(content.text.toString()) }.toMutableList()
                     }
                     currentCategory = InboxCategory(messages = inboxList)
@@ -200,9 +329,47 @@ class Activity_Inbox : AppCompatActivity(){
                     window.dismiss()
                 }
 
-                window.showAtLocation(view, Gravity.CENTER,0,0)
+                window.showAtLocation(view, Gravity.CENTER, 0, 0)
             }
         }
+
+        if(Data.inboxSnapshot == null){
+            init()
+            val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
+            Data.inbox.sortByDescending { it.ID }
+            val docRef = if(Data.inbox.size == 0){
+                db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
+            }else{
+                db.collection("users").document(Data.player.username).collection("Inbox").whereGreaterThan("id", Data.inbox[0].ID).orderBy("id", Query.Direction.DESCENDING)
+            }
+            Data.inboxSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                if (e != null) {
+                    Log.w("Inbox listener", "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
+                    "Local"
+                else
+                    "Server"
+
+                if (snapshot != null && !snapshot.isEmpty) {
+                    if(onTop){
+                        if(snapshot.documents.size >= 1) {
+                            Data.inbox.addAll(snapshot.toObjects(InboxMessage::class.java))
+                            init()
+                            (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
+                            (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
+                        }
+                        Data.inboxChanged = false
+                    }else Data.inboxChanged = true
+
+                    Toast.makeText(this, "New message has been received", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.d("Inbox listener", "$source data: null n error")
+                }
+            }
+        }else init()
 
         if(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox) != null)supportFragmentManager.beginTransaction().remove(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)!!).commitNow()
 
@@ -273,6 +440,7 @@ class Activity_Inbox : AppCompatActivity(){
                 }
 
                 activity.currentCategory = inboxCategories[position]
+                activity.editMode = false
                 (adapterMessages as AdapterInboxMessages).notifyDataSetChanged()
                 notifyDataSetChanged()
                 viewHolder.imageViewInboxCategoryBg.setBackgroundColor(Color.GRAY)
@@ -284,7 +452,7 @@ class Activity_Inbox : AppCompatActivity(){
         private class ViewHolder(var textViewInboxCategory: TextView, val imageViewInboxCategoryNew:ImageView, var imageViewInboxCategoryBg: ImageView, val textViewInboxCategoryNumber:TextView)
     }
 
-    class AdapterInboxMessages(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox) : BaseAdapter() {
+    class AdapterInboxMessages(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox, val imageViewInboxActionDelete: ImageView, val imageViewInboxActionMoveTo: ImageView, val textViewInboxActionCounter: TextView, val imageViewInboxActionCloseEditMode: ImageView) : BaseAdapter() {
 
         override fun getCount(): Int {
             return activity.currentCategory.messages.size
@@ -308,7 +476,7 @@ class Activity_Inbox : AppCompatActivity(){
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
                 rowMain = layoutInflater.inflate(R.layout.row_inbox_messages, viewGroup, false)
-                val viewHolder = ViewHolder(rowMain.textViewInboxMessagesSender, rowMain.textViewInboxSentTime, rowMain.textViewInboxMessagesSubject, rowMain.imageViewInboxMessagesBg, rowMain.textViewInboxMessagesReceiver)
+                val viewHolder = ViewHolder(rowMain.textViewInboxMessagesSender, rowMain.textViewInboxSentTime, rowMain.textViewInboxMessagesSubject, rowMain.imageViewInboxMessagesBg, rowMain.textViewInboxMessagesReceiver, rowMain.checkBoxInboxMessagesAction)
                 rowMain.tag = viewHolder
 
             } else rowMain = convertView
@@ -322,6 +490,27 @@ class Activity_Inbox : AppCompatActivity(){
             } else {
                 activity.currentCategory.messages[position].sentTime.toString()
             }
+            if(activity.editMode){
+                viewHolder.checkBoxInboxMessagesAction.visibility = View.VISIBLE
+                imageViewInboxActionDelete.visibility = View.VISIBLE
+                imageViewInboxActionMoveTo.visibility = View.VISIBLE
+                textViewInboxActionCounter.visibility = View.VISIBLE
+                imageViewInboxActionCloseEditMode.visibility = View.VISIBLE
+            } else {
+                viewHolder.checkBoxInboxMessagesAction.visibility = View.GONE
+                imageViewInboxActionDelete.visibility = View.GONE
+                imageViewInboxActionMoveTo.visibility = View.GONE
+                textViewInboxActionCounter.visibility = View.GONE
+                imageViewInboxActionCloseEditMode.visibility = View.GONE
+            }
+
+            viewHolder.checkBoxInboxMessagesAction.setOnCheckedChangeListener { _, isChecked ->
+                if(isChecked){
+                    activity.editModeMessages.add(activity.currentCategory.messages[position])
+                }else activity.editModeMessages.remove(activity.currentCategory.messages[position])
+                textViewInboxActionCounter.text = activity.editModeMessages.size.toString()
+            }
+
 
             viewHolder.textViewInboxSender.text = activity.currentCategory.messages[position].sender
             viewHolder.textViewInboxMessagesReceiver.text = activity.currentCategory.messages[position].receiver
@@ -332,20 +521,31 @@ class Activity_Inbox : AppCompatActivity(){
             }
 
             rowMain.setOnClickListener {
-                activity.chosenMail = activity.currentCategory.messages[position]
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = activity.currentCategory.messages[position].priority, messageObject = activity.currentCategory.messages[position].subject, messageContent = activity.currentCategory.messages[position].content, messageSender = activity.currentCategory.messages[position].sender)).commit()
+                if(activity.editMode){
+                    viewHolder.checkBoxInboxMessagesAction.isChecked = !viewHolder.checkBoxInboxMessagesAction.isChecked
+                }else {
+                    activity.chosenMail = activity.currentCategory.messages[position]
+                    supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = activity.currentCategory.messages[position].priority, messageObject = activity.currentCategory.messages[position].subject, messageContent = activity.currentCategory.messages[position].content, messageSender = activity.currentCategory.messages[position].sender)).commit()
 
-                if(activity.currentCategory.messages[position].status == MessageStatus.New){
-                    activity.currentCategory.messages[position].changeStatus(MessageStatus.Read)
-                    viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
-                    (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
+                    if(activity.currentCategory.messages[position].status == MessageStatus.New){
+                        activity.currentCategory.messages[position].changeStatus(MessageStatus.Read)
+                        viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
+                        (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
+                    }
+                    notifyDataSetChanged()
                 }
-                notifyDataSetChanged()
+            }
+
+            rowMain.setOnLongClickListener {
+                activity.editMode = !activity.editMode
+                if(activity.editMode) rowMain.checkBoxInboxMessagesAction.isChecked = true
+                this.notifyDataSetChanged()
+                true
             }
 
             return rowMain
         }
 
-        private class ViewHolder(var textViewInboxSender:TextView, var textViewInboxSentTime:TextView, var textViewInboxMessages: TextView, var imageViewInboxMessagesBg: ImageView, val textViewInboxMessagesReceiver:TextView)
+        private class ViewHolder(var textViewInboxSender:TextView, var textViewInboxSentTime:TextView, var textViewInboxMessages: TextView, var imageViewInboxMessagesBg: ImageView, val textViewInboxMessagesReceiver:TextView, val checkBoxInboxMessagesAction: CheckBox)
     }
 }

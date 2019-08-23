@@ -87,6 +87,17 @@ class Adventure : AppCompatActivity() {
         hideSystemUI()
         setContentView(R.layout.activity_adventure)
 
+        progressAdventureQuest.setOnClickListener {
+            if(Data.activeQuest!!.completed){
+                val intent = Intent(this@Adventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
+                intent.putExtra("reward", Data.activeQuest!!.quest.reward)
+                intent.putExtra("difficulty", Data.activeQuest!!.quest.level)
+                startActivity(intent)
+            }else {
+                onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
+            }
+        }
+
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
@@ -131,16 +142,6 @@ class Adventure : AppCompatActivity() {
                                             this.cancel()
                                             textViewQuestProgress.text = "Quest's completed!"
                                         }
-                                    }
-                                }
-                                progressAdventureQuest.setOnClickListener {
-                                    if(Data.activeQuest!!.completed){
-                                        val intent = Intent(this@Adventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
-                                        intent.putExtra("reward", Data.activeQuest!!.quest.reward)
-                                        intent.putExtra("difficulty", Data.activeQuest!!.quest.level)
-                                        startActivity(intent)
-                                    }else {
-                                        onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
                                     }
                                 }
                                 textViewQuestProgress.text = Data.activeQuest!!.getLength()

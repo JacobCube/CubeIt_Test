@@ -16,13 +16,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/bg_basic_white" />
+        android:tint="@color/loginColor_2"
+        android:tintMode="src_in"
+        app:srcCompat="@drawable/bg_basic_logincolor_dark" />
 
     <Button
         android:id="@+id/buttonYes"
         style="@style/AppTheme.Button.Dark"
-        android:layout_width="69dp"
-        android:layout_height="38dp"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
         android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
         android:text="YES"
@@ -30,7 +32,7 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -51,24 +53,25 @@
         android:id="@+id/textViewInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:fontFamily="@font/average_sans"
         android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
         android:text="Are you sure?"
+        android:textColor="@android:color/white"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/buttonYes"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline26" />
+        app:layout_constraintTop_toTopOf="@+id/guideline26"
+        app:layout_constraintVertical_bias="0.4" />
 
     <ImageView
         android:id="@+id/buttonCloseDialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="4dp"
         android:tint="@android:color/holo_red_dark"
         app:layout_constraintBottom_toTopOf="@+id/guideline26"
         app:layout_constraintEnd_toEndOf="parent"

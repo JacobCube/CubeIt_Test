@@ -30,8 +30,9 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
     var displayY = 0.0
     var displayX = 0.0
     lateinit var frameLayoutMenuFactionTemp: FrameLayout
-    lateinit var viewPagerFactionTemp: ViewPager
+    lateinit var viewPagerFactionTemp: StoryViewPager
     lateinit var tabLayoutFactionTemp: TabLayout
+    lateinit var buttonFactionSaveTemp: Button
     var inviteList: MutableList<String> = mutableListOf()
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -119,7 +120,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
         })
 
         viewPagerFactionTemp.adapter = ViewPagerFactionOverview(supportFragmentManager, intent?.extras?.getString("id"))
-        viewPagerFactionTemp.offscreenPageLimit = 1
+        viewPagerFactionTemp.offScreenPageLimiCustom = 0
         //tabLayoutFactionTemp.setupWithViewPager(viewPagerFactionTemp)
 
         tabLayoutFactionTemp.addTab(tabLayoutFactionTemp.newTab(), 0)
@@ -131,22 +132,22 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
 
         tabLayoutFactionTemp.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                if(viewPagerFactionTemp.currentItem >= 2){
+                if(viewPagerFactionTemp.currentItem >= 1){
                     when(tab.position){
                         0 -> {
-                            viewPagerFactionTemp.currentItem = 2
-                            buttonFactionSave.visibility = View.GONE
-                            //tabLayoutFactionTemp.visibility = View.VISIBLE
+                            viewPagerFactionTemp.currentItem = 1
+                            buttonFactionSaveTemp.visibility = View.GONE
+                            tabLayoutFactionTemp.visibility = View.VISIBLE
                         }
                         1 -> {
-                            viewPagerFactionTemp.currentItem = 4
-                            buttonFactionSave.visibility = View.VISIBLE
-                            //tabLayoutFactionTemp.visibility = View.VISIBLE
+                            viewPagerFactionTemp.currentItem = 2
+                            buttonFactionSaveTemp.visibility = View.VISIBLE
+                            tabLayoutFactionTemp.visibility = View.VISIBLE
                         }
                         2 -> {
-                            viewPagerFactionTemp.currentItem = 5
-                            buttonFactionSave.visibility = View.VISIBLE
-                            //tabLayoutFactionTemp.visibility = View.VISIBLE
+                            viewPagerFactionTemp.currentItem = 3
+                            buttonFactionSaveTemp.visibility = View.VISIBLE
+                            tabLayoutFactionTemp.visibility = View.VISIBLE
                         }
                     }
                 }
@@ -160,8 +161,11 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
 
         })
 
-        buttonFactionSave.setOnClickListener {
-            if(viewPagerFactionTemp.currentItem == 3 && Data.player.faction != null){   //TODO porovnání provedených změn v pozadí
+        frameLayoutMenuFactionTemp.bringToFront()
+
+        buttonFactionSaveTemp = buttonFactionSave
+        buttonFactionSaveTemp.setOnClickListener {
+            if(viewPagerFactionTemp.currentItem == 2 && Data.player.faction != null){   //TODO porovnání provedených změn v pozadí
                 if(SystemFlow.factionChange){
                     val view = layoutInflater.inflate(R.layout.popup_dialog,null)
                     val window = PopupWindow(this)
@@ -174,11 +178,11 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
                     buttonYes.setOnClickListener {
                         Data.player.faction!!.description = editTextFactionEditDescription.text.toString()
                         Data.player.faction!!.invitationMessage = editTextFactionEditInvitationMsg.text.toString()
-                        Data.player.faction!!.taxPerDay = editTextFactionEditTax.text.toString().toInt()
+                        Data.player.faction!!.taxPerDay = if(editTextFactionEditTax.text.isNullOrBlank()) 0 else editTextFactionEditTax.text.toString().toInt()
                         Data.player.faction!!.warnMessage = editTextFactionEditWarnMsg.text.toString()
                         Data.player.faction!!.upload()
                         window.dismiss()
-                        finish()
+                        tabLayoutFactionTemp.getTabAt(0)?.select()
                     }
                     buttonNo.setOnClickListener {
                         window.dismiss()
@@ -194,7 +198,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
                         Data.player.writeInbox(i, InboxMessage(status = MessageStatus.Faction, receiver = i, sender = Data.player.username, subject = "${Data.player.faction!!.name} invited you.", content = editTextFactionEditInvitationMsg.text.toString(), isInvitation1 = true, invitation = Invitation(Data.player.username, " invited you to faction ", Data.player.faction!!.name, InvitationType.faction, Data.player.factionID!!, Data.player.factionName!!)))
                     }
                     Data.player.faction!!.upload()
-                    finish()
+                    tabLayoutFactionTemp.getTabAt(0)?.select()
                 }
             }else if(viewPagerFactionTemp.currentItem == 4 && Data.player.faction != null){
 
@@ -202,7 +206,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
         }
 
         if(intent?.extras?.getString("id").toString() != "null" || Data.player.factionID != null) {
-            viewPagerFactionTemp.currentItem = 2
+            viewPagerFactionTemp.currentItem = 1
             if(intent?.extras?.getString("id").toString() != "null")tabLayoutFactionTemp.visibility = View.GONE
         }else {
             tabLayoutFactionTemp.visibility = View.GONE
@@ -219,11 +223,9 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
             Log.d("faction index", position.toString())
             return when(position) {
                 0 -> Fragment_Faction_Create()
-                1 -> Fragment_Faction_Create()
-                2 -> Fragment_Faction.newInstance(fractionID)
+                1 -> Fragment_Faction.newInstance(fractionID)
+                2 -> Fragment_Faction_Edit()
                 3 -> Fragment_Faction_Edit()
-                4 -> Fragment_Faction_Edit()
-                5 -> Fragment_Faction_Edit()
                 else -> null
             }
         }

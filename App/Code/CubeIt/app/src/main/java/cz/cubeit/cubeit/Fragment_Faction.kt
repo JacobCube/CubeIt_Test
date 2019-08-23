@@ -4,10 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
 import androidx.fragment.app.Fragment
 import android.util.Log
 import android.view.*
+import android.view.animation.AnimationUtils
 import android.widget.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -19,10 +19,10 @@ import kotlinx.android.synthetic.main.row_faction_members.view.*
 class Fragment_Faction: Fragment(){
 
     var currentInstanceOfFaction: Faction? = null
-    var snapshotListener: ListenerRegistration? = null
-    var visible: Boolean = true
-    var dispatchListView: ListView? = null
-    var dispatchTextView: TextView? = null
+    var myFaction = true
+    lateinit var viewTemp:View
+    var factionID: String? = ""
+    var firstInit: Boolean = true
 
     companion object{
         fun newInstance(ID: String? = null):Fragment_Faction{
@@ -34,181 +34,168 @@ class Fragment_Faction: Fragment(){
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        if(isAdded && isVisible && userVisibleHint)initMain()
     }
 
-    /*override fun onStop() {
-        super.onStop()
-        snapshotListener?.remove()
-        parent!!.finish()
-    }*/
+    private fun initMain(){
+        Data.loadingStatus = LoadingStatus.LOGGING                           //procesing
+        val intent = Intent(viewTemp.context, Activity_Splash_Screen::class.java)
 
-    override fun onResume() {
-        super.onResume()
-        //(activity!! as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.VISIBLE
-        visible = true
+        if(Data.player.factionID != null || factionID != null){
+            if(factionID == null || factionID == ""){
+                if(Data.player.faction == null || Data.factionSnapshot == null || SystemFlow.factionChange){
+                    startActivity(intent)
+                    Data.player.loadFaction().addOnSuccessListener {    //tries to load player's faction
+                        currentInstanceOfFaction = Data.player.faction
+                        SystemFlow.factionChange = false
+
+                        if(currentInstanceOfFaction == null){                              //player doesn't have any faction, create new
+                            (activity as Activity_Faction_Base).changePage(0)
+                        }else {
+                            if(Data.factionSnapshot == null){
+                                val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
+                                val docRef = db.collection("factions").document(Data.player.factionID!!.toString())
+                                Data.factionSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                                    if (e != null) {
+                                        Log.w("Faction listener", "Listen failed.", e)
+                                        return@addSnapshotListener
+                                    }
+
+                                    val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
+                                        "Local"
+                                    else
+                                        "Server"
+
+                                    if (snapshot != null && snapshot.exists()) {
+                                        Log.d("Faction listener", "$source data: ${snapshot.data}")
+                                        val newFaction = snapshot.toObject(Faction::class.java)
+                                        if(newFaction == null) activity!!.finish()
+
+                                        if(Data.player.faction != null && Data.player.faction == newFaction!!){
+                                            currentInstanceOfFaction = Data.player.faction
+                                        }else {
+                                            currentInstanceOfFaction = newFaction
+                                            Data.player.faction = newFaction
+                                        }
+                                        if(isAdded && isVisible)init()
+                                        if(Data.player.faction != newFaction!! && !isVisible)SystemFlow.factionChange = true
+
+                                        (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
+
+                                    } else {
+                                        Log.d("Faction listener", "$source data: null n error")
+                                    }
+                                }
+                            }
+                            init()
+                        }
+
+                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                    }.addOnFailureListener {
+                        Log.d("Faction result", "Loading failed")
+                        activity!!.finish()
+                        SystemFlow.factionChange = false
+                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                    }
+                }else {
+                    currentInstanceOfFaction = Data.player.faction
+                    myFaction = true
+                    init()
+                    Data.loadingStatus = LoadingStatus.CLOSELOADING
+                }
+            }else {
+                startActivity(intent)
+
+                FirebaseFirestore.getInstance().collection("factions").document(factionID.toString()).get().addOnSuccessListener {
+                    currentInstanceOfFaction = it.toObject(Faction::class.java)
+                    if(currentInstanceOfFaction != null){
+                        myFaction = false
+                        init()
+                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                    }else activity!!.finish()
+                }
+            }
+        }
     }
 
-    override fun onStop() {
-        super.onStop()
-        visible = false
+    private fun init() {
+        viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberInfo, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction)
+        (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
+        if (!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER) {
+            viewTemp.buttonFactionAlly.visibility = View.VISIBLE
+            viewTemp.buttonFactionEnemy.visibility = View.VISIBLE
+            viewTemp.buttonFactionInvade.visibility = View.VISIBLE
+        } else if (!myFaction && Data.player.factionID == null) {
+            viewTemp.buttonFactionApply.visibility = View.VISIBLE
+        } else {
+            viewTemp.buttonFactionAlly.visibility = View.GONE
+            viewTemp.buttonFactionEnemy.visibility = View.GONE
+            viewTemp.buttonFactionInvade.visibility = View.GONE
+            viewTemp.buttonFactionApply.visibility = View.GONE
+        }
+
+        (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility =
+                if (myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR)) {
+                    View.VISIBLE
+                } else View.GONE
+
+        viewTemp.textViewFactionInfoDesc.setHTMLText(currentInstanceOfFaction!!.getInfoDesc())
+        viewTemp.textViewFactionDescription.setHTMLText(currentInstanceOfFaction!!.description)
+        viewTemp.textViewFactionTitle.text = currentInstanceOfFaction!!.name
+
+        if(myFaction){
+            viewTemp.textViewFactionGold.text = resources.getString(R.string.faction_gold, currentInstanceOfFaction!!.gold.toString())
+
+            viewTemp.imageViewFactionGoldPlus.setOnClickListener {
+                viewTemp.editTextFactionGold.setText(if (viewTemp.editTextFactionGold.text.isEmpty()) {
+                    "0"
+                } else {
+                    val temp = viewTemp.editTextFactionGold.text.toString().toInt()
+                    (temp + 1 + temp / 8).toString()
+                })
+            }
+            viewTemp.buttonFactionGoldOk.setOnClickListener {
+                if (viewTemp.editTextFactionGold.text.isNotBlank()) {
+                    val amount: Int = viewTemp.editTextFactionGold.text.toString().toInt()
+                    if (Data.player.gold >= amount && amount != 0) {
+                        viewTemp.editTextFactionGold.setBackgroundResource(0)
+                        Data.player.gold -= amount
+
+                        currentInstanceOfFaction!!.members[Data.player.username]!!.goldGiven = amount.toLong()
+                        currentInstanceOfFaction!!.gold += amount
+                        currentInstanceOfFaction!!.actionLog.add(FactionActionLog(Data.player.username, " donated ", "$amount gold"))
+                        currentInstanceOfFaction!!.upload()
+                    } else it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                }else it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+            }
+            viewTemp.textViewFactionMemberInfo.text = currentInstanceOfFaction!!.getLog()
+            //if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
+            //view.textViewFactionMemberInfo.performClick()
+        }else {
+            viewTemp.buttonFactionGoldOk.visibility = View.GONE
+            viewTemp.imageViewFactionGoldPlus.visibility = View.GONE
+            viewTemp.textViewFactionGold.visibility = View.GONE
+            viewTemp.editTextFactionGold.visibility = View.GONE
+            viewTemp.textViewFactionMemberInfo.visibility = View.GONE
+            (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {             //arguments: ÍD - loads faction by its id
         super.onCreate(savedInstanceState)
-        val factionID = arguments?.getString("id")
-        var myFaction = true
-        val view:View = inflater.inflate(R.layout.fragment_faction, container, false)
+        factionID = arguments?.getString("id")
+        viewTemp = inflater.inflate(R.layout.fragment_faction, container, false)
+        if(Data.player.factionID != null || factionID != null)initMain()
 
-        fun init() {
-            view.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, view.textViewFactionMemberInfo, view.context, currentInstanceOfFaction!!.members.filter { it.username == Data.player.username }, myFaction)
-            (view.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
-            if (!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER) {
-                view.buttonFactionAlly.visibility = View.VISIBLE
-                view.buttonFactionEnemy.visibility = View.VISIBLE
-                view.buttonFactionInvade.visibility = View.VISIBLE
-            } else if (!myFaction && Data.player.factionID == null) {
-                view.buttonFactionApply.visibility = View.VISIBLE
-            } else {
-                view.buttonFactionAlly.visibility = View.GONE
-                view.buttonFactionEnemy.visibility = View.GONE
-                view.buttonFactionInvade.visibility = View.GONE
-                view.buttonFactionApply.visibility = View.GONE
-            }
-
-            (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility =
-                    if (myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR)) {
-                        View.VISIBLE
-                    } else View.GONE
-
-            view.textViewFactionInfoDesc.setHTMLText(currentInstanceOfFaction!!.getInfoDesc())
-            view.textViewFactionDescription.setHTMLText(currentInstanceOfFaction!!.description)
-            view.textViewFactionTitle.text = currentInstanceOfFaction!!.name
-
-            if(myFaction){
-                view.textViewFactionGold.text = resources.getString(R.string.faction_gold, currentInstanceOfFaction!!.gold.toString())
-
-                view.imageViewFactionGoldPlus.setOnClickListener {
-                    view.editTextFactionGold.setText(if (view.editTextFactionGold.text.isEmpty()) {
-                        "0"
-                    } else {
-                        val temp = view.editTextFactionGold.text.toString().toInt()
-                        (temp + 1 + temp / 8).toString()
-                    })
-                }
-                view.buttonFactionGoldOk.setOnClickListener {
-                    if (view.editTextFactionGold.text.isNotBlank()) {
-                        val amount: Int = view.editTextFactionGold.text.toString().toInt()
-                        if (Data.player.gold >= amount && amount != 0) {
-                            view.editTextFactionGold.setBackgroundResource(0)
-                            Data.player.gold -= amount
-
-                            currentInstanceOfFaction!!.getMember(Data.player.username)!!.goldGiven = amount.toLong()
-                            currentInstanceOfFaction!!.gold += amount
-                            currentInstanceOfFaction!!.actionLog.add(FactionActionLog(Data.player.username, " donated ", "$amount gold"))
-                            currentInstanceOfFaction!!.upload()
-                        } else {
-                            view.editTextFactionGold.setBackgroundResource(R.color.progress_hp)
-                        }
-                    }
-                }
-                view.textViewFactionMemberInfo.text = currentInstanceOfFaction!!.getLog()
-                //if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
-                view.textViewFactionMemberInfo.performClick()
-            }else {
-                view.buttonFactionGoldOk.visibility = View.GONE
-                view.imageViewFactionGoldPlus.visibility = View.GONE
-                view.textViewFactionGold.visibility = View.GONE
-                view.editTextFactionGold.visibility = View.GONE
-                view.textViewFactionMemberInfo.visibility = View.GONE
-                (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
-            }
-        }
-
-        Data.loadingStatus = LoadingStatus.LOGGING                           //procesing
-        val intent = Intent(activity, Activity_Splash_Screen::class.java)
-
-        if(factionID == null || factionID == ""){
-            if(SystemFlow.factionChange || Data.player.faction == null){
-                startActivity(intent)
-                Data.player.loadFaction().addOnSuccessListener {    //tries to load player's faction
-                    currentInstanceOfFaction = Data.player.faction
-                    SystemFlow.factionChange = false
-
-                    if(currentInstanceOfFaction == null){                              //player doesn't have any faction, create new
-                        (activity as Activity_Faction_Base).changePage(0)
-                    }else {
-                        myFaction = true
-                        init()
-
-                        val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
-                        val docRef = db.collection("factions").document(currentInstanceOfFaction!!.ID.toString())
-                        snapshotListener = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
-                            if (e != null) {
-                                Log.w("Faction listener", "Listen failed.", e)
-                                return@addSnapshotListener
-                            }
-
-                            val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
-                                "Local"
-                            else
-                                "Server"
-
-                            if (snapshot != null && snapshot.exists()) {
-                                Log.d("Faction listener", "$source data: ${snapshot.data}")
-                                val newFaction = snapshot.toObject(Faction::class.java)
-                                if(newFaction == null) activity!!.finish()
-
-                                if(Data.player.faction != null && Data.player.faction === newFaction!!){
-                                    currentInstanceOfFaction = Data.player.faction
-                                }else {
-                                    currentInstanceOfFaction = newFaction
-                                    Data.player.faction = newFaction
-                                }
-                                init()
-                                if(!visible)SystemFlow.factionChange = true
-                                (view.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
-
-                            } else {
-                                Log.d("Faction listener", "$source data: null n error")
-                            }
-                        }
-                    }
-                    Data.loadingStatus = LoadingStatus.CLOSELOADING
-                }.addOnFailureListener {
-                    Log.d("Faction result", "Loading failed")
-                    activity!!.finish()
-                    SystemFlow.factionChange = false
-                    Data.loadingStatus = LoadingStatus.CLOSELOADING
-                }
-            }else {
-                currentInstanceOfFaction = Data.player.faction
-                myFaction = true
-                init()
-                Data.loadingStatus = LoadingStatus.CLOSELOADING
-            }
-        }else {
-            startActivity(intent)
-
-            FirebaseFirestore.getInstance().collection("factions").document(factionID).get().addOnSuccessListener {
-                currentInstanceOfFaction = it.toObject(Faction::class.java)
-                if(currentInstanceOfFaction != null){
-                    myFaction = false
-                    init()
-                    Data.loadingStatus = LoadingStatus.CLOSELOADING
-                }else activity!!.finish()
-            }
-        }
-
-        return view
+        return viewTemp
     }
 
 
-    private class FactionMemberList(val faction: Faction, val memberDesc: CustomTextView, val context: Context, val playerMemberTemp: List<FactionMember>, val myFaction: Boolean) : BaseAdapter() {
+    private class FactionMemberList(val faction: Faction, val memberDesc: CustomTextView, val context: Context, val playerMember: FactionMember?, val myFaction: Boolean, var members: MutableList<FactionMember> = mutableListOf()) : BaseAdapter() {
 
         override fun getCount(): Int {
-            return faction.members.size / 4 + 1
+            return members.size / 4 + 1
         }
 
         override fun getItemId(position: Int): Long {
@@ -240,9 +227,10 @@ class Fragment_Faction: Fragment(){
                 position*4
             }
             var member: FactionMember
-            val playerMember = playerMemberTemp[0]
 
-            faction.members.sortByDescending { it.role.ordinal }
+
+            members.addAll(faction.members.values)
+            members.sortByDescending { it.role.ordinal }
 
             class Node(
                     val img: ImageView,
@@ -251,7 +239,7 @@ class Fragment_Faction: Fragment(){
                     val index: Int = 0,
                     val myFaction: Boolean = false
             ){
-                var isEnabled: Boolean = myFaction
+                var isEnabled: Boolean = true
                 var visible: Boolean = true
 
                 init {
@@ -259,28 +247,29 @@ class Fragment_Faction: Fragment(){
                 }
 
                 fun initialize(){
-                    if((rowIndex + index) < faction.members.size){
-                        val givenGoldDay = faction.members[rowIndex + index].goldGiven.toInt().safeDivider(faction.members[rowIndex + index].membershipLength)
+                    if((rowIndex + index) < members.size){
+                        val givenGoldDay = members[rowIndex + index].goldGiven.toInt().safeDivider(members[rowIndex + index].membershipLength)
 
                         img.setBackgroundColor(when {
                             givenGoldDay > faction.taxPerDay -> R.color.itemborder_uncommon
                             givenGoldDay < faction.taxPerDay -> R.color.progress_hp
                             else -> R.color.character_dark
                         })
-                        img.setImageResource(faction.members[rowIndex + index].profilePicture)
-                        txt.setHTMLText(faction.members[rowIndex + index].getShortDesc())
-                        badge.setImageResource(faction.members[rowIndex + index].role.getDrawable())
+                        img.setImageResource(members[rowIndex + index].profilePicture)
+                        txt.setHTMLText(members[rowIndex + index].getShortDesc())
+                        badge.setImageResource(members[rowIndex + index].role.getDrawable())
 
                         if(myFaction){
                             img.apply {
                                 setOnClickListener {
+                                    member = members[rowIndex + index]
                                     memberDesc.scrollTo(0, 0)
-                                    memberDesc.setHTMLText(faction.getMemberDesc(rowIndex + index))
+                                    memberDesc.setHTMLText(faction.getMemberDesc(member.username))
                                 }
 
                                 setOnLongClickListener {
-                                    member = faction.members[rowIndex + index]
-                                    if(member.username != Data.player.username)showMenu(it, context, member, playerMember, faction, this@FactionMemberList)
+                                    member = members[rowIndex + index]
+                                    if(member.username != Data.player.username)showMenu(it, context, member, playerMember, faction, this@FactionMemberList, myFaction)
                                     true
                                 }
                             }
@@ -344,7 +333,7 @@ class Fragment_Faction: Fragment(){
                                  val badge0: ImageView, val badge1: ImageView, val badge2: ImageView, val badge3: ImageView)
 
         companion object {
-            fun showMenu(it: View, context: Context, member: FactionMember, playerMember: FactionMember, faction: Faction, parent: BaseAdapter) {
+            fun showMenu(it: View, context: Context, member: FactionMember, playerMember: FactionMember?, faction: Faction, parent: BaseAdapter, myFaction: Boolean) {
 
                 val wrapper = ContextThemeWrapper(context, R.style.FactionPopupMenu)
                 val popup = PopupMenu(wrapper, it)
@@ -357,7 +346,7 @@ class Fragment_Faction: Fragment(){
                 } else {
                     popupMenu.findItem(R.id.menu_faction_friend).isVisible = false
                 }
-                if (playerMember.compareTo(member) == 1) {
+                if (myFaction && playerMember != null && playerMember.compareTo(member) == 1) {
                     popupMenu.findItem(R.id.menu_faction_kick).isVisible = true
                     popupMenu.findItem(R.id.menu_faction_demote).isVisible = true
                     popupMenu.findItem(R.id.menu_faction_promote).isVisible = true
@@ -394,7 +383,7 @@ class Fragment_Faction: Fragment(){
                         }
                         "Kick" -> {
                             faction.kickMember(member, Data.player.username)
-                            faction.members.remove(member)
+                            faction.members.remove(member.username)
                             parent.notifyDataSetChanged()
                         }
                         "Warn" -> {

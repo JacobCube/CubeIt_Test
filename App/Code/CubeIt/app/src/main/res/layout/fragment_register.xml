@@ -120,6 +120,19 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline9"
         app:layout_constraintTop_toTopOf="@+id/texguideline7" />
 
+    <TextView
+        android:id="@+id/textViewRegisterPasswordinfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:text="7+ characters \n at least 1 number"
+        android:textColor="@color/colorGrey"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/guideline17"
+        app:layout_constraintTop_toTopOf="@+id/texguideline7" />
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline7"
         android:layout_width="wrap_content"

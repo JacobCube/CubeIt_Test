@@ -6,10 +6,8 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.text.method.ScrollingMovementMethod
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.fragment_inbox_message.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
@@ -58,6 +56,8 @@ class FragmentInboxMessage : Fragment() {
         if(arguments?.getString("type")=="read"){
 
             if((activity as Activity_Inbox).chosenMail.isInvitation1 && Data.player.factionID == null){
+                view.imageViewDeleteMessage.visibility = View.GONE
+
                 view.imageViewInboxMessageAccept.apply {
                     visibility = if(Data.player.factionID == null) View.VISIBLE else View.GONE
                     setOnClickListener {
@@ -81,6 +81,7 @@ class FragmentInboxMessage : Fragment() {
             }else {
                 view.imageViewInboxMessageDecline.visibility = View.GONE
                 view.imageViewInboxMessageAccept.visibility = View.GONE
+                view.imageViewDeleteMessage.visibility = View.VISIBLE
             }
 
             view.spinnerInboxPriority.setSelection(arguments?.getInt("priority")!!)
@@ -100,8 +101,6 @@ class FragmentInboxMessage : Fragment() {
                 activity!!.supportFragmentManager.beginTransaction().attach(this).commit()
                 activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "reply")).commitNow()
             }
-
-            view.imageViewDeleteMessage.visibility = View.VISIBLE
 
             view.imageViewDeleteMessage.setOnClickListener {
                 val viewP = layoutInflater.inflate(R.layout.popup_dialog, container, false)
@@ -218,18 +217,23 @@ class FragmentInboxMessage : Fragment() {
 
                             }else{
                                 view.editTextInboxContent.setBackgroundColor(Color.RED)
+                                view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                 Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
+
                             }
                         }else{
                             view.editTextInboxSubject.setBackgroundColor(Color.RED)
+                            view.editTextInboxSubject.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                             Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                         }
                     }else{
                         view.editTextInboxReciever.setBackgroundColor(Color.RED)
+                        view.editTextInboxReciever.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                         Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                     }
                 }else{
                     view.spinnerInboxPriority.setBackgroundColor(Color.RED)
+                    view.spinnerInboxPriority.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                 }
 
@@ -238,6 +242,28 @@ class FragmentInboxMessage : Fragment() {
         }else{
             view.textViewInboxMessageSender.text = "from ${Data.player.username}"
             view.editTextInboxReciever.setText(arguments?.getString("receiver"))
+            view.editTextInboxReciever.isLongClickable = Data.player.allies.isNotEmpty() || Data.player.factionID != null
+            view.imageViewInboxOpenMenu.visibility = if(Data.player.allies.isNotEmpty() || Data.player.factionID != null) View.VISIBLE else View.GONE
+
+            view.imageViewInboxOpenMenu.setOnClickListener{ view1 ->
+                val wrapper = ContextThemeWrapper(context, R.style.FactionPopupMenu)
+                val popup = PopupMenu(wrapper, view1)
+                val popupMenu = popup.menu
+
+                if(Data.player.factionID != null) popupMenu.add("Faction")
+                for(i in Data.player.allies){
+                    popupMenu.add(i)
+                }
+                popup.setOnMenuItemClickListener {
+                    view.editTextInboxReciever.setText(it.title)
+                    true
+                }
+                popup.show()
+            }
+
+            view.editTextInboxReciever.setOnLongClickListener {
+                view.imageViewInboxOpenMenu.performLongClick()
+            }
 
             view.imageViewInboxSend.setOnClickListener {
                 if(view.spinnerInboxPriority.selectedItem.toString().isNotEmpty()){
@@ -249,44 +275,66 @@ class FragmentInboxMessage : Fragment() {
                             if(view.editTextInboxContent.text.toString()!=""){
                                 view.editTextInboxContent.setBackgroundResource(R.color.loginColor)
 
-                                Data.player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
-                                        priority = view.spinnerInboxPriority.selectedItemPosition,
-                                        receiver = view.editTextInboxReciever.text.toString(),
-                                        subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
-                                        content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
-                                        sender = Data.player.username
-                                )).addOnSuccessListener {
-                                    Toast.makeText(view.context, "Message to ${view.editTextInboxReciever.text} has been sent", Toast.LENGTH_LONG).show()
-                                }.continueWithTask {
-
-                                    val temp = InboxMessage(
+                                if(view.editTextInboxReciever.text.toString() == "Faction"){
+                                    Data.player.loadFaction().addOnSuccessListener {
+                                        if(Data.player.faction != null){
+                                            for(i in Data.player.faction!!.members.values.toMutableList()){
+                                                Data.player.writeInbox(i.username, InboxMessage(
+                                                        priority = view.spinnerInboxPriority.selectedItemPosition,
+                                                        status = MessageStatus.Faction,
+                                                        receiver = i.username,
+                                                        subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
+                                                        content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
+                                                        sender = Data.player.username
+                                                ))
+                                            }
+                                        }
+                                    }
+                                }else {
+                                    Data.player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
                                             priority = view.spinnerInboxPriority.selectedItemPosition,
                                             receiver = view.editTextInboxReciever.text.toString(),
-                                            subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
-                                            content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigga", "I love CubeIt"),
+                                            subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
+                                            content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
                                             sender = Data.player.username
-                                    )
-                                    temp.status = MessageStatus.Sent
-                                    Data.inboxCategories[MessageStatus.Sent]!!.messages.add(temp)
-                                    Data.player.writeInbox(Data.player.username, temp)
+                                    )).addOnSuccessListener {
+                                        Toast.makeText(view.context, "Message to ${view.editTextInboxReciever.text} has been sent", Toast.LENGTH_LONG).show()
+                                    }.continueWithTask {
+
+                                        val temp = InboxMessage(
+                                                priority = view.spinnerInboxPriority.selectedItemPosition,
+                                                receiver = view.editTextInboxReciever.text.toString(),
+                                                subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
+                                                content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
+                                                sender = Data.player.username
+                                        )
+                                        temp.status = MessageStatus.Sent
+                                        Data.inboxCategories[MessageStatus.Sent]!!.messages.add(temp)
+                                        Data.player.writeInbox(Data.player.username, temp)
+                                    }
                                 }
 
                                 activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
 
                             }else{
                                 view.editTextInboxContent.setBackgroundColor(Color.RED)
+                                view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                 Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
+
                             }
                         }else{
                             view.editTextInboxSubject.setBackgroundColor(Color.RED)
+                            view.editTextInboxSubject.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                             Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                         }
                     }else{
                         view.editTextInboxReciever.setBackgroundColor(Color.RED)
+                        view.editTextInboxReciever.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                         Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                     }
                 }else{
                     view.spinnerInboxPriority.setBackgroundColor(Color.RED)
+                    view.spinnerInboxPriority.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                 }
 

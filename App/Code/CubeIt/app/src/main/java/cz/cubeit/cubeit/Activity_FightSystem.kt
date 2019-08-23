@@ -741,7 +741,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         }
         enemy = FightEnemy(enemyPlayer)
         init()
-        Data.loadingStatus = LoadingStatus.CLOSELOADING
+        Activity_Splash_Screen().closeLoading()
     }
     private fun attackCalc(player:Player, enemySpell:Spell, playerSpell:Spell, enemy:Player):Double{
         var returnValue = ((playerSpell.power.toDouble() * Data.player.power.toDouble() * enemySpell.block)/4)

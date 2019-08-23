@@ -1,20 +1,18 @@
 package cz.cubeit.cubeit
 
-import android.app.ProgressDialog
 import android.content.Intent
-import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.graphics.PorterDuff
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_fraction_create.view.*
 import kotlinx.android.synthetic.main.row_faction_invitation.view.*
 
@@ -25,42 +23,70 @@ class Fragment_Faction_Create : Fragment() {
     val inviteAllies: MutableList<String> = Data.player.allies.toTypedArray().toMutableList()
     lateinit var allies: BaseAdapter
     lateinit var invited: BaseAdapter
+    lateinit var viewTemp:View
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+        if(isVisible){
+            (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
+            (activity as Activity_Faction_Base).buttonFactionSaveTemp.visibility = View.GONE
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view:View = inflater.inflate(R.layout.fragment_fraction_create, container, false)
+        viewTemp = inflater.inflate(R.layout.fragment_fraction_create, container, false)
 
-        view.listViewFactionCreateAllies.adapter = FactionMemberList(this, inviteAllies, true)
-        view.listViewFactionCreateInvited.adapter = FactionMemberList(this, faction.pendingInvitationsPlayer, false)
+        viewTemp.listViewFactionCreateAllies.adapter = FactionMemberList(this, inviteAllies, true)
+        viewTemp.listViewFactionCreateInvited.adapter = FactionMemberList(this, faction.pendingInvitationsPlayer, false)
 
-        allies = (view.listViewFactionCreateAllies.adapter as FactionMemberList)
-        invited = (view.listViewFactionCreateInvited.adapter as FactionMemberList)
+        allies = (viewTemp.listViewFactionCreateAllies.adapter as FactionMemberList)
+        invited = (viewTemp.listViewFactionCreateInvited.adapter as FactionMemberList)
 
-        if(Data.player.factionID == null){
-            view.buttonFactionCreateCreate.setOnClickListener {viewButton: View ->
-                faction.initialize().addOnSuccessListener {
-                    faction.taxPerDay = view.editTextFactionCreateTax.toString().toIntOrNull() ?: 0
-                    faction.name = view.editTextFactionCreateName.text.toString()
-                    faction.description = view.editTextFactionCreateDescription.text.toString()
+            viewTemp.buttonFactionCreateCreate.setOnClickListener {
+                if(Data.player.factionID == null) {
 
-                    viewButton.isEnabled = false
-                    Data.player.faction = faction
-                    Data.player.factionRole = FactionRole.LEADER
-                    Data.player.factionName = faction.name
-                    Data.player.factionID = faction.ID
-                    faction.upload().addOnSuccessListener {
-                        (activity as Activity_Faction_Base).changePage(2)
-                    }.continueWith {
-                        Data.player.uploadPlayer()
+                    if(!viewTemp.editTextFactionCreateName.text.isNullOrBlank()){
+
+                        if(!viewTemp.editTextFactionCreateTax.text.isNullOrBlank()){
+
+                            if(!viewTemp.editTextFactionCreateDescription.text.isNullOrBlank()){
+                                viewTemp.buttonFactionCreateCreate.isEnabled = false
+                                faction.initialize().addOnSuccessListener {
+                                    faction.taxPerDay = viewTemp.editTextFactionCreateTax.toString().toIntOrNull() ?: 0
+                                    faction.name = viewTemp.editTextFactionCreateName.text.toString()
+                                    faction.description = viewTemp.editTextFactionCreateDescription.text.toString()
+                                    faction.openToAllies = viewTemp.checkBoxFactionCreateAllies.isChecked
+
+                                    Data.player.factionRole = FactionRole.LEADER
+                                    Data.player.factionName = faction.name
+                                    Data.player.factionID = faction.ID
+                                    Data.player.faction = faction
+                                    faction.create().addOnSuccessListener {
+                                        (activity as Activity_Faction_Base).changePage(1)
+                                    }.continueWith {
+                                        Data.player.uploadPlayer()
+                                    }
+                                }
+                            }else {
+                                Toast.makeText(viewTemp.context, "Field required!", Toast.LENGTH_SHORT).show()
+                                viewTemp.editTextFactionCreateDescription.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                            }
+                        }else {
+                            Toast.makeText(viewTemp.context, "Field required!", Toast.LENGTH_SHORT).show()
+                            viewTemp.editTextFactionCreateTax.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                        }
+                    }else {
+                        Toast.makeText(viewTemp.context, "Field required!", Toast.LENGTH_SHORT).show()
+                        viewTemp.editTextFactionCreateName.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                     }
                 }
             }
-        }
 
-        return view
+        return viewTemp
     }
 
     fun update(){

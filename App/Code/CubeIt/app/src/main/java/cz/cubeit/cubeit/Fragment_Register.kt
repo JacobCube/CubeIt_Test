@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
@@ -47,66 +48,89 @@ class Fragment_Register : Fragment() {
             val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
             val isConnected: Boolean = activeNetwork?.isConnected == true
 
-
-            startActivity(intentSplash)
             Data.loadingStatus = LoadingStatus.LOGGING
 
-            if (!isConnected){
-                Data.loadingStatus = LoadingStatus.CLOSELOADING
-                handler.postDelayed({showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")},100)
-            }
-            if (inputPassReg.text.toString() != inputRePassReg.text.toString()){
-                Data.loadingStatus = LoadingStatus.CLOSELOADING
-                handler.postDelayed({showNotification("Oops", "Passwords must match")},100)
-            }
+            if (isConnected) {
 
-            Data.loadGlobalData(view.context).addOnSuccessListener {
-                if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE){
-                    Data.loadingStatus = LoadingStatus.CLOSELOADING
-                    handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha, versioned ${GenericDB.AppInfo.appVersion})")},100)
-                }
+                if (view.inputUsernameReg.text.isNotBlank()) {
 
-                if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
-                    userPassword = view.inputPassReg.text.toString()
+                    if (view.inputEmailReg.text.isNotBlank()) {
 
-                    Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
+                        if (view.inputPassReg.text.isNotBlank()) {
 
-                    Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener{ task: Task<AuthResult> ->
-                        if (task.isSuccessful) {
-                            val user = Auth!!.currentUser
-                            user!!.sendEmailVerification()
-                            Toast.makeText(view.context, "Please confirm your account by clicking on the link sent to your email address!", Toast.LENGTH_SHORT).show()
+                            val pass = view.inputPassReg.text.toString()
+                            if(pass.length > 7 && pass.contains("\\d+".toRegex()) /*&& pass.contains("[A-Z ]+".toRegex())*/){
 
-                            val tempPlayer = Player()
-                            tempPlayer.username = view.inputUsernameReg.text.toString()
-                            //tempPlayer.userSession = user
+                                if (inputPassReg.text.toString() == inputRePassReg.text.toString()){
 
-                            tempPlayer.createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnSuccessListener {
-                                Data.player.username = view.inputUsernameReg.text.toString()
-                                Data.player.loadPlayer().addOnSuccessListener {
-                                    Data.loadingStatus = LoadingStatus.REGISTERED
-                                    val intent = Intent(view.context, Activity_Character_Customization::class.java)
-                                    startActivity(intent)
-                                    //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
-                                }.addOnFailureListener {
-                                    Log.d("loadplayer", it.message)
+                                    startActivity(intentSplash)
+
+                                    Data.loadGlobalData(view.context).addOnSuccessListener {
+                                        if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE){
+                                            Activity_Splash_Screen().closeLoading()
+                                            handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha, versioned ${GenericDB.AppInfo.appVersion})")},100)
+                                        }
+
+                                        if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
+                                            userPassword = view.inputPassReg.text.toString()
+
+                                            Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
+
+                                            Auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener{ task: Task<AuthResult> ->
+                                                if (task.isSuccessful) {
+                                                    val user = Auth.currentUser
+                                                    user!!.sendEmailVerification()
+                                                    Toast.makeText(view.context, "Please confirm your account by clicking on the link sent to your email address!", Toast.LENGTH_SHORT).show()
+
+                                                    val tempPlayer = Player()
+                                                    tempPlayer.username = view.inputUsernameReg.text.toString()
+                                                    //tempPlayer.userSession = user
+
+                                                    tempPlayer.createPlayer(Auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnSuccessListener {
+                                                        Data.player.username = view.inputUsernameReg.text.toString()
+                                                        Data.loadingStatus = LoadingStatus.REGISTERED
+                                                        //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
+                                                    }
+
+                                                }else {
+                                                    try {
+                                                        showNotification("Oops", SystemFlow.exceptionFormatter(task.result.toString()))
+                                                    }
+                                                    catch (e:Exception){
+                                                        showNotification("Oops", "An account with this email already exists!")
+                                                    }
+                                                    Activity_Splash_Screen().closeLoading()
+                                                }
+                                            }
+                                        } else {
+                                            Activity_Splash_Screen().closeLoading()
+                                            showNotification("Alert", "Please enter a valid email address or password")
+                                        }
+                                    }
+                                }else {
+                                    view.inputPassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                                    view.inputRePassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                                    Toast.makeText(view.context, "Passwords must match!", Toast.LENGTH_SHORT).show()
                                 }
+                            }else {
+                                view.inputPassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                                Toast.makeText(view.context, "Entered password is not valid!", Toast.LENGTH_SHORT).show()
                             }
-
                         }else {
-                            try {
-                                showNotification("Oops", SystemFlow.exceptionFormatter(task.result.toString()))
-                            }
-                            catch (e:Exception){
-                                showNotification("Oops", "An account with this email already exists!")
-                            }
-                            Data.loadingStatus = LoadingStatus.CLOSELOADING
+                            view.inputPassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                            Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                         }
+                    }else {
+                        view.inputEmailReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                        Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Data.loadingStatus = LoadingStatus.CLOSELOADING
-                    showNotification("Alert", "Please enter a valid email address or password")
+                }else {
+                    view.inputUsernameReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                    Toast.makeText(view.context, "This field is required!", Toast.LENGTH_SHORT).show()
                 }
+            }else {
+                view.buttonRegister.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                handler.postDelayed({showNotification("Error", "Your device is not connected to the internet. Please check your connection and try again.")},50)
             }
         }
 

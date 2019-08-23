@@ -166,37 +166,37 @@ class Fragment_Menu_Bar : Fragment() {
 
             view.buttonAdventure.setOnClickListener {
                 val intent = Intent(view.context, Adventure::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonFight.setOnClickListener {
                 val intent = Intent(view.context, ActivityFightBoard::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonDefence.setOnClickListener {
                 val intent = Intent(view.context, Spells::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonCharacter.setOnClickListener {
                 val intent = Intent(view.context, Activity_Character::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonSettings.setOnClickListener {
                 val intent = Intent(view.context, ActivitySettings::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonShop.setOnClickListener {
                 val intent = Intent(view.context, Activity_Shop::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
@@ -299,6 +299,7 @@ class Fragment_Menu_Bar : Fragment() {
         val originalY = rootIcon.y
 
         rootOpenButton.setOnClickListener {
+            rootMenu.bringToFront()
             menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
                 duration = (rootMenu.y/displayY * 160).toLong()
                 addUpdateListener {
@@ -347,6 +348,7 @@ class Fragment_Menu_Bar : Fragment() {
                                     }
                                 } else {
                                     val intent = Intent(activity, Home::class.java)
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                     startActivity(intent)
                                 }
                             }

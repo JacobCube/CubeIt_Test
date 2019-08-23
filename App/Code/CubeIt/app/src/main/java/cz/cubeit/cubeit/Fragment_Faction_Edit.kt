@@ -17,55 +17,42 @@ import kotlinx.android.synthetic.main.row_faction_invitation.view.*
 
 class Fragment_Faction_Edit : Fragment() {
     var inviteAllies: MutableList<String> = Data.player.allies.toTypedArray().toMutableList()
-    lateinit var allies: BaseAdapter
-    lateinit var invited: BaseAdapter
+    lateinit var viewTemp: View
 
-    override fun onResume() {
-        super.onResume()
-        //(activity!! as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.VISIBLE
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+
+        if(isVisible){
+            if(Data.player.faction != null){
+
+                for(i in inviteAllies.toTypedArray()){
+                    if(Data.player.faction!!.pendingInvitationsPlayer.contains(i)) inviteAllies.remove(i)
+                }
+                viewTemp.listViewFactionEditAllies.adapter = FactionMemberListEdit(this, inviteAllies, true, resources)
+                viewTemp.listViewFactionEditInvited.adapter = FactionMemberListEdit(this, Data.player.faction!!.pendingInvitationsPlayer, false, resources)
+
+                viewTemp.editTextFactionEditDescription.setText(Data.player.faction!!.description)
+                viewTemp.editTextFactionEditName.setText(Data.player.faction!!.name)
+                viewTemp.editTextFactionEditTax.setText(Data.player.faction!!.taxPerDay.toString())
+                viewTemp.editTextFactionEditWarnMsg.setText(Data.player.faction!!.warnMessage)
+                viewTemp.editTextFactionEditInvitationMsg.setText(Data.player.faction!!.invitationMessage)
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view:View = inflater.inflate(R.layout.fragment_faction_edit, container, false)
+        viewTemp = inflater.inflate(R.layout.fragment_faction_edit, container, false)
 
-        fun init(){
-            view.editTextFactionEditDescription.setText(Data.player.faction!!.description)
-            view.editTextFactionEditName.setText(Data.player.faction!!.name)
-            view.editTextFactionEditTax.setText(Data.player.faction!!.taxPerDay.toString())
-            view.editTextFactionEditWarnMsg.setText(Data.player.faction!!.warnMessage)
-            view.editTextFactionEditInvitationMsg.setText(Data.player.faction!!.invitationMessage)
-
-            (view.listViewFactionEditAllies.adapter as FactionMemberList).notifyDataSetChanged()
-            (view.listViewFactionEditInvited.adapter as FactionMemberList).notifyDataSetChanged()
-        }
-
-        if(Data.player.faction != null){
-            for(i in inviteAllies.toTypedArray()){
-                if(Data.player.faction!!.pendingInvitationsPlayer.contains(i)) inviteAllies.remove(i)
-            }
-            view.listViewFactionEditAllies.adapter = FactionMemberList(this, inviteAllies, true, resources)
-            view.listViewFactionEditInvited.adapter = FactionMemberList(this, Data.player.faction!!.pendingInvitationsPlayer, false, resources)
-
-            allies = (view.listViewFactionEditAllies.adapter as FactionMemberList)
-            invited = (view.listViewFactionEditInvited.adapter as FactionMemberList)
-
-            init()
-
-            if(Data.player.factionRole == FactionRole.MODERATOR){
-                view.editTextFactionEditName.isEnabled = false
-            }
-        }
-
-        return view
+        return viewTemp
     }
 
     fun update(){
-        allies.notifyDataSetChanged()
-        invited.notifyDataSetChanged()
+        (viewTemp.listViewFactionEditAllies.adapter as FactionMemberListEdit).notifyDataSetChanged()
+        (viewTemp.listViewFactionEditInvited.adapter as FactionMemberListEdit).notifyDataSetChanged()
     }
 
 
-    class FactionMemberList(val parent: Fragment_Faction_Edit, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true, val resources: Resources) : BaseAdapter() {
+    class FactionMemberListEdit(val parent: Fragment_Faction_Edit, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true, val resources: Resources) : BaseAdapter() {
 
         override fun getCount(): Int {
             return collection.size

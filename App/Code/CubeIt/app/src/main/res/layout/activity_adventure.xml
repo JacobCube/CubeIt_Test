@@ -29,7 +29,7 @@
         android:max="100"
         android:progress="0"
         android:progressDrawable="@drawable/progress_active_quest"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline135"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

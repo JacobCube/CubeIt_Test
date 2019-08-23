@@ -52,16 +52,14 @@
         android:id="@+id/spellFightEnemyNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="12dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="12dp"
         android:alpha="0"
         android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline63NPC"
-        app:layout_constraintStart_toStartOf="@+id/guideline62NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline62NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline196NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline43NPC" />
 
     <cz.cubeit.cubeit.CustomTextView
@@ -481,7 +479,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.61" />
+        app:layout_constraintGuide_percent="0.55" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline20NPC"
@@ -537,7 +535,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.39" />
+        app:layout_constraintGuide_percent="0.45" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline197NPC"

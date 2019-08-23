@@ -128,7 +128,7 @@ class ClassCubeItHeadService : Service() {
                             startActivity(intentSplash)
 
 
-                            Data.player.loadPlayer().addOnSuccessListener {
+                            Data.player.loadPlayerInstance(view.context).addOnSuccessListener {
                                 Data.loadingStatus = LoadingStatus.LOGGED
                             }
 

@@ -45,7 +45,8 @@ class Activity_Character_Customization: AppCompatActivity(){
 
         textViewCurrentCharacter.text = Data.charClasses[viewPagerPosition+1].name
         textViewStatsCustomization.text = getString(R.string.character_ratio, (Data.charClasses[viewPagerPosition+1].dmgRatio*100).toString() + "%",(Data.charClasses[viewPagerPosition+1].armorRatio*100).toString() + "%", Data.charClasses[viewPagerPosition+1].blockRatio.toString() + "%", (Data.charClasses[viewPagerPosition+1].hpRatio*100).toInt().toString() + "%", (Data.charClasses[viewPagerPosition+1].staminaRatio*100).toString() + "%", Data.charClasses[viewPagerPosition+1].lifeSteal.toString())
-        textViewCharacterDescription.text = Data.charClasses[viewPagerPosition+1].description
+        textViewCharacterDescription.setCharacterAnimationDelay(10)
+        textViewCharacterDescription.animateText(Data.charClasses[viewPagerPosition+1].description)
 
         if (viewPagerCharacterCustomization!= null) {
             viewPagerCharacterCustomization.adapter = ViewPagerCharacterCustomization(supportFragmentManager)
@@ -64,7 +65,8 @@ class Activity_Character_Customization: AppCompatActivity(){
 
                 textViewCurrentCharacter.text = Data.charClasses[viewPagerPosition+1].name
                 textViewStatsCustomization.text = getString(R.string.character_ratio, (Data.charClasses[position+1].dmgRatio*100).toString() + "%",(Data.charClasses[position+1].armorRatio*100).toString() + "%", Data.charClasses[position+1].blockRatio.toString() + "%", (Data.charClasses[position+1].hpRatio*100).toInt().toString() + "%", (Data.charClasses[position+1].staminaRatio*100).toString() + "%", Data.charClasses[position+1].lifeSteal.toString())
-                textViewCharacterDescription.text = Data.charClasses[position+1].description
+                textViewCharacterDescription.setCharacterAnimationDelay(10)
+                textViewCharacterDescription.animateText(Data.charClasses[position+1].description)
             }
         })
 

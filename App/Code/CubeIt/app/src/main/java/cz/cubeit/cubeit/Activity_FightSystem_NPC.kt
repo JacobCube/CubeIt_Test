@@ -433,7 +433,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         fun init(){ //TODO
             imageViewEnemyCharNPC.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.enemy.charClass.drawable, opts))
             //imageViewPlayerCharNPC.setImageBitmap(BitmapFactory.decodeResource(resources, playerFight.playerFight.charClass.drawable, opts))
-            textViewDescriptionNPC.text = enemy.enemy.description
+            if(enemy.enemy.description == "")textViewDescriptionNPC.visibility = View.GONE else textViewDescriptionNPC.text = enemy.enemy.description
 
             textViewPlayerLevelNPC.text = playerFight.playerFight.level.toString()
             textViewEnemyLevelNPC.text = enemy.enemy.level.toString()

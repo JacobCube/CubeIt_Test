@@ -1,5 +1,8 @@
 package cz.cubeit.cubeit
 
+import android.animation.Animator
+import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
@@ -16,7 +19,8 @@ import android.view.View
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
 import android.content.DialogInterface
-
+import android.graphics.Color
+import android.graphics.PorterDuff
 
 
 var playedSong = R.raw.playedsong
@@ -50,6 +54,7 @@ class Home : AppCompatActivity() {
     override fun onBackPressed() {
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
@@ -74,6 +79,7 @@ class Home : AppCompatActivity() {
                 handler.postDelayed({hideSystemUI()},1000)
             }
         }
+        textViewHomeStats.text = "Coins: ${Data.player.money}\nCubeCoins: ${Data.player.cubeCoins}\nGold: ${Data.player.gold}"
 
 
         val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
@@ -130,6 +136,7 @@ class Home : AppCompatActivity() {
             val intent = Intent(this, Activity_Inbox()::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
+            if(Data.inboxChanged) Data.inboxChanged = false
         }
 
         imageViewExit.setOnClickListener {

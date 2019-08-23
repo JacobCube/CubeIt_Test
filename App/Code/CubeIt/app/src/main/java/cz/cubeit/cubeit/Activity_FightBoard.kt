@@ -104,7 +104,7 @@ class ActivityFightBoard: AppCompatActivity(){
 
         if(extraUsername != null){
             val temp = Player(username = extraUsername)
-            temp.loadPlayer().addOnSuccessListener {
+            temp.loadPlayer(this).addOnSuccessListener {
                 pickedPlayer = temp
                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Character_Profile.newInstance("notnull", pickedPlayer)).commit()
             }
@@ -269,12 +269,12 @@ class ActivityFightBoard: AppCompatActivity(){
             }
 
             if(filter != null){
-                username.setText(filter!!.username.orEmpty())
-                position.setText(filter!!.position.toString())
-                lvlFrom.setText(filter!!.lvlFrom.toString())
-                lvlTo.setText(filter!!.lvlTo.toString())
-                active.isChecked = filter?.active ?: false
-                spinner.setSelection(filter?.characterIndex ?: 0)
+                if(filter!!.username != null)username.setText(filter!!.username.orEmpty())
+                if(filter!!.position != null)position.setText(filter!!.position.toString())
+                if(filter!!.lvlFrom != null)lvlFrom.setText(filter!!.lvlFrom.toString())
+                if(filter!!.lvlTo != null)lvlTo.setText(filter!!.lvlTo.toString())
+                if(filter?.active != null)active.isChecked = filter?.active ?: false
+                if(filter?.characterIndex != null)spinner.setSelection(filter?.characterIndex ?: 0)
             }
 
             buttonApply.setOnClickListener {

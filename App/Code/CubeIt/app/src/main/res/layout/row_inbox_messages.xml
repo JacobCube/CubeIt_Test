@@ -50,7 +50,7 @@
         android:textColor="@color/colorSecondary"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/checkBoxInboxMessagesAction"
         app:layout_constraintStart_toStartOf="@+id/textViewInboxMessagesSubject"
         app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessagesSubject" />
 
@@ -76,5 +76,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:color/transparent" />
+
+    <CheckBox
+        android:id="@+id/checkBoxInboxMessagesAction"
+        style="@android:style/Widget.Material.CompoundButton.CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewInboxMessagesBg"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

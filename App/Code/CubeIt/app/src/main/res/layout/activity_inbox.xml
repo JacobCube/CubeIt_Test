@@ -173,4 +173,55 @@
         app:layout_constraintStart_toStartOf="@+id/guideline77"
         app:layout_constraintTop_toTopOf="@+id/imageViewActivityInbox" />
 
+    <ImageView
+        android:id="@+id/imageViewInboxActionMoveTo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/guideline151"
+        app:layout_constraintTop_toTopOf="@+id/guideline76"
+        app:srcCompat="@android:drawable/ic_menu_set_as"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxActionDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline151"
+        app:layout_constraintTop_toTopOf="@+id/guideline76"
+        app:srcCompat="@android:drawable/ic_menu_delete"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/textViewInboxActionCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:text="0"
+        android:textColor="@color/bg_basic_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintStart_toEndOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintTop_toTopOf="@+id/imageViewInboxActionDelete"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxActionCloseEditMode"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:tint="@color/bg_basic_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/textViewInboxActionCounter"
+        app:layout_constraintTop_toTopOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/head_close"
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

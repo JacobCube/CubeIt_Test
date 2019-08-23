@@ -56,7 +56,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
- android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -65,6 +64,7 @@
         android:ems="10"
         android:gravity="start"
         android:hint="Message"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textMultiLine"
         android:scrollbars="vertical"
         android:textAlignment="center"
@@ -72,8 +72,10 @@
         android:textColorHint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline110"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSubject" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSubject"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Spinner
         android:id="@+id/spinnerInboxPriority"
@@ -153,7 +155,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.59" />
+        app:layout_constraintGuide_percent="0.62" />
 
     <TextView
         android:id="@+id/textViewInboxMessageTime"
@@ -297,5 +299,29 @@
         app:layout_constraintStart_toStartOf="@+id/guideline165"
         app:srcCompat="@drawable/decline_icon"
         tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxOpenMenu"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:tint="@color/colorSecondary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextInboxReciever"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_dialog_dialer"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageDropDown"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/spinnerInboxPriority"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="@+id/spinnerInboxPriority"
+        app:layout_constraintTop_toTopOf="@+id/spinnerInboxPriority"
+        app:srcCompat="@drawable/arrow_down" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
