@@ -78,6 +78,7 @@
 
     <ImageView
         android:id="@+id/homeButtonBackSettings"
+		 android:adjustViewBounds="true"
         android:layout_width="75dp"
         android:layout_height="0dp"
         android:background="@drawable/emptyspellslotlarge"

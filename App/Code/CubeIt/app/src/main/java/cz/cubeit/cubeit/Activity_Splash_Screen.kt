@@ -3,46 +3,41 @@ package cz.cubeit.cubeit
 import android.animation.ValueAnimator
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.view.View
 import android.view.animation.Animation
 import kotlinx.android.synthetic.main.activity_splash_screen.*
 import android.view.animation.RotateAnimation
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.drm.DrmStore
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Looper
+import android.util.DisplayMetrics
 import android.util.Log
+import android.view.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.PopupWindow
 import android.widget.TextView
+import kotlinx.android.synthetic.main.popup_dialog_minigame.view.*
+import java.lang.reflect.Method
+import java.util.*
 import kotlin.random.Random.Default.nextInt
 
 var textViewLog: TextView? = null
 
 class Activity_Splash_Screen: AppCompatActivity(){
 
+    private var coordinatesRocket = ComponentCoordinates()
     var keepSplash: Boolean = false
-    val splashTexts: MutableList<String> = mutableListOf(
-            "We're contacting your parents, stay patient.",
-            "Don't forget to follow our Instagram @cubeit_app.",
-            "Feel free to submit a meme to our subreddit /r/cubeit_app.",
-            "If you're having any problems, contact us in Discord, or via in-game bug report.",
-            "Lost in the amount of updates? Join our Discord for more info.",
-            "I swear, it will stop rotating.",
-            "Somebody once told me, this app is fucking great.",
-            "Don't forget to rate our app on google play.",
-            "Did you hear that? Yes! The sound of epic gaming.",
-            "This app is 3+, and still, you will fuck it up just as you did with lego.",
-            "Are you really ready to absorb such an amount of epicness?",
-            "We won't bite you, tell us what you think - teamcubeit@gmail.com.",
-            "Scrolling down opens home page.",
-            "Menu is somewhere by default hidden, try swiping up to show it.",
-            "Moving with your bag in profile can show different information!",
-            "Modern problems require modern mobile games!",
-            "Don't shut us down Obama, plz",
-            "Mermaid hmm? Ladies and gentlemen, we got him."
-    )
+    val rocketTimer = Timer()
 
     fun setLogText(text: String){
         if(textViewLog != null)textViewLog!!.text = text
@@ -50,7 +45,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
     fun closeLoading(){
         Data.loadingStatus = LoadingStatus.CLOSELOADING
-        this.finish()
+        //this.finish()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -66,13 +61,10 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
-    override fun onBackPressed() {
-        Data.loadingStatus = LoadingStatus.UNLOGGED
-        super.onBackPressed()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun onStop() {
+        super.onStop()
+        rocketTimer.cancel()
+        handler.removeCallbacksAndMessages(null)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +72,14 @@ class Activity_Splash_Screen: AppCompatActivity(){
         hideSystemUI()
         setContentView(R.layout.activity_splash_screen)
         textViewLog = textViewLoadingLog
+
+        val metrics = DisplayMetrics()
+        windowManager.defaultDisplay.getRealMetrics(metrics)
+
+        coordinatesRocket.component = imageViewSplashRocket
+        coordinatesRocket.heightBound = metrics.heightPixels
+        coordinatesRocket.widthBound = metrics.widthPixels
+        var rocketGame = RocketGame(3, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -90,10 +90,8 @@ class Activity_Splash_Screen: AppCompatActivity(){
         imageViewSplashText.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.splash_nani, opts))
         imageViewSplashReddit.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.reddit_icon, opts))
 
-        textViewSplashText.text = splashTexts[nextInt(0, splashTexts.size)]
+        textViewSplashText.text = Data.splashTexts[nextInt(0, Data.splashTexts.size)]
 
-        /*val animSet: AnimatorSet = AnimatorSet()
-        animSet.playTogether()*/
 
         val rotateAnimation = RotateAnimation(
                 0f, 1080f,
@@ -138,6 +136,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                             startActivity(intent)
                         }
                         LoadingStatus.UNLOGGED -> {
+                            finish()
                             val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             startActivity(intent)
@@ -157,7 +156,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                         }
                     }
                 }
-                textViewSplashText.text = splashTexts[nextInt(0, splashTexts.size)]
+                textViewSplashText.text = Data.splashTexts[nextInt(0, Data.splashTexts.size)]
             }
 
             override fun onAnimationEnd(animation: Animation?) {
@@ -166,8 +165,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
         rotateAnimation.duration = 2000
         rotateAnimation.repeatCount = Animation.INFINITE
-        imageViewSplashIcon.startAnimation(rotateAnimation)
-
 
         val pumpInAnimationIG = ValueAnimator.ofFloat(0.95f, 1f)
         val pumpOutAnimationIG = ValueAnimator.ofFloat(1f, 0.95f)
@@ -205,7 +202,217 @@ class Activity_Splash_Screen: AppCompatActivity(){
             imageViewSplashReddit.scaleX = value
             imageViewSplashReddit.scaleY = value
         }
-        pumpInAnimationIG.start()
+
+        switchSplashScreenType.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                pumpInAnimationIG.pause()
+                rotateAnimation.cancel()
+
+                imageViewSplashIG.visibility = View.GONE
+                imageViewSplashIcon.visibility = View.GONE
+                imageViewSplashDiscord.visibility = View.GONE
+                imageViewSplashMessage.visibility = View.GONE
+                imageViewSplashReddit.visibility = View.GONE
+
+                imageViewSplashIcon.visibility = View.GONE
+                imageViewSplashRocket.visibility = View.VISIBLE
+                imageViewSplash.isEnabled = true
+                Data.loadingScreenType = LoadingType.RocketGamePad
+                switchSplashScreenType.text = "Rocket game"
+                textViewLoadingLog.visibility = View.GONE
+                textViewSplashText.visibility = View.GONE
+                textViewSplashTime.visibility = View.VISIBLE
+                imageViewSplashIcon.isEnabled = false
+
+                coordinatesRocket.update(imageViewSplashRocket.x, imageViewSplashRocket.y)
+                rocketGame.initialize()
+
+                var endCount = 0
+                rocketTimer.scheduleAtFixedRate(object : TimerTask() {
+                    @SuppressLint("SetTextI18n")
+                    override fun run() {
+                        runOnUiThread {
+
+                            if(rocketGame.onTick(coordinatesRocket)){
+                                rocketGame.ticks++
+                                textViewSplashTime.text = "Level ${rocketGame.level} - ${(rocketGame.ticks).toDouble() / 100}s"
+                            } else {
+                                this.cancel()
+
+                                var newHigh = false
+                                if((rocketGame.ticks.toDouble() / 100) >= Data.player.rocketGameScoreSeconds){
+                                    Data.player.rocketGameScoreSeconds = rocketGame.ticks.toDouble() / 100
+                                    newHigh = true
+                                }
+
+                                val rewardBottom = (GenericDB.Balance.rewardCoinsBottom * (Data.player.level * 0.8) * (0 + 1) * 0.75).toInt()
+                                val rewardTop = GenericDB.Balance.rewardCoinsTop * ((Data.player.level * 0.8) * (0 + 1) * 1.25).toInt()
+                                val reward = nextInt(rewardBottom, rewardTop)/20
+                                Data.player.money += reward
+
+                                val viewP = layoutInflater.inflate(R.layout.popup_dialog_minigame, null, false)
+                                val window = PopupWindow(this@Activity_Splash_Screen)
+                                window.contentView = viewP
+                                viewP.textViewDialogMGGenericInfo.text = "\t~" + (rewardBottom + ((rewardTop - rewardBottom)/2))/20 + " coins /s"
+                                viewP.textViewDialogMGInfo.text = "You lost.\n"+if(newHigh) "Wow! New high score!" else{
+                                    Data.rocketGameNotHigh[nextInt(0, Data.rocketGameNotHigh.size)]
+                                } + "\n\n You lasted for ${(rocketGame.ticks).toDouble() / 100}s (lvl. ${rocketGame.level})\nAnd received $reward coins."
+
+                                window.setOnDismissListener {
+                                    rocketGame.ticks = 0
+                                    window.dismiss()
+                                }
+
+                                viewP.buttonDialogMGOk.setOnClickListener {
+                                    when (Data.loadingStatus) {
+                                        LoadingStatus.LOGGED -> {
+                                            this.cancel()
+                                            val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                            startActivity(intent)
+                                        }
+                                        LoadingStatus.UNLOGGED -> {
+                                            this.cancel()
+                                            val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                            startActivity(intent)
+                                        }
+                                        LoadingStatus.CLOSELOADING -> {
+                                            this.cancel()
+                                            this@Activity_Splash_Screen.finish()
+                                        }
+                                        LoadingStatus.REGISTERED -> {
+                                            this.cancel()
+                                            val intent = Intent(this@Activity_Splash_Screen, Activity_Character_Customization()::class.java)
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                            startActivity(intent)
+                                        }
+                                        else -> {
+                                        }
+                                    }
+                                    window.dismiss()
+                                }
+
+                                viewP.buttonDialogMGAgain.setOnClickListener {
+                                    this.run()
+                                    rocketGame = RocketGame(1, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
+                                    coordinatesRocket.update(imageViewSplashRocket.x, imageViewSplashRocket.y)
+                                    rocketGame.initialize()
+                                    window.dismiss()
+                                }
+
+                                viewP.buttonDialogMGClose.setOnClickListener {
+                                    viewP.buttonDialogMGOk.performClick()
+                                }
+
+                                window.isOutsideTouchable = false
+                                window.isFocusable = false
+                                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+                                window.showAtLocation(viewP, Gravity.CENTER,0,0)
+                            }
+
+                            if ((rocketGame.ticks - endCount * 200) > 200) {
+                                endCount++
+                                if (!keepSplash) {
+                                    when (Data.loadingStatus) {
+                                        LoadingStatus.LOGGED -> {
+                                            this.cancel()
+                                            val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                            startActivity(intent)
+                                        }
+                                        LoadingStatus.UNLOGGED -> {
+                                            this.cancel()
+                                            val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                            startActivity(intent)
+                                        }
+                                        LoadingStatus.CLOSELOADING -> {
+                                            this.cancel()
+                                            this@Activity_Splash_Screen.finish()
+                                        }
+                                        LoadingStatus.REGISTERED -> {
+                                            this.cancel()
+                                            val intent = Intent(this@Activity_Splash_Screen, Activity_Character_Customization()::class.java)
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                            startActivity(intent)
+                                        }
+                                        /*LoadingStatus.ENTERFIGHT -> {
+                                            finish()
+                                        }*/
+                                        else -> {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }, 0, 10) //reschedule every 10 milliseconds
+
+            }else {
+                if(!pumpInAnimationIG.isRunning || pumpInAnimationIG.isPaused) pumpInAnimationIG.start()
+                imageViewSplashIcon.startAnimation(rotateAnimation)
+                rocketTimer.cancel()
+                rocketGame.detach()
+                textViewSplashTime.visibility = View.GONE
+
+                imageViewSplashIG.visibility = View.VISIBLE
+                imageViewSplashIcon.visibility = View.VISIBLE
+                imageViewSplashDiscord.visibility = View.VISIBLE
+                imageViewSplashMessage.visibility = View.VISIBLE
+                imageViewSplashReddit.visibility = View.VISIBLE
+
+                imageViewSplashIcon.visibility = View.VISIBLE
+                imageViewSplashRocket.visibility = View.GONE
+                imageViewSplash.isEnabled = false
+                Data.loadingScreenType = LoadingType.Normal
+                switchSplashScreenType.text = "Normal"
+                textViewLoadingLog.visibility = View.VISIBLE
+                textViewSplashText.visibility = View.VISIBLE
+                imageViewSplashIcon.isEnabled = true
+            }
+            imageViewSplashText.visibility = View.GONE
+            SystemFlow.writeObject(this, "loadingScreenType${Data.player.username}.data", Data.loadingScreenType)
+        }
+
+        switchSplashScreenType.isChecked = if (SystemFlow.readObject(this, "loadingScreenType${Data.player.username}.data") != 0){
+            if(SystemFlow.readObject(this, "loadingScreenType${Data.player.username}.data") as LoadingType == LoadingType.RocketGamePad){
+                switchSplashScreenType.text = "Rocket game"
+                true
+            }else {
+                switchSplashScreenType.text = "Normal"
+                imageViewSplashIcon.startAnimation(rotateAnimation)
+                false
+            }
+        }else {
+            switchSplashScreenType.text = "Normal"
+            imageViewSplashIcon.startAnimation(rotateAnimation)
+            false
+        }
+
+        imageViewSplash.setOnTouchListener(object: Class_OnSwipeDragListener(this) {        //rocket movement
+
+            @SuppressLint("ClickableViewAccessibility")
+            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+
+                when (motionEvent.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        coordinatesRocket.update(motionEvent.rawX, motionEvent.rawY)
+                        return true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        coordinatesRocket.update(motionEvent.rawX, motionEvent.rawY)
+                        return true
+                    }
+                }
+                return super.onTouch(view, motionEvent)
+            }
+        })
+
+        /*val animSet: AnimatorSet = AnimatorSet()
+        animSet.playTogether()*/
+
 
         imageViewSplashIG.setOnClickListener {
             val openURL = Intent(Intent.ACTION_VIEW)
@@ -219,7 +426,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
             rotateAnimation.cancel()
             imageViewSplashIcon.isEnabled = false
 
-            textViewSplashText.text = splashTexts[nextInt(0, splashTexts.size)]
+            textViewSplashText.text = Data.splashTexts[nextInt(0, Data.splashTexts.size)]
 
             val pumpInAnimation = ValueAnimator.ofFloat(1f, 1.3f)
             val pumpOutAnimation = ValueAnimator.ofFloat(1.3f, 1f)
@@ -234,7 +441,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                     imageViewSplashText.visibility = View.GONE
                     rotateAnimation.duration = 2000
                     rotateAnimation.repeatCount = Animation.INFINITE
-                    imageViewSplashIcon.startAnimation(rotateAnimation)
+                    if(!switchSplashScreenType.isChecked)imageViewSplashIcon.startAnimation(rotateAnimation)
                     imageViewSplashIcon.isEnabled = true
 
                     if(!keepSplash){

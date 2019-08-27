@@ -1,9 +1,13 @@
 package cz.cubeit.cubeit
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Layout
 import androidx.fragment.app.Fragment
 import android.util.Log
 import android.view.*
@@ -13,6 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.MetadataChanges
 import kotlinx.android.synthetic.main.fragment_faction.view.*
+import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_faction_members.view.*
 
 
@@ -120,7 +125,7 @@ class Fragment_Faction: Fragment(){
     }
 
     private fun init() {
-        viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberInfo, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction)
+        viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberInfo, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction, mutableListOf(), activity!!)
         (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
         if (!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER) {
             viewTemp.buttonFactionAlly.visibility = View.VISIBLE
@@ -192,7 +197,7 @@ class Fragment_Faction: Fragment(){
     }
 
 
-    private class FactionMemberList(val faction: Faction, val memberDesc: CustomTextView, val context: Context, val playerMember: FactionMember?, val myFaction: Boolean, var members: MutableList<FactionMember> = mutableListOf()) : BaseAdapter() {
+    private class FactionMemberList(val faction: Faction, val memberDesc: CustomTextView, val context: Context, val playerMember: FactionMember?, val myFaction: Boolean, var members: MutableList<FactionMember> = mutableListOf(), val activity: Activity) : BaseAdapter() {
 
         override fun getCount(): Int {
             return members.size / 4 + 1
@@ -259,37 +264,35 @@ class Fragment_Faction: Fragment(){
                         txt.setHTMLText(members[rowIndex + index].getShortDesc())
                         badge.setImageResource(members[rowIndex + index].role.getDrawable())
 
-                        if(myFaction){
-                            img.apply {
-                                setOnClickListener {
-                                    member = members[rowIndex + index]
-                                    memberDesc.scrollTo(0, 0)
-                                    memberDesc.setHTMLText(faction.getMemberDesc(member.username))
-                                }
-
-                                setOnLongClickListener {
-                                    member = members[rowIndex + index]
-                                    if(member.username != Data.player.username)showMenu(it, context, member, playerMember, faction, this@FactionMemberList, myFaction)
-                                    true
-                                }
+                        img.apply {
+                            setOnClickListener {
+                                member = members[rowIndex + index]
+                                memberDesc.scrollTo(0, 0)
+                                memberDesc.setHTMLText(faction.getMemberDesc(member.username))
                             }
-                            txt.apply {
-                                setOnClickListener {
-                                    img.performClick()
-                                }
 
-                                setOnLongClickListener {
-                                    img.performLongClick()
-                                }
+                            setOnLongClickListener {
+                                member = members[rowIndex + index]
+                                showMenu(it, context, member, playerMember, faction, this@FactionMemberList, myFaction, activity)
+                                true
                             }
-                            badge.apply {
-                                setOnClickListener {
-                                    img.performClick()
-                                }
+                        }
+                        txt.apply {
+                            setOnClickListener {
+                                img.performClick()
+                            }
 
-                                setOnLongClickListener {
-                                    img.performLongClick()
-                                }
+                            setOnLongClickListener {
+                                img.performLongClick()
+                            }
+                        }
+                        badge.apply {
+                            setOnClickListener {
+                                img.performClick()
+                            }
+
+                            setOnLongClickListener {
+                                img.performLongClick()
                             }
                         }
                     }else{
@@ -333,7 +336,7 @@ class Fragment_Faction: Fragment(){
                                  val badge0: ImageView, val badge1: ImageView, val badge2: ImageView, val badge3: ImageView)
 
         companion object {
-            fun showMenu(it: View, context: Context, member: FactionMember, playerMember: FactionMember?, faction: Faction, parent: BaseAdapter, myFaction: Boolean) {
+            fun showMenu(it: View, context: Context, member: FactionMember, playerMember: FactionMember?, faction: Faction, parent: BaseAdapter, myFaction: Boolean, activity: Activity) {
 
                 val wrapper = ContextThemeWrapper(context, R.style.FactionPopupMenu)
                 val popup = PopupMenu(wrapper, it)
@@ -341,11 +344,18 @@ class Fragment_Faction: Fragment(){
                 inflater.inflate(R.menu.menu_faction_member, popup.menu)
 
                 val popupMenu = popup.menu
-                if (Data.player.allies.contains(member.username)) {
-                    popupMenu.findItem(R.id.menu_faction_friend).isVisible = false
-                } else {
-                    popupMenu.findItem(R.id.menu_faction_friend).isVisible = false
+                popupMenu.findItem(R.id.menu_faction_ally).isVisible = !Data.player.allies.contains(member.username) && member.username != Data.player.username
+
+                if(myFaction && member.username == Data.player.username){
+                    popupMenu.findItem(R.id.menu_faction_message).isVisible = false
+                    popupMenu.findItem(R.id.menu_faction_show_profile).isVisible = false
+                    popupMenu.findItem(R.id.menu_faction_leave).isVisible = true
+                }else {
+                    popupMenu.findItem(R.id.menu_faction_leave).isVisible = false
+                    popupMenu.findItem(R.id.menu_faction_message).isVisible = true
+                    popupMenu.findItem(R.id.menu_faction_show_profile).isVisible = true
                 }
+
                 if (myFaction && playerMember != null && playerMember.compareTo(member) == 1) {
                     popupMenu.findItem(R.id.menu_faction_kick).isVisible = true
                     popupMenu.findItem(R.id.menu_faction_demote).isVisible = true
@@ -357,6 +367,7 @@ class Fragment_Faction: Fragment(){
                     popupMenu.findItem(R.id.menu_faction_promote).isVisible = false
                     popupMenu.findItem(R.id.menu_faction_warn).isVisible = false
                 }
+
                 popup.setOnMenuItemClickListener {
                     when(it.title){
                         "Message" -> {
@@ -364,7 +375,7 @@ class Fragment_Faction: Fragment(){
                             intent.putExtra("receiver", member.username)
                             context.startActivity(intent)
                         }
-                        "Friend" -> {
+                        "Ally" -> {
                             it.isVisible = false
                             if(!Data.player.allies.contains(member.username))Data.player.allies.add(member.username)
                         }
@@ -382,13 +393,54 @@ class Fragment_Faction: Fragment(){
                             parent.notifyDataSetChanged()
                         }
                         "Kick" -> {
-                            faction.kickMember(member, Data.player.username)
-                            faction.members.remove(member.username)
-                            parent.notifyDataSetChanged()
+                            val viewP = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
+                            val window = PopupWindow(context)
+                            window.contentView = viewP
+                            val buttonYes: Button = viewP.buttonYes
+                            val buttonNo:ImageView = viewP.buttonCloseDialog
+                            val info:TextView = viewP.textViewInfo
+                            info.text = "Do you want to kick ${member.username}?"
+                            window.isOutsideTouchable = false
+                            window.isFocusable = true
+                            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                            buttonYes.setOnClickListener {
+                                faction.kickMember(member, Data.player.username)
+                                faction.members.remove(member.username)
+                                parent.notifyDataSetChanged()
+                                window.dismiss()
+                            }
+                            buttonNo.setOnClickListener {
+                                window.dismiss()
+                            }
+                            window.showAtLocation(viewP, Gravity.CENTER,0,0)
                         }
                         "Warn" -> {
                             Data.player.writeInbox(member.username, InboxMessage(status = MessageStatus.Faction, receiver = member.username, sender = faction.name, subject = "${Data.player.username} warned you!", content = faction.warnMessage))
                             popupMenu.close()
+                        }
+                        "Leave" ->{
+                            val viewP = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
+                            val window = PopupWindow(context)
+                            window.contentView = viewP
+                            val buttonYes: Button = viewP.buttonYes
+                            val buttonNo:ImageView = viewP.buttonCloseDialog
+                            val info:TextView = viewP.textViewInfo
+                            info.text = "Do you want to leave your faction?"
+                            window.isOutsideTouchable = false
+                            window.isFocusable = true
+                            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                            buttonYes.setOnClickListener {
+                                Data.player.leaveFaction()
+                                val intent = Intent(context, Home::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                context.startActivity(intent)
+                                window.dismiss()
+                                popupMenu.close()
+                            }
+                            buttonNo.setOnClickListener {
+                                window.dismiss()
+                            }
+                            window.showAtLocation(viewP, Gravity.CENTER,0,0)
                         }
                     }
                     true

@@ -8,7 +8,7 @@
     android:screenOrientation="sensorLandscape">
 
     <ImageView
-        android:id="@+id/imageViewPopUpDialogBg"
+        android:id="@+id/imageViewDialogMGBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -17,22 +17,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:adjustViewBounds="true"
-        app:srcCompat="@drawable/bg_basic_logincolor_dark" />
+        app:srcCompat="@drawable/bg_basic_logincolor_light" />
 
     <Button
-        android:id="@+id/buttonYes"
+        android:id="@+id/buttonDialogMGOk"
         style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
-        android:text="YES"
+        android:text="@android:string/ok"
         android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline224" />
+
+    <Button
+        android:id="@+id/buttonDialogMGAgain"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="@font/average_sans"
+        android:text="Try again"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline27"
+        app:layout_constraintStart_toStartOf="@+id/guideline224" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline26"
@@ -48,32 +63,54 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.835" />
 
-    <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewInfo"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline224"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewDialogMGInfo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
-        android:text="Are you sure?"
-        android:textColor="@android:color/white"
+        android:text="Minigame lost"
+        android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/buttonYes"
+        app:layout_constraintBottom_toTopOf="@+id/buttonDialogMGAgain"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline26"
-        app:layout_constraintVertical_bias="0.4" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewDialogMGGenericInfo" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewDialogMGGenericInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="start"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/buttonDialogMGClose"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonDialogMGClose" />
 
     <ImageView
-        android:id="@+id/buttonCloseDialog"
+        android:id="@+id/buttonDialogMGClose"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
         android:tint="@android:color/holo_red_dark"
         app:layout_constraintBottom_toTopOf="@+id/guideline26"
-        android:adjustViewBounds="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline27"
         app:layout_constraintTop_toTopOf="parent"

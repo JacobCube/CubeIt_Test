@@ -11,6 +11,9 @@ import android.util.Log
 import android.view.View
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_login_register.*
+import android.os.Looper
+
+
 
 val handler = Handler()
 

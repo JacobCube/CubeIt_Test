@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.media.MediaPlayer
 import android.os.Build
@@ -25,7 +26,9 @@ import android.text.method.ScrollingMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
@@ -43,6 +46,12 @@ import java.util.concurrent.TimeUnit
 TODO simulace jízdy metrem - uživatel zadá příkaz v době, kdy je připojený k internetu, z něco se však postupně odpojuje, toto by bylo aplikované u callů s vyšší priritou v rámci uživatelské přátelskosti,
 splnění mise by takovým callem určitě byl - využít možnosti firebasu / případně používat lokální úložiště jako cache nebo přímo cache
 */
+
+fun Float.round(decimals: Int): Float {
+    var multiplier = 1.0
+    repeat(decimals) { multiplier *= 10 }
+    return  (round(this * multiplier) / multiplier).toFloat()
+}
 
 var drawableStorage = hashMapOf(
 //fixes bug: whenever project directory changes in drawables,
@@ -141,6 +150,7 @@ object Data {
     var npcs: HashMap<String, NPC> = hashMapOf()        //id - NPC
 
     var loadingStatus = LoadingStatus.LOGGING
+    var loadingScreenType: LoadingType = LoadingType.Normal
 
     var activeQuest: ActiveQuest? = null
 
@@ -150,15 +160,64 @@ object Data {
 
     var loadingActiveQuest: Boolean = false
 
+    val splashTexts: List<String> = listOf(
+            "We're contacting your parents, stay patient.",
+            "Don't forget to follow our Instagram @cubeit_app.",
+            "Feel free to submit a meme to our subreddit /r/cubeit_app.",
+            "If you're having any problems, contact us in Discord, or via in-game bug report.",
+            "Lost in the amount of updates? Join our Discord for more info.",
+            "I swear, it will stop rotating.",
+            "Somebody once told me, this app is fucking great.",
+            "Don't forget to rate our app on google play.",
+            "Did you hear that? Yes! The sound of epic gaming.",
+            "This app is 3+, and still, you will fuck it up just as you did with lego.",
+            "Are you really ready to absorb such an amount of epicness?",
+            "We won't bite you, tell us what you think - teamcubeit@gmail.com.",
+            "Scrolling down opens home page.",
+            "Menu is somewhere by default hidden, try swiping up to show it.",
+            "Moving with your bag in profile can show different information!",
+            "Modern problems require modern mobile games!",
+            "Don't shut us down Obama, plz",
+            "Mermaid hmm? Ladies and gentlemen, we got him."
+    )
+
+    val rocketGameNotHigh: List<String> = listOf(
+            "Yikes, I thought you're trying.",
+            "Good boy! You did good! But not good enough",
+            "Pretty good.",
+            "Still better than most of your friends.",
+            "I guess this game is not built for everybody.",
+            "Man up.",
+            "It was definitely game's fault.",
+            "Yep! Game's fault.",
+            "Yo are you even trying?"
+    )
+
     var inboxCategories: HashMap<MessageStatus, InboxCategory> = hashMapOf(
-            MessageStatus.New to InboxCategory(name = "New", ID = 0),
-            MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
-            MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
-            MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
-            MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
-            MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
-            MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
-            MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
+            MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
+            MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
+            MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
+            MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
+            MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
+            MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
+            MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
+            MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
+
+    fun refreshInbox(context: Context){
+        SystemFlow.writeObject(context, "inbox${player.username}.data", inbox)
+        inboxCategories = hashMapOf(
+                MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
+                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
+                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
+                MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
+                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
+                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
+                MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
+                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
+        for (message in inbox) {
+            inboxCategories[message.status]!!.messages.add(message)
+        }
+    }
 
     var newLevel = false
 
@@ -186,14 +245,14 @@ object Data {
 
         activeQuest = null
         inboxCategories = hashMapOf(
-                MessageStatus.New to InboxCategory(name = "New", ID = 0),
-                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
-                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
-                MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
-                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
-                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
-                MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
-                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
+                MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
+                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
+                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
+                MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
+                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
+                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
+                MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
+                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
         activeQuest = null
         player = Player()
         inbox = mutableListOf()
@@ -205,7 +264,7 @@ object Data {
 
         inboxSnapshot = null
         factionSnapshot = null
-        SystemFlow.writeObject(context, "inbox${this.player.username}.data", Data.inbox)
+        SystemFlow.writeObject(context, "inbox${this.player.username}.data", this.inbox)
     }
 
     fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
@@ -1187,6 +1246,12 @@ enum class LoadingStatus {
     ENTERFIGHT
 }
 
+enum class LoadingType : Serializable{
+    Normal,
+    RocketGamePad,
+    RocketGameMotion
+}
+
 /*data class LoadPlayer(
         var charClass: Int = Data.player.charClass.id,
         var username: String = "loadPlayer",
@@ -1555,6 +1620,7 @@ open class Player(
             return drawableStorage[profilePicDrawableIn]!!
         }
     var gold: Int = 0
+    var rocketGameScoreSeconds: Double = 0.0
 
     @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - problem with Serializabling
     @Exclude var textSize: Float = 16f
@@ -1603,6 +1669,7 @@ open class Player(
                 "newPlayer" to this.newPlayer,
                 "description" to this.description,
                 "cubeCoins" to this.cubeCoins,
+                "rocketGameScoreSeconds" to this.rocketGameScoreSeconds,
                 "lastLogin" to FieldValue.serverTimestamp()
         )
 
@@ -1691,6 +1758,7 @@ open class Player(
         userString["inviteBy"] = this.inviteBy
         userString["profilePicDrawableIn"] = this.profilePicDrawableIn
         userString["gold"] = this.gold
+        userString["rocketGameScoreSeconds"] = this.rocketGameScoreSeconds
 
 
         userString["lastLogin"] = FieldValue.serverTimestamp()
@@ -1745,6 +1813,7 @@ open class Player(
         userString["inviteBy"] = this.inviteBy
         userString["profilePicDrawableIn"] = this.profilePicDrawableIn
         userString["gold"] = this.gold
+        userString["rocketGameScoreSeconds"] = this.rocketGameScoreSeconds
 
         return db.collection("users").document(username).set(userString).continueWithTask {
             this.createInbox()
@@ -1799,19 +1868,36 @@ open class Player(
         }
     }
 
+    fun leaveFaction(){
+        if(this.faction != null){
+            val db = FirebaseFirestore.getInstance()
+            val docRef = db.collection("factions").document(this.factionID.toString())
+
+            val deleteFaction = this.factionRole == FactionRole.LEADER
+            docRef.update("members.${Data.player.username}", FieldValue.delete()).addOnSuccessListener {
+                Data.player.writeInbox(this.faction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = this.faction!!.leader, sender = this.username, subject = "${Data.player.username} left the faction.", content = "${Data.player.username} left the faction. You can respond by replying to this mail."))
+                this.faction = null
+                this.factionRole = null
+                this.factionID = null
+                this.factionName = null
+            }
+            if(deleteFaction) docRef.delete()
+        }
+    }
+
     fun loadInbox(context: Context): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
         var docRef: Query
 
         Data.inboxCategories = hashMapOf(
-                MessageStatus.New to InboxCategory(name = "New", ID = 0),
-                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
-                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
-                MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
-                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
-                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
-                MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
-                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
+                MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
+                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
+                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
+                MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
+                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
+                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
+                MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
+                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
 
         try {
             if (SystemFlow.readObject(context, "inbox${Data.player.username}.data") != 0){
@@ -2027,6 +2113,7 @@ open class Player(
                 this.inviteBy = loadedPlayer.inviteBy
                 this.profilePicDrawableIn = loadedPlayer.profilePicDrawableIn
                 this.gold = loadedPlayer.gold
+                this.rocketGameScoreSeconds = loadedPlayer.rocketGameScoreSeconds
             }
         }
     }
@@ -3515,7 +3602,8 @@ class InboxCategory(
         var name: String = "My category",
         var color: Int = Color.BLUE,
         val ID: Int = 0,
-        var messages: MutableList<InboxMessage> = mutableListOf()
+        var messages: MutableList<InboxMessage> = mutableListOf(),
+        var status: MessageStatus = MessageStatus.Fight
 )
 
 class InboxMessage(
@@ -3552,12 +3640,9 @@ class InboxMessage(
         }
     }
 
-    fun changeStatus(statusX: MessageStatus) {
-        Data.inboxCategories[this.status]!!.messages.remove(this)
-        Data.inboxCategories[statusX]!!.messages.add(this)
-        this.status = statusX
-
-        Data.player.uploadMessage(this)
+    fun changeStatus(statusX: MessageStatus, context: Context) {
+        Data.inbox.find { it.ID == this.ID } !!.status = statusX
+        Data.refreshInbox(context)
     }
 }
 
@@ -3722,6 +3807,7 @@ class Faction(                     //TODO parent, invitations  TODO Firebase rul
     }
 
     @Exclude fun getMemberDesc(username: String): String{                //description related to the Faction - gold, membership length etc.
+        if(!this.contains(username)) return username
         val member = this.members[username]!!
         val givenGoldDay = member.goldGiven.toInt().safeDivider(member.membershipLength)
 
@@ -3730,6 +3816,13 @@ class Faction(                     //TODO parent, invitations  TODO Firebase rul
             givenGoldDay < this.taxPerDay -> "<font color='red'> ${member.goldGiven}</font>"
             else -> "<font color='grey'> ${member.goldGiven}</font>"
         }+ "<br/>membership: ${member.membershipLength} days<br/>"
+    }
+
+    @Exclude fun getMemberDescExt(username: String): String{
+        if(!this.contains(username)) return username
+        val member = this.members[username]!!
+
+        return "${member.username} - ${member.role.name}<br/>membership: ${member.membershipLength} days<br/>"
     }
 
     fun kickMember(member: FactionMember, caller: String){
@@ -3854,19 +3947,21 @@ class Invitation(
 
         when(this.type){
             InvitationType.faction -> {
-                db.collection("factions").document(this.factionID.toString()).get().addOnSuccessListener {
-                    val temp: MutableList<String> = if(it == null) mutableListOf() else it.get("pendingInvitationsPlayer") as MutableList<String>
-                    if(temp.contains(Data.player.username)){
-                        db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
-                        db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level)))
-                        Data.player.factionRole = FactionRole.MEMBER
-                        Data.player.factionID = this.factionID
-                        Data.player.factionName = this.factionName
+                if(Data.player.factionID == null){
+                    db.collection("factions").document(this.factionID.toString()).get().addOnSuccessListener {
+                        val temp: MutableList<String> = if(it == null) mutableListOf() else it.get("pendingInvitationsPlayer") as MutableList<String>
+                        if(temp.contains(Data.player.username)){
+                            db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
+                            db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level)))
+                            Data.player.factionRole = FactionRole.MEMBER
+                            Data.player.factionID = this.factionID
+                            Data.player.factionName = this.factionName
+                        }
                     }
                 }
             }
             InvitationType.ally -> {
-                Data.player.allies.add(caller)
+                if(!Data.player.allies.contains(caller))Data.player.allies.add(caller)
             }
             InvitationType.factionAlly -> {
                 if(Data.player.faction != null){
@@ -3908,4 +4003,177 @@ enum class ServerStatus{
     on,
     off,
     restarting
+}
+
+class RocketGame(
+        var level: Int = 3,
+        var rocketBody: ImageView,
+        var parent: ConstraintLayout,
+        var width: Int = 0,
+        var height: Int = 0
+){
+    var rocketMultiplier: Double = 1.0
+    var meteorMaxMultiplier: Double = 1.0
+    var speed: Double = 7.0
+    private var meteors: MutableList<Meteor> = mutableListOf()
+    var ticks: Int = 0
+    var startPointX: Double= 0.0
+    var startPointY: Double = 0.0
+    var ticksNeeded: Int = 0
+    var speedX: Double = 0.0
+    var speedY: Double = 0.0
+    var viewRect: Rect = Rect()
+    var meteorViewRect: Rect = Rect()
+
+    fun detach(){
+        for(i in meteors){
+            i.detach()
+        }
+    }
+
+    fun initialize(){
+        this.rocketMultiplier = level.toDouble() / 20
+        this.meteorMaxMultiplier = level.toDouble() / 30
+        this.speed = 7 + 2 * rocketMultiplier
+        rocketBody.x = (width / 2 - rocketBody.width).toFloat()
+        rocketBody.y = (height / 2 + rocketBody.height).toFloat()
+
+        for(i in meteors){
+            i.detach()
+        }
+        for(i in 0 until level){
+            meteors.add(addMeteor())
+        }
+        //meteors[0].speed = (1 + 1 * nextInt((meteorMaxMultiplier*500).toInt(), (meteorMaxMultiplier*1000).toInt())/1000.toLong())
+    }
+    private fun addMeteor(): Meteor{
+        val meteor = Meteor(parent.context, parent)
+        meteors.add(Meteor(parent.context, parent))
+        return meteor.initialize(width, height)
+    }
+
+    fun onTick(coordinatesRocket: ComponentCoordinates): Boolean{
+        if(ticks >= (level * 0.5) * 1000){
+            level++
+            initialize()
+        }
+        for(i: Int in 0 until meteors.size){
+            meteors[i].imageView?.getHitRect(meteorViewRect)
+            rocketBody.getHitRect(viewRect)
+            if(Rect.intersects(viewRect, meteorViewRect)) return false
+
+            meteors[i].speed = nextInt(((3.5 + 2 * rocketMultiplier) *10).toInt(), ((3.5 + 3.5 * rocketMultiplier) * 1.4 * 10).toInt()).toDouble() / 10.0
+            if(meteors[i].imageView != null){
+                if(meteors[i].imageView!!.x <= -meteors[i].imageView!!.width){
+                    meteors[i].detach()
+                    meteors[i].initialize(width, height)
+                }else {
+                    meteors[i].imageView!!.x -= meteors[i].speed.toFloat()
+                }
+            }
+        }
+
+        //if(coordinatesRocket.rocketTargetY != 0f) ticksNeeded = min((abs(startPointX - coordinatesRocket.rocketTargetX) / speed).toInt(), (abs(startPointY - coordinatesRocket.rocketTargetY) / (height.toDouble() / width.toDouble() * speed)).toInt())
+
+        speedX = speed //(abs(startPointX - coordinatesRocket.rocketTargetX) / ticksNeeded)
+        speedY = speed * 0.8 //(abs(startPointY - coordinatesRocket.rocketTargetY) / ticksNeeded)
+
+
+        if(speedX.isNaN() || speedX.isInfinite()) speedX = 0.0
+        if(speedY.isNaN() || speedY.isInfinite()) speedY = 0.0
+
+        if(coordinatesRocket.rocketTargetX == 0f){
+            if(rocketBody.x > 0)rocketBody.x -= 1
+        }else {
+            if(abs(coordinatesRocket.rocketTargetX - rocketBody.x) < speedX){
+                rocketBody.x = coordinatesRocket.rocketTargetX
+            }else {
+                if(coordinatesRocket.rocketTargetX <= rocketBody.x){
+                    rocketBody.x -= speedX.toFloat()
+                }else{
+                    rocketBody.x += speedX.toFloat()
+                }
+            }
+
+            if(abs(coordinatesRocket.rocketTargetY - rocketBody.y) < speedY){
+                rocketBody.y = coordinatesRocket.rocketTargetY
+            }else {
+                if(coordinatesRocket.rocketTargetY <= rocketBody.y){
+                    rocketBody.y -= speedY.toFloat()
+                }else {
+                    rocketBody.y += speedY.toFloat()
+                }
+            }
+        }
+        return true
+    }
+
+    private class Meteor(
+            var context: Context,
+            var parent: ConstraintLayout
+    ){
+        var speed: Double = 3.5
+        var imageView: ImageView? = null
+        var type: Int = 0
+        var ticks: Int = 0
+        var targetTicksX: Int = 0
+        var targetTicksY: Int = 0
+
+        fun initialize(width: Int, height: Int): Meteor{
+
+            imageView = ImageView(context)
+            Log.d("meteor imageview", "initialized")
+            imageView?.setImageResource(when(nextInt(0 ,1)){
+                0 -> R.drawable.meteor_0
+                else -> R.drawable.meteor_1
+            })
+            imageView!!.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+            imageView?.layoutParams?.width = (width * 0.05).toInt()
+            imageView?.layoutParams?.height = (width * 0.05).toInt()
+            imageView?.x = nextInt(width + (width * 0.05).toInt(), (width + width * 0.05).toInt() * 4).toFloat()
+            imageView?.y = nextInt(- imageView!!.height/2 , height + imageView!!.height/2).toFloat()
+
+            parent.addView(imageView)
+            return this
+        }
+
+        fun detach(){
+            parent.removeView(this.imageView)
+        }
+    }
+}
+
+class ComponentCoordinates(
+        var x: Float = 0f,
+        var y: Float = 0f,
+        var widthBound: Int = 0,
+        var heightBound: Int = 0
+){
+    lateinit var component: ImageView
+    var rocketTargetX: Float = 50f
+    var rocketTargetY: Float = 50f
+
+    fun update(xIn: Float, yIn: Float, rocketGame: RocketGame? = null){
+        this.x = xIn
+        this.y = yIn
+        rocketGame?.startPointX = component.x.toDouble()
+        rocketGame?.startPointY = component.y.toDouble()
+        rocketGame?.onTick(this)
+
+        rocketTargetX = if(xIn + component.width < widthBound && xIn - component.width / 2 > 0){
+            xIn - component.width / 2
+        }else if(xIn + component.width < widthBound){
+            1f
+        }else {
+            (widthBound - component.width / 2).toFloat()
+        }
+
+        rocketTargetY = if(yIn + component.height < heightBound && yIn - component.height > 0){
+            yIn - component.height / 2
+        }else if(yIn + component.height < heightBound){
+            (- component.height / 2).toFloat()
+        }else {
+            (heightBound - component.height / 2).toFloat()
+        }
+    }
 }

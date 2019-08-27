@@ -3,7 +3,7 @@
     <item android:id="@+id/menu_faction_message"
         android:title="@string/menu_faction_member_0" />
 
-    <item android:id="@+id/menu_faction_friend"
+    <item android:id="@+id/menu_faction_ally"
         android:title="@string/menu_faction_member_1" />
 
     <item android:id="@+id/menu_faction_show_profile"
@@ -20,5 +20,8 @@
 
     <item android:id="@+id/menu_faction_warn"
         android:title="@string/menu_faction_member_6" />
+
+    <item android:id="@+id/menu_faction_leave"
+        android:title="@string/menu_faction_member_7" />
 
 </menu>

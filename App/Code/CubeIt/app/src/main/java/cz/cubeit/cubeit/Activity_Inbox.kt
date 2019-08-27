@@ -40,11 +40,16 @@ class Activity_Inbox : AppCompatActivity(){
         set(value){
             field = value
             editModeMessages = mutableListOf()
-            if(field == false){
+            if(!field && imageViewInboxActionDelete.visibility != View.GONE){
                 imageViewInboxActionDelete.visibility = View.GONE
                 imageViewInboxActionMoveTo.visibility = View.GONE
                 textViewInboxActionCounter.visibility = View.GONE
                 imageViewInboxActionCloseEditMode.visibility = View.GONE
+            }else if(field && imageViewInboxActionDelete.visibility != View.VISIBLE){
+                imageViewInboxActionDelete.visibility = View.VISIBLE
+                imageViewInboxActionMoveTo.visibility = View.VISIBLE
+                textViewInboxActionCounter.visibility = View.VISIBLE
+                imageViewInboxActionCloseEditMode.visibility = View.VISIBLE
             }
             refreshCategory()
         }
@@ -111,19 +116,7 @@ class Activity_Inbox : AppCompatActivity(){
                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 buttonYes.setOnClickListener {
                     Data.inbox.removeAll(editModeMessages)
-                    SystemFlow.writeObject(this, "inbox.data", Data.inbox)
-                    Data.inboxCategories = hashMapOf(
-                            MessageStatus.New to InboxCategory(name = "New", ID = 0),
-                            MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1),
-                            MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2),
-                            MessageStatus.Read to InboxCategory(name = "Read", ID = 3),
-                            MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4),
-                            MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5),
-                            MessageStatus.Market to InboxCategory(name = "Market", ID = 6),
-                            MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7))
-                    for (message in Data.inbox) {
-                        Data.inboxCategories[message.status]!!.messages.add(message)
-                    }
+                    Data.refreshInbox(this)
                     editMode = false
                     refreshCategory()
                     window.dismiss()
@@ -139,7 +132,6 @@ class Activity_Inbox : AppCompatActivity(){
             if(editModeMessages.size >= 1){
                 val wrapper = ContextThemeWrapper(this, R.style.FactionPopupMenu)
                 val popup = PopupMenu(wrapper, view)
-                val inflater = popup.menuInflater
 
                 val popupMenu = popup.menu
                 popupMenu.add("New")
@@ -179,8 +171,10 @@ class Activity_Inbox : AppCompatActivity(){
                         }
                         else -> MessageStatus.Spam
                     }
+                    Data.inbox.removeAll(editModeMessages)
                     for(i in editModeMessages){
-                        i.changeStatus(status)
+                        Data.inbox.add(i)
+                        i.changeStatus(status, this)
                     }
                     editMode = false
                     refreshCategory()
@@ -357,6 +351,7 @@ class Activity_Inbox : AppCompatActivity(){
                     if(onTop){
                         if(snapshot.documents.size >= 1) {
                             Data.inbox.addAll(snapshot.toObjects(InboxMessage::class.java))
+                            Data.refreshInbox(this)
                             init()
                             (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
                             (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
@@ -466,8 +461,9 @@ class Activity_Inbox : AppCompatActivity(){
             return activity.currentCategory.messages.size
         }
 
-        fun refresh(){
-            notifyDataSetChanged()
+        override fun notifyDataSetChanged() {
+            activity.currentCategory = Data.inboxCategories[activity.currentCategory.status]!!
+            super.notifyDataSetChanged()
         }
 
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
@@ -490,19 +486,6 @@ class Activity_Inbox : AppCompatActivity(){
             } else {
                 activity.currentCategory.messages[position].sentTime.toString()
             }
-            if(activity.editMode){
-                viewHolder.checkBoxInboxMessagesAction.visibility = View.VISIBLE
-                imageViewInboxActionDelete.visibility = View.VISIBLE
-                imageViewInboxActionMoveTo.visibility = View.VISIBLE
-                textViewInboxActionCounter.visibility = View.VISIBLE
-                imageViewInboxActionCloseEditMode.visibility = View.VISIBLE
-            } else {
-                viewHolder.checkBoxInboxMessagesAction.visibility = View.GONE
-                imageViewInboxActionDelete.visibility = View.GONE
-                imageViewInboxActionMoveTo.visibility = View.GONE
-                textViewInboxActionCounter.visibility = View.GONE
-                imageViewInboxActionCloseEditMode.visibility = View.GONE
-            }
 
             viewHolder.checkBoxInboxMessagesAction.setOnCheckedChangeListener { _, isChecked ->
                 if(isChecked){
@@ -510,7 +493,9 @@ class Activity_Inbox : AppCompatActivity(){
                 }else activity.editModeMessages.remove(activity.currentCategory.messages[position])
                 textViewInboxActionCounter.text = activity.editModeMessages.size.toString()
             }
-
+            viewHolder.checkBoxInboxMessagesAction.visibility = if(activity.editMode){
+                View.VISIBLE
+            } else View.GONE
 
             viewHolder.textViewInboxSender.text = activity.currentCategory.messages[position].sender
             viewHolder.textViewInboxMessagesReceiver.text = activity.currentCategory.messages[position].receiver
@@ -528,7 +513,7 @@ class Activity_Inbox : AppCompatActivity(){
                     supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = activity.currentCategory.messages[position].priority, messageObject = activity.currentCategory.messages[position].subject, messageContent = activity.currentCategory.messages[position].content, messageSender = activity.currentCategory.messages[position].sender)).commit()
 
                     if(activity.currentCategory.messages[position].status == MessageStatus.New){
-                        activity.currentCategory.messages[position].changeStatus(MessageStatus.Read)
+                        activity.currentCategory.messages[position].changeStatus(MessageStatus.Read, activity)
                         viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
                         (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
                     }

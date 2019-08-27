@@ -20,6 +20,7 @@
         android:layout_height="0dp"
         android:scaleType="fitXY"
         android:src="@color/loginColor"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -72,6 +73,7 @@
         android:id="@+id/imageViewActionBar"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:tint="@color/common_google_signin_btn_text_dark_default"
         android:tintMode="multiply"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
@@ -85,6 +87,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toStartOf="@+id/guideline155"
         app:layout_constraintStart_toStartOf="@+id/guideline85"
@@ -92,7 +95,7 @@
         app:srcCompat="@drawable/search_icon" />
 
     <EditText
- android:imeOptions="flagNoExtractUi"
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -119,6 +122,7 @@
         android:layout_height="0dp"
         android:layout_marginEnd="4dp"
         android:rotation="180"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -201,14 +205,15 @@
         android:id="@+id/homeButtonBackBoard"
         android:layout_width="75dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:background="@drawable/emptyspellslotlarge"
         android:backgroundTint="@color/colorPrimary"
         android:src="@drawable/home_button"
+        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
 
-        />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/imageViewLoadingBoard"
@@ -218,6 +223,7 @@
         android:src="@drawable/icon_app"
         android:tint="@color/colorGrey"
         android:tintMode="multiply"
+        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.515"
@@ -230,6 +236,7 @@
         android:layout_height="0dp"
         android:layout_marginEnd="4dp"
         android:src="@drawable/setting3rows"
+        android:adjustViewBounds="true"
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -265,6 +272,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
+        android:adjustViewBounds="true"
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -294,6 +302,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:visibility="gone"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="@+id/textViewFightBoardPage"
         app:layout_constraintStart_toEndOf="@+id/textViewFightBoardPage"
         app:layout_constraintTop_toTopOf="@+id/textViewFightBoardPage"
@@ -305,6 +314,7 @@
         android:layout_height="0dp"
         android:layout_marginEnd="8dp"
         android:visibility="gone"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="@+id/textViewFightBoardPage"
         app:layout_constraintEnd_toStartOf="@+id/textViewFightBoardPage"
         app:layout_constraintTop_toTopOf="@+id/textViewFightBoardPage"

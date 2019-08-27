@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layoutFragmentCharacterStats"
+    android:id="@+id/layoutSplashScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
@@ -22,8 +22,7 @@
         android:id="@+id/imageViewSplashIcon"
         android:layout_width="102dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/textViewLoadingLog"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline122"
         app:layout_constraintStart_toStartOf="@+id/guideline121"
@@ -69,6 +68,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:0.5"
         app:layout_constraintEnd_toStartOf="@+id/guideline123"
@@ -83,23 +83,23 @@
         android:gravity="center"
         android:textColor="@color/colorSecondary"
         android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewSplash"
+        app:layout_constraintBottom_toTopOf="@+id/guideline130"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewSplashText" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/textViewSplashText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:gravity="center"
         android:text="We're contacting your parents, stay patient"
         android:textColor="@color/colorSecondary"
         android:textSize="21sp"
+        app:layout_constraintBottom_toTopOf="@+id/textViewLoadingLog"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline130" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/imageViewSplashIG"
@@ -107,6 +107,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline124"
         app:layout_constraintStart_toStartOf="parent"
@@ -118,6 +119,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline125"
         app:layout_constraintStart_toStartOf="@+id/guideline124"
@@ -129,6 +131,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline124"
         app:layout_constraintStart_toStartOf="parent"
@@ -139,6 +142,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="10dp"
+        android:adjustViewBounds="true"
         android:layout_marginTop="8dp"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline124"
@@ -162,6 +166,48 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.7" />
+        app:layout_constraintGuide_percent="0.94" />
+
+    <Switch
+        android:id="@+id/switchSplashScreenType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:checked="false"
+        android:text="Normal"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline122"
+        app:layout_constraintStart_toStartOf="@+id/guideline121"
+        app:layout_constraintTop_toTopOf="@+id/imageViewSplash" />
+
+    <ImageView
+        android:id="@+id/imageViewSplashRocket"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:0.6"
+        app:layout_constraintEnd_toStartOf="@+id/guideline122"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline121"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/rocket_0"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/textViewSplashTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="0.00"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@+id/imageViewSplashReddit"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,6 +21,8 @@ import com.google.firebase.firestore.MetadataChanges
 import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.view.MotionEvent
+import java.lang.Math.abs
 
 
 var playedSong = R.raw.playedsong
@@ -139,9 +141,46 @@ class Home : AppCompatActivity() {
             if(Data.inboxChanged) Data.inboxChanged = false
         }
 
-        imageViewExit.setOnClickListener {
-            Data.logOut(this)
-        }
+        var originalXExit = 0f
+        var initialTouchExitX = 0f
+
+        imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
+            override fun onDoubleClick() {
+                super.onDoubleClick()
+                Data.logOut(this@Home)
+            }
+
+            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+                when (motionEvent.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        originalXExit = imageViewExit.x
+                        initialTouchExitX = motionEvent.rawX
+                        return true
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        imageViewExit.x = originalXExit
+                        imageViewExitLeave.x = originalXExit + imageViewExitLeave.width
+                        return true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        Log.d("rawX", motionEvent.rawX.toString())
+                        Log.d("limitX", (originalXExit - imageViewExit.width).toString())
+                        if(motionEvent.rawX > originalXExit - imageViewExit.width){
+                            imageViewExit.x = ((originalXExit + (motionEvent.rawX - initialTouchExitX)))
+                            imageViewExitLeave.x = ((originalXExit + imageViewExitLeave.width + (motionEvent.rawX - initialTouchExitX)))
+                        }else {
+                            if(!imageViewExit.isEnabled) return true
+                            imageViewExit.isEnabled = false
+                            Data.logOut(this@Home)
+                            return true
+                        }
+                        return true
+                    }
+                }
+
+                return super.onTouch(view, motionEvent)
+            }
+        })
 
         Story.setOnClickListener {
             val intent = Intent(this, Activity_Story()::class.java)
