@@ -156,7 +156,7 @@ class Activity_Character : AppCompatActivity() {
         displayY = dm.heightPixels.toDouble()
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityCharacter, R.id.frameLayoutMenuCharacter, R.id.homeButtonBackCharacter, R.id.imageViewMenuUpCharacter)).commitNow()
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
 
         frameLayoutCharacterStats.y = displayY.toFloat() + 1f
@@ -1050,7 +1050,7 @@ class Activity_Character : AppCompatActivity() {
                 supportFragmentManager.beginTransaction().attach(Fragment_Character_stats()).commitNow()
                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
 
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
             }
         }
 
@@ -1139,7 +1139,7 @@ class Activity_Character : AppCompatActivity() {
         supportFragmentManager.beginTransaction().attach(Fragment_Character_stats()).commitNow()
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
 
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Character_Profile()).commitNow()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
     }
 }
 

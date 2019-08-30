@@ -7,7 +7,7 @@
     android:background="@color/loginColor"
     android:screenOrientation="sensorLandscape">
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewAdventureOverviewItem"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -15,6 +15,7 @@
         android:text="item"
         android:textColor="@color/colorSecondary"
         android:clickable="true"
+        android:textSize="16sp"
         android:focusable="true"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -39,9 +40,10 @@
         app:layout_constraintTop_toBottomOf="@+id/textViewAdventureOverviewDifficulty"
         android:focusable="true"/>
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewAdventureOverviewDifficulty"
         android:layout_width="0dp"
+        android:textSize="16sp"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="difficulty"
@@ -53,27 +55,29 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewAdventureOverviewCoins"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="coins"
         android:clickable="true"
         android:focusable="true"
+        android:gravity="center_horizontal"
+        android:text="coins"
+        android:textSize="16sp"
         android:textColor="@color/colorSecondary"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/guideline193"
         app:layout_constraintStart_toStartOf="@+id/guideline192"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewAdventureOverviewExperience"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="xp"
         android:clickable="true"
+        android:textSize="16sp"
         android:focusable="true"
         android:textColor="@color/colorSecondary"
         android:textStyle="bold"

@@ -121,6 +121,8 @@ class Activity_Splash_Screen: AppCompatActivity(){
             keepSplash = isChecked
         }
 
+        if(intent?.extras?.getBoolean("keepLoading") != null) switchSplashScreenLoading.isChecked = intent!!.extras!!.getBoolean("keepLoading")
+
         rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
 
             override fun onAnimationStart(animation: Animation?) {
@@ -224,7 +226,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 textViewSplashTime.visibility = View.VISIBLE
                 imageViewSplashIcon.isEnabled = false
 
-                coordinatesRocket.update(imageViewSplashRocket.x, imageViewSplashRocket.y)
                 rocketGame.initialize()
 
                 var endCount = 0
@@ -270,22 +271,26 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                             val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
                                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             startActivity(intent)
+                                            this@Activity_Splash_Screen.finishAfterTransition()
                                         }
                                         LoadingStatus.UNLOGGED -> {
                                             this.cancel()
                                             val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
                                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             startActivity(intent)
+                                            this@Activity_Splash_Screen.finishAfterTransition()
                                         }
                                         LoadingStatus.CLOSELOADING -> {
                                             this.cancel()
                                             this@Activity_Splash_Screen.finish()
+                                            this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                                         }
                                         LoadingStatus.REGISTERED -> {
                                             this.cancel()
                                             val intent = Intent(this@Activity_Splash_Screen, Activity_Character_Customization()::class.java)
                                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             startActivity(intent)
+                                            this@Activity_Splash_Screen.finishAfterTransition()
                                         }
                                         else -> {
                                         }
@@ -296,7 +301,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                 viewP.buttonDialogMGAgain.setOnClickListener {
                                     this.run()
                                     rocketGame = RocketGame(1, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
-                                    coordinatesRocket.update(imageViewSplashRocket.x, imageViewSplashRocket.y)
+                                    coordinatesRocket.update(0f, 0f)
                                     rocketGame.initialize()
                                     window.dismiss()
                                 }
@@ -321,22 +326,26 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                             val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
                                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             startActivity(intent)
+                                            this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                                         }
                                         LoadingStatus.UNLOGGED -> {
                                             this.cancel()
                                             val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
                                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             startActivity(intent)
+                                            this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                                         }
                                         LoadingStatus.CLOSELOADING -> {
                                             this.cancel()
                                             this@Activity_Splash_Screen.finish()
+                                            this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                                         }
                                         LoadingStatus.REGISTERED -> {
                                             this.cancel()
                                             val intent = Intent(this@Activity_Splash_Screen, Activity_Character_Customization()::class.java)
                                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             startActivity(intent)
+                                            this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                                         }
                                         /*LoadingStatus.ENTERFIGHT -> {
                                             finish()
@@ -450,14 +459,17 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                 val intent = Intent(this@Activity_Splash_Screen, Home::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 startActivity(intent)
+                                this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                             }
                             LoadingStatus.UNLOGGED -> {
                                 val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 startActivity(intent)
+                                this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                             }
                             LoadingStatus.CLOSELOADING -> {
                                 this@Activity_Splash_Screen.finish()
+                                this@Activity_Splash_Screen.overridePendingTransition(0, 0)
                             }
                             else -> {
                             }

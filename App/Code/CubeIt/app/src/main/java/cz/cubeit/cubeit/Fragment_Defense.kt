@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
+import android.widget.ListView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_defense.*
 import kotlinx.android.synthetic.main.fragment_defense.view.*
@@ -68,11 +69,13 @@ class FragmentDefense : Fragment(){
         }
         view.textViewInfoSpells.fontSizeType = CustomTextView.SizeType.title
 
-        view.chosen_listView.adapter = ChosenSpellsView(Data.player)
+        view.chosen_listView.adapter = ChosenSpellsView(Data.player, view.choosing_listview)
         view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)
 
         view.buttonDefenseReset.setOnClickListener {
+            textViewError.visibility = View.GONE
             Data.player.chosenSpellsDefense = arrayOfNulls<Spell?>(20).toMutableList()
+            (view.choosing_listview.adapter as LearnedSpellsView).notifyDataSetChanged()
             (view.chosen_listView.adapter as ChosenSpellsView).notifyDataSetChanged()
         }
 
@@ -104,7 +107,7 @@ class FragmentDefense : Fragment(){
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
                 rowMain = layoutInflater.inflate(R.layout.row_choosingspells, viewGroup, false)
-                val viewHolder = ViewHolder(rowMain.button1Choosing, rowMain.button2Choosing)
+                val viewHolder = ViewHolder(rowMain.button1Choosing, rowMain.button2Choosing, rowMain.textViewRowSpelllChoosing, rowMain.textViewRowSpelllChoosing2)
                 rowMain.tag = viewHolder
             } else {
                 rowMain = convertView
@@ -117,9 +120,15 @@ class FragmentDefense : Fragment(){
                     1->viewHolder.button2
                     else->viewHolder.button1
                 }
-                if(index+i<Data.player.learnedSpells.size){
+                val textView = when(i){
+                    0 -> viewHolder.textViewRowSpelllChoosing
+                    else -> viewHolder.textViewRowSpelllChoosing2
+                }
+                if(index+i < Data.player.learnedSpells.size){
                     if(Data.player.learnedSpells[index+i]!=null){
                         tempSpell.setImageResource(Data.player.learnedSpells[index+i]!!.drawable)
+                        textView.text = Data.player.chosenSpellsDefense.count { it?.ID == Data.player.learnedSpells[index + i]!!.ID }.toString()
+                        textView.visibility = View.VISIBLE
                         tempSpell.isEnabled = true
                     }else{
                         tempSpell.setImageResource(0)
@@ -131,7 +140,7 @@ class FragmentDefense : Fragment(){
                 }
             }
 
-            viewHolder.button1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
+            val button1Listener = (object : Class_OnSwipeTouchListener(context) {
                 override fun onClick() {
                     super.onClick()
                     textViewInfoSpells.text = Data.player.learnedSpells[index]?.getStats()
@@ -146,6 +155,7 @@ class FragmentDefense : Fragment(){
                                 errorTextView.visibility = View.GONE
                                 Data.player.chosenSpellsDefense[i] = Data.player.learnedSpells[index]
                                 chosen_listView.notifyDataSetChanged()
+                                this@LearnedSpellsView.notifyDataSetChanged()
                                 break
                             }else{
                                 errorTextView.visibility = View.VISIBLE
@@ -171,7 +181,7 @@ class FragmentDefense : Fragment(){
                 }
             })
 
-            viewHolder.button2.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
+            val button2Listener = (object : Class_OnSwipeTouchListener(context){
                 override fun onClick() {
                     super.onClick()
                     textViewInfoSpells.text = Data.player.learnedSpells[index+1]?.getStats()
@@ -186,6 +196,7 @@ class FragmentDefense : Fragment(){
                                 errorTextView.visibility = View.GONE
                                 Data.player.chosenSpellsDefense[i] = Data.player.learnedSpells[index+1]
                                 chosen_listView.notifyDataSetChanged()
+                                this@LearnedSpellsView.notifyDataSetChanged()
                                 break
                             }else{
                                 errorTextView.visibility = View.VISIBLE
@@ -210,12 +221,17 @@ class FragmentDefense : Fragment(){
                 }
             })
 
+            viewHolder.button1.setOnTouchListener(button1Listener)
+            viewHolder.button2.setOnTouchListener(button2Listener)
+            viewHolder.textViewRowSpelllChoosing.setOnTouchListener(button1Listener)
+            viewHolder.textViewRowSpelllChoosing2.setOnTouchListener(button2Listener)
+
             return rowMain
         }
-        private class ViewHolder(val button1: ImageView, val button2: ImageView)
+        private class ViewHolder(val button1: ImageView, val button2: ImageView, val textViewRowSpelllChoosing: CustomTextView, val textViewRowSpelllChoosing2: CustomTextView)
     }
 
-    private class ChosenSpellsView(val player: Player) : BaseAdapter() {
+    private class ChosenSpellsView(val player: Player, val listView: ListView) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 20
@@ -258,16 +274,15 @@ class FragmentDefense : Fragment(){
 
             var requiredEnergy = 0
             for(i in 0 until position){
-                if(Data.player.chosenSpellsDefense[i]==null){
-
-                }else {
+                if(player.chosenSpellsDefense[i] != null){
                     requiredEnergy += Data.player.chosenSpellsDefense[i]!!.energy
                 }
             }
             viewHolder.textViewEnergy.text = (position+1).toString() +". Energy: "+ ((Data.player.energy+position*25) - requiredEnergy).toString()
 
             viewHolder.button1.setOnClickListener {
-                Data.player.chosenSpellsDefense[position] = null
+                (listView.adapter as LearnedSpellsView).notifyDataSetChanged()
+                player.chosenSpellsDefense[position] = null
                 viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
                 notifyDataSetChanged()
             }

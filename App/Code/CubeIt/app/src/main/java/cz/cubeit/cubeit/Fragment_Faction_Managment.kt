@@ -1,55 +1,52 @@
 package cz.cubeit.cubeit
 
-import android.app.AlertDialog
-import android.content.res.Resources
+import android.content.Intent
 import android.graphics.BitmapFactory
-import android.graphics.PorterDuff
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_faction_edit.view.*
-import kotlinx.android.synthetic.main.row_faction_invitation.view.*
+import kotlinx.android.synthetic.main.fragment_faction_managment.view.*
+import kotlinx.android.synthetic.main.row_faction_mng_invitation.view.*
 
 
 class Fragment_Faction_Managment : Fragment() {
 
-    val inviteAllies = Data.player.faction!!.allyFactions
-    val inviteEnemies = Data.player.faction!!.enemyFactions
-    var inviteNeutral: HashMap<Int, String> = hashMapOf()
     lateinit var allies: BaseAdapter
-    lateinit var invited: BaseAdapter
-    lateinit var neutral: BaseAdapter
+    lateinit var enemy: BaseAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_faction_managment, container, false)
 
         fun init(){
-            view.editTextFactionEditDescription.setText(Data.player.faction!!.description)
-            view.editTextFactionEditName.setText(Data.player.faction!!.name)
-            view.editTextFactionEditTax.setText(Data.player.faction!!.taxPerDay)
+            (view.listViewFactionManageAllies.adapter as FactionFactionsList).notifyDataSetChanged()
+            (view.listViewFactionManageEnemies.adapter as FactionFactionsList).notifyDataSetChanged()
 
-            (view.listViewFactionEditAllies.adapter as FactionMemberList).notifyDataSetChanged()
-            (view.listViewFactionEditInvited.adapter as FactionMemberList).notifyDataSetChanged()
+            view.textViewFactionManagmentAllies.fontSizeType = CustomTextView.SizeType.title
+            view.textViewFactionManagmentEnemies.fontSizeType = CustomTextView.SizeType.title
+
+            (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility =
+                    if (Data.player.factionRole == FactionRole.LEADER || Data.player.faction!!.democracy) {
+                        View.VISIBLE
+                    } else View.GONE
         }
 
         if(Data.player.faction == null){
             (activity as Activity_Faction_Base).changePage(0)
         }else {
-            //view.listViewFactionEditAllies.adapter = FactionMemberList(this, inviteAllies, true, resources)
+            view.listViewFactionManageAllies.adapter = FactionFactionsList(this, Data.player.faction!!.pendingInvitationsFaction.values.toMutableList(), true)
+            view.listViewFactionManageEnemies.adapter = FactionFactionsList(this, Data.player.faction!!.enemyFactions.values.toMutableList(), false)
 
-            allies = (view.listViewFactionEditAllies.adapter as FactionMemberList)
-            invited = (view.listViewFactionEditInvited.adapter as FactionMemberList)
+            allies = (view.listViewFactionManageAllies.adapter as FactionFactionsList)
+            enemy = (view.listViewFactionManageEnemies.adapter as FactionFactionsList)
 
             init()
-
-            if(Data.player.factionRole == FactionRole.MODERATOR){
-                view.editTextFactionEditName.isEnabled = false
-            }
         }
 
         return view
@@ -57,11 +54,11 @@ class Fragment_Faction_Managment : Fragment() {
 
     fun update(){
         allies.notifyDataSetChanged()
-        invited.notifyDataSetChanged()
+        enemy.notifyDataSetChanged()
     }
 
 
-    class FactionMemberList(val activity: Fragment_Faction_Managment, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true, val resources: Resources) : BaseAdapter() {
+    class FactionFactionsList(val parent: Fragment_Faction_Managment, var collection: MutableList<String> = Data.player.allies, val pending: Boolean = true) : BaseAdapter() {
 
         override fun getCount(): Int {
             return collection.size
@@ -80,8 +77,8 @@ class Fragment_Faction_Managment : Fragment() {
 
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
-                rowMain = layoutInflater.inflate(R.layout.row_faction_invitation, viewGroup, false)
-                val viewHolder = ViewHolder(rowMain.imageViewFactionCreateRowIcon, rowMain.textViewFactionCreateRowName)
+                rowMain = layoutInflater.inflate(R.layout.row_faction_mng_invitation, viewGroup, false)
+                val viewHolder = ViewHolder(rowMain.imageViewFactionManageRowIcon, rowMain.textViewFactionManageRowName)
                 rowMain.tag = viewHolder
             } else {
                 rowMain = convertView
@@ -91,24 +88,53 @@ class Fragment_Faction_Managment : Fragment() {
             val opts = BitmapFactory.Options()
             opts.inScaled = false
 
-            if(add){
-                viewHolder.symbol.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.plus_icon, opts))
-                viewHolder.symbol.drawable.setColorFilter(resources.getColor(R.color.itemborder_uncommon), PorterDuff.Mode.SRC_ATOP)
-            }else {
-                viewHolder.symbol.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.minus_icon, opts))
-                viewHolder.symbol.drawable.setColorFilter(resources.getColor(R.color.progress_hp), PorterDuff.Mode.SRC_ATOP)
-            }
-            viewHolder.username.text = collection[position]
+            viewHolder.settings.setOnClickListener { view ->
+                val wrapper = ContextThemeWrapper(viewGroup!!.context, R.style.FactionPopupMenu)
+                val popup = PopupMenu(wrapper, view)
+                val popupMenu = popup.menu
 
-            rowMain.setOnClickListener {
+                if(pending){
+                    popupMenu.add("Delete invitation")
+                }else {
+                    popupMenu.add("Remove from list")
+                }
+                popupMenu.add("Show faction")
+
+                popup.setOnMenuItemClickListener {
+                    when(it.title){
+                        "Delete invitation" -> {
+                            Data.player.faction!!.allyFactions.remove(collection[position])
+                            true
+                        }
+                        "Remove from list" -> {
+                            Data.player.faction!!.enemyFactions.remove(collection[position])
+                            true
+                        }
+                        "Show faction" -> {
+                            val intent = Intent(view.context, Activity_Faction_Base()::class.java)
+                            intent.putExtra("id", getKey(if(pending) Data.player.faction!!.allyFactions else Data.player.faction!!.enemyFactions, collection[position]).toString())
+                            parent.activity!!.startActivity(intent)
+                            true
+                        }
+                        else -> {
+                            true
+                        }
+                    }
+                }
+                popup.show()
+            }
+            viewHolder.name.text = collection[position]
+
+            rowMain.setOnLongClickListener {
                 rowMain.isEnabled = false
                 handler.postDelayed({rowMain.isEnabled = true}, 50)
 
-                activity.update()
+                parent.update()
+                true
             }
 
             return rowMain
         }
-        private class ViewHolder(val symbol: ImageView, val username: TextView)
+        private class ViewHolder(val settings: ImageView, val name: TextView)
     }
 }

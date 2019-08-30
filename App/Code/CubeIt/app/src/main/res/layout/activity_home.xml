@@ -130,6 +130,13 @@
         app:layout_constraintGuide_percent="0.12" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline227"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.09" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline1111"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -261,6 +268,13 @@
         app:layout_constraintGuide_percent="0.26" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline225"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline1124"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -341,7 +355,7 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:src="@drawable/left_arrow"
-        android:tint="@color/black"
+        android:tint="@color/loginColor_2"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewExit"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toEndOf="@+id/imageViewExit"
@@ -350,11 +364,11 @@
 
     <ImageView
         android:id="@+id/imageViewHomeInbox"
-        android:adjustViewBounds="true"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline225"
         app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/email_icon" />
@@ -380,6 +394,30 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline113"
         app:layout_constraintEnd_toStartOf="@+id/guideline112"
         app:layout_constraintStart_toStartOf="@+id/guideline111" />
+
+    <ImageView
+        android:id="@+id/imageViewHomeMailNew"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintDimensionRatio="H, 1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
+        app:layout_constraintStart_toStartOf="@+id/guideline227"
+        app:layout_constraintTop_toTopOf="@+id/imageViewHomeInbox"
+        app:srcCompat="@drawable/new_message_bg" />
+
+    <TextView
+        android:id="@+id/textViewHomeMailNew"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="@color/bg_basic_white"
+        android:text="1"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewHomeMailNew"
+        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
+        app:layout_constraintStart_toStartOf="@+id/imageViewHomeMailNew"
+        app:layout_constraintTop_toTopOf="@+id/imageViewHomeMailNew" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

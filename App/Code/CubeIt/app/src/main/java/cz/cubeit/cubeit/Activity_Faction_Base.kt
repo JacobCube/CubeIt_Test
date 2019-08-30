@@ -201,7 +201,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
                     tabLayoutFactionTemp.getTabAt(0)?.select()
                 }
             }else if(viewPagerFactionTemp.currentItem == 4 && Data.player.faction != null){
-
+                Data.player.faction!!.upload()
             }
         }
 
@@ -225,7 +225,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
                 0 -> Fragment_Faction_Create()
                 1 -> Fragment_Faction.newInstance(fractionID)
                 2 -> Fragment_Faction_Edit()
-                3 -> Fragment_Faction_Edit()
+                3 -> Fragment_Faction_Managment()
                 else -> null
             }
         }

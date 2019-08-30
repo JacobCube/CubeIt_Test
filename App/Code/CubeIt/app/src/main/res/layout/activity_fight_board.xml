@@ -18,9 +18,9 @@
         android:id="@+id/imageViewActivityFightBoard"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:scaleType="fitXY"
         android:src="@color/loginColor"
-        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -30,7 +30,6 @@
         android:id="@+id/frameLayoutFightProfile"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/listViewPlayers"
         app:layout_constraintHorizontal_bias="0.5"
@@ -82,32 +81,32 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@color/loginColor" />
 
-    <ImageView
-        android:id="@+id/imageViewSearchIconBoard"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:adjustViewBounds="true"
-        app:layout_constraintBottom_toTopOf="@+id/guideline76"
-        app:layout_constraintEnd_toStartOf="@+id/guideline155"
-        app:layout_constraintStart_toStartOf="@+id/guideline85"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/search_icon" />
-
     <EditText
-        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:ems="10"
         android:hint="Search..."
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewActionBar"
-        app:layout_constraintEnd_toStartOf="@+id/imageViewSearchIconBoard"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewSearchIconBoard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintDimensionRatio="H, 1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/search_icon" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline138"
@@ -121,8 +120,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginEnd="4dp"
-        android:rotation="180"
         android:adjustViewBounds="true"
+        android:rotation="180"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -140,13 +139,27 @@
         android:id="@+id/textViewBoardNickname"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
         android:gravity="center_horizontal"
-        android:textStyle="bold"
-        android:text="nickname"
+        android:text="username"
         android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline175"
+        app:layout_constraintEnd_toStartOf="@+id/guideline226"
+        app:layout_constraintStart_toStartOf="@+id/guideline174"
+        app:layout_constraintTop_toTopOf="@+id/guideline76" />
+
+    <TextView
+        android:id="@+id/textViewBoardFaction"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_horizontal"
+        android:text="faction"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
         app:layout_constraintEnd_toStartOf="@+id/guideline85"
-        app:layout_constraintStart_toStartOf="@+id/guideline174"
+        app:layout_constraintStart_toStartOf="@+id/guideline226"
         app:layout_constraintTop_toTopOf="@+id/guideline76" />
 
     <TextView
@@ -154,8 +167,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:text="position"
-        android:textStyle="bold"
         android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
         app:layout_constraintEnd_toStartOf="@+id/guideline174"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
@@ -167,8 +180,8 @@
         android:layout_height="0dp"
         android:gravity="center_horizontal"
         android:text="fame"
-        android:textStyle="bold"
         android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline155"
@@ -180,8 +193,8 @@
         android:layout_height="0dp"
         android:gravity="center_horizontal"
         android:text="lvl"
-        android:textStyle="bold"
         android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline175"
         app:layout_constraintEnd_toStartOf="@+id/guideline155"
         app:layout_constraintStart_toStartOf="@+id/guideline85"
@@ -193,6 +206,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.52" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline226"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.676" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline81"
@@ -219,11 +239,11 @@
         android:id="@+id/imageViewLoadingBoard"
         android:layout_width="75dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:alpha="0.5"
         android:src="@drawable/icon_app"
         android:tint="@color/colorGrey"
         android:tintMode="multiply"
-        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.515"
@@ -235,8 +255,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginEnd="4dp"
-        android:src="@drawable/setting3rows"
         android:adjustViewBounds="true"
+        android:src="@drawable/setting3rows"
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -276,7 +296,7 @@
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintStart_toStartOf="@+id/guideline155"
+        app:layout_constraintStart_toStartOf="@+id/guideline85"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/filter" />
 
@@ -301,8 +321,8 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:visibility="gone"
         android:adjustViewBounds="true"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/textViewFightBoardPage"
         app:layout_constraintStart_toEndOf="@+id/textViewFightBoardPage"
         app:layout_constraintTop_toTopOf="@+id/textViewFightBoardPage"
@@ -313,8 +333,8 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginEnd="8dp"
-        android:visibility="gone"
         android:adjustViewBounds="true"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/textViewFightBoardPage"
         app:layout_constraintEnd_toStartOf="@+id/textViewFightBoardPage"
         app:layout_constraintTop_toTopOf="@+id/textViewFightBoardPage"
@@ -332,5 +352,18 @@
         app:layout_constraintBottom_toBottomOf="@+id/listViewPlayers"
         app:layout_constraintEnd_toEndOf="@+id/imageViewLoadingBoard"
         app:layout_constraintStart_toStartOf="@+id/imageViewLoadingBoard" />
+
+    <ImageView
+        android:id="@+id/imageViewFightBoardFaction"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="2dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintDimensionRatio="W,1:1"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewActionBar"
+        app:layout_constraintStart_toEndOf="@+id/imageViewFightBoardFilter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/person_icon" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

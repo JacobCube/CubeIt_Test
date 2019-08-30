@@ -99,7 +99,7 @@ class ActivitySettings : AppCompatActivity(){
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 Data.player.textSize = (16f) + seekBar.progress.toFloat()
-                SystemFlow.writeFileText(this@ActivitySettings, "textSize.data", Data.player.textSize.toString())
+                SystemFlow.writeFileText(this@ActivitySettings, "textSize${Data.player.username}.data", Data.player.textSize.toString())
             }
         })
 

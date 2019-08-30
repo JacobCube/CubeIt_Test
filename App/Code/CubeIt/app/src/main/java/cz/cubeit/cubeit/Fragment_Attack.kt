@@ -45,7 +45,6 @@ class FragmentAttack : Fragment(){
                 spellButtons[i+2].setImageResource(0)
             }
         }
-        view.textViewInfoSpell.movementMethod = ScrollingMovementMethod()
 
         view.listViewSpells.adapter = AllSpells(view.textViewInfoSpell, view.imageViewIcon, spellButtons, view.context)
 
@@ -109,9 +108,7 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index])){
-                    getClickSpell(index,spellButtons)
-                }
+                getClickSpell(index,spellButtons)
             }
         })
 
@@ -124,9 +121,7 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+1])){
-                    getClickSpell(index+1,spellButtons)
-                }
+                getClickSpell(index+1,spellButtons)
             }
         })
 
@@ -139,9 +134,7 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+2])){
-                    getClickSpell(index+2,spellButtons)
-                }
+                getClickSpell(index+2,spellButtons)
             }
         })
 
@@ -154,9 +147,7 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+3])){
-                    getClickSpell(index+3,spellButtons)
-                }
+                getClickSpell(index+3,spellButtons)
             }
         })
 
@@ -169,12 +160,9 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
 
             override fun onDoubleClick() {
                 super.onDoubleClick()
-                if(!Data.player.chosenSpellsAttack.contains(Data.player.learnedSpells[index+4])){
-                    getClickSpell(index+4,spellButtons)
-                }
+                getClickSpell(index+4,spellButtons)
             }
         })
-
 
         return rowMain
     }
@@ -182,7 +170,7 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
         private fun getClickSpell(index:Int, spellButtons:Array<ImageView>){
             if(Data.player.chosenSpellsAttack.contains(null)){
                 val tempIndex = Data.player.chosenSpellsAttack.indexOf(null)
-                if(index!=0&&index!=1) {
+                if(index != 0 && index != 1 && !Data.player.chosenSpellsAttack.any { it?.ID == Data.player.learnedSpells[index]!!.ID }) {
                     Data.player.chosenSpellsAttack[tempIndex] = Data.player.learnedSpells[index]
                     spellButtons[tempIndex + 2].setImageResource(Data.player.chosenSpellsAttack[tempIndex]!!.drawable)
                     spellButtons[tempIndex + 2].isEnabled = true

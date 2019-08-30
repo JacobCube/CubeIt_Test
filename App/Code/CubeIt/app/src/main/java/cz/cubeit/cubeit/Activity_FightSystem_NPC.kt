@@ -92,7 +92,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         val fromYEnemy = spellFightEnemyNPC.y
         val fromX = imageView.x
         val fromY = imageView.y
-        val enemySpell = enemy.enemy.chosenSpellsDefense[if(roundCounter == 0) 19 else roundCounter - 1]!!
+        val enemySpell = enemy.enemy.chosenSpellsDefense[if(roundCounter == 0) if(enemy.enemy.chosenSpellsDefense[19] == null) 0 else 19 else roundCounter - 1]!!
 
         spellFightEnemyNPC.setImageResource(enemySpell.drawable)
 

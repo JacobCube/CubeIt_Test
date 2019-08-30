@@ -112,7 +112,8 @@
         android:text="Invade"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline213"
-        app:layout_constraintEnd_toStartOf="@+id/guideline203" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline203"
+        tools:visibility="visible" />
 
     <Button
         android:id="@+id/buttonFactionAlly"
@@ -123,7 +124,8 @@
         android:text="Ally"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline213"
-        app:layout_constraintEnd_toStartOf="@+id/buttonFactionInvade" />
+        app:layout_constraintEnd_toStartOf="@+id/buttonFactionInvade"
+        tools:visibility="visible" />
 
     <Button
         android:id="@+id/buttonFactionEnemy"
@@ -134,7 +136,8 @@
         android:text="Enemy"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline213"
-        app:layout_constraintEnd_toStartOf="@+id/buttonFactionAlly" />
+        app:layout_constraintEnd_toStartOf="@+id/buttonFactionAlly"
+        tools:visibility="visible" />
 
     <Button
         android:id="@+id/buttonFactionApply"
@@ -145,14 +148,15 @@
         android:text="Apply"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline213"
-        app:layout_constraintEnd_toStartOf="@+id/buttonFactionEnemy" />
+        app:layout_constraintEnd_toStartOf="@+id/buttonFactionEnemy"
+        tools:visibility="visible" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionMemberInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
-        android:background="@drawable/bg_basic_logincolor_dark_bottom"
+        android:background="@drawable/bg_basic_logincolor_dark_no_top_right"
         android:gravity="bottom"
         android:paddingStart="5dp"
         android:paddingTop="4dp"

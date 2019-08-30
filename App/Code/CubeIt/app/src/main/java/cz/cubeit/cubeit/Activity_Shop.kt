@@ -103,6 +103,7 @@ class Activity_Shop : AppCompatActivity(){
 
         listViewShopInventory.adapter = ShopInventory(hidden, animUpText, animDownText, Data.player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewShopInventory, textViewShopMoney)
         listViewShopOffers.adapter = ShopOffer(hidden, animUpText, animDownText, Data.player, textViewInfoItem, bubleDialogShop, imageViewShopBubbleBg, listViewShopInventory.adapter as ShopInventory, this, textViewShopMoney)
+        listViewShopOffers.layoutParams.width = (displayY * 0.87).toInt()
 
         var animationRefresh = ValueAnimator()
 

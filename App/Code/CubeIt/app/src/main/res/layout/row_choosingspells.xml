@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:configChanges="orientation"
@@ -15,6 +16,7 @@
         style="?android:attr/buttonBarButtonStyle"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -27,6 +29,7 @@
         android:background="@drawable/emptyslot"
         android:id="@+id/button1Choosing"
         style="?android:attr/buttonBarButtonStyle"
+        android:adjustViewBounds="true"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -41,5 +44,27 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRowSpelllChoosing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/button1Choosing"
+        app:layout_constraintEnd_toStartOf="@+id/guideline8"
+        app:layout_constraintStart_toStartOf="@+id/button1Choosing"
+        app:layout_constraintTop_toTopOf="@+id/button1Choosing" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRowSpelllChoosing2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/button1Choosing"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline8"
+        app:layout_constraintTop_toTopOf="@+id/button1Choosing" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.15" />
+        app:layout_constraintGuide_percent="0.08" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline209"
@@ -55,22 +55,46 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
         android:layout_marginBottom="4dp"
         android:divider="@null"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@+id/guideline209"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewFactionManagmentAllies" />
 
     <ListView
-        android:id="@+id/listViewFactionManageInvited"
+        android:id="@+id/listViewFactionManageEnemies"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2dp"
         android:divider="@null"
         android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="@+id/listViewFactionManageAllies"
+        app:layout_constraintTop_toBottomOf="@+id/textViewFactionManagmentEnemies" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFactionManagmentAllies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:layout_marginTop="4dp"
+        android:text="Allies"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFactionManagmentEnemies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enemies"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline209" />
 
 

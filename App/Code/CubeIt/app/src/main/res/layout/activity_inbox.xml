@@ -5,8 +5,8 @@
     android:id="@+id/layoutFightBoard"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:configChanges="orientation"
     android:animateLayoutChanges="true"
+    android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
@@ -57,6 +57,8 @@
         android:id="@+id/imageViewInboxArrowBack"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline85"
@@ -78,11 +80,11 @@
         app:srcCompat="@drawable/filter" />
 
     <EditText
- android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputSearchInbox"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:ems="10"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewActionBar"
@@ -136,6 +138,18 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/email_icon" />
 
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nothing to show"
+        android:textColor="@color/loginColor_2"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline109"
+        app:layout_constraintEnd_toStartOf="@+id/guideline106"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSearch" />
+
     <ListView
         android:id="@+id/listViewInboxMessages"
         android:layout_width="0dp"
@@ -143,7 +157,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="@+id/guideline76"></ListView>
+        app:layout_constraintTop_toTopOf="@+id/guideline76">
+
+    </ListView>
 
     <FrameLayout
         android:id="@+id/frameLayoutInbox"
@@ -159,12 +175,12 @@
     </FrameLayout>
 
     <EditText
- android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:ems="10"
         android:hint="Search..."
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"

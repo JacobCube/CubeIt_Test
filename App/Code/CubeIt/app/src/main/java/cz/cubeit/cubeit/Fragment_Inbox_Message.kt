@@ -1,11 +1,13 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.*
@@ -92,7 +94,14 @@ class FragmentInboxMessage : Fragment() {
             view.editTextInboxReciever.isEnabled = false
             view.editTextInboxContent.setText(arguments?.getString("content")!!)
             view.editTextInboxContent.isEnabled = false
-            view.textViewInboxMessageSender.text = "from ${(activity as Activity_Inbox).chosenMail.sender}"
+            view.textViewInboxMessageSender.text = "from ${(activity as Activity_Inbox).chosenMail.sender}"         //TODO pass info through instance, this is nasty
+
+            view.textViewInboxMessageSender.isEnabled = Data.player.username != (activity as Activity_Inbox).chosenMail.sender
+            view.textViewInboxMessageSender.setOnClickListener {
+                val intent = Intent(view.context, ActivityFightBoard::class.java)
+                intent.putExtra("username", (activity as Activity_Inbox).chosenMail.sender)
+                startActivity(intent)
+            }
 
             view.textViewInboxMessageTime.text = (activity as Activity_Inbox).chosenMail.sentTime.toString()
 

@@ -21,7 +21,9 @@ import com.google.firebase.firestore.MetadataChanges
 import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.view.ContextThemeWrapper
 import android.view.MotionEvent
+import android.widget.PopupMenu
 import java.lang.Math.abs
 
 
@@ -82,7 +84,7 @@ class Home : AppCompatActivity() {
             }
         }
         textViewHomeStats.text = "Coins: ${Data.player.money}\nCubeCoins: ${Data.player.cubeCoins}\nGold: ${Data.player.gold}"
-
+        textViewHomeStats.setPadding(15, 10, 15, 10)
 
         val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
         val docRef = db.collection("Server").document("Generic")
@@ -134,6 +136,15 @@ class Home : AppCompatActivity() {
             this.overridePendingTransition(0,0)
         }
 
+        if(Data.inboxChanged && Data.inboxChangedMessages >= 1){
+            textViewHomeMailNew.visibility = View.VISIBLE
+            textViewHomeMailNew.text = Data.inboxChangedMessages.toString()
+            imageViewHomeMailNew.visibility = View.VISIBLE
+        }else {
+            textViewHomeMailNew.visibility = View.GONE
+            imageViewHomeMailNew.visibility = View.GONE
+        }
+
         imageViewHomeInbox.setOnClickListener {
             val intent = Intent(this, Activity_Inbox()::class.java)
             startActivity(intent)
@@ -143,37 +154,67 @@ class Home : AppCompatActivity() {
 
         var originalXExit = 0f
         var initialTouchExitX = 0f
+        var clickableExit = false
 
-        imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                Data.logOut(this@Home)
-            }
-
+        imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {            //disconnect swipe / open menu
             override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {
                         originalXExit = imageViewExit.x
                         initialTouchExitX = motionEvent.rawX
+                        clickableExit = true
+                        handler.postDelayed({clickableExit = false}, 75)
                         return true
                     }
                     MotionEvent.ACTION_UP -> {
                         imageViewExit.x = originalXExit
                         imageViewExitLeave.x = originalXExit + imageViewExitLeave.width
+
+                        if(clickableExit){
+                            handler.removeCallbacksAndMessages(null)
+
+                            val wrapper = ContextThemeWrapper(this@Home, R.style.FactionPopupMenu)
+                            val popup = PopupMenu(wrapper, imageViewExit)
+                            val popupMenu = popup.menu
+
+                            popupMenu.add("Exit")
+                            popupMenu.add("Play rocket game")
+
+                            popup.setOnMenuItemClickListener {
+                                when(it.title){
+                                    "Exit" -> {
+                                        Data.logOut(this@Home)
+                                        true
+                                    }
+                                    "Play rocket game" -> {
+                                        val intentSplash = Intent(this@Home, Activity_Splash_Screen::class.java)
+                                        Data.loadingScreenType = LoadingType.RocketGamePad
+                                        SystemFlow.writeObject(this@Home, "loadingScreenType${Data.player.username}.data", Data.loadingScreenType)
+                                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                        intentSplash.putExtra("keepLoading", true)
+                                        this@Home.startActivity(intentSplash)
+                                        true
+                                    }
+                                    else -> {
+                                        true
+                                    }
+                                }
+                            }
+                            popup.show()
+                        }else {
+                            if(motionEvent.rawX <= originalXExit - imageViewExit.width){
+                                if(!imageViewExit.isEnabled) return true
+                                imageViewExit.isEnabled = false
+                                Data.logOut(this@Home)
+                                return true
+                            }
+                        }
+
                         return true
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        Log.d("rawX", motionEvent.rawX.toString())
-                        Log.d("limitX", (originalXExit - imageViewExit.width).toString())
-                        if(motionEvent.rawX > originalXExit - imageViewExit.width){
-                            imageViewExit.x = ((originalXExit + (motionEvent.rawX - initialTouchExitX)))
-                            imageViewExitLeave.x = ((originalXExit + imageViewExitLeave.width + (motionEvent.rawX - initialTouchExitX)))
-                        }else {
-                            if(!imageViewExit.isEnabled) return true
-                            imageViewExit.isEnabled = false
-                            Data.logOut(this@Home)
-                            return true
-                        }
+                        imageViewExit.x = ((originalXExit + (motionEvent.rawX - initialTouchExitX)/3))
+                        imageViewExitLeave.x = ((originalXExit + imageViewExitLeave.width + ((motionEvent.rawX - initialTouchExitX))/3))
                         return true
                     }
                 }

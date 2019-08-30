@@ -13,9 +13,11 @@ import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.*
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.MetadataChanges
+import kotlinx.android.synthetic.main.fragment_faction.*
 import kotlinx.android.synthetic.main.fragment_faction.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_faction_members.view.*
@@ -185,6 +187,14 @@ class Fragment_Faction: Fragment(){
             viewTemp.textViewFactionMemberInfo.visibility = View.GONE
             (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
         }
+
+        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString())){
+            View.VISIBLE
+        }else View.GONE
+
+        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString())){
+            View.VISIBLE
+        }else View.GONE
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {             //arguments: ÍD - loads faction by its id
@@ -193,7 +203,61 @@ class Fragment_Faction: Fragment(){
         viewTemp = inflater.inflate(R.layout.fragment_faction, container, false)
         if(Data.player.factionID != null || factionID != null)initMain()
 
-        return viewTemp
+        viewTemp.buttonFactionApply.setOnClickListener {
+            Data.player.writeInbox(currentInstanceOfFaction!!.recruiter, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.recruiter, sender = Data.player.username, subject = "${Data.player.username} wants to discuss faction position.", content = "Greetings!\nPlayer ${Data.player.username} wants to discuss about joining your faction as a member.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}"))
+            Toast.makeText(viewTemp.context, "Automatic message to a recruiter was sent.", Toast.LENGTH_LONG).show()
+            it.isEnabled = false
+        }
+
+        viewTemp.buttonFactionAlly.setOnClickListener {
+            if(currentInstanceOfFaction != null && Data.player.factionRole == FactionRole.LEADER && Data.player.faction != null){
+                val db = FirebaseFirestore.getInstance()
+
+                Data.player.writeInbox(currentInstanceOfFaction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.leader, sender = Data.player.username, subject = "${Data.player.username} wants to ally with your faction.", content = "Greetings!\nPlayer ${Data.player.username} from faction ${Data.player.factionName} wants to discuss about being ally with your faction.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}", isInvitation1 = true, invitation = Invitation("","","", InvitationType.factionAlly, Data.player.factionID!!, "")))
+                db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("pendingInvitationsFaction.${currentInstanceOfFaction!!.ID.toString()}" to currentInstanceOfFaction!!.name))
+                Data.player.faction!!.pendingInvitationsFaction[currentInstanceOfFaction!!.ID.toString()] = currentInstanceOfFaction!!.name
+                Toast.makeText(viewTemp.context, "Ally request was successfully sent, wait for their response.", Toast.LENGTH_LONG).show()
+                it.isEnabled = false
+            }else Toast.makeText(viewTemp.context, "Failed loading the faction.", Toast.LENGTH_LONG).show()
+        }
+
+        viewTemp.buttonFactionEnemy.setOnClickListener {
+            if(currentInstanceOfFaction != null && Data.player.factionRole == FactionRole.LEADER){
+
+                val viewP = layoutInflater.inflate(R.layout.popup_dialog, container, false)
+                val window = PopupWindow(context)
+                window.contentView = viewP
+                val buttonYes: Button = viewP.buttonYes
+                val buttonNo:ImageView = viewP.buttonCloseDialog
+                val info:TextView = viewP.textViewInfo
+                info.text = "Do you really put ${currentInstanceOfFaction!!.name} on your faction's enemy list?"
+                window.isOutsideTouchable = false
+                window.isFocusable = true
+                val db = FirebaseFirestore.getInstance()
+                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                buttonYes.setOnClickListener {
+
+                    db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("enemyFactions.${currentInstanceOfFaction!!.ID.toString()}" to currentInstanceOfFaction!!.name))
+                    db.collection("factions").document(currentInstanceOfFaction!!.name).update(mapOf("enemyFactions.${Data.player.factionID.toString()}" to Data.player.factionName))
+                    Data.player.faction!!.enemyFactions[currentInstanceOfFaction!!.ID.toString()] = currentInstanceOfFaction!!.name
+                    Data.player.writeInbox(currentInstanceOfFaction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.leader, sender = Data.player.username, subject = "${Data.player.factionName} put your faction on their enemy list!", content = "Greetings!\nPlayer ${Data.player.username} from faction ${Data.player.factionName} just put you on their faction's enemy list.\nYou gotta do something!"))
+                    Toast.makeText(viewTemp.context, "Faction successfully added to your enemies.", Toast.LENGTH_LONG).show()
+
+                    it.isEnabled = false
+                    window.dismiss()
+                }
+                buttonNo.setOnClickListener {
+                    window.dismiss()
+                }
+                window.showAtLocation(viewP, Gravity.CENTER,0,0)
+
+            }else Toast.makeText(viewTemp.context, "Failed loading the faction.", Toast.LENGTH_LONG).show()
+        }
+        viewTemp.buttonFactionInvade.setOnClickListener {
+            Toast.makeText(viewTemp.context, "Your faction is not advanced enough.", Toast.LENGTH_LONG).show()
+        }
+
+        return viewTemp                         //TODO ally factions
     }
 
 
@@ -430,6 +494,7 @@ class Fragment_Faction: Fragment(){
                             window.isFocusable = true
                             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                             buttonYes.setOnClickListener {
+                                buttonYes.isEnabled = false
                                 Data.player.leaveFaction()
                                 val intent = Intent(context, Home::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

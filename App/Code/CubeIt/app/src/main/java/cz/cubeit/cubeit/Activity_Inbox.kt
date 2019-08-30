@@ -14,9 +14,12 @@ import kotlinx.android.synthetic.main.pop_up_inbox_filter.view.*
 import kotlinx.android.synthetic.main.row_inbox_category.view.*
 import kotlinx.android.synthetic.main.row_inbox_messages.view.*
 import android.app.DatePickerDialog
+import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.util.Log
+import com.google.android.material.shape.CutCornerTreatment
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.Query
@@ -35,7 +38,7 @@ class Activity_Inbox : AppCompatActivity(){
     lateinit var categories: Adapter
     var currentCategory:InboxCategory = InboxCategory()
     lateinit var chosenMail: InboxMessage
-    var onTop: Boolean = false
+    var onTop: Boolean = true
     var editMode: Boolean = false
         set(value){
             field = value
@@ -84,6 +87,8 @@ class Activity_Inbox : AppCompatActivity(){
     }
 
     fun refreshCategory(){
+        currentCategory = Data.inboxCategories[currentCategory.status]!!
+        (categories as AdapterInboxCategories).notifyDataSetChanged()
         (messagesAdapter as AdapterInboxMessages).notifyDataSetChanged()
     }
 
@@ -92,11 +97,17 @@ class Activity_Inbox : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_inbox)
+        onTop = true
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 handler.postDelayed({ hideSystemUI() }, 1000)
             }
+        }
+
+        if(Data.inboxChanged || Data.inboxChangedMessages >= 1){
+            Data.inboxChanged = false
+            Data.inboxChangedMessages = 0
         }
 
         imageViewInboxActionCloseEditMode.setOnClickListener {
@@ -116,8 +127,13 @@ class Activity_Inbox : AppCompatActivity(){
                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 buttonYes.setOnClickListener {
                     Data.inbox.removeAll(editModeMessages)
-                    Data.refreshInbox(this)
+                    for(i in editModeMessages){
+                        Data.player.removeInbox(i.ID)
+                    }
                     editMode = false
+                    this.openFileOutput("inbox${Data.player.username}.data", Context.MODE_PRIVATE).close()
+                    currentCategory = Data.inboxCategories[currentCategory.status]!!
+                    Data.refreshInbox(context = this, toDb = true)
                     refreshCategory()
                     window.dismiss()
                 }
@@ -176,6 +192,7 @@ class Activity_Inbox : AppCompatActivity(){
                         Data.inbox.add(i)
                         i.changeStatus(status, this)
                     }
+                    Data.refreshInbox(this, true)
                     editMode = false
                     refreshCategory()
                     true
@@ -212,7 +229,7 @@ class Activity_Inbox : AppCompatActivity(){
                 (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
             }
 
-            listViewInboxMessages.adapter = AdapterInboxMessages(Data.inbox, frameLayoutInbox, supportFragmentManager, this, imageViewInboxActionDelete, imageViewInboxActionMoveTo, textViewInboxActionCounter, imageViewInboxActionCloseEditMode)
+            listViewInboxMessages.adapter = AdapterInboxMessages(Data.inbox, frameLayoutInbox, supportFragmentManager, this, textViewInboxActionCounter, textViewInboxError)
             listViewInboxCategories.adapter = AdapterInboxCategories(listViewInboxMessages.adapter, frameLayoutInbox, supportFragmentManager, this)
 
             categories = listViewInboxCategories.adapter
@@ -331,11 +348,7 @@ class Activity_Inbox : AppCompatActivity(){
             init()
             val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
             Data.inbox.sortByDescending { it.ID }
-            val docRef = if(Data.inbox.size == 0){
-                db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
-            }else{
-                db.collection("users").document(Data.player.username).collection("Inbox").whereGreaterThan("id", Data.inbox[0].ID).orderBy("id", Query.Direction.DESCENDING)
-            }
+            val docRef = db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
             Data.inboxSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                 if (e != null) {
                     Log.w("Inbox listener", "Listen failed.", e)
@@ -348,18 +361,31 @@ class Activity_Inbox : AppCompatActivity(){
                     "Server"
 
                 if (snapshot != null && !snapshot.isEmpty) {
-                    if(onTop){
-                        if(snapshot.documents.size >= 1) {
-                            Data.inbox.addAll(snapshot.toObjects(InboxMessage::class.java))
-                            Data.refreshInbox(this)
-                            init()
-                            (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
-                            (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
-                        }
-                        Data.inboxChanged = false
-                    }else Data.inboxChanged = true
+                    val inboxSnap: MutableList<InboxMessage> = mutableListOf()
+                    for(i in snapshot.documentChanges){
+                       if(i.type == DocumentChange.Type.ADDED)inboxSnap.add(i.document.toObject(InboxMessage::class.java))
+                    }
 
-                    Toast.makeText(this, "New message has been received", Toast.LENGTH_SHORT).show()
+                    inboxSnap.sortByDescending { it.ID }
+                    if(onTop && snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
+                        for(i in inboxSnap){
+                            if(!Data.inbox.any { it.ID == i.ID })Data.inbox.add(i)
+                        }
+                        Data.refreshInbox(this)
+                        init()
+                        (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
+                        (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
+                        Data.inboxChanged = false
+                        Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
+                    }else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
+                        for(i in inboxSnap){
+                             if(!Data.inbox.any { it.ID == i.ID })Data.inbox.add(i)
+                            Data.inboxChangedMessages++
+                        }
+                        Data.inboxChanged = true
+                        SystemFlow.writeFileText(this, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
+                        Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     Log.d("Inbox listener", "$source data: null n error")
                 }
@@ -447,9 +473,10 @@ class Activity_Inbox : AppCompatActivity(){
         private class ViewHolder(var textViewInboxCategory: TextView, val imageViewInboxCategoryNew:ImageView, var imageViewInboxCategoryBg: ImageView, val textViewInboxCategoryNumber:TextView)
     }
 
-    class AdapterInboxMessages(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox, val imageViewInboxActionDelete: ImageView, val imageViewInboxActionMoveTo: ImageView, val textViewInboxActionCounter: TextView, val imageViewInboxActionCloseEditMode: ImageView) : BaseAdapter() {
+    class AdapterInboxMessages(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox, val textViewInboxActionCounter: TextView, val textViewInboxError: CustomTextView) : BaseAdapter() {
 
         override fun getCount(): Int {
+            textViewInboxError.visibility = if(activity.currentCategory.messages.size > 0) View.GONE else View.VISIBLE
             return activity.currentCategory.messages.size
         }
 
@@ -514,6 +541,7 @@ class Activity_Inbox : AppCompatActivity(){
 
                     if(activity.currentCategory.messages[position].status == MessageStatus.New){
                         activity.currentCategory.messages[position].changeStatus(MessageStatus.Read, activity)
+                        Data.refreshInbox(activity, true)
                         viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
                         (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
                     }

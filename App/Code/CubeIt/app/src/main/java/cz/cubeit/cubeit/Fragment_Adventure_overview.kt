@@ -13,7 +13,6 @@ import android.widget.*
 import kotlinx.android.synthetic.main.fragment_adventure_overview.view.*
 import kotlinx.android.synthetic.main.row_adventure_overview.view.*
 
-
 class Fragment_Adventure_overview : Fragment() {
 
     lateinit var adapter: BaseAdapter

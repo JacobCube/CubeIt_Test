@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package cz.cubeit.cubeit
 
 import android.app.Activity
@@ -30,6 +28,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -130,11 +129,8 @@ var drawableStorage = hashMapOf(
 
 )
 
-fun MutableList<FactionMember>.findMember(usernameX: String): FactionMember?{
-    return if(this.any { it.username == usernameX }) this.filter { it.username == usernameX }[0] else null
-}
-
 object Data {
+
     var player: Player = Player()
 
     var spellClasses: MutableList<LoadSpells> = mutableListOf()
@@ -156,9 +152,9 @@ object Data {
 
     val bgMusic = BackgroundSoundService()
 
-    var inbox: MutableList<InboxMessage> = mutableListOf()
-
     var loadingActiveQuest: Boolean = false
+
+    var inbox: MutableList<InboxMessage> = mutableListOf()
 
     val splashTexts: List<String> = listOf(
             "We're contacting your parents, stay patient.",
@@ -203,7 +199,16 @@ object Data {
             MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
             MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
 
-    fun refreshInbox(context: Context){
+    fun initialize(context: Context){
+        if(SystemFlow.readFileText(context, "inboxNew${player.username}") != "0"){
+            val inboxChangedString = SystemFlow.readFileText(context, "inboxNew${player.username}")
+            inboxChanged = inboxChangedString.subSequence(0, inboxChangedString.indexOf(',')).toString().toBoolean()
+            inboxChangedMessages = inboxChangedString.subSequence(inboxChangedString.indexOf(',') + 1, inboxChangedString.length).toString().toInt()
+        }
+    }
+
+    fun refreshInbox(context: Context, toDb: Boolean = false){
+        Log.d("inbox.local", "uploaded ${inbox.size} items")
         SystemFlow.writeObject(context, "inbox${player.username}.data", inbox)
         inboxCategories = hashMapOf(
                 MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
@@ -217,19 +222,25 @@ object Data {
         for (message in inbox) {
             inboxCategories[message.status]!!.messages.add(message)
         }
+
+        if(toDb){
+            for(i in inbox){
+                player.uploadMessage(i)
+            }
+        }
     }
 
     var newLevel = false
 
     var factionStatusChanged: Boolean = false
     var inboxChanged: Boolean = false
+    var inboxChangedMessages: Int = 1
 
     var inboxSnapshot: ListenerRegistration? = null
     var factionSnapshot: ListenerRegistration? = null
 
     fun logOut(context: Activity) {
         val intentSplash = Intent(context.baseContext, Activity_Splash_Screen::class.java)
-        intentSplash.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         loadingStatus = LoadingStatus.LOGGING
         context.startActivity(intentSplash)
 
@@ -262,6 +273,8 @@ object Data {
         inboxChanged = false
         factionStatusChanged = false
 
+        factionSnapshot?.remove()
+        inboxSnapshot?.remove()
         inboxSnapshot = null
         factionSnapshot = null
         SystemFlow.writeObject(context, "inbox${this.player.username}.data", this.inbox)
@@ -734,17 +747,37 @@ object Data {
 }
 
 object FightBoard{
-    var playerListReturn: MutableList<Player> = mutableListOf()
-//returned list of players in order to show them in fight board Base adapter(list)
+    var playerListReturn: MutableList<Player> = mutableListOf()     //call getPlayerList(Int) to load the list
+    var factionListReturn: MutableList<Faction> = mutableListOf()   //call getFactionList(Int) to load the list
 
-    fun getPlayerList(pageNumber: Int): Task<QuerySnapshot> { // returns each page
-
+    fun getFactionList(pageNumber: Int): Task<QuerySnapshot> { // returns each page
         val db = FirebaseFirestore.getInstance()
 
         val upperPlayerRange = pageNumber * 50
         val lowerPlayerRange = if (pageNumber == 0) 0 else upperPlayerRange - 50
 
-        val docRef = db.collection("users").orderBy("fame")
+        val docRef = db.collection("factions").orderBy("fame", Query.Direction.DESCENDING)
+                .startAt(upperPlayerRange)
+                .endAt(lowerPlayerRange)
+
+        return docRef.get().addOnSuccessListener { querySnapshot ->
+            val factionList: MutableList<out Faction> = querySnapshot.toObjects(Faction::class.java)
+            Log.d("factionList", factionList.size.toString())
+
+            factionListReturn.clear()
+            for (loadedFaction in factionList) {
+                factionListReturn.add(loadedFaction)
+            }
+        }
+    }
+
+    fun getPlayerList(pageNumber: Int): Task<QuerySnapshot> { // returns each page
+        val db = FirebaseFirestore.getInstance()
+
+        val upperPlayerRange = pageNumber * 50
+        val lowerPlayerRange = if (pageNumber == 0) 0 else upperPlayerRange - 50
+
+        val docRef = db.collection("users").orderBy("fame", Query.Direction.DESCENDING)
                 .startAt(upperPlayerRange)
                 .endAt(lowerPlayerRange)
 
@@ -919,13 +952,16 @@ object GameFlow{
 object SystemFlow{
     var newMessage: Boolean = false
     var factionChange: Boolean = false
-    
+
     @Throws(IOException::class)
     fun writeObject(context: Context, fileName: String, objectG: Any) {
+        context.openFileOutput(fileName, Context.MODE_PRIVATE).close()
+
         val fos = context.openFileOutput(fileName, Context.MODE_PRIVATE)
         val oos = ObjectOutputStream(fos)
         oos.reset()
         oos.writeObject(objectG)
+        oos.flush()
         oos.close()
         fos.close()
     }
@@ -1548,7 +1584,7 @@ open class Player(
         var charClassIndex: Int = 1,
         var username: String = "player",
         var level: Int = 1
-):Serializable {
+): Serializable {
     val charClass: CharClass
         @Exclude get() = Data.charClasses[charClassIndex]
     var look: MutableList<Int> = mutableListOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -1626,10 +1662,11 @@ open class Player(
     @Exclude var textSize: Float = 16f
 
     fun init(context: Context){
-        if(SystemFlow.readFileText(context, "textSize.data") != "0") textSize = SystemFlow.readFileText(context, "textSize.data").toFloat()
+        if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
+        Data.initialize(context)
     }
 
-    fun changeFactionStatus(): Task<Void> {
+    private fun changeFactionStatus(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("factions").document(this.factionID.toString())
         return docRef.update(mapOf("members.${this.username}" to this.faction?.members?.get(this.username)?.refresh()))
@@ -1822,7 +1859,6 @@ open class Player(
 
     fun checkForQuest(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
-        Data.loadingActiveQuest = true
 
         val docRef = db.collection("users").document(this.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
@@ -1830,7 +1866,7 @@ open class Player(
 
         return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
             docRef.document("timeStamp").get().addOnSuccessListener {
-                currentTime = it.getDate("timeStamp", behaviour)!!
+                currentTime = it.getTimestamp("timeStamp", behaviour)!!.toDate()
 
             }
         }.continueWithTask {
@@ -1854,8 +1890,6 @@ open class Player(
                     Data.activeQuest!!.secondsLeft = TimeUnit.MILLISECONDS.toSeconds(currentTime.time - Data.activeQuest!!.endTime.time).toInt()
                 }
             }
-        }.addOnSuccessListener {
-            Data.loadingActiveQuest = false
         }
     }
 
@@ -1875,7 +1909,7 @@ open class Player(
 
             val deleteFaction = this.factionRole == FactionRole.LEADER
             docRef.update("members.${Data.player.username}", FieldValue.delete()).addOnSuccessListener {
-                Data.player.writeInbox(this.faction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = this.faction!!.leader, sender = this.username, subject = "${Data.player.username} left the faction.", content = "${Data.player.username} left the faction. You can respond by replying to this mail."))
+                if(this.faction!!.leader != Data.player.username)Data.player.writeInbox(this.faction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = this.faction!!.leader, sender = this.username, subject = "${Data.player.username} left the faction.", content = "${Data.player.username} left the faction. You can respond by replying to this mail."))
                 this.faction = null
                 this.factionRole = null
                 this.factionID = null
@@ -1888,16 +1922,6 @@ open class Player(
     fun loadInbox(context: Context): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
         var docRef: Query
-
-        Data.inboxCategories = hashMapOf(
-                MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
-                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
-                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
-                MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
-                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
-                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
-                MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
-                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
 
         try {
             if (SystemFlow.readObject(context, "inbox${Data.player.username}.data") != 0){
@@ -1929,9 +1953,7 @@ open class Player(
             SystemFlow.writeObject(context, "inbox${Data.player.username}.data", Data.inbox)            //write updated data to local storage
 
             Log.d("Loaded from database", Data.inbox.size.toString())
-            for (message in Data.inbox) {
-                Data.inboxCategories[message.status]!!.messages.add(message)
-            }
+            Data.refreshInbox(context)
         }
     }
 
@@ -1939,7 +1961,23 @@ open class Player(
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox")
 
-        return docRef.document(message.ID.toString()).set(message)
+        val messageMap = hashMapOf<String, Any?>(
+                "priority" to message.priority,
+                "sender" to message.sender,
+                "receiver" to message.receiver,
+                "content" to message.content,
+                "subject" to message.subject,
+                "ID" to message.ID,
+                "category" to message.category,
+                "reward" to message.reward,
+                "status" to message.status,
+                "isInvitation1" to message.isInvitation1,
+                "invitation" to message.invitation,
+                "sentTime" to message.sentTime,
+                "fightResult" to message.fightResult
+        )
+
+        return docRef.document(message.ID.toString()).update(messageMap)
     }
 
     fun createInbox(): Task<Task<Void>> {
@@ -2280,7 +2318,7 @@ open class Player(
                     "<font color='green'>${this.lifeSteal}</font>"
                 } else {
                     "<font color='red'>${this.lifeSteal}</font>"
-                } + "<br/>" +
+                } + "<br/><br/>" +
 
                         "Adventure speed: ${this.adventureSpeed}<br/>" +
                         "Inventory slots: ${this.inventorySlots}")
@@ -3239,7 +3277,7 @@ open class NPC(
         }
         val avgEnergy = calcAvg.average() * 1.25
         val stunSpells = this.allowedSpells.asSequence().filter { it.stun > 0 }.toList().sortedByDescending{ it.stun }
-        val availableSpells: List<Spell>
+        var availableSpells: List<Spell> = listOf()
 
         val playerSpells: MutableList<Spell> = mutableListOf()
         playerSpells.addAll( playerFight.playerFight.chosenSpellsAttack.filterNotNull().toMutableList() )
@@ -3247,7 +3285,7 @@ open class NPC(
         playerSpells.add( playerFight.playerFight.learnedSpells[1]!! )
         playerSpells.sortByDescending { it.energy }
 
-        Memory.nextSpell = if(abs(100 - playerStun) <= (stunSpells[0].stun * 1.2) && abs(100 - playerStun) >= (stunSpells[0].stun * 0.8)){
+        Memory.nextSpell = if(kotlin.math.abs(100 - playerStun) <= (stunSpells[0].stun * 1.2) && kotlin.math.abs(100 - playerStun) >= (stunSpells[0].stun * 0.8)){
             stunSpells[if(stunSpells.size < 4){
                 0
             }else {
@@ -3306,6 +3344,10 @@ open class NPC(
         }
         Memory.playerSpells.add(playerSpell)
         Log.d(round.toString(), "I chose "+chosenSpellsDefense[round]?.getStats())
+        if(availableSpells.isNotEmpty()){
+            Memory.nextSpell = availableSpells[0]
+            if(chosenSpellsDefense[round] == null) chosenSpellsDefense[round] = availableSpells[0]
+        }
     }
 
     fun applyStats(playerX: Player){
@@ -3516,6 +3558,7 @@ class CustomTextView : TextView {
     private var customFont: Int = R.font.average_sans
     private var customTextSize: Float = Data.player.textSize
     var fontSizeType: SizeType = SizeType.adaptive
+    var linesCount: Int = 0
 
     private val mHandler = Handler()
     private val characterAdder = object : Runnable {
@@ -3642,7 +3685,48 @@ class InboxMessage(
 
     fun changeStatus(statusX: MessageStatus, context: Context) {
         Data.inbox.find { it.ID == this.ID } !!.status = statusX
-        Data.refreshInbox(context)
+    }
+
+    override fun hashCode(): Int {
+        var result = priority
+        result = 31 * result + sender.hashCode()
+        result = 31 * result + receiver.hashCode()
+        result = 31 * result + content.hashCode()
+        result = 31 * result + subject.hashCode()
+        result = 31 * result + ID
+        result = 31 * result + category.hashCode()
+        result = 31 * result + (reward?.hashCode() ?: 0)
+        result = 31 * result + status.hashCode()
+        result = 31 * result + isInvitation1.hashCode()
+        result = 31 * result + invitation.hashCode()
+        result = 31 * result + sentTime.hashCode()
+        result = 31 * result + (deleteTime?.hashCode() ?: 0)
+        result = 31 * result + (fightResult?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as InboxMessage
+
+        if (priority != other.priority) return false
+        if (sender != other.sender) return false
+        if (receiver != other.receiver) return false
+        if (content != other.content) return false
+        if (subject != other.subject) return false
+        if (ID != other.ID) return false
+        if (category != other.category) return false
+        if (reward != other.reward) return false
+        if (status != other.status) return false
+        if (isInvitation1 != other.isInvitation1) return false
+        if (invitation != other.invitation) return false
+        if (sentTime != other.sentTime) return false
+        if (deleteTime != other.deleteTime) return false
+        if (fightResult != other.fightResult) return false
+
+        return true
     }
 }
 
@@ -3767,15 +3851,17 @@ class FactionActionLog(
     }
 }
 
-class Faction(                     //TODO parent, invitations  TODO Firebase rules
+class Faction(                     //TODO ally faction, enemy factions; TODO Firebase rules
         var name: String = "template",
         var leader: String = Data.player.username
 ): Serializable{
+    var captureDate: Date = java.util.Calendar.getInstance().time
     var description: String = ""
         set(value){
             if(field != value)this.actionLog.add(FactionActionLog("", "Description has been changed to ", value))
             field = value
         }
+    var externalDescription: String = "This is external description."
     var ID: Int = 0
     var members: HashMap<String, FactionMember> = hashMapOf(this.leader to FactionMember(this.leader, FactionRole.LEADER, 1))
     var allyFactions: HashMap<String, String> = hashMapOf()
@@ -3793,11 +3879,21 @@ class Faction(                     //TODO parent, invitations  TODO Firebase rul
             field = value
         }
     var experience: Int = 0
+        set(value){
+            val neededXp = (this.level * 0.75 * (8 * (this.level*0.8) * (3))).toInt()
+            field = if(value >= neededXp){
+                this.level++
+                value - neededXp
+            }else value
+        }
     var gold: Int = 0
     var warnMessage: String = "Read the rules again!"
     var invitationMessage: String = "You have been invited to ${this.name}!"
     var actionLog: MutableList<FactionActionLog> = mutableListOf(FactionActionLog(this.leader, " created faction ", this.name))
     var openToAllies: Boolean = false
+    var fame: Int = 0
+    var democracy: Boolean = false
+    var recruiter: String = this.leader
 
     @Exclude var returnList: MutableList<Player> = mutableListOf()
     @Exclude var returnedPlayer: Player? = null
@@ -3816,6 +3912,10 @@ class Faction(                     //TODO parent, invitations  TODO Firebase rul
             givenGoldDay < this.taxPerDay -> "<font color='red'> ${member.goldGiven}</font>"
             else -> "<font color='grey'> ${member.goldGiven}</font>"
         }+ "<br/>membership: ${member.membershipLength} days<br/>"
+    }
+
+    @Exclude fun getDescExernal(): String{
+        return "tax: $taxPerDay /day<br/>members: ${members.size}<br/>created in: ${captureDate.toLocaleString()}<br/>${externalDescription}"
     }
 
     @Exclude fun getMemberDescExt(username: String): String{
@@ -3964,13 +4064,13 @@ class Invitation(
                 if(!Data.player.allies.contains(caller))Data.player.allies.add(caller)
             }
             InvitationType.factionAlly -> {
-                if(Data.player.faction != null){
-                    db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsFaction", FieldValue.arrayRemove(Data.player.faction!!.name)).continueWithTask {
-                        db.collection("factions").document(this.factionID.toString()).update("allyFactions", Data.player.faction!!.ID.toString() to Data.player.faction!!.name)
+                if(Data.player.factionID != null && Data.player.factionName != null){
+                    db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsFaction", FieldValue.arrayRemove(Data.player.factionName)).continueWithTask {
+                        db.collection("factions").document(this.factionID.toString()).update(mapOf("allyFactions.${Data.player.factionID}" to Data.player.factionName))
                     }.continueWithTask {
-                        db.collection("factions").document(Data.player.faction!!.ID.toString()).update("allyFactions", this.factionID.toString() to this.factionName)
+                        db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("allyFactions.${this.factionID}" to this.factionName))
                     }
-                    Data.player.faction!!.allyFactions.put(this.factionID.toString(), this.factionName)
+                    Data.player.faction!!.allyFactions[this.factionID.toString()] = this.factionName
                 }
             }
         }
@@ -3986,9 +4086,35 @@ class Invitation(
             InvitationType.ally -> {
             }
             InvitationType.factionAlly -> {
-                db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsFaction", FieldValue.arrayRemove(Data.player.faction!!.name))
+                db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsFaction", FieldValue.arrayRemove(Data.player.faction?.name))
             }
         }
+    }
+
+    override fun hashCode(): Int {
+        var result = caller.hashCode()
+        result = 31 * result + message.hashCode()
+        result = 31 * result + subject.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + factionID
+        result = 31 * result + factionName.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Invitation
+
+        if (caller != other.caller) return false
+        if (message != other.message) return false
+        if (subject != other.subject) return false
+        if (type != other.type) return false
+        if (factionID != other.factionID) return false
+        if (factionName != other.factionName) return false
+
+        return true
     }
 }
 
@@ -4035,8 +4161,6 @@ class RocketGame(
         this.rocketMultiplier = level.toDouble() / 20
         this.meteorMaxMultiplier = level.toDouble() / 30
         this.speed = 7 + 2 * rocketMultiplier
-        rocketBody.x = (width / 2 - rocketBody.width).toFloat()
-        rocketBody.y = (height / 2 + rocketBody.height).toFloat()
 
         for(i in meteors){
             i.detach()
@@ -4078,14 +4202,13 @@ class RocketGame(
         speedX = speed //(abs(startPointX - coordinatesRocket.rocketTargetX) / ticksNeeded)
         speedY = speed * 0.8 //(abs(startPointY - coordinatesRocket.rocketTargetY) / ticksNeeded)
 
-
         if(speedX.isNaN() || speedX.isInfinite()) speedX = 0.0
         if(speedY.isNaN() || speedY.isInfinite()) speedY = 0.0
 
         if(coordinatesRocket.rocketTargetX == 0f){
             if(rocketBody.x > 0)rocketBody.x -= 1
         }else {
-            if(abs(coordinatesRocket.rocketTargetX - rocketBody.x) < speedX){
+            if(kotlin.math.abs(coordinatesRocket.rocketTargetX - rocketBody.x) < speedX){
                 rocketBody.x = coordinatesRocket.rocketTargetX
             }else {
                 if(coordinatesRocket.rocketTargetX <= rocketBody.x){
@@ -4095,7 +4218,7 @@ class RocketGame(
                 }
             }
 
-            if(abs(coordinatesRocket.rocketTargetY - rocketBody.y) < speedY){
+            if(kotlin.math.abs(coordinatesRocket.rocketTargetY - rocketBody.y) < speedY){
                 rocketBody.y = coordinatesRocket.rocketTargetY
             }else {
                 if(coordinatesRocket.rocketTargetY <= rocketBody.y){
@@ -4122,7 +4245,6 @@ class RocketGame(
         fun initialize(width: Int, height: Int): Meteor{
 
             imageView = ImageView(context)
-            Log.d("meteor imageview", "initialized")
             imageView?.setImageResource(when(nextInt(0 ,1)){
                 0 -> R.drawable.meteor_0
                 else -> R.drawable.meteor_1
@@ -4150,8 +4272,8 @@ class ComponentCoordinates(
         var heightBound: Int = 0
 ){
     lateinit var component: ImageView
-    var rocketTargetX: Float = 50f
-    var rocketTargetY: Float = 50f
+    var rocketTargetX: Float = 0f
+    var rocketTargetY: Float = 0f
 
     fun update(xIn: Float, yIn: Float, rocketGame: RocketGame? = null){
         this.x = xIn
