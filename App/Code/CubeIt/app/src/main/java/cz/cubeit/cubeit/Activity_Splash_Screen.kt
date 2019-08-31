@@ -37,7 +37,8 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
     private var coordinatesRocket = ComponentCoordinates()
     var keepSplash: Boolean = false
-    val rocketTimer = Timer()
+    var rocketTimer: TimerTask? = null
+    var activeTimer: Timer = Timer()
 
     fun setLogText(text: String){
         if(textViewLog != null)textViewLog!!.text = text
@@ -63,7 +64,9 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
     override fun onStop() {
         super.onStop()
-        rocketTimer.cancel()
+        rocketTimer?.cancel()
+        activeTimer.cancel()
+        activeTimer.purge()
         handler.removeCallbacksAndMessages(null)
     }
 
@@ -226,36 +229,42 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 textViewSplashTime.visibility = View.VISIBLE
                 imageViewSplashIcon.isEnabled = false
 
+                rocketGame.detach()
+                coordinatesRocket.update(0f, 0f)
+                rocketGame = RocketGame(1, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
                 rocketGame.initialize()
-
                 var endCount = 0
-                rocketTimer.scheduleAtFixedRate(object : TimerTask() {
+                var ended = false
+
+                rocketTimer = object : TimerTask() {
                     @SuppressLint("SetTextI18n")
                     override fun run() {
                         runOnUiThread {
+                            rocketTimer = this
 
-                            if(rocketGame.onTick(coordinatesRocket)){
+                            if (rocketGame.onTick(coordinatesRocket)) {
                                 rocketGame.ticks++
                                 textViewSplashTime.text = "Level ${rocketGame.level} - ${(rocketGame.ticks).toDouble() / 100}s"
-                            } else {
+                            } else if(!ended){
+                                ended = true
                                 this.cancel()
 
                                 var newHigh = false
-                                if((rocketGame.ticks.toDouble() / 100) >= Data.player.rocketGameScoreSeconds){
+                                if ((rocketGame.ticks.toDouble() / 100) >= Data.player.rocketGameScoreSeconds) {
                                     Data.player.rocketGameScoreSeconds = rocketGame.ticks.toDouble() / 100
                                     newHigh = true
                                 }
 
                                 val rewardBottom = (GenericDB.Balance.rewardCoinsBottom * (Data.player.level * 0.8) * (0 + 1) * 0.75).toInt()
                                 val rewardTop = GenericDB.Balance.rewardCoinsTop * ((Data.player.level * 0.8) * (0 + 1) * 1.25).toInt()
-                                val reward = nextInt(rewardBottom, rewardTop)/20
-                                Data.player.money += reward
+                                val reward = nextInt(rewardBottom, rewardTop) / 40
+                                Data.player.money += (reward * rocketGame.ticks/100)
 
                                 val viewP = layoutInflater.inflate(R.layout.popup_dialog_minigame, null, false)
                                 val window = PopupWindow(this@Activity_Splash_Screen)
                                 window.contentView = viewP
-                                viewP.textViewDialogMGGenericInfo.text = "\t~" + (rewardBottom + ((rewardTop - rewardBottom)/2))/20 + " coins /s"
-                                viewP.textViewDialogMGInfo.text = "You lost.\n"+if(newHigh) "Wow! New high score!" else{
+                                viewP.textViewDialogMGGenericInfo.text = "\t~" + (rewardBottom + ((rewardTop - rewardBottom) / 2)) / 20 + " coins /s"
+                                viewP.textViewDialogMGInfo.text = "You lost.\n" + if (newHigh) "Wow! New high score!" else {
                                     Data.rocketGameNotHigh[nextInt(0, Data.rocketGameNotHigh.size)]
                                 } + "\n\n You lasted for ${(rocketGame.ticks).toDouble() / 100}s (lvl. ${rocketGame.level})\nAnd received $reward coins."
 
@@ -299,10 +308,9 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                 }
 
                                 viewP.buttonDialogMGAgain.setOnClickListener {
-                                    this.run()
-                                    rocketGame = RocketGame(1, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
-                                    coordinatesRocket.update(0f, 0f)
-                                    rocketGame.initialize()
+                                    ended = false
+                                    switchSplashScreenType.isChecked = false
+                                    switchSplashScreenType.isChecked = true
                                     window.dismiss()
                                 }
 
@@ -314,7 +322,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                 window.isFocusable = false
                                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-                                window.showAtLocation(viewP, Gravity.CENTER,0,0)
+                                window.showAtLocation(viewP, Gravity.CENTER, 0, 0)
                             }
 
                             if ((rocketGame.ticks - endCount * 200) > 200) {
@@ -357,12 +365,16 @@ class Activity_Splash_Screen: AppCompatActivity(){
                             }
                         }
                     }
-                }, 0, 10) //reschedule every 10 milliseconds
+                }
+
+                Timer().scheduleAtFixedRate(rocketTimer, 0, 10)
 
             }else {
                 if(!pumpInAnimationIG.isRunning || pumpInAnimationIG.isPaused) pumpInAnimationIG.start()
                 imageViewSplashIcon.startAnimation(rotateAnimation)
-                rocketTimer.cancel()
+                rocketTimer?.cancel()
+                activeTimer.cancel()
+                activeTimer.purge()
                 rocketGame.detach()
                 textViewSplashTime.visibility = View.GONE
 

@@ -380,7 +380,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
         } else rowMain = convertView
         val viewHolder = rowMain.tag as ViewHolder
 
-        viewHolder.buttonRemove.visibility = if(itemsListAdapter[position].seller == Data.player.username){      //ifData.player owns the offer, he can delete it
+        viewHolder.buttonRemove.text = if(itemsListAdapter[position].seller == Data.player.username){      //ifData.player owns the offer, he can delete it
             val db = FirebaseFirestore.getInstance()
 
             viewHolder.buttonRemove.setOnClickListener {
@@ -420,10 +420,70 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                 }
                 windowBuy.showAtLocation(viewPopBuy, Gravity.CENTER,0,0)
             }
-            View.VISIBLE
+            "remove"
 
         }else {
-            View.GONE
+            viewHolder.buttonRemove.setOnClickListener {
+                Log.d("clicked rowmain", "true")
+                val window = PopupWindow(activity)
+                val viewPop:View = activity.layoutInflater.inflate(R.layout.pop_up_market_offer, null, false)
+                window.elevation = 0.0f
+                window.contentView = viewPop
+
+                viewPop.textViewMarketOfferDescription.setHTMLText(itemsListAdapter[position].getGenericStatsOffer() + "<br/>" + itemsListAdapter[position].getSpecStatsOffer())
+
+                viewPop.buttonMarketContact.setOnClickListener {
+                    val intent = Intent(activity, Activity_Inbox()::class.java)
+                    intent.putExtra("receiver", itemsListAdapter[position].seller)
+                    startActivity(activity, intent, null)
+                }
+
+                window.isOutsideTouchable = false
+                window.isFocusable = true
+
+                viewPop.buttonCloseOffer.setOnClickListener {
+                    window.dismiss()
+                }
+
+                viewPop.buttonMarketBuy.setOnClickListener { _ ->
+                    val windowBuy = PopupWindow(activity)
+                    val viewPopBuy:View = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
+                    windowBuy.elevation = 0.0f
+                    windowBuy.contentView = viewPopBuy
+                    windowBuy.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    windowBuy.isOutsideTouchable = false
+                    windowBuy.isFocusable = true
+
+                    viewPopBuy.buttonCloseDialog.setOnClickListener {
+                        windowBuy.dismiss()
+                    }
+
+                    viewPopBuy.buttonYes.isEnabled = Data.player.money >= itemsListAdapter[position].priceCoins && Data.player.cubeCoins >= itemsListAdapter[position].priceCubeCoins
+
+                    viewPopBuy.buttonYes.setOnClickListener {
+                        if(Data.player.inventory.contains(null)){
+                            windowBuy.dismiss()
+                            window.dismiss()
+                            rowMain.isEnabled = false
+                            itemsListAdapter[position].buyer = Data.player.username
+                            itemsListAdapter[position].deleteOffer().addOnCompleteListener {
+                                if (it.isSuccessful) {
+                                    itemsListAdapter.removeAt(position)
+                                    this.notifyDataSetChanged()
+                                }
+                                rowMain.isEnabled = true
+                            }
+                        }else{
+                            Toast.makeText(activity, "No space in inventory!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    windowBuy.showAtLocation(viewPopBuy, Gravity.CENTER,0,0)
+                }
+
+                window.showAtLocation(viewPop, Gravity.CENTER,0,0)
+            }
+
+            "buy"
         }
 
         viewHolder.textViewMarketName.setHTMLText(itemsListAdapter[position].getGenericStatsOffer())
@@ -440,63 +500,8 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
             }
         }
 
-        rowMain.setOnClickListener { view ->
-            val window = PopupWindow(activity)
-            val viewPop:View = activity.layoutInflater.inflate(R.layout.pop_up_market_offer, null, false)
-            window.elevation = 0.0f
-            window.contentView = viewPop
+        rowMain.setOnClickListener { _ ->
 
-            viewPop.textViewMarketOfferDescription.setHTMLText(itemsListAdapter[position].getGenericStatsOffer() + "<br/>" + itemsListAdapter[position].getSpecStatsOffer())
-
-            viewPop.buttonMarketContact.setOnClickListener {
-                val intent = Intent(activity, Activity_Inbox()::class.java)
-                intent.putExtra("receiver", itemsListAdapter[position].seller)
-                startActivity(activity, intent, null)
-            }
-
-            window.isOutsideTouchable = false
-            window.isFocusable = true
-
-            viewPop.buttonCloseOffer.setOnClickListener {
-                window.dismiss()
-            }
-
-            window.showAtLocation(view, Gravity.CENTER,0,0)
-
-            viewPop.buttonMarketBuy.setOnClickListener { _ ->
-                val windowBuy = PopupWindow(activity)
-                val viewPopBuy:View = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
-                windowBuy.elevation = 0.0f
-                windowBuy.contentView = viewPopBuy
-                windowBuy.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                windowBuy.isOutsideTouchable = false
-                windowBuy.isFocusable = true
-
-                viewPopBuy.buttonCloseDialog.setOnClickListener {
-                    windowBuy.dismiss()
-                }
-
-                viewPopBuy.buttonYes.isEnabled = Data.player.money >= itemsListAdapter[position].priceCoins && Data.player.cubeCoins >= itemsListAdapter[position].priceCubeCoins
-
-                viewPopBuy.buttonYes.setOnClickListener {
-                    if(Data.player.inventory.contains(null)){
-                        windowBuy.dismiss()
-                        window.dismiss()
-                        rowMain.isEnabled = false
-                        itemsListAdapter[position].buyer = Data.player.username
-                        itemsListAdapter[position].deleteOffer().addOnCompleteListener {
-                            if (it.isSuccessful) {
-                                itemsListAdapter.removeAt(position)
-                                this.notifyDataSetChanged()
-                            }
-                            rowMain.isEnabled = true
-                        }
-                    }else{
-                        Toast.makeText(activity, "No space in inventory!", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                windowBuy.showAtLocation(viewPopBuy, Gravity.CENTER,0,0)
-            }
         }
 
         return rowMain

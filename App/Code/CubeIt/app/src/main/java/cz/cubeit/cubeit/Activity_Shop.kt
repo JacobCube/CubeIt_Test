@@ -102,7 +102,7 @@ class Activity_Shop : AppCompatActivity(){
         }
 
         listViewShopInventory.adapter = ShopInventory(hidden, animUpText, animDownText, Data.player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewShopInventory, textViewShopMoney)
-        listViewShopOffers.adapter = ShopOffer(hidden, animUpText, animDownText, Data.player, textViewInfoItem, bubleDialogShop, imageViewShopBubbleBg, listViewShopInventory.adapter as ShopInventory, this, textViewShopMoney)
+        listViewShopOffers.adapter = ShopOffer(hidden, animUpText, animDownText, Data.player, textViewInfoItem, bubleDialogShop, listViewShopInventory.adapter as ShopInventory, this, textViewShopMoney)
         listViewShopOffers.layoutParams.width = (displayY * 0.87).toInt()
 
         var animationRefresh = ValueAnimator()
@@ -267,7 +267,7 @@ class Activity_Shop : AppCompatActivity(){
         private class ViewHolder(val buttonInventory1:ImageView, val buttonInventory2:ImageView, val buttonInventory3:ImageView, val buttonInventory4:ImageView)
     }
 
-    private class ShopOffer(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, val player:Player, val textViewInfoItem: CustomTextView, val bubbleDialogShop:TextView, val bubbleDialogBg: ImageView, val InventoryShop:BaseAdapter, private val context:Context, val textViewMoney: TextView) : BaseAdapter() {
+    private class ShopOffer(var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, val player:Player, val textViewInfoItem: CustomTextView, val bubbleDialogShop:TextView, val InventoryShop:BaseAdapter, private val context:Context, val textViewMoney: TextView) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 2
@@ -321,7 +321,7 @@ class Activity_Shop : AppCompatActivity(){
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index, player, bubbleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -337,7 +337,7 @@ class Activity_Shop : AppCompatActivity(){
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+1, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index+1, player, bubbleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -353,7 +353,7 @@ class Activity_Shop : AppCompatActivity(){
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+2, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index+2, player, bubbleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -369,7 +369,7 @@ class Activity_Shop : AppCompatActivity(){
 
                 override fun onDoubleClick() {
                     super.onDoubleClick()
-                    getDoubleClickOffer(index+3, player, bubbleDialogShop, bubbleDialogBg, textViewInfoItem, textViewMoney)
+                    getDoubleClickOffer(index+3, player, bubbleDialogShop, textViewInfoItem, textViewMoney)
                     notifyDataSetChanged()
                     InventoryShop.notifyDataSetChanged()
                 }
@@ -405,11 +405,10 @@ class Activity_Shop : AppCompatActivity(){
             window.showAtLocation(view, Gravity.CENTER,0,0)
         }
 
-        private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, errorBg: ImageView, textViewInfoItem:TextView, textViewMoney: TextView){
+        private fun getDoubleClickOffer(index:Int, player:Player, error: TextView, textViewInfoItem:TextView, textViewMoney: TextView){
             if(Data.player.money>=Data.player.shopOffer[index]!!.price){
                 if(Data.player.inventory.contains(null)){
                     error.visibility = View.INVISIBLE
-                    errorBg.visibility = View.INVISIBLE
                     Data.player.money-=Data.player.shopOffer[index]!!.price
                     textViewMoney.text = Data.player.money.toString()
                     Data.player.shopOffer[index]!!.price/=2
@@ -417,16 +416,15 @@ class Activity_Shop : AppCompatActivity(){
                     Data.player.shopOffer[index] = GameFlow.generateItem(player)
                     textViewInfoItem.visibility = View.INVISIBLE
                 }else{
-                    bubbleDialogShop(message = "Are you getting fat ? Or is it because of the amount of items you have ?", error = error, errorBg =  errorBg)
+                    bubbleDialogShop(message = "Are you getting fat ? Or is it because of the amount of items you have ?", error = error)
                 }
             }else{
-                bubbleDialogShop(message = "Not enough coins!", error = error, errorBg =  errorBg)
+                bubbleDialogShop(message = "Not enough coins!", error = error)
             }
         }
 
-        private fun bubbleDialogShop(message: String, error: TextView, errorBg: ImageView){
+        private fun bubbleDialogShop(message: String, error: TextView){
             error.visibility = View.VISIBLE
-            errorBg.visibility = View.VISIBLE
             error.text = message
         }
     }

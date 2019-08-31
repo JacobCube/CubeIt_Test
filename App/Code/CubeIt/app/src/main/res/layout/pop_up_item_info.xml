@@ -10,7 +10,6 @@
         android:id="@+id/imageViewBg"
         android:layout_width="325dp"
         android:layout_height="0dp"
-        android:alpha="0.35"
         app:srcCompat="@drawable/bg_basic_white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,5:3"

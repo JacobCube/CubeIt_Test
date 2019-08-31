@@ -46,8 +46,6 @@ class Fragment_Market_RegisterOffer : Fragment() {
         window.isOutsideTouchable = false
         window.isFocusable = true
 
-        viewPop.textViewItemInfo.movementMethod = ScrollingMovementMethod()
-
         view.imageViewMarketRegisterItem.setOnTouchListener(object : Class_OnSwipeTouchListener(view.context) {
             override fun onClick() {
                 super.onClick()

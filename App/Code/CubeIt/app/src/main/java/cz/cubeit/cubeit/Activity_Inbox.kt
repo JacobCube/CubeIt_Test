@@ -235,6 +235,8 @@ class Activity_Inbox : AppCompatActivity(){
             categories = listViewInboxCategories.adapter
             messagesAdapter = listViewInboxMessages.adapter
 
+            refreshCategory()
+
             imageViewInboxFilter.setOnClickListener { view ->
 
                 val window = PopupWindow(this)
@@ -390,7 +392,9 @@ class Activity_Inbox : AppCompatActivity(){
                     Log.d("Inbox listener", "$source data: null n error")
                 }
             }
-        }else init()
+        }else {
+            init()
+        }
 
         if(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox) != null)supportFragmentManager.beginTransaction().remove(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)!!).commitNow()
 

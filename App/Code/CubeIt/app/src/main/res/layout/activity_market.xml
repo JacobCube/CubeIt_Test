@@ -316,9 +316,9 @@
 
     <ImageView
         android:id="@+id/homeButtonBackMarket"
-		 android:adjustViewBounds="true"
         android:layout_width="75dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:background="@drawable/emptyspellslotlarge"
         android:backgroundTint="@color/colorPrimary"
         android:src="@drawable/home_button"

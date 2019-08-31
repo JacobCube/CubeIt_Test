@@ -92,7 +92,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         val fromYEnemy = spellFightEnemyNPC.y
         val fromX = imageView.x
         val fromY = imageView.y
-        val enemySpell = enemy.enemy.chosenSpellsDefense[if(roundCounter == 0) if(enemy.enemy.chosenSpellsDefense[19] == null) 0 else 19 else roundCounter - 1]!!
+        val enemySpell = enemy.enemy.chosenSpellsDefense[roundCounter]!!
 
         spellFightEnemyNPC.setImageResource(enemySpell.drawable)
 
@@ -401,6 +401,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         fun useSpell(playerSpell: Spell, view: ImageView){
             if(roundTick(playerSpell, view)){
                 spellAnimator(view, playerSpell)
+                roundCounter++
             }
         }
     }
@@ -430,7 +431,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         val opts = BitmapFactory.Options()
         opts.inScaled = false
 
-        fun init(){ //TODO
+        fun init(){
             imageViewEnemyCharNPC.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.enemy.charClass.drawable, opts))
             //imageViewPlayerCharNPC.setImageBitmap(BitmapFactory.decodeResource(resources, playerFight.playerFight.charClass.drawable, opts))
             if(enemy.enemy.description == "")textViewDescriptionNPC.visibility = View.GONE else textViewDescriptionNPC.text = enemy.enemy.description
@@ -766,7 +767,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
         //ifData.player is stunned from last enemy's attack - attack again
         if(playerFight.stun >= 100){
-            ++roundCounter
+            roundCounter++
             playerFight.stun -= 100
             imageViewEnemyUsedSpellNPC.setImageResource(enemy.currentSpell.drawable)
             enemy.energy += 25
@@ -800,7 +801,6 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
         Log.d("current spell after", enemy.currentSpell.getStats())
 
-        ++roundCounter
         enemy.energy += 25
         playerFight.energy += 25
         if(playerFight.health <= 0)endOfFight(false, view)

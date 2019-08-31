@@ -414,7 +414,7 @@ object Data {
                             val dbChecksum = (it.get("checksum") as Long).toInt()
 
                             Log.d("charclass.checksum", charClasses.hashCode().toString())
-                            if (dbChecksum != charClasses.hashCode()) {      //is local stored data equal to current state of database?
+                            if (dbChecksum != charClasses.hashCode() || charClasses.isEmpty()) {      //is local stored data equal to current state of database?
                                 db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
                                     charClasses = itCharclasses.toObjects(CharClass::class.java)
                                     SystemFlow.writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
@@ -2361,7 +2361,7 @@ class ActiveQuest(
 
     @Exclude fun getLength(): String{
         return when{
-            this.secondsLeft <= 0 -> "00:00"
+            this.secondsLeft <= 0 -> "0:00"
             this.secondsLeft.toDouble()%60 <= 9 -> "${this.secondsLeft/60}:0${this.secondsLeft%60}"
             else -> "${this.secondsLeft/60}:${this.secondsLeft%60}"
         }
@@ -4152,6 +4152,7 @@ class RocketGame(
     var meteorViewRect: Rect = Rect()
 
     fun detach(){
+        //parent.removeViews(parent.childCount - meteors.size, meteors.size)
         for(i in meteors){
             i.detach()
         }
@@ -4162,14 +4163,11 @@ class RocketGame(
         this.meteorMaxMultiplier = level.toDouble() / 30
         this.speed = 7 + 2 * rocketMultiplier
 
-        for(i in meteors){
-            i.detach()
-        }
-        for(i in 0 until level){
+        for(i in meteors.size until level){
             meteors.add(addMeteor())
         }
-        //meteors[0].speed = (1 + 1 * nextInt((meteorMaxMultiplier*500).toInt(), (meteorMaxMultiplier*1000).toInt())/1000.toLong())
     }
+
     private fun addMeteor(): Meteor{
         val meteor = Meteor(parent.context, parent)
         meteors.add(Meteor(parent.context, parent))
@@ -4177,7 +4175,7 @@ class RocketGame(
     }
 
     fun onTick(coordinatesRocket: ComponentCoordinates): Boolean{
-        if(ticks >= (level * 0.5) * 1000){
+        if(ticks >= (level * 0.75) * 1000){
             level++
             initialize()
         }
@@ -4243,7 +4241,6 @@ class RocketGame(
         var targetTicksY: Int = 0
 
         fun initialize(width: Int, height: Int): Meteor{
-
             imageView = ImageView(context)
             imageView?.setImageResource(when(nextInt(0 ,1)){
                 0 -> R.drawable.meteor_0

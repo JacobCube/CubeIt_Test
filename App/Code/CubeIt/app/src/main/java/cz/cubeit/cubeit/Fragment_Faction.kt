@@ -188,11 +188,11 @@ class Fragment_Faction: Fragment(){
             (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
         }
 
-        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString())){
+        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction){
             View.VISIBLE
         }else View.GONE
 
-        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString())){
+        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction){
             View.VISIBLE
         }else View.GONE
     }
@@ -206,7 +206,7 @@ class Fragment_Faction: Fragment(){
         viewTemp.buttonFactionApply.setOnClickListener {
             Data.player.writeInbox(currentInstanceOfFaction!!.recruiter, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.recruiter, sender = Data.player.username, subject = "${Data.player.username} wants to discuss faction position.", content = "Greetings!\nPlayer ${Data.player.username} wants to discuss about joining your faction as a member.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}"))
             Toast.makeText(viewTemp.context, "Automatic message to a recruiter was sent.", Toast.LENGTH_LONG).show()
-            it.isEnabled = false
+            viewTemp.buttonFactionApply.isEnabled = false
         }
 
         viewTemp.buttonFactionAlly.setOnClickListener {
@@ -217,7 +217,7 @@ class Fragment_Faction: Fragment(){
                 db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("pendingInvitationsFaction.${currentInstanceOfFaction!!.ID.toString()}" to currentInstanceOfFaction!!.name))
                 Data.player.faction!!.pendingInvitationsFaction[currentInstanceOfFaction!!.ID.toString()] = currentInstanceOfFaction!!.name
                 Toast.makeText(viewTemp.context, "Ally request was successfully sent, wait for their response.", Toast.LENGTH_LONG).show()
-                it.isEnabled = false
+                viewTemp.buttonFactionAlly.isEnabled = false
             }else Toast.makeText(viewTemp.context, "Failed loading the faction.", Toast.LENGTH_LONG).show()
         }
 
@@ -243,7 +243,7 @@ class Fragment_Faction: Fragment(){
                     Data.player.writeInbox(currentInstanceOfFaction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.leader, sender = Data.player.username, subject = "${Data.player.factionName} put your faction on their enemy list!", content = "Greetings!\nPlayer ${Data.player.username} from faction ${Data.player.factionName} just put you on their faction's enemy list.\nYou gotta do something!"))
                     Toast.makeText(viewTemp.context, "Faction successfully added to your enemies.", Toast.LENGTH_LONG).show()
 
-                    it.isEnabled = false
+                    viewTemp.buttonFactionEnemy.isEnabled = false
                     window.dismiss()
                 }
                 buttonNo.setOnClickListener {

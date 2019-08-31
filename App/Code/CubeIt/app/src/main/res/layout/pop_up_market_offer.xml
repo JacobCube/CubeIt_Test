@@ -106,12 +106,12 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:gravity="center_horizontal"
         android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/guideline157"
-        app:layout_constraintEnd_toStartOf="@+id/guideline181"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/buttonMarketContact"
+        app:layout_constraintEnd_toStartOf="@+id/guideline60"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+        app:layout_constraintTop_toTopOf="@+id/imageViewBg" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

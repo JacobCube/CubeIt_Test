@@ -160,20 +160,15 @@ class FragmentInboxMessage : Fragment() {
                 view.buttonInboxMessageGet.setOnClickListener {
                     if(Data.player.inventory.contains(null)){
                         view.buttonInboxMessageGet.isEnabled = false
-                        (activity as Activity_Inbox).chosenMail.reward!!.receive()
-                        (activity as Activity_Inbox).chosenMail.reward = null
+                        Data.inbox.find { it.ID == (activity as Activity_Inbox).chosenMail.ID }!!.apply {
+                            reward!!.receive()
+                            reward = null
+                        }
+                        Data.inbox.remove(Data.inbox.find { it.ID == (activity as Activity_Inbox).chosenMail.ID }!!)
 
-                        for(message in (activity as Activity_Inbox).currentCategory.messages){
-                            if(message.ID == (activity as Activity_Inbox).chosenMail.ID){
-                                message.reward = null
-                            }
-                        }
-                        (activity!! as Activity_Inbox).refreshCategory()
-                        Data.player.uploadMessage((activity as Activity_Inbox).chosenMail).addOnSuccessListener {
-                            activity!!.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = (activity as Activity_Inbox).chosenMail.priority, messageObject = (activity as Activity_Inbox).chosenMail.subject, messageContent = (activity as Activity_Inbox).chosenMail.content, messageSender = (activity as Activity_Inbox).chosenMail.sender)).commit()
-                        }
                         Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
-                        (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
+                        Data.refreshInbox(view.context)
+                        (activity!! as Activity_Inbox).refreshCategory()
                     }else{
                         Toast.makeText(view.context, "No space in inventory!", Toast.LENGTH_SHORT).show()
                     }

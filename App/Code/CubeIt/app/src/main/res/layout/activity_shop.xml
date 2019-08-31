@@ -221,23 +221,14 @@
         app:layout_constraintStart_toStartOf="@+id/guideline47"
         app:layout_constraintTop_toTopOf="@+id/guideline9" />
 
-    <ImageView
-        android:id="@+id/imageViewShopBubbleBg"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleType="fitXY"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/bubleDialogShop"
-        app:layout_constraintEnd_toEndOf="@+id/bubleDialogShop"
-        app:layout_constraintStart_toStartOf="@+id/bubleDialogShop"
-        app:layout_constraintTop_toTopOf="@+id/bubleDialogShop"
-        app:srcCompat="@drawable/bubledialogshop" />
-
     <TextView
         android:id="@+id/bubleDialogShop"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:padding="15dp"
+        android:gravity="center"
         android:text="Error ocurred"
+        android:background="@drawable/bubledialogshop"
         android:textColor="@android:color/holo_red_light"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -247,7 +238,8 @@
         app:layout_constraintHorizontal_bias="0.339"
         app:layout_constraintStart_toStartOf="@+id/guideline52"
         app:layout_constraintTop_toTopOf="@+id/guideline51"
-        app:layout_constraintVertical_bias="0.476" />
+        app:layout_constraintVertical_bias="0.476"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/homeButtonBackShop"
