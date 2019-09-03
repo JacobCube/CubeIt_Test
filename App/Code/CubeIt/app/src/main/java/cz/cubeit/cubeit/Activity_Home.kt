@@ -100,7 +100,7 @@ class Home : AppCompatActivity() {
                 "Server"
 
             if (snapshot != null && snapshot.exists()) {
-                Log.d("Server listener", "$source data: ${snapshot.data}")
+                Log.d("Server listener", "data accepted")
 
                 if(snapshot.getString("Status") != "on"){
                     val builder = AlertDialog.Builder(this)
@@ -163,7 +163,7 @@ class Home : AppCompatActivity() {
                         originalXExit = imageViewExit.x
                         initialTouchExitX = motionEvent.rawX
                         clickableExit = true
-                        handler.postDelayed({clickableExit = false}, 75)
+                        handler.postDelayed({clickableExit = false}, 100)
                         return true
                     }
                     MotionEvent.ACTION_UP -> {

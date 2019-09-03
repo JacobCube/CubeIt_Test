@@ -38,7 +38,11 @@ class Activity_Inbox : AppCompatActivity(){
     lateinit var categories: Adapter
     var currentCategory:InboxCategory = InboxCategory()
     lateinit var chosenMail: InboxMessage
-    var onTop: Boolean = true
+    var onTop: Boolean = false
+        set(value){
+            Log.d("nastavil jsem ontop", value.toString())
+            field = value
+        }
     var editMode: Boolean = false
         set(value){
             field = value
@@ -77,6 +81,11 @@ class Activity_Inbox : AppCompatActivity(){
         onTop = true
     }
 
+    override fun onStart() {
+        super.onStart()
+        onTop = true
+    }
+
     private fun hideSystemUI() {
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -103,11 +112,6 @@ class Activity_Inbox : AppCompatActivity(){
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 handler.postDelayed({ hideSystemUI() }, 1000)
             }
-        }
-
-        if(Data.inboxChanged || Data.inboxChangedMessages >= 1){
-            Data.inboxChanged = false
-            Data.inboxChangedMessages = 0
         }
 
         imageViewInboxActionCloseEditMode.setOnClickListener {
@@ -202,6 +206,8 @@ class Activity_Inbox : AppCompatActivity(){
         }
 
         fun init() {
+            onTop = true
+
             imageViewInboxArrowBack.setOnClickListener {
                 if (supportFragmentManager.findFragmentById(R.id.frameLayoutInbox) != null) {
                     supportFragmentManager.beginTransaction().apply {
@@ -234,8 +240,6 @@ class Activity_Inbox : AppCompatActivity(){
 
             categories = listViewInboxCategories.adapter
             messagesAdapter = listViewInboxMessages.adapter
-
-            refreshCategory()
 
             imageViewInboxFilter.setOnClickListener { view ->
 
@@ -344,6 +348,14 @@ class Activity_Inbox : AppCompatActivity(){
 
                 window.showAtLocation(view, Gravity.CENTER, 0, 0)
             }
+
+            if(Data.inboxChanged || Data.inboxChangedMessages >= 1){
+                Data.inboxChanged = false
+                Data.inboxChangedMessages = 0
+                SystemFlow.writeFileText(this, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
+                Data.refreshInbox(this)
+                refreshCategory()
+            }
         }
 
         if(Data.inboxSnapshot == null){
@@ -369,24 +381,35 @@ class Activity_Inbox : AppCompatActivity(){
                     }
 
                     inboxSnap.sortByDescending { it.ID }
+                    Log.d("ontop", onTop.toString())
                     if(onTop && snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
+                        Log.d("new Message", "received1")
                         for(i in inboxSnap){
-                            if(!Data.inbox.any { it.ID == i.ID })Data.inbox.add(i)
+                            if(!Data.inbox.any { it.ID == i.ID } && i.status != MessageStatus.Read){
+                                Data.inbox.add(i)
+                                Log.d("new Message", "received inner")
+                                Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
+                            }
                         }
+                        Log.d("new Message", "recieved after")
                         Data.refreshInbox(this)
                         init()
                         (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
                         (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
                         Data.inboxChanged = false
-                        Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
                     }else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
+                        Log.d("new Message", "recieved !ontop start ${Data.inbox.size}")
                         for(i in inboxSnap){
-                             if(!Data.inbox.any { it.ID == i.ID })Data.inbox.add(i)
-                            Data.inboxChangedMessages++
+                             if(!Data.inbox.any { it.ID == i.ID }  && i.status != MessageStatus.Read){
+                                 Data.inbox.add(i)
+                                 Log.d("new Message", "recieved !ontop inner")
+                                 Data.inboxChangedMessages++
+                                 Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
+                             }
                         }
+                        Log.d("new Message", "recieved !ontop after ${Data.inbox.size}")
                         Data.inboxChanged = true
                         SystemFlow.writeFileText(this, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
-                        Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     Log.d("Inbox listener", "$source data: null n error")
@@ -520,10 +543,15 @@ class Activity_Inbox : AppCompatActivity(){
 
             viewHolder.checkBoxInboxMessagesAction.setOnCheckedChangeListener { _, isChecked ->
                 if(isChecked){
-                    activity.editModeMessages.add(activity.currentCategory.messages[position])
-                }else activity.editModeMessages.remove(activity.currentCategory.messages[position])
+                    if(!activity.editModeMessages.any { it.ID == activity.currentCategory.messages[position].ID }) activity.editModeMessages.add(activity.currentCategory.messages[position])
+                }else{
+                    activity.editModeMessages.remove(activity.currentCategory.messages[position])
+                }
                 textViewInboxActionCounter.text = activity.editModeMessages.size.toString()
             }
+
+            viewHolder.checkBoxInboxMessagesAction.isChecked = activity.editModeMessages.any { it.ID == activity.currentCategory.messages[position].ID }
+
             viewHolder.checkBoxInboxMessagesAction.visibility = if(activity.editMode){
                 View.VISIBLE
             } else View.GONE
@@ -555,7 +583,7 @@ class Activity_Inbox : AppCompatActivity(){
 
             rowMain.setOnLongClickListener {
                 activity.editMode = !activity.editMode
-                if(activity.editMode) rowMain.checkBoxInboxMessagesAction.isChecked = true
+                if(activity.editMode) viewHolder.checkBoxInboxMessagesAction.isChecked = true
                 this.notifyDataSetChanged()
                 true
             }

@@ -48,7 +48,8 @@ class Fragment_Adventure_overview : Fragment() {
             this.filterCoins = (activity as Adventure).overviewFilterCoins
             (activity as Adventure).overviewList!!
         }else{
-            Data.player.currentSurfaces[0].quests.asSequence().plus(Data.player.currentSurfaces[1].quests.asSequence()).plus(Data.player.currentSurfaces[2].quests.asSequence()).plus(Data.player.currentSurfaces[3].quests.asSequence()).plus(Data.player.currentSurfaces[4].quests.asSequence()).plus(Data.player.currentSurfaces[5].quests.asSequence()).toMutableList()
+            if(Data.player.username != "player")Data.player.currentSurfaces[0].quests.asSequence().plus(Data.player.currentSurfaces[1].quests.asSequence()).plus(Data.player.currentSurfaces[2].quests.asSequence()).plus(Data.player.currentSurfaces[3].quests.asSequence()).plus(Data.player.currentSurfaces[4].quests.asSequence()).plus(Data.player.currentSurfaces[5].quests.asSequence()).toMutableList()
+            else mutableListOf()
         }
 
         view.listViewAdventureOverview.adapter = AdventureQuestsOverview(overviewList, view.context,layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById<ProgressBar>(R.id.progressAdventureQuest), activity!!.findViewById<TextView>(R.id.textViewQuestProgress), activity!!.layoutInflater.inflate(R.layout.pop_up_adventure_quest, null), activity!!.findViewById(R.id.viewPagerAdventure), view.listViewAdventureOverview, this, activity!!)

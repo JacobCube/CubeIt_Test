@@ -151,6 +151,7 @@ object Data {
     var activeQuest: ActiveQuest? = null
 
     val bgMusic = BackgroundSoundService()
+    var mediaPlayer: MediaPlayer? = null
 
     var loadingActiveQuest: Boolean = false
 
@@ -234,7 +235,7 @@ object Data {
 
     var factionStatusChanged: Boolean = false
     var inboxChanged: Boolean = false
-    var inboxChangedMessages: Int = 1
+    var inboxChangedMessages: Int = 0
 
     var inboxSnapshot: ListenerRegistration? = null
     var factionSnapshot: ListenerRegistration? = null
@@ -246,7 +247,9 @@ object Data {
 
         this.player.online = false
         this.player.uploadPlayer().addOnSuccessListener {
-            if(this.bgMusic.mediaPlayer.isPlaying){
+            if(player.music && mediaPlayer != null){
+                mediaPlayer?.stop()
+                mediaPlayer?.release()
                 val svc = Intent(context.baseContext, this.bgMusic::class.java)
                 context.stopService(svc)
             }
@@ -1157,21 +1160,24 @@ object GenericDB{
 }
 
 class BackgroundSoundService : Service() {
-    var mediaPlayer = MediaPlayer()
+
     override fun onBind(arg0: Intent): IBinder? {
         return null
     }
 
     override fun onCreate() {
         super.onCreate()
-        mediaPlayer = MediaPlayer.create(this, playedSong)
-        mediaPlayer.isLooping = true                                            // Set looping
-        mediaPlayer.setVolume(100f, 100f)
+        Data.mediaPlayer = MediaPlayer.create(this, playedSong)
+        Data.mediaPlayer!!.isLooping = true                                            // Set looping
+        Data.mediaPlayer!!.setVolume(100f, 100f)
 
+        Data.mediaPlayer!!.setOnCompletionListener {
+            Data.mediaPlayer?.release()
+        }
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        mediaPlayer.start()
+        Data.mediaPlayer?.start()
         return START_NOT_STICKY
     }
 
@@ -1179,13 +1185,13 @@ class BackgroundSoundService : Service() {
     }
 
     fun onPause() {
-        mediaPlayer.stop()
-        mediaPlayer.release()
+        Data.mediaPlayer?.stop()
+        Data.mediaPlayer?.release()
     }
 
     override fun onDestroy() {
-        mediaPlayer.stop()
-        mediaPlayer.release()
+        Data.mediaPlayer?.stop()
+        Data.mediaPlayer?.release()
     }
 
     override fun onLowMemory() {
@@ -1198,7 +1204,7 @@ class LifecycleListener(val context: Context) : LifecycleObserver {
     fun onMoveToForeground() {
         context.stopService(Intent(context, ClassCubeItHeadService::class.java))
         Data.player.syncStats()
-        if (Data.player.music && Data.player.username != "player" && !Data.bgMusic.mediaPlayer.isPlaying) {
+        if (Data.player.music && Data.player.username != "player") {
             val svc = Intent(context, Data.bgMusic::class.java)
             context.startService(svc)
         }
@@ -1209,7 +1215,7 @@ class LifecycleListener(val context: Context) : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onMoveToBackground() {
-        if (Data.player.music && Data.bgMusic.mediaPlayer.isPlaying) {
+        if (Data.player.music && Data.mediaPlayer != null) {
             val svc = Intent(context, Data.bgMusic::class.java)
             context.stopService(svc)
         }
@@ -1663,7 +1669,6 @@ open class Player(
 
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
-        Data.initialize(context)
     }
 
     private fun changeFactionStatus(): Task<Void> {
@@ -1922,11 +1927,12 @@ open class Player(
     fun loadInbox(context: Context): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
         var docRef: Query
+        var currentAmount = 0
 
         try {
             if (SystemFlow.readObject(context, "inbox${Data.player.username}.data") != 0){
                 Data.inbox = SystemFlow.readObject(context, "inbox${Data.player.username}.data") as MutableList<InboxMessage>
-                Log.d("Loaded from local", Data.inbox.size.toString())
+                currentAmount = Data.inbox.size
             }
 
             Data.inbox.sortByDescending { it.ID }
@@ -1946,13 +1952,20 @@ open class Player(
             }
         }
 
-        Log.d("After local load", Data.inbox.size.toString())
-
         return docRef.get().addOnSuccessListener {
-            Data.inbox.addAll(it.toObjects(InboxMessage::class.java))
+            val temp = it.toObjects(InboxMessage::class.java)
+            if(temp.isNotEmpty()){
+                Data.inboxChanged = true
+                Data.inboxChangedMessages = temp.size
+            }
+            Data.inbox.addAll(temp)
             SystemFlow.writeObject(context, "inbox${Data.player.username}.data", Data.inbox)            //write updated data to local storage
 
-            Log.d("Loaded from database", Data.inbox.size.toString())
+            if(currentAmount < Data.inbox.size){
+                Data.inboxChanged = true
+                Data.inboxChangedMessages = Data.inbox.size - currentAmount
+                SystemFlow.writeFileText(context, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
+            }
             Data.refreshInbox(context)
         }
     }
@@ -2159,6 +2172,7 @@ open class Player(
     fun loadPlayerInstance(context: Context): Task<QuerySnapshot> {
         Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Your profile"))
         return this.loadPlayer(context).continueWithTask {
+            Data.initialize(context)
             Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Your faction"))
             checkForQuest()
         }.continueWithTask {
@@ -3804,7 +3818,8 @@ enum class FactionRole: Serializable{
 data class FactionMember(
         var username: String = "",
         var role: FactionRole = FactionRole.MEMBER,
-        var level: Int = 1
+        var level: Int = 1,
+        var allies: MutableList<String> = mutableListOf()
         //var faction: Faction = Faction("")
 ): Comparable<FactionMember>, Serializable{
     var captureDate: Date = java.util.Calendar.getInstance().time
@@ -3830,7 +3845,7 @@ data class FactionMember(
     }
 
     @Exclude fun getShortDesc(): String{
-        return this.username + " - " + this.level.toString()
+        return this.username// + " - " + this.level.toString()
     }
 
     @Exclude fun refresh(): FactionMember{
@@ -3851,6 +3866,11 @@ class FactionActionLog(
     }
 }
 
+class FactionChatComponent(
+        var caller: String = "",
+        var content: String = ""
+)
+
 class Faction(                     //TODO ally faction, enemy factions; TODO Firebase rules
         var name: String = "template",
         var leader: String = Data.player.username
@@ -3863,7 +3883,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
         }
     var externalDescription: String = "This is external description."
     var ID: Int = 0
-    var members: HashMap<String, FactionMember> = hashMapOf(this.leader to FactionMember(this.leader, FactionRole.LEADER, 1))
+    var members: HashMap<String, FactionMember> = hashMapOf(this.leader to FactionMember(this.leader, FactionRole.LEADER, 1, Data.player.allies))
     var allyFactions: HashMap<String, String> = hashMapOf()
     var enemyFactions: HashMap<String, String> = hashMapOf()
     var pendingInvitationsPlayer: MutableList<String> = mutableListOf()
@@ -3907,7 +3927,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
         val member = this.members[username]!!
         val givenGoldDay = member.goldGiven.toInt().safeDivider(member.membershipLength)
 
-        return "${member.username} - ${member.role.name}" + "<br/>active: " + member.activeDate.toLocaleString() + "<br/>gold given: " + when{
+        return "${member.username} lvl.${member.level} - ${member.role.name}" + "<br/>active: " + member.activeDate.toLocaleString() + "<br/>gold given: " + when{
             givenGoldDay > this.taxPerDay -> "<font color='green'> ${member.goldGiven}</font>"
             givenGoldDay < this.taxPerDay -> "<font color='red'> ${member.goldGiven}</font>"
             else -> "<font color='grey'> ${member.goldGiven}</font>"
@@ -4052,7 +4072,7 @@ class Invitation(
                         val temp: MutableList<String> = if(it == null) mutableListOf() else it.get("pendingInvitationsPlayer") as MutableList<String>
                         if(temp.contains(Data.player.username)){
                             db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
-                            db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level)))
+                            db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level, Data.player.allies)))
                             Data.player.factionRole = FactionRole.MEMBER
                             Data.player.factionID = this.factionID
                             Data.player.factionName = this.factionName

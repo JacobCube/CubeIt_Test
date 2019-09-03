@@ -43,8 +43,10 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
+        android:backgroundTint="@color/loginColor_3"
         android:background="@drawable/bg_basic_white_top"
-        android:divider="@null"
+        android:divider="@color/loginColor_4"
+        android:dividerHeight="1dp"
         android:paddingStart="5dp"
         android:paddingTop="5dp"
         android:paddingEnd="5dp"
@@ -73,6 +75,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline230"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.2" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionDescription"
@@ -152,24 +161,6 @@
         tools:visibility="visible" />
 
     <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewFactionMemberInfo"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="4dp"
-        android:background="@drawable/bg_basic_logincolor_dark_no_top_right"
-        android:gravity="bottom"
-        android:paddingStart="5dp"
-        android:paddingTop="4dp"
-        android:paddingEnd="0dp"
-        android:paddingBottom="20dp"
-        android:text="member info"
-        android:textColor="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline206"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/listViewFactionMembers" />
-
-    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionInfoDesc"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -226,5 +217,56 @@
         app:layout_constraintBottom_toBottomOf="@+id/imageViewFactionGoldPlus"
         app:layout_constraintStart_toEndOf="@+id/imageViewFactionGoldPlus"
         app:layout_constraintTop_toTopOf="@+id/imageViewFactionGoldPlus" />
+
+    <ImageView
+        android:id="@+id/imageViewFactionOpenLog"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:adjustViewBounds="true"
+        android:rotation="90"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H, 1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/arrow_down" />
+
+    <ListView
+        android:id="@+id/listViewFactionAllies"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_logincolor_left_border"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline230"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/listViewFactionMembers" />
+
+    <ListView
+        android:id="@+id/listViewFactionEnemies"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@drawable/bg_logincolor_bottom_right_border"
+        app:layout_constraintEnd_toStartOf="@+id/guideline206"
+        app:layout_constraintStart_toStartOf="@+id/guideline230"
+        app:layout_constraintTop_toBottomOf="@+id/listViewFactionMembers">
+
+    </ListView>
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFactionMemberDesc"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_basic_logincolor_dark_bottom"
+        android:gravity="bottom"
+        android:text="Member description"
+        android:textColor="@color/bg_basic_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline206"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline205"
+        tools:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

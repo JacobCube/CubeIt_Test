@@ -54,7 +54,7 @@
         app:layout_constraintGuide_percent="0.09" />
 
     <EditText
- android:imeOptions="flagNoExtractUi"
+        android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputEmailLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"

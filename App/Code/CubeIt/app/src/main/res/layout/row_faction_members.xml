@@ -96,46 +96,54 @@
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionRow0"
         android:layout_width="0dp"
-        android:textStyle="bold"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
+        android:layout_height="0dp"
+        android:gravity="bottom"
         android:text="TextView"
+        android:textStyle="bold"
+        android:textColor="@color/bg_basic_white"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewFactionRow0"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFactionRowBadge0" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionRow1"
         android:layout_width="0dp"
-        android:textStyle="bold"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
+        android:layout_height="0dp"
+        android:gravity="bottom"
         android:text="TextView"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline3"
-        app:layout_constraintStart_toStartOf="@+id/guideline2" />
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFactionRowBadge1" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionRow2"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:gravity="center_horizontal"
+        android:layout_height="0dp"
+        android:gravity="bottom"
         android:text="TextView"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline4"
-        app:layout_constraintStart_toStartOf="@+id/guideline3" />
+        app:layout_constraintStart_toStartOf="@+id/guideline3"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFactionRowBadge2" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionRow3"
         android:layout_width="0dp"
-        android:textStyle="bold"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
+        android:layout_height="0dp"
+        android:gravity="bottom"
         android:text="TextView"
+        android:textStyle="bold"
+        android:textColor="@color/bg_basic_white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline5"
-        app:layout_constraintStart_toStartOf="@+id/guideline4" />
+        app:layout_constraintStart_toStartOf="@+id/guideline4"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFactionRowBadge3" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline204"

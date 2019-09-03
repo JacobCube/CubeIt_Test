@@ -38,19 +38,20 @@ class Activity_Character_Customization: AppCompatActivity(){
                 handler.postDelayed({hideSystemUI()},1000)
             }
         }
-        Log.d("character customization", "entered")
+
+        if (viewPagerCharacterCustomization!= null) {
+            viewPagerCharacterCustomization.adapter = ViewPagerCharacterCustomization(supportFragmentManager)
+        }
 
         var viewPagerPosition = nextInt(0, 7)
-        viewPagerCharacterCustomization.currentItem = viewPagerPosition
+        viewPagerCharacterCustomization.setCurrentItem(viewPagerPosition, true)
+        viewPagerCharacterCustomization.setCurrentItem(viewPagerPosition, true)
 
         textViewCurrentCharacter.text = Data.charClasses[viewPagerPosition+1].name
         textViewStatsCustomization.text = getString(R.string.character_ratio, (Data.charClasses[viewPagerPosition+1].dmgRatio*100).toString() + "%",(Data.charClasses[viewPagerPosition+1].armorRatio*100).toString() + "%", Data.charClasses[viewPagerPosition+1].blockRatio.toString() + "%", (Data.charClasses[viewPagerPosition+1].hpRatio*100).toInt().toString() + "%", (Data.charClasses[viewPagerPosition+1].staminaRatio*100).toString() + "%", Data.charClasses[viewPagerPosition+1].lifeSteal.toString())
         textViewCharacterDescription.setCharacterAnimationDelay(10)
         textViewCharacterDescription.animateText(Data.charClasses[viewPagerPosition+1].description)
 
-        if (viewPagerCharacterCustomization!= null) {
-            viewPagerCharacterCustomization.adapter = ViewPagerCharacterCustomization(supportFragmentManager)
-        }
 
         viewPagerCharacterCustomization.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
@@ -82,8 +83,6 @@ class Activity_Character_Customization: AppCompatActivity(){
                 super.onSwipeRight()
                 if(viewPagerPosition == 0){
                     viewPagerCharacterCustomization.setCurrentItem(7,true)
-                }else{
-                    viewPagerCharacterCustomization.setCurrentItem(viewPagerPosition-1, true)
                 }
             }
         })
@@ -129,16 +128,16 @@ class Activity_Character_Customization: AppCompatActivity(){
             }
         }
     }
-}
 
-class ViewPagerCharacterCustomization internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
+    class ViewPagerCharacterCustomization internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
-    override fun getItem(position: Int): Fragment? {
-        val drawable = Data.charClasses[position+1].drawable
-        return Fragment_Character.newInstance(drawable)
-    }
+        override fun getItem(position: Int): Fragment? {
+            val drawable = Data.charClasses[position+1].drawable
+            return Fragment_Character.newInstance(drawable)
+        }
 
-    override fun getCount(): Int {
-        return 8
+        override fun getCount(): Int {
+            return 8
+        }
     }
 }

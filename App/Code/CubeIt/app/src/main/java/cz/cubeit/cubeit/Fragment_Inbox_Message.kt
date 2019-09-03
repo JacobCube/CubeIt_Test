@@ -1,6 +1,7 @@
 package cz.cubeit.cubeit
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -31,6 +32,16 @@ class FragmentInboxMessage : Fragment() {
             fragment.arguments = args
             return fragment
         }
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        (activity!! as Activity_Inbox).onTop = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        (activity!! as Activity_Inbox).onTop = true
     }
 
     @SuppressLint("SetTextI18n")

@@ -8,13 +8,13 @@
     android:background="@color/loginColor_2"
     android:screenOrientation="sensorLandscape">
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionCreateRowName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:maxLines="1"
         android:textColor="@color/colorSecondary"
-        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline212"

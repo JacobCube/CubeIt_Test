@@ -23,7 +23,6 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <EditText
- android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSubject"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -31,7 +30,12 @@
         android:background="@color/loginColor"
         android:ems="10"
         android:hint="Subject"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
+        android:nextFocusLeft="@id/editTextInboxContent"
+        android:nextFocusRight="@id/editTextInboxContent"
+        android:nextFocusDown="@id/editTextInboxContent"
+        android:nextFocusForward="@id/editTextInboxContent"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
         app:layout_constraintEnd_toStartOf="@+id/guideline110"
@@ -39,7 +43,6 @@
         app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
 
     <EditText
- android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxReciever"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -47,7 +50,13 @@
         android:background="@color/loginColor"
         android:ems="10"
         android:hint="Reciever"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
+        android:nextFocusLeft="@id/editTextInboxSubject"
+        android:nextFocusRight="@id/editTextInboxSubject"
+        android:nextFocusUp="@id/editTextInboxSubject"
+        android:nextFocusDown="@id/editTextInboxSubject"
+        android:nextFocusForward="@id/editTextInboxSubject"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/editTextInboxSubject"
@@ -66,6 +75,10 @@
         android:hint="Message"
         android:imeOptions="flagNoExtractUi"
         android:inputType="textMultiLine"
+        android:nextFocusLeft="@id/spinnerInboxPriority"
+        android:nextFocusRight="@id/spinnerInboxPriority"
+        android:nextFocusDown="@id/spinnerInboxPriority"
+        android:nextFocusForward="@id/spinnerInboxPriority"
         android:scrollbars="vertical"
         android:textAlignment="center"
         android:textColor="@color/colorSecondary"
@@ -134,7 +147,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.86" />
+        app:layout_constraintGuide_begin="707dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline147"

@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.fragment_faction.*
 import kotlinx.android.synthetic.main.fragment_faction.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_faction_members.view.*
+import kotlin.math.max
 
 
 class Fragment_Faction: Fragment(){
@@ -127,7 +128,7 @@ class Fragment_Faction: Fragment(){
     }
 
     private fun init() {
-        viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberInfo, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction, mutableListOf(), activity!!)
+        viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberDesc, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction, mutableListOf(), activity!!)
         (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
         if (!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER) {
             viewTemp.buttonFactionAlly.visibility = View.VISIBLE
@@ -176,7 +177,6 @@ class Fragment_Faction: Fragment(){
                     } else it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                 }else it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
             }
-            viewTemp.textViewFactionMemberInfo.text = currentInstanceOfFaction!!.getLog()
             //if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
             //view.textViewFactionMemberInfo.performClick()
         }else {
@@ -184,15 +184,14 @@ class Fragment_Faction: Fragment(){
             viewTemp.imageViewFactionGoldPlus.visibility = View.GONE
             viewTemp.textViewFactionGold.visibility = View.GONE
             viewTemp.editTextFactionGold.visibility = View.GONE
-            viewTemp.textViewFactionMemberInfo.visibility = View.GONE
             (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
         }
 
-        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction){
+        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR)){
             View.VISIBLE
         }else View.GONE
 
-        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction){
+        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && Data.player.factionRole == FactionRole.LEADER){
             View.VISIBLE
         }else View.GONE
     }
@@ -203,9 +202,34 @@ class Fragment_Faction: Fragment(){
         viewTemp = inflater.inflate(R.layout.fragment_faction, container, false)
         if(Data.player.factionID != null || factionID != null)initMain()
 
+        viewTemp.imageViewFactionOpenLog.setOnClickListener {
+
+        }
+
         viewTemp.buttonFactionApply.setOnClickListener {
-            Data.player.writeInbox(currentInstanceOfFaction!!.recruiter, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.recruiter, sender = Data.player.username, subject = "${Data.player.username} wants to discuss faction position.", content = "Greetings!\nPlayer ${Data.player.username} wants to discuss about joining your faction as a member.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}"))
-            Toast.makeText(viewTemp.context, "Automatic message to a recruiter was sent.", Toast.LENGTH_LONG).show()
+            if(Data.player.factionID == null && currentInstanceOfFaction!!.openToAllies){
+                val db = FirebaseFirestore.getInstance()
+                var containsAlly = false
+
+                for(i in currentInstanceOfFaction!!.members.values.filter { it.role == FactionRole.MODERATOR || it.role == FactionRole.LEADER }) {
+                    if (i.allies.contains(Data.player.username)) {
+                        db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level, Data.player.allies)))
+                        Data.player.factionRole = FactionRole.MEMBER
+                        Data.player.factionID = currentInstanceOfFaction?.ID
+                        Data.player.factionName = currentInstanceOfFaction?.name
+                        containsAlly = true
+                        activity!!.finish()
+                        break
+                    }
+                }
+                if(!containsAlly){
+                    Data.player.writeInbox(currentInstanceOfFaction!!.recruiter, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.recruiter, sender = Data.player.username, subject = "${Data.player.username} wants to discuss faction position.", content = "Greetings!\nPlayer ${Data.player.username} wants to discuss about joining your faction as a member.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}"))
+                    Toast.makeText(viewTemp.context, "Automatic message to a recruiter was sent.", Toast.LENGTH_LONG).show()
+                }
+            }else {
+                Data.player.writeInbox(currentInstanceOfFaction!!.recruiter, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.recruiter, sender = Data.player.username, subject = "${Data.player.username} wants to discuss faction position.", content = "Greetings!\nPlayer ${Data.player.username} wants to discuss about joining your faction as a member.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}"))
+                Toast.makeText(viewTemp.context, "Automatic message to a recruiter was sent.", Toast.LENGTH_LONG).show()
+            }
             viewTemp.buttonFactionApply.isEnabled = false
         }
 
@@ -257,7 +281,7 @@ class Fragment_Faction: Fragment(){
             Toast.makeText(viewTemp.context, "Your faction is not advanced enough.", Toast.LENGTH_LONG).show()
         }
 
-        return viewTemp                         //TODO ally factions
+        return viewTemp
     }
 
 
@@ -331,6 +355,11 @@ class Fragment_Faction: Fragment(){
                         img.apply {
                             setOnClickListener {
                                 member = members[rowIndex + index]
+                                memberDesc.visibility = View.VISIBLE
+                                handler.postDelayed({
+                                    memberDesc.visibility = View.GONE
+                                }, 1500)
+
                                 memberDesc.scrollTo(0, 0)
                                 memberDesc.setHTMLText(faction.getMemberDesc(member.username))
                             }

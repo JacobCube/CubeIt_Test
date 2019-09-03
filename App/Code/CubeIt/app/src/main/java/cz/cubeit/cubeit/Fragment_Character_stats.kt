@@ -34,12 +34,14 @@ class Fragment_Character_stats : Fragment() {
         }
 
         view.imageViewFragmentStatsLock.setOnClickListener {
-            (activity as Activity_Character).statsLocked = if((activity as Activity_Character).statsLocked){
-                (it as ImageView).clearColorFilter()
-                false
-            }else {
-                (it as ImageView).setColorFilter(R.color.black)
-                true
+            if((activity as Activity_Character).statsShowed){
+                (activity as Activity_Character).statsLocked = if((activity as Activity_Character).statsLocked){
+                    (it as ImageView).clearColorFilter()
+                    false
+                }else {
+                    (it as ImageView).setColorFilter(R.color.black)
+                    true
+                }
             }
         }
 

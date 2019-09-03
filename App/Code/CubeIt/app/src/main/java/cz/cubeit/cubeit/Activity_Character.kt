@@ -110,6 +110,9 @@ class Activity_Character : AppCompatActivity() {
 
                     override fun onAnimationEnd(animation: Animator?) {
                         statsShowed = false
+                        if(statsLocked){
+                            statsLocked = false
+                        }
                     }
 
                 })
@@ -1124,6 +1127,9 @@ class Activity_Character : AppCompatActivity() {
 
                         override fun onAnimationEnd(animation: Animator?) {
                             statsShowed = false
+                            if(statsLocked){
+                                statsLocked = false
+                            }
                         }
 
                     })
