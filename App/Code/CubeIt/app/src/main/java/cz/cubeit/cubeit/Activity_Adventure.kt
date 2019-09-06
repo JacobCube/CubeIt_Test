@@ -41,10 +41,10 @@ class Adventure : AppCompatActivity() {
     var overviewFilterExperience: Boolean = true
     var overviewFilterItem: Boolean = true
     var overviewFilterCoins: Boolean = true
-    lateinit var overviewQuestIconTemp: ImageView
-    var overviewRect = Rect()
+    private lateinit var overviewQuestIconTemp: ImageView
+    private var overviewRect = Rect()
 
-    var iconSideQuestsAnim = ValueAnimator()
+    private var iconSideQuestsAnim = ValueAnimator()
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)

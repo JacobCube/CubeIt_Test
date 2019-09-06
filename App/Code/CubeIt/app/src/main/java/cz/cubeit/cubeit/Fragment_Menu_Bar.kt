@@ -10,6 +10,7 @@ import android.graphics.PorterDuff
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -272,6 +273,9 @@ class Fragment_Menu_Bar : Fragment() {
             viewMenu.buttonAdventure.drawable.clearColorFilter()
         }
 
+        Log.d("layoutID", (arguments!!.getInt("layoutID")).toString())
+        Log.d("menuID", (arguments!!.getInt("menuID")).toString())
+        Log.d("activity name", activity!!.toString())
 
         val rootLayout = activity!!.findViewById<View>(arguments!!.getInt("layoutID"))
         val rootMenu = activity!!.findViewById<FrameLayout>(arguments!!.getInt("menuID"))
@@ -333,7 +337,7 @@ class Fragment_Menu_Bar : Fragment() {
                                 0
                             }
                         }
-                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
+                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure || arguments!!.getInt("layoutID") == R.id.viewPagerFaction)
                     }
                     MotionEvent.ACTION_UP -> {
                         when (eventType) {
@@ -372,7 +376,7 @@ class Fragment_Menu_Bar : Fragment() {
                                 }
                             }
                         }
-                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
+                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure || arguments!!.getInt("layoutID") == R.id.viewPagerFaction)
                     }
                     MotionEvent.ACTION_MOVE -> {
                         if(abs(motionEvent.rawX - initialTouchX) <= abs(motionEvent.rawY - initialTouchY)){
@@ -392,7 +396,7 @@ class Fragment_Menu_Bar : Fragment() {
 
                             }
                         }
-                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
+                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure || arguments!!.getInt("layoutID") == R.id.viewPagerFaction)
                     }
                 }
                 return super.onTouch(view, motionEvent)
@@ -427,7 +431,7 @@ class Fragment_Menu_Bar : Fragment() {
                             0
                         }
 
-                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
+                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure || arguments!!.getInt("layoutID") == R.id.viewPagerFaction)
                     }
                     MotionEvent.ACTION_UP -> {
                         when (eventType) {
@@ -469,7 +473,7 @@ class Fragment_Menu_Bar : Fragment() {
                                 }
                             }
                         }
-                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
+                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure || arguments!!.getInt("layoutID") == R.id.viewPagerFaction)
                     }
                     MotionEvent.ACTION_MOVE -> {
                         if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
@@ -481,7 +485,7 @@ class Fragment_Menu_Bar : Fragment() {
                                 }
                             }
                         }
-                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure)
+                        return !(eventType == 0 || arguments!!.getInt("layoutID") == R.id.viewPagerSpells || arguments!!.getInt("layoutID") == R.id.viewPagerAdventure || arguments!!.getInt("layoutID") == R.id.viewPagerFaction)
                     }
                 }
 

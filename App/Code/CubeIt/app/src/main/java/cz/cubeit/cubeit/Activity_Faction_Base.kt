@@ -23,6 +23,8 @@ import android.widget.*
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_faction_base.*
 import kotlinx.android.synthetic.main.fragment_faction_edit.*
+import kotlinx.android.synthetic.main.fragment_faction_managment.*
+import kotlinx.android.synthetic.main.fragment_faction_managment.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 
 class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: String
@@ -83,7 +85,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
         viewPagerFactionTemp = viewPagerFaction
         tabLayoutFactionTemp = tabLayoutFaction
 
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuFaction, Fragment_Menu_Bar.newInstance(R.id.imageViewFactionBg, R.id.frameLayoutMenuFaction, R.id.homeButtonBackFaction, R.id.imageViewMenuUpFaction)).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuFaction, Fragment_Menu_Bar.newInstance(R.id.imageViewFactionBg, R.id.frameLayoutMenuFaction, R.id.homeButtonBackFaction, R.id.imageViewMenuUpFaction), "menuFaction").commit()
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
@@ -180,6 +182,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
                         Data.player.faction!!.invitationMessage = editTextFactionEditInvitationMsg.text.toString()
                         Data.player.faction!!.taxPerDay = if(editTextFactionEditTax.text.isNullOrBlank()) 0 else editTextFactionEditTax.text.toString().toInt()
                         Data.player.faction!!.warnMessage = editTextFactionEditWarnMsg.text.toString()
+                        Data.player.faction!!.openToAllies = checkBoxFactionEditAllies.isChecked
                         Data.player.faction!!.upload()
                         window.dismiss()
                         tabLayoutFactionTemp.getTabAt(0)?.select()
@@ -200,9 +203,12 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
                     Data.player.faction!!.upload()
                     tabLayoutFactionTemp.getTabAt(0)?.select()
                 }
-            }else if(viewPagerFactionTemp.currentItem == 4 && Data.player.faction != null){
+            }else if(viewPagerFactionTemp.currentItem == 3 && Data.player.faction != null){
+                Data.player.faction!!.externalDescription = editTextFactionMngExtDesc.text.toString()
+                Data.player.faction!!.democracy = checkBoxFactionMngDemocracy.isChecked
                 Data.player.faction!!.upload()
-            }
+                tabLayoutFactionTemp.getTabAt(0)?.select()
+            }else Log.d("current item", viewPagerFactionTemp.currentItem.toString())
         }
 
         if(intent?.extras?.getString("id").toString() != "null" || Data.player.factionID != null) {

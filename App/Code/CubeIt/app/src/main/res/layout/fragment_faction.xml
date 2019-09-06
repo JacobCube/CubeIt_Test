@@ -43,8 +43,8 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
-        android:backgroundTint="@color/loginColor_3"
         android:background="@drawable/bg_basic_white_top"
+        android:backgroundTint="@color/loginColor_3"
         android:divider="@color/loginColor_4"
         android:dividerHeight="1dp"
         android:paddingStart="5dp"
@@ -213,22 +213,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:stateListAnimator="@null"
         android:text="@android:string/ok"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewFactionGoldPlus"
         app:layout_constraintStart_toEndOf="@+id/imageViewFactionGoldPlus"
         app:layout_constraintTop_toTopOf="@+id/imageViewFactionGoldPlus" />
-
-    <ImageView
-        android:id="@+id/imageViewFactionOpenLog"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:adjustViewBounds="true"
-        android:rotation="90"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H, 1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/arrow_down" />
 
     <ListView
         android:id="@+id/listViewFactionAllies"
@@ -244,8 +233,8 @@
         android:id="@+id/listViewFactionEnemies"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:background="@drawable/bg_logincolor_bottom_right_border"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline206"
         app:layout_constraintStart_toStartOf="@+id/guideline230"
         app:layout_constraintTop_toBottomOf="@+id/listViewFactionMembers">
@@ -256,17 +245,44 @@
         android:id="@+id/textViewFactionMemberDesc"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/bg_basic_logincolor_dark_bottom"
-        android:gravity="bottom"
+        android:background="@drawable/bg_logincolor_no_top_right_border"
+        android:gravity="center_horizontal"
         android:text="Member description"
         android:textColor="@color/bg_basic_white"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline206"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline205"
-        tools:visibility="gone" />
+        tools:visibility="visible" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutFactionLog"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageViewFactionOpenLog"
+        app:layout_constraintTop_toTopOf="@+id/guideline234">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/imageViewFactionOpenLog"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:adjustViewBounds="true"
+        android:rotation="90"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H, 1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/arrow_down" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline234"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

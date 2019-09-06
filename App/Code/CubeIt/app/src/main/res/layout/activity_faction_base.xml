@@ -45,6 +45,7 @@
         android:layout_marginEnd="8dp"
         android:padding="20dp"
         android:text="Save"
+        android:stateListAnimator="@null"
         android:textSize="18sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewMenuUpFaction"
@@ -54,14 +55,16 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayoutFaction"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:background="@color/colorPrimaryDarker"
         android:visibility="gone"
         app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline232"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tabSelectedTextColor="@color/character_dark"
-        app:tabTextColor="@color/colorSecondary" />
+        app:tabTextColor="@color/colorSecondary"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline141"
@@ -92,9 +95,9 @@
 
     <ImageView
         android:id="@+id/homeButtonBackFaction"
-		 android:adjustViewBounds="true"
         android:layout_width="75dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:background="@drawable/emptyspellslotlarge"
         android:backgroundTint="@color/colorPrimary"
         android:src="@drawable/home_button"
@@ -110,6 +113,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"></FrameLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline232"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

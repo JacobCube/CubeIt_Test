@@ -12,7 +12,7 @@ import android.view.View
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_login_register.*
 import android.os.Looper
-
+import com.google.gson.Gson
 
 
 val handler = Handler()
@@ -55,6 +55,9 @@ class ActivityLoginRegister(private val loginUsername: String = "", private val 
                 handler.postDelayed({hideSystemUI()},1000)
             }
         }
+
+        Log.d("json", Gson().toJson(Item()).toString())
+        Log.d("Item class", "TEST: " + Item().getFields())
     }
 }
 

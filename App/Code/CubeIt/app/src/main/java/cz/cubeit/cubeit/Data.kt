@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Service
 import androidx.lifecycle.Lifecycle
@@ -15,6 +16,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.os.health.TimerStat
 import android.provider.Settings
 import androidx.fragment.app.Fragment
 import androidx.core.content.res.ResourcesCompat
@@ -27,6 +29,7 @@ import android.view.MotionEvent
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
@@ -37,9 +40,18 @@ import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
 import java.io.*
 import java.lang.Math.*
+import java.sql.Time
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.HashMap
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.declaredMembers
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.valueParameters
 
 /*
 TODO simulace jízdy metrem - uživatel zadá příkaz v době, kdy je připojený k internetu, z něco se však postupně odpojuje, toto by bylo aplikované u callů s vyšší priritou v rámci uživatelské přátelskosti,
@@ -49,7 +61,82 @@ splnění mise by takovým callem určitě byl - využít možnosti firebasu / p
 fun Float.round(decimals: Int): Float {
     var multiplier = 1.0
     repeat(decimals) { multiplier *= 10 }
-    return  (round(this * multiplier) / multiplier).toFloat()
+    return  (kotlin.math.round(this * multiplier) / multiplier).toFloat()
+}
+
+@SuppressLint("SimpleDateFormat")
+fun Date.formatToString(): String {
+    val formatter = SimpleDateFormat("MMM dd HH:mm")
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        formatter.timeZone = TimeZone.getTimeZone(ZoneId.systemDefault())
+    }else {
+        formatter.timeZone = TimeZone.getDefault()
+    }
+    return formatter.format(this)
+}
+
+fun Class<out Any>.getSHA256(){
+    var result = ""
+    this.declaredFields.forEach {
+        result += it.isAccessible.toString()
+        when(it.type){
+            Int::class.java -> {
+                result += it.getInt(this)
+            }
+            String::class.java -> {
+                result += it.getShort(this).toString()
+            }
+            else -> {
+                result += it.toGenericString()
+            }
+        }
+    }
+    println(result)
+}
+
+@Throws(IllegalAccessException::class, ClassCastException::class)
+fun Any.getFields(): String{
+    var result = ""
+    this::class.memberProperties.forEach { it ->
+        val member = it.getter.call(this)
+
+        result += (when(member){
+            Map::class.java -> {
+                ""
+            }
+            is Int -> {
+                member.toString()
+            }
+            is String -> {
+                member as String
+            }
+            is Collection<*> -> {
+                "[" + member.forEach { itItem ->
+                    itItem?.getFields()
+                } + "]"
+            }
+            else -> {
+                "else - ${member!!::class.java}"
+            }
+        })
+    }
+    return result
+
+    /*
+        - všechny záznamy v objektu, mapě/dictionary a kolekci jsem seřadil podle abecedy (ascending)
+        - v případě stringů jsem k celkovému stringu přidal hodnotu a oddělil ","
+        - v případě listů jsem na začátek přidal "[", hodnoty oddělil ",", a na konec "]"
+        - v případě map/dictionary jsem názvy seřadil podle abecedy, na začátek přidal "{", hodnoty oddělil ",", a na konec "}"
+        - ostatní typy jsem převedl na string a zase oddělil
+        - datumy jsou v iso formátu (převedeny na UTC)
+        - jednotlivé dokumenty jsem potom oddělil "\n"
+        Přibližný výsledek:
+        37,user1,[12,42,44],2015-03-25T12:00:00Z\n
+        28,user2,{admin,3},[27,36],2015-03-25T12:00:00Z
+        potom vytvorim SHA-256
+
+        current state - test,0,0,0,0,,0,2131231012,00001,0,0,0,0,0,0,test2,0,0,0,0,0,test23,
+     */
 }
 
 var drawableStorage = hashMapOf(
@@ -1156,6 +1243,10 @@ object GenericDB{
             result = 31 * result + itemGenDOTRatio.hashCode()
             return result
         }
+
+        fun generateSHA256(): String{
+            return "${itemLvlGenBottom}-${NPCRate}"
+        }
     }
 }
 
@@ -1872,7 +1963,6 @@ open class Player(
         return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
             docRef.document("timeStamp").get().addOnSuccessListener {
                 currentTime = it.getTimestamp("timeStamp", behaviour)!!.toDate()
-
             }
         }.continueWithTask {
             docRef.document("quest").get().addOnSuccessListener {
@@ -2249,45 +2339,45 @@ open class Player(
             this.inventory[i] = tempInventory[i]
         }
 
-        return ("HP: ${this.health}<br/>+(" +
+        return ("<b>HP: ${this.health}</b><br/>+(" +
                 if (this.charClass.hpRatio * 100 - 100 >= 0) {
                     "<font color='green'>${(this.charClass.hpRatio * 100 - 100).toInt()}%</font>"
                 } else {
                     "<font color='red'>${(this.charClass.hpRatio * 100 - 100).toInt()}%</font>"
                 } +
-                ")<br/>Energy: ${this.energy}<br/>+(" +
+                ")<br/><b>Energy: ${this.energy}</b><br/>+(" +
                 if (this.charClass.staminaRatio * 100 - 100 >= 0) {
                     "<font color='green'>${this.charClass.staminaRatio * 100 - 100}%</font>"
                 } else {
                     "<font color='red'>${this.charClass.staminaRatio * 100 - 100}%</font>"
                 } +
-                ")<br/>Armor: ${this.armor}<br/>+(" +
+                ")<br/><b>Armor: ${this.armor}</b><br/>+(" +
                 if (this.charClass.armorRatio * 100 > 0) {
                     "<font color='green'>${this.charClass.armorRatio * 100}%</font>"
                 } else {
                     "<font color='red'>${this.charClass.armorRatio * 100}%</font>"
                 } +
-                ")<br/>Block: ${this.block}<br/>+(" +
+                ")<br/><b>Block: ${this.block}</b><br/>+(" +
                 if (this.charClass.blockRatio * 100 - 100 >= 0) {
                     "<font color='green'>${this.charClass.blockRatio}%</font>"
                 } else {
                     "<font color='red'>${this.charClass.blockRatio}%</font>"
                 } +
-                ")<br/>Power: ${this.power}<br/>+(" +
+                ")<br/><b>Power: ${this.power}</b><br/>+(" +
                 if (this.charClass.dmgRatio * 100 - 100 >= 0) {
                     "<font color='green'>${this.charClass.dmgRatio * 100 - 100}%</font>"
                 } else {
                     "<font color='red'>${this.charClass.dmgRatio * 100 - 100}%</font>"
                 } +
-                ")<br/>DMG over time: ${this.dmgOverTime}<br/>" +
-                "Lifesteal: ${this.lifeSteal}%<br/>+(" +
+                ")<br/><b>DMG over time: ${this.dmgOverTime}</b><br/>" +
+                "<b>Lifesteal: ${this.lifeSteal}%</b><br/>+(" +
                 if (this.charClass.lifeSteal) {
                     "<font color='green'>100%</font>"
                 } else {
                     "<font color='red'>0%</font>"
                 } +
-                ")<br/>Adventure speed: ${this.adventureSpeed}<br/>" +
-                "Inventory slots: ${this.inventorySlots}")
+                ")<br/><b>Adventure speed: ${this.adventureSpeed}</b><br/>" +
+                "<b>Inventory slots: ${this.inventorySlots}</b>")
     }
 
     fun compareMeWith(playerX: Player): String {
@@ -2353,7 +2443,7 @@ class ActiveQuest(
         val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
-        return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
+        return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).addOnSuccessListener{
             docRef.document("timeStamp").get().addOnSuccessListener {
                 startTime = it.getDate("timeStamp", behaviour)!!
 
@@ -2361,9 +2451,8 @@ class ActiveQuest(
                 df.add(Calendar.SECOND, quest.secondsLength)
                 endTime = df.time
 
+                docRef.document("quest").set(this)
             }
-        }.continueWithTask {
-            docRef.document("quest").set(this)
         }
     }
 
@@ -2399,7 +2488,7 @@ class DamageOverTime(
         return result
     }
 
-    fun clone(): DamageOverTime{
+    @Exclude fun clone(): DamageOverTime{
         return DamageOverTime(rounds, dmg, type)
     }
 }
@@ -2417,12 +2506,12 @@ class Spell(
         var ID: String = "0001",
         var block: Double = 1.0,
         var grade: Int = 1,
-        var animation: Int = 0
+        @Exclude var animation: Int = 0
 ) : Serializable {
     val drawable: Int
         @Exclude get() = drawableStorage[inDrawable]!!
     var weightRatio: Double = 0.0
-        get(){
+        @Exclude get(){
             return if(this.energy == 0){
                 0.01
             }else{
@@ -2522,9 +2611,9 @@ class CharClass(
 }
 
 open class Item(
-        inID: String = "",
-        inName: String = "",
-        inType: String = "",
+        inID: String = "test",
+        inName: String = "test2",
+        inType: String = "test23",
         inDrawable: String = "00001",
         inLevelRq: Int = 0,
         inQuality: Int = 0,
@@ -3066,14 +3155,14 @@ class MarketOffer(
     val itemType: Int
         get() = item!!.slot
 
-    @Exclude fun initialize(): Task<DocumentSnapshot> {
+    @Exclude fun initialize(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         val df: Calendar = Calendar.getInstance()
 
         val docRef = db.collection("users").document(Data.player.username)
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
-        return docRef.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
+        return docRef.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).addOnSuccessListener{
             docRef.collection("ActiveQuest").document("timeStamp").get().addOnSuccessListener {
                 val time = it.getDate("timeStamp", behaviour)!!
 
@@ -3165,6 +3254,7 @@ class FightLog(
         var surrenderRound: Int? = null
 ){
     var id: Int = 0
+    var captured = FieldValue.serverTimestamp()
 
     fun init(){
         val db = FirebaseFirestore.getInstance()
@@ -3473,7 +3563,7 @@ class Boss(
         val db = FirebaseFirestore.getInstance()
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
-        return db.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
+        return db.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).addOnSuccessListener{
             db.collection("ActiveQuest").document("timeStamp").get().addOnSuccessListener {
                 captured = it.getDate("timeStamp", behaviour)!!
                 df.time = captured
@@ -3572,6 +3662,14 @@ class CustomTextView : TextView {
     private var customFont: Int = R.font.average_sans
     private var customTextSize: Float = Data.player.textSize
     var fontSizeType: SizeType = SizeType.adaptive
+        set(value){
+            field = value
+            textSize = when(fontSizeType){
+                SizeType.small -> Data.player.textSize - 4f
+                SizeType.adaptive -> Data.player.textSize
+                SizeType.title -> Data.player.textSize + 10f
+            }
+        }
     var linesCount: Int = 0
 
     private val mHandler = Handler()
@@ -3631,9 +3729,9 @@ class CustomTextView : TextView {
     }
 }
 
-class StoryViewPager : ViewPager {      //disabling the ViewPager!s swipe
+class StoryViewPager : ViewPager {      //disabling the ViewPager's swipe
 
-    var offScreenPageLimiCustom: Int = 0
+    var offScreenPageLimiCustom: Int = 2
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
@@ -3685,12 +3783,12 @@ class InboxMessage(
             }
         }
 
-    @Exclude fun initialize(): Task<DocumentSnapshot> {
+    @Exclude fun initialize(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
-        return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
+        return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).addOnSuccessListener {      //TODO offline loading
             docRef.document("timeStamp").get().addOnSuccessListener {
                 sentTime = it.getDate("timeStamp", behaviour)!!
             }
@@ -3824,12 +3922,12 @@ data class FactionMember(
 ): Comparable<FactionMember>, Serializable{
     var captureDate: Date = java.util.Calendar.getInstance().time
     var profilePictureID: String = nextInt(50000, 50003).toString()
-    @Exclude var profilePicture: Int = 0
-        get(){
+    var profilePicture: Int = 0
+        @Exclude get(){
             return drawableStorage[profilePictureID]!!
         }
-    @Exclude var membershipLength: Int = 0                    //days
-        get(){
+    var membershipLength: Int = 0                    //days
+        @Exclude get(){
             return ((java.util.Calendar.getInstance().time.time - captureDate.time) / 1000 / 60 / 60 / 24).toInt()
         }
     var goldGiven: Long = 0
@@ -3877,10 +3975,10 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
 ): Serializable{
     var captureDate: Date = java.util.Calendar.getInstance().time
     var description: String = ""
-        set(value){
-            if(field != value)this.actionLog.add(FactionActionLog("", "Description has been changed to ", value))
+        /*set(value){
+            if(field != value) this.writeLog(FactionActionLog("", "Description has been changed to ", value))
             field = value
-        }
+        }*/
     var externalDescription: String = "This is external description."
     var ID: Int = 0
     var members: HashMap<String, FactionMember> = hashMapOf(this.leader to FactionMember(this.leader, FactionRole.LEADER, 1, Data.player.allies))
@@ -3889,23 +3987,23 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     var pendingInvitationsPlayer: MutableList<String> = mutableListOf()
     var pendingInvitationsFaction: HashMap<String, String> = hashMapOf()
     var taxPerDay: Int = 0
-        set(value){
-            if(field != value)this.actionLog.add(FactionActionLog("", "Tax per day has been changed to ", value.toString()))
+        /*set(value){
+            if(field != value) this.writeLog(FactionActionLog("", "Tax per day has been changed to ", value.toString()))
             field = value
-        }
+        }*/
     var level: Int = 1
-        set(value){
-            if(field != value)this.actionLog.add(FactionActionLog("", "Level up!  ", value.toString()))
+        /*set(value){
+            if(field != value) this.writeLog(FactionActionLog("", "Level up!  ", value.toString()))
             field = value
-        }
+        }*/
     var experience: Int = 0
-        set(value){
+        /*set(value){
             val neededXp = (this.level * 0.75 * (8 * (this.level*0.8) * (3))).toInt()
             field = if(value >= neededXp){
                 this.level++
                 value - neededXp
             }else value
-        }
+        }*/
     var gold: Int = 0
     var warnMessage: String = "Read the rules again!"
     var invitationMessage: String = "You have been invited to ${this.name}!"
@@ -3918,6 +4016,25 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     @Exclude var returnList: MutableList<Player> = mutableListOf()
     @Exclude var returnedPlayer: Player? = null
 
+    fun writeLog(actionLog: FactionActionLog) {
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
+        val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+
+        this.actionLog.sortByDescending { it.captured }
+        if(this.actionLog.size >= 30) this.actionLog[this.actionLog.size-1] = actionLog else this.actionLog.add(actionLog)
+        this.actionLog.sortByDescending { it.captured }
+
+        this.upload()
+        docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask {
+            docRef.document("timeStamp").get().addOnSuccessListener {
+                actionLog.captured = it.getTimestamp("timeStamp", behaviour)!!.toDate()
+                this.actionLog[0] = actionLog
+                this.upload()
+            }
+        }
+    }
+
     operator fun contains(username: String): Boolean{
         return this.members[username] != null
     }
@@ -3925,9 +4042,13 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     @Exclude fun getMemberDesc(username: String): String{                //description related to the Faction - gold, membership length etc.
         if(!this.contains(username)) return username
         val member = this.members[username]!!
+        val avg = members.values.sumBy { it.level } / members.size
         val givenGoldDay = member.goldGiven.toInt().safeDivider(member.membershipLength)
 
-        return "${member.username} lvl.${member.level} - ${member.role.name}" + "<br/>active: " + member.activeDate.toLocaleString() + "<br/>gold given: " + when{
+        return "${member.username} lvl." + when{
+            member.level >= avg -> "<font color='green'> ${member.level}</font>"
+            else -> "<font color='red'> ${member.level}</font>"
+        } + " - ${member.role.name}" + "<br/>active: " + member.activeDate.toLocaleString() + "<br/>gold given: " + when{
             givenGoldDay > this.taxPerDay -> "<font color='green'> ${member.goldGiven}</font>"
             givenGoldDay < this.taxPerDay -> "<font color='red'> ${member.goldGiven}</font>"
             else -> "<font color='grey'> ${member.goldGiven}</font>"
@@ -3935,7 +4056,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     }
 
     @Exclude fun getDescExernal(): String{
-        return "tax: $taxPerDay /day<br/>members: ${members.size}<br/>created in: ${captureDate.toLocaleString()}<br/>${externalDescription}"
+        return "tax: $taxPerDay /day<br/>members: ${members.size}<br/>average lvl.:${members.values.sumBy { it.level } / members.size}<br/>created in: ${captureDate.toLocaleString()}<br/>${externalDescription}"
     }
 
     @Exclude fun getMemberDescExt(username: String): String{
@@ -3948,7 +4069,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     fun kickMember(member: FactionMember, caller: String){
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("factions").document(this.ID.toString())
-        this.actionLog.add(FactionActionLog(caller, " kicked ", member.username))
+        this.writeLog(FactionActionLog(caller, " kicked ", member.username))
         Data.player.writeInbox(member.username, InboxMessage(status = MessageStatus.Faction, receiver = member.username, sender = this.name, subject = "${Data.player.username} kicked you from ${this.name}.", content = "You've been kicked from ${this.name} by ${Data.player.factionRole.toString()} ${Data.player.username}."))
         docRef.update("members.${member.username}", FieldValue.delete())
     }
@@ -3962,7 +4083,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
             }
             else -> member.role
         }
-        this.actionLog.add(FactionActionLog(caller, " promoted ", member.username))
+        this.writeLog(FactionActionLog(caller, " promoted ", member.username))
         this.upload()
     }
 
@@ -3979,7 +4100,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
             }
             else -> member.role
         }
-        this.actionLog.add(FactionActionLog(caller, " demoted ", member.username))
+        this.writeLog(FactionActionLog(caller, " demoted ", member.username))
     }
 
     fun upload(): Task<Void> {
@@ -3987,11 +4108,9 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
         val docRef = db.collection("factions").document(this.ID.toString())
 
         val dataMap: HashMap<String, Any?> = hashMapOf(
-                "name" to this.name,
+                "captureDate" to this.captureDate,
                 "description" to this.description,
-                "leader" to this.leader,
-                //"members" to this.members,
-                "members" to this.members,
+                "externalDescription" to this.externalDescription,
                 "allyFactions" to this.allyFactions,
                 "enemyFactions" to this.enemyFactions,
                 "pendingInvitationsPlayer" to this.pendingInvitationsPlayer,
@@ -4001,9 +4120,13 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
                 "experience" to this.experience,
                 "gold" to this.gold,
                 "warnMessage" to this.warnMessage,
-                "actionLog" to this.actionLog,
                 "invitationMessage" to this.invitationMessage,
-                "openToAllies" to this.openToAllies
+                "actionLog" to this.actionLog,
+                "openToAllies" to this.openToAllies,
+                "fame" to this.fame,
+                "democracy" to this.democracy,
+                "recruiter" to this.recruiter
+
         )
         return docRef.update(dataMap)
     }
@@ -4014,7 +4137,8 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     }
 
     @Exclude fun getInfoDesc(): String{
-        return "Level: ${this.level}<br/>Experience: ${this.experience}<br/>Tax: ${this.taxPerDay} / day"
+        val avg = members.values.sumBy { it.level } / members.size
+        return "Level: ${this.level}<br/>Experience: ${this.experience}<br/>Average lvl.: ${avg}<br/>Tax: ${this.taxPerDay} / day"
     }
 
     @Exclude fun initialize(): Task<Task<Void>> {
@@ -4224,7 +4348,10 @@ class RocketGame(
         if(speedY.isNaN() || speedY.isInfinite()) speedY = 0.0
 
         if(coordinatesRocket.rocketTargetX == 0f){
-            if(rocketBody.x > 0)rocketBody.x -= 1
+            if(rocketBody.x > 0){
+                rocketBody.x -= 1
+                rocketBody.y = (height / 2).toFloat()
+            }
         }else {
             if(kotlin.math.abs(coordinatesRocket.rocketTargetX - rocketBody.x) < speedX){
                 rocketBody.x = coordinatesRocket.rocketTargetX

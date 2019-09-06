@@ -52,7 +52,7 @@ class Fragment_Register : Fragment() {
 
             if (isConnected) {
 
-                if (view.inputUsernameReg.text.isNotBlank()) {
+                if (view.inputUsernameReg.text.isNotBlank() && view.inputUsernameReg.text.length < 13 && view.inputUsernameReg.text.length > 5) {
 
                     if (view.inputEmailReg.text.isNotBlank()) {
 

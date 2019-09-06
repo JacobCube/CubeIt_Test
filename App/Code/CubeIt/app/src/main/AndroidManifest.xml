@@ -32,6 +32,7 @@
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".Activity_Faction_Base"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".FightSystemNPC"

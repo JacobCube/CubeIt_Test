@@ -168,7 +168,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
             }
         })
 
-        rotateAnimation.duration = 2000
+        rotateAnimation.duration = intent?.extras?.getLong("refreshRate") ?: 2000
         rotateAnimation.repeatCount = Animation.INFINITE
 
         val pumpInAnimationIG = ValueAnimator.ofFloat(0.95f, 1f)

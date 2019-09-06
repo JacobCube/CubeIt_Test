@@ -1,5 +1,7 @@
 package cz.cubeit.cubeit
 
+import android.animation.Animator
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -8,6 +10,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Layout
+import android.util.DisplayMetrics
 import androidx.fragment.app.Fragment
 import android.util.Log
 import android.view.*
@@ -17,10 +20,13 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.MetadataChanges
+import kotlinx.android.synthetic.main.activity_faction_base.*
 import kotlinx.android.synthetic.main.fragment_faction.*
 import kotlinx.android.synthetic.main.fragment_faction.view.*
+import kotlinx.android.synthetic.main.pop_up_market_offer.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_faction_members.view.*
+import kotlinx.android.synthetic.main.row_faction_mng_invitation.view.*
 import kotlin.math.max
 
 
@@ -30,7 +36,9 @@ class Fragment_Faction: Fragment(){
     var myFaction = true
     lateinit var viewTemp:View
     var factionID: String? = ""
-    var firstInit: Boolean = true
+    var displayX = 0.0
+    var logClosed = true
+    var firstLoad = true
 
     companion object{
         fun newInstance(ID: String? = null):Fragment_Faction{
@@ -46,6 +54,16 @@ class Fragment_Faction: Fragment(){
         if(isAdded && isVisible && userVisibleHint)initMain()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if(!firstLoad)initMain()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        firstLoad = false
+    }
+
     private fun initMain(){
         Data.loadingStatus = LoadingStatus.LOGGING                           //procesing
         val intent = Intent(viewTemp.context, Activity_Splash_Screen::class.java)
@@ -53,6 +71,7 @@ class Fragment_Faction: Fragment(){
         if(Data.player.factionID != null || factionID != null){
             if(factionID == null || factionID == ""){
                 if(Data.player.faction == null || Data.factionSnapshot == null || SystemFlow.factionChange){
+                    intent.putExtra("refreshRate", (100).toLong())
                     startActivity(intent)
                     Data.player.loadFaction().addOnSuccessListener {    //tries to load player's faction
                         currentInstanceOfFaction = Data.player.faction
@@ -128,6 +147,7 @@ class Fragment_Faction: Fragment(){
     }
 
     private fun init() {
+
         viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberDesc, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction, mutableListOf(), activity!!)
         (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
         if (!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER) {
@@ -154,6 +174,9 @@ class Fragment_Faction: Fragment(){
 
         if(myFaction){
             viewTemp.textViewFactionGold.text = resources.getString(R.string.faction_gold, currentInstanceOfFaction!!.gold.toString())
+            viewTemp.textViewFactionMemberDesc.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(Data.player.username))
+
+            childFragmentManager.beginTransaction().replace(R.id.frameLayoutFactionLog, Fragment_Faction_Log.newInstance(currentInstanceOfFaction!!)).commitAllowingStateLoss()
 
             viewTemp.imageViewFactionGoldPlus.setOnClickListener {
                 viewTemp.editTextFactionGold.setText(if (viewTemp.editTextFactionGold.text.isEmpty()) {
@@ -180,6 +203,9 @@ class Fragment_Faction: Fragment(){
             //if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
             //view.textViewFactionMemberInfo.performClick()
         }else {
+            viewTemp.imageViewFactionOpenLog.visibility = View.GONE
+            viewTemp.textViewFactionMemberDesc.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.leader))
+
             viewTemp.buttonFactionGoldOk.visibility = View.GONE
             viewTemp.imageViewFactionGoldPlus.visibility = View.GONE
             viewTemp.textViewFactionGold.visibility = View.GONE
@@ -187,11 +213,12 @@ class Fragment_Faction: Fragment(){
             (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility = View.GONE
         }
 
-        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR)){
+
+        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR) && currentInstanceOfFaction!!.ID != Data.player.factionID){
             View.VISIBLE
         }else View.GONE
 
-        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && Data.player.factionRole == FactionRole.LEADER){
+        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && Data.player.factionRole == FactionRole.LEADER && currentInstanceOfFaction!!.ID != Data.player.factionID){
             View.VISIBLE
         }else View.GONE
     }
@@ -202,8 +229,67 @@ class Fragment_Faction: Fragment(){
         viewTemp = inflater.inflate(R.layout.fragment_faction, container, false)
         if(Data.player.factionID != null || factionID != null)initMain()
 
-        viewTemp.imageViewFactionOpenLog.setOnClickListener {
+        val dm = DisplayMetrics()
+        val windowManager = viewTemp.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.defaultDisplay.getMetrics(dm)
+        displayX = dm.widthPixels.toDouble()
+        viewTemp.frameLayoutFactionLog.layoutParams.width = (displayX * 0.34).toInt()
 
+        viewTemp.imageViewFactionOpenLog.setOnClickListener {
+            viewTemp.imageViewFactionOpenLog.bringToFront()
+
+            if(logClosed){
+                (activity as Activity_Faction_Base).imageViewMenuUpFaction.visibility = View.GONE
+                val logAnimationOut= ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x - frameLayoutFactionLog.width).apply {
+                    duration = 800
+                    addUpdateListener {
+                        frameLayoutFactionLog.x = it.animatedValue as Float
+                        viewTemp.imageViewFactionOpenLog.x = (it.animatedValue as Float - viewTemp.imageViewFactionOpenLog.width)
+                    }
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            logClosed = false
+                            viewTemp.imageViewFactionOpenLog.rotation = 270f
+                        }
+
+                    })
+                    start()
+                }
+            }else {
+                (activity as Activity_Faction_Base).imageViewMenuUpFaction.visibility = View.VISIBLE
+                val logAnimationIn = ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x + frameLayoutFactionLog.width).apply {
+                    duration = 800
+                    addUpdateListener {
+                        frameLayoutFactionLog.x = it.animatedValue as Float
+                        viewTemp.imageViewFactionOpenLog.x = (it.animatedValue as Float - viewTemp.imageViewFactionOpenLog.width)
+                    }
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            logClosed = true
+                            viewTemp.imageViewFactionOpenLog.rotation = 90f
+                        }
+                    })
+                    start()
+                }
+            }
         }
 
         viewTemp.buttonFactionApply.setOnClickListener {
@@ -355,12 +441,6 @@ class Fragment_Faction: Fragment(){
                         img.apply {
                             setOnClickListener {
                                 member = members[rowIndex + index]
-                                memberDesc.visibility = View.VISIBLE
-                                handler.postDelayed({
-                                    memberDesc.visibility = View.GONE
-                                }, 1500)
-
-                                memberDesc.scrollTo(0, 0)
                                 memberDesc.setHTMLText(faction.getMemberDesc(member.username))
                             }
 

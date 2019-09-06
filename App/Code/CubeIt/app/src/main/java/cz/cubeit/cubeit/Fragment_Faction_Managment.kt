@@ -20,16 +20,16 @@ class Fragment_Faction_Managment : Fragment() {
 
     lateinit var allies: BaseAdapter
     lateinit var enemy: BaseAdapter
+    lateinit var viewTemp: View
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view:View = inflater.inflate(R.layout.fragment_faction_managment, container, false)
+        viewTemp = inflater.inflate(R.layout.fragment_faction_managment, container, false)
 
         fun init(){
-            (view.listViewFactionManageAllies.adapter as FactionFactionsList).notifyDataSetChanged()
-            (view.listViewFactionManageEnemies.adapter as FactionFactionsList).notifyDataSetChanged()
-
-            view.textViewFactionManagmentAllies.fontSizeType = CustomTextView.SizeType.title
-            view.textViewFactionManagmentEnemies.fontSizeType = CustomTextView.SizeType.title
+            (viewTemp.listViewFactionManageAllies.adapter as FactionFactionsList).notifyDataSetChanged()
+            (viewTemp.listViewFactionManageEnemies.adapter as FactionFactionsList).notifyDataSetChanged()
+            viewTemp.editTextFactionMngExtDesc.setText(Data.player.faction!!.externalDescription.toString())
+            viewTemp.checkBoxFactionMngDemocracy.isChecked = Data.player.faction!!.democracy
 
             (activity as Activity_Faction_Base).tabLayoutFactionTemp.visibility =
                     if (Data.player.factionRole == FactionRole.LEADER || Data.player.faction!!.democracy) {
@@ -40,16 +40,16 @@ class Fragment_Faction_Managment : Fragment() {
         if(Data.player.faction == null){
             (activity as Activity_Faction_Base).changePage(0)
         }else {
-            view.listViewFactionManageAllies.adapter = FactionFactionsList(this, Data.player.faction!!.pendingInvitationsFaction.values.toMutableList(), true)
-            view.listViewFactionManageEnemies.adapter = FactionFactionsList(this, Data.player.faction!!.enemyFactions.values.toMutableList(), false)
+            viewTemp.listViewFactionManageAllies.adapter = FactionFactionsList(this, Data.player.faction!!.pendingInvitationsFaction, true)
+            viewTemp.listViewFactionManageEnemies.adapter = FactionFactionsList(this, Data.player.faction!!.enemyFactions, false)
 
-            allies = (view.listViewFactionManageAllies.adapter as FactionFactionsList)
-            enemy = (view.listViewFactionManageEnemies.adapter as FactionFactionsList)
+            allies = (viewTemp.listViewFactionManageAllies.adapter as FactionFactionsList)
+            enemy = (viewTemp.listViewFactionManageEnemies.adapter as FactionFactionsList)
 
             init()
         }
 
-        return view
+        return viewTemp
     }
 
     fun update(){
@@ -58,10 +58,10 @@ class Fragment_Faction_Managment : Fragment() {
     }
 
 
-    class FactionFactionsList(val parent: Fragment_Faction_Managment, var collection: MutableList<String> = Data.player.allies, val pending: Boolean = true) : BaseAdapter() {
+    private class FactionFactionsList(val parent: Fragment_Faction_Managment, var collectionIn: HashMap<String, String> = Data.player.faction!!.pendingInvitationsFaction, val pending: Boolean = true) : BaseAdapter() {
 
         override fun getCount(): Int {
-            return collection.size
+            return collectionIn.size
         }
 
         override fun getItemId(position: Int): Long {
@@ -85,6 +85,7 @@ class Fragment_Faction_Managment : Fragment() {
             }
             val viewHolder = rowMain.tag as ViewHolder
 
+            val collection = collectionIn.values.toMutableList()
             val opts = BitmapFactory.Options()
             opts.inScaled = false
 
@@ -104,10 +105,12 @@ class Fragment_Faction_Managment : Fragment() {
                     when(it.title){
                         "Delete invitation" -> {
                             Data.player.faction!!.allyFactions.remove(collection[position])
+                            this.notifyDataSetChanged()
                             true
                         }
                         "Remove from list" -> {
                             Data.player.faction!!.enemyFactions.remove(collection[position])
+                            this.notifyDataSetChanged()
                             true
                         }
                         "Show faction" -> {

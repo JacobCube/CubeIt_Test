@@ -8,24 +8,46 @@ import androidx.fragment.app.FragmentPagerAdapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.BaseAdapter
 import kotlinx.android.synthetic.main.fragment_faction_log.view.*
+import kotlinx.android.synthetic.main.row_faction_log.view.*
+import kotlin.math.min
 
-class Fragment_Fragment_Log : Fragment() {
+class Fragment_Faction_Log : Fragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    companion object{
+        fun newInstance(faction: Faction):Fragment_Faction_Log{
+            val fragment = Fragment_Faction_Log()
+            val args = Bundle()
+            args.putSerializable("faction", faction)
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {            //TODO @someone - if the user is online, ony toast otherwise mail/ notification
         val view:View = inflater.inflate(R.layout.fragment_faction_log, container, false)
 
-        view.listViewInnerFactionLog.adapter
-        //view.editTextInnerFactionLog
+        val currentInstanceOfFaction = arguments!!.getSerializable("faction") as Faction
+        currentInstanceOfFaction.actionLog.sortBy { it.captured }
+        view.listViewInnerFactionLog.adapter = FactionLog(currentInstanceOfFaction.actionLog)
+
+        view.imageViewInnerFactionLogSend.setOnClickListener {
+            if(!view.editTextInnerFactionLog.text.isNullOrEmpty()){
+                currentInstanceOfFaction.writeLog(FactionActionLog(Data.player.username, view.editTextInnerFactionLog.text.toString(), ""))
+                view.editTextInnerFactionLog.setText("")
+                (view.listViewInnerFactionLog.adapter as FactionLog).notifyDataSetChanged()
+            }
+        }
 
         return view
     }
 
-    /*class FactionFactionsList(var factionLog: MutableList<FactionChatComponent>) : BaseAdapter() {
+    private class FactionLog(var factionLog: MutableList<FactionActionLog>) : BaseAdapter() {
 
         override fun getCount(): Int {
-            return FactionChatComponent.size
+            return min(factionLog.size, 30)
         }
 
         override fun getItemId(position: Int): Long {
@@ -41,64 +63,26 @@ class Fragment_Fragment_Log : Fragment() {
 
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
-                rowMain = layoutInflater.inflate(R.layout.row_faction_mng_invitation, viewGroup, false)
-                val viewHolder = ViewHolder(rowMain.imageViewFactionManageRowIcon, rowMain.textViewFactionManageRowName)
+                rowMain = layoutInflater.inflate(R.layout.row_faction_log, viewGroup, false)
+                val viewHolder = ViewHolder(rowMain.textViewRowFactionLogTime, rowMain.textViewRowFactionLogName, rowMain.textViewRowFactionLogContent)
                 rowMain.tag = viewHolder
             } else {
                 rowMain = convertView
             }
             val viewHolder = rowMain.tag as ViewHolder
 
-            val opts = BitmapFactory.Options()
-            opts.inScaled = false
-
-            viewHolder.settings.setOnClickListener { view ->
-                val wrapper = ContextThemeWrapper(viewGroup!!.context, R.style.FactionPopupMenu)
-                val popup = PopupMenu(wrapper, view)
-                val popupMenu = popup.menu
-
-                if(pending){
-                    popupMenu.add("Delete invitation")
-                }else {
-                    popupMenu.add("Remove from list")
-                }
-                popupMenu.add("Show faction")
-
-                popup.setOnMenuItemClickListener {
-                    when(it.title){
-                        "Delete invitation" -> {
-                            Data.player.faction!!.allyFactions.remove(collection[position])
-                            true
-                        }
-                        "Remove from list" -> {
-                            Data.player.faction!!.enemyFactions.remove(collection[position])
-                            true
-                        }
-                        "Show faction" -> {
-                            val intent = Intent(view.context, Activity_Faction_Base()::class.java)
-                            intent.putExtra("id", getKey(if(pending) Data.player.faction!!.allyFactions else Data.player.faction!!.enemyFactions, collection[position]).toString())
-                            parent.activity!!.startActivity(intent)
-                            true
-                        }
-                        else -> {
-                            true
-                        }
-                    }
-                }
-                popup.show()
+            viewHolder.textViewRowFactionLogTime.apply {
+                text = factionLog[position].captured.formatToString()
+                fontSizeType = CustomTextView.SizeType.small
             }
-            viewHolder.name.text = collection[position]
-
-            rowMain.setOnLongClickListener {
-                rowMain.isEnabled = false
-                handler.postDelayed({rowMain.isEnabled = true}, 50)
-
-                parent.update()
-                true
+            viewHolder.textViewRowFactionLogName.apply {
+                text = factionLog[position].caller
+                fontSizeType = CustomTextView.SizeType.small
             }
+            viewHolder.textViewRowFactionLogContent.text = factionLog[position].action
 
             return rowMain
         }
-        private class ViewHolder(val settings: ImageView, val name: TextView)
-    }*/
+        private class ViewHolder(val textViewRowFactionLogTime: CustomTextView, val textViewRowFactionLogName: CustomTextView, val textViewRowFactionLogContent: CustomTextView)
+    }
 }

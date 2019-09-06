@@ -47,21 +47,6 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
     private var lastClicked: ImageView? = null
     private lateinit var textViewStats: TextView
 
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRectButton = Rect()
-        val viewRectStats = Rect()
-        if(textViewStats.visibility == View.VISIBLE){
-            textViewStats.getGlobalVisibleRect(viewRectStats)
-            lastClicked!!.getGlobalVisibleRect(viewRectButton)
-
-            if (!viewRectButton.contains(ev.rawX.toInt(), ev.rawY.toInt()) && !viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
-                textViewStats.visibility = View.INVISIBLE
-                lastClicked = null
-            }
-        }
-        return super.dispatchTouchEvent(ev)
-    }
-
     override fun onBackPressed() {
     }
 
@@ -923,7 +908,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             val log = FightLog(winnerName = winner.username, looserName = looserName, spellFlow = spellFlowLog, reward = reward!!, fame = fameGained, surrenderRound = if(surrender)roundCounter else null)
             log.init()
-            if(surrender)finish()
+
+            //if(surrender)finish()
 
             textViewQuest.text = "${winner.username} won" +
                     "\n and earned:" +
