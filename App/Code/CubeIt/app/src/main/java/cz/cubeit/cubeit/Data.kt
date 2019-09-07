@@ -12,11 +12,11 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
-import android.os.health.TimerStat
 import android.provider.Settings
 import androidx.fragment.app.Fragment
 import androidx.core.content.res.ResourcesCompat
@@ -29,9 +29,7 @@ import android.view.MotionEvent
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable
 import com.google.android.gms.tasks.Task
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -40,18 +38,12 @@ import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
 import java.io.*
 import java.lang.Math.*
-import java.sql.Time
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.HashMap
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.KVisibility
-import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.full.valueParameters
 
 /*
 TODO simulace jízdy metrem - uživatel zadá příkaz v době, kdy je připojený k internetu, z něco se však postupně odpojuje, toto by bylo aplikované u callů s vyšší priritou v rámci uživatelské přátelskosti,
@@ -277,15 +269,21 @@ object Data {
             "Yo are you even trying?"
     )
 
+    val fontGallery: HashMap<String, Int> = hashMapOf(
+            "alegreya_sans_sc" to R.font.alegreya_sans_sc,
+            "average_sans" to R.font.average_sans,
+            "minecraftpe_rayb" to R.font.minecraftpe_rayb
+    )
+
     var inboxCategories: HashMap<MessageStatus, InboxCategory> = hashMapOf(
-            MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
-            MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
-            MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
-            MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
-            MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
-            MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
-            MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
-            MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
+            MessageStatus.New to InboxCategory(name = "New", id = 0, status = MessageStatus.New),
+            MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, id = 1, status = MessageStatus.Faction),
+            MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, id = 2, status = MessageStatus.Allies),
+            MessageStatus.Read to InboxCategory(name = "Read", id = 3, status = MessageStatus.Read),
+            MessageStatus.Sent to InboxCategory(name = "Sent", id = 4, status = MessageStatus.Sent),
+            MessageStatus.Fight to InboxCategory(name = "Fights", id = 5, status = MessageStatus.Fight),
+            MessageStatus.Market to InboxCategory(name = "Market", id = 6, status = MessageStatus.Market),
+            MessageStatus.Spam to InboxCategory(name = "Spam", id = 7, status = MessageStatus.Spam))
 
     fun initialize(context: Context){
         if(SystemFlow.readFileText(context, "inboxNew${player.username}") != "0"){
@@ -299,14 +297,14 @@ object Data {
         Log.d("inbox.local", "uploaded ${inbox.size} items")
         SystemFlow.writeObject(context, "inbox${player.username}.data", inbox)
         inboxCategories = hashMapOf(
-                MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
-                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
-                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
-                MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
-                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
-                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
-                MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
-                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
+                MessageStatus.New to InboxCategory(name = "New", id = 0, status = MessageStatus.New),
+                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, id = 1, status = MessageStatus.Faction),
+                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, id = 2, status = MessageStatus.Allies),
+                MessageStatus.Read to InboxCategory(name = "Read", id = 3, status = MessageStatus.Read),
+                MessageStatus.Sent to InboxCategory(name = "Sent", id = 4, status = MessageStatus.Sent),
+                MessageStatus.Fight to InboxCategory(name = "Fights", id = 5, status = MessageStatus.Fight),
+                MessageStatus.Market to InboxCategory(name = "Market", id = 6, status = MessageStatus.Market),
+                MessageStatus.Spam to InboxCategory(name = "Spam", id = 7, status = MessageStatus.Spam))
         for (message in inbox) {
             inboxCategories[message.status]!!.messages.add(message)
         }
@@ -346,14 +344,14 @@ object Data {
 
         activeQuest = null
         inboxCategories = hashMapOf(
-                MessageStatus.New to InboxCategory(name = "New", ID = 0, status = MessageStatus.New),
-                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, ID = 1, status = MessageStatus.Faction),
-                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, ID = 2, status = MessageStatus.Allies),
-                MessageStatus.Read to InboxCategory(name = "Read", ID = 3, status = MessageStatus.Read),
-                MessageStatus.Sent to InboxCategory(name = "Sent", ID = 4, status = MessageStatus.Sent),
-                MessageStatus.Fight to InboxCategory(name = "Fights", ID = 5, status = MessageStatus.Fight),
-                MessageStatus.Market to InboxCategory(name = "Market", ID = 6, status = MessageStatus.Market),
-                MessageStatus.Spam to InboxCategory(name = "Spam", ID = 7, status = MessageStatus.Spam))
+                MessageStatus.New to InboxCategory(name = "New", id = 0, status = MessageStatus.New),
+                MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, id = 1, status = MessageStatus.Faction),
+                MessageStatus.Allies to InboxCategory(name = "Allies", color = R.color.itemborder_very_rare, id = 2, status = MessageStatus.Allies),
+                MessageStatus.Read to InboxCategory(name = "Read", id = 3, status = MessageStatus.Read),
+                MessageStatus.Sent to InboxCategory(name = "Sent", id = 4, status = MessageStatus.Sent),
+                MessageStatus.Fight to InboxCategory(name = "Fights", id = 5, status = MessageStatus.Fight),
+                MessageStatus.Market to InboxCategory(name = "Market", id = 6, status = MessageStatus.Market),
+                MessageStatus.Spam to InboxCategory(name = "Spam", id = 7, status = MessageStatus.Spam))
         activeQuest = null
         player = Player()
         inbox = mutableListOf()
@@ -535,7 +533,7 @@ object Data {
                                 db.collection("npcs").get().addOnSuccessListener { itNpcs ->
                                     val tempNpcs = itNpcs.toObjects(NPC::class.java)
                                     for(npcItem in tempNpcs){
-                                        npcs.put(npcItem.ID, npcItem)
+                                        npcs.put(npcItem.id, npcItem)
                                     }
                                     SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
                                     Log.d("npcs", "loaded from firebase, rewritten")
@@ -548,7 +546,7 @@ object Data {
                                     db.collection("npcs").get().addOnSuccessListener { itNpcs ->
                                         val tempNpcs = itNpcs.toObjects(NPC::class.java)
                                         for(npcItem in tempNpcs){
-                                            npcs.put(npcItem.ID, npcItem)
+                                            npcs.put(npcItem.id, npcItem)
                                         }
                                         SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
                                         //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
@@ -654,7 +652,7 @@ object Data {
             db.collection("npcs").get().addOnSuccessListener {
                 val tempNpcs = it.toObjects(NPC::class.java)
                 for(npcItem in tempNpcs){
-                    npcs.put(npcItem.ID, npcItem)
+                    npcs.put(npcItem.id, npcItem)
                 }
             }
         }.continueWithTask {
@@ -752,9 +750,9 @@ object Data {
                     }
         }*/
         for (i in 0 until charClasses.size) {                                     //charclasses
-            charClassRef.document(charClasses[i].ID.toString())
+            charClassRef.document(charClasses[i].id)
                     .set(hashMapOf<String, Any?>(
-                            "id" to charClasses[i].ID,
+                            "id" to charClasses[i].id,
                             "dmgRatio" to charClasses[i].dmgRatio,
                             "hpRatio" to charClasses[i].hpRatio,
                             "staminaRatio" to charClasses[i].staminaRatio,
@@ -787,9 +785,9 @@ object Data {
                     }
         }*/
         for (i in 0 until itemClasses.size) {                                     //items
-            itemsRef.document(itemClasses[i].ID)
+            itemsRef.document(itemClasses[i].id)
                     .set(hashMapOf<String, Any?>(
-                            "id" to itemClasses[i].ID,
+                            "id" to itemClasses[i].id,
                             "items" to itemClasses[i].items
                     )).addOnSuccessListener {
                         Log.d("COMPLETED itemclasses", "$i")
@@ -1332,7 +1330,7 @@ data class CurrentSurface(
 ):Serializable
 
 class LoadSpells(
-        var ID: String = "0",
+        var id: String = "0",
         var spells: MutableList<Spell> = mutableListOf()
 ) : Serializable{
     override fun equals(other: Any?): Boolean {
@@ -1340,19 +1338,19 @@ class LoadSpells(
     }
 
     override fun hashCode(): Int {
-        var result = ID.hashCode()
+        var result = id.hashCode()
         result = 31 * result + spells.hashCode()
         return result
     }
 }
 
 class LoadItems(
-        var ID: String = "0",
+        var id: String = "0",
         var items: MutableList<Item> = mutableListOf()
 ) : Serializable{
 
     override fun hashCode(): Int {
-        var result = ID.hashCode()
+        var result = id.hashCode()
         result = 31 * result + items.hashCode()
         return result
     }
@@ -1363,7 +1361,7 @@ class LoadItems(
 
         other as LoadItems
 
-        if (ID != other.ID) return false
+        if (id != other.id) return false
         if (items != other.items) return false
 
         return true
@@ -1682,7 +1680,7 @@ open class Player(
         var username: String = "player",
         var level: Int = 1
 ): Serializable {
-    val charClass: CharClass
+    @Exclude @Transient var charClass: CharClass = CharClass()
         @Exclude get() = Data.charClasses[charClassIndex]
     var look: MutableList<Int> = mutableListOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     var inventory: MutableList<Item?> = arrayOfNulls<Item?>(8).toMutableList()
@@ -1732,11 +1730,11 @@ open class Player(
     var factionName: String? = null
     var factionID: Int? = null
     var factionRole: FactionRole? = null
-    @Exclude var faction: Faction? = null
+    @Exclude @Transient  var faction: Faction? = null
         set(value){
             field = value
             this.factionName = field?.name
-            this.factionID = field?.ID
+            this.factionID = field?.id
             this.factionRole = field?.members?.get(this.username)?.role
         }
         @Exclude get(){
@@ -1756,10 +1754,12 @@ open class Player(
     var rocketGameScoreSeconds: Double = 0.0
 
     @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - problem with Serializabling
-    @Exclude var textSize: Float = 16f
+    @Transient @Exclude var textSize: Float = 16f
+    @Transient @Exclude var textFont: String = "alegreya_sans_sc"
 
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
+        if(SystemFlow.readFileText(context, "textFont${Data.player.username}.data") != "0") textFont = SystemFlow.readFileText(context, "textFont${Data.player.username}.data")
     }
 
     private fun changeFactionStatus(): Task<Void> {
@@ -2025,20 +2025,20 @@ open class Player(
                 currentAmount = Data.inbox.size
             }
 
-            Data.inbox.sortByDescending { it.ID }
+            Data.inbox.sortByDescending { it.id }
             docRef = if(Data.inbox.size == 0){
                 db.collection("users").document(this.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
             }else{
-                db.collection("users").document(this.username).collection("Inbox").whereGreaterThan("id", Data.inbox[0].ID).orderBy("id", Query.Direction.DESCENDING)
+                db.collection("users").document(this.username).collection("Inbox").whereGreaterThan("id", Data.inbox[0].id).orderBy("id", Query.Direction.DESCENDING)
             }
 
         } catch (e: InvalidClassException) {
 
-            Data.inbox.sortByDescending { it.ID }
+            Data.inbox.sortByDescending { it.id }
             docRef = if(Data.inbox.size == 0){
                 db.collection("users").document(this.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
             }else{
-                db.collection("users").document(this.username).collection("Inbox").whereGreaterThan("id", Data.inbox[0].ID).orderBy("id", Query.Direction.DESCENDING)
+                db.collection("users").document(this.username).collection("Inbox").whereGreaterThan("id", Data.inbox[0].id).orderBy("id", Query.Direction.DESCENDING)
             }
         }
 
@@ -2070,7 +2070,7 @@ open class Player(
                 "receiver" to message.receiver,
                 "content" to message.content,
                 "subject" to message.subject,
-                "ID" to message.ID,
+                "id" to message.id,
                 "category" to message.category,
                 "reward" to message.reward,
                 "status" to message.status,
@@ -2080,17 +2080,17 @@ open class Player(
                 "fightResult" to message.fightResult
         )
 
-        return docRef.document(message.ID.toString()).update(messageMap)
+        return docRef.document(message.id.toString()).update(messageMap)
     }
 
     fun createInbox(): Task<Task<Void>> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(this.username).collection("Inbox")
 
-        Data.inbox = mutableListOf(InboxMessage(ID = 1, priority = 2, sender = "Admin team", receiver = this.username, content = "Welcome, \n we're are really glad you chose us to entertain you!\n If you have any questions or you're interested in the upcoming updates and news going on follow us on social media as @cubeit_app or shown in the loading screen\n Most importantly have fun.\nYour CubeIt team"))
+        Data.inbox = mutableListOf(InboxMessage(id = 1, priority = 2, sender = "Admin team", receiver = this.username, content = "Welcome, \n we're are really glad you chose us to entertain you!\n If you have any questions or you're interested in the upcoming updates and news going on follow us on social media as @cubeit_app or shown in the loading screen\n Most importantly have fun.\nYour CubeIt team"))
 
         return Data.inbox[0].initialize().continueWith {
-            docRef.document(Data.inbox[0].ID.toString()).set(Data.inbox[0])
+            docRef.document(Data.inbox[0].id.toString()).set(Data.inbox[0])
         }
     }
 
@@ -2102,13 +2102,13 @@ open class Player(
         var temp: MutableList<InboxMessage>
         return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
             temp = it.toObjects(InboxMessage::class.java)
-            message.ID = if (!temp.isNullOrEmpty()) {
-                temp[0].ID + 1
+            message.id = if (!temp.isNullOrEmpty()) {
+                temp[0].id + 1
             } else 1
         }.continueWithTask {
             message.initialize()
         }.continueWith {
-            docRef.document(message.ID.toString()).set(message)
+            docRef.document(message.id.toString()).set(message)
         }
     }
 
@@ -2432,7 +2432,7 @@ open class Player(
 class ActiveQuest(
         var quest: Quest = Quest()
 ) {
-    @Exclude private var df: Calendar = Calendar.getInstance()
+    @Transient @Exclude private var df: Calendar = Calendar.getInstance()
     lateinit var startTime: Date
     lateinit var endTime: Date
     var secondsLeft: Int = 0
@@ -2471,7 +2471,15 @@ class ActiveQuest(
     }
 }
 
-class DamageOverTime(
+enum class FightEffectType{
+    FIRE,
+    ICE,
+    WIND,
+    POISON,
+    WATER
+}
+
+class FightEffect(
         var rounds: Int = 0,
         var dmg: Double = 0.0,
         var type: Int = 0
@@ -2488,8 +2496,8 @@ class DamageOverTime(
         return result
     }
 
-    @Exclude fun clone(): DamageOverTime{
-        return DamageOverTime(rounds, dmg, type)
+    @Exclude fun clone(): FightEffect{
+        return FightEffect(rounds, dmg, type)
     }
 }
 
@@ -2499,18 +2507,18 @@ class Spell(
         var energy: Int = 0,
         var power: Int = 0,
         var stun: Int = 0,
-        val dmgOverTime: DamageOverTime = DamageOverTime(0, 0.0, 0),
+        val dmgOverTime: FightEffect = FightEffect(0, 0.0, 0),
         var level: Int = 0,
         var description: String = "",
         var lifeSteal: Int = 0,
-        var ID: String = "0001",
+        var id: String = "0001",
         var block: Double = 1.0,
         var grade: Int = 1,
-        @Exclude var animation: Int = 0
+        @Transient @Exclude var animation: Int = 0
 ) : Serializable {
-    val drawable: Int
+    @Exclude @Transient var drawable: Int = 0
         @Exclude get() = drawableStorage[inDrawable]!!
-    var weightRatio: Double = 0.0
+    @Exclude @Transient var weightRatio: Double = 0.0
         @Exclude get(){
             return if(this.energy == 0){
                 0.01
@@ -2541,7 +2549,7 @@ class Spell(
         result = 31 * result + level
         result = 31 * result + description.hashCode()
         result = 31 * result + lifeSteal
-        result = 31 * result + ID.hashCode()
+        result = 31 * result + id.hashCode()
         result = 31 * result + block.hashCode()
         result = 31 * result + grade
         result = 31 * result + animation
@@ -2551,7 +2559,7 @@ class Spell(
 
 class CharClass(
 ) : Serializable {
-    var ID: Int = 1
+    var id: String = "1"
     var dmgRatio: Double = 1.0
     var hpRatio: Double = 1.0
     var staminaRatio: Double = 1.0
@@ -2559,8 +2567,8 @@ class CharClass(
     var armorRatio: Double = 0.0
     var lifeSteal: Boolean = false
     var inDrawable: String = "00200"
-    var itemListIndex: Int = ID
-    var spellListIndex: Int = ID
+    var itemListIndex: Int = id.toInt()
+    var spellListIndex: Int = id.toInt()
     var name: String = ""
     var description: String = ""
     var description2: String = ""
@@ -2575,15 +2583,15 @@ class CharClass(
     var lifeStealLimit = 50
     var armorLimit = 50
 
-    val drawable
+    @Exclude @Transient var drawable= 0
         @Exclude get() = drawableStorage[inDrawable]!!
-    val itemList
+    @Exclude @Transient var itemList = mutableListOf<Item>()
         @Exclude get() = Data.itemClasses[itemListIndex].items
-    val spellList
+    @Exclude @Transient var spellList= mutableListOf<Spell>()
         @Exclude get() = Data.spellClasses[spellListIndex].spells
-    val itemListUniversal
+    @Exclude @Transient var itemListUniversal= mutableListOf<Item>()
         @Exclude get() = Data.itemClasses[itemlistUniversalIndex].items
-    val spellListUniversal
+    @Exclude @Transient var spellListUniversal= mutableListOf<Spell>()
         @Exclude get() = Data.spellClasses[spellListUniversalIndex].spells
 
     override fun equals(other: Any?): Boolean {
@@ -2591,7 +2599,7 @@ class CharClass(
     }
 
     override fun hashCode(): Int {
-        var result = ID
+        var result = id.toInt()
         result = 31 * result + dmgRatio.hashCode()
         result = 31 * result + hpRatio.hashCode()
         result = 31 * result + staminaRatio.hashCode()
@@ -2633,7 +2641,7 @@ open class Item(
         inPrice: Int = 0,
         inPriceCubeCoins: Int = 0
 ) : Serializable {
-    open var ID: String = inID
+    open var id: String = inID
     open var name: String = inName
     open var type = inType
     open var drawableIn: String = inDrawable
@@ -2654,7 +2662,7 @@ open class Item(
     open var slot: Int = inSlot
     open var price: Int = inPrice
     open var priceCubeCoins: Int = inPriceCubeCoins
-    val drawable: Int
+    @Exclude @Transient var drawable: Int = 0
         @Exclude get() = drawableStorage[drawableIn]!!
 
     @Exclude fun getStats(): String {
@@ -2815,7 +2823,7 @@ open class Item(
     }
 
     override fun hashCode(): Int {
-        var result = ID.hashCode()
+        var result = id.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + type.hashCode()
         result = 31 * result + drawableIn.hashCode()
@@ -2926,7 +2934,7 @@ data class Reward(
 }
 
 data class Wearable(
-        override var ID: String = "",
+        override var id: String = "",
         override var name: String = "",
         override var type: String = "",
         override var drawableIn: String = "",
@@ -2947,10 +2955,10 @@ data class Wearable(
         override var slot: Int = 0,
         override var price: Int = 0,
         override var priceCubeCoins: Int = 0
-) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
+) : Item(id, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
 
 data class Runes(
-        override var ID: String = "",
+        override var id: String = "",
         override var name: String = "",
         override var type: String = "",
         override var drawableIn: String = "",
@@ -2971,10 +2979,10 @@ data class Runes(
         override var slot: Int = 0,
         override var price: Int = 0,
         override var priceCubeCoins: Int = 0
-) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
+) : Item(id, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
 
 data class Weapon(
-        override var ID: String = "",
+        override var id: String = "",
         override var name: String = "",
         override var type: String = "",
         override var drawableIn: String = "",
@@ -2995,10 +3003,10 @@ data class Weapon(
         override var slot: Int = 0,
         override var price: Int = 0,
         override var priceCubeCoins: Int = 0
-) : Item(ID, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
+) : Item(id, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
 
 class StoryQuest(
-        var ID: String = "0001",
+        var id: String = "0001",
         var name: String = "",
         var description: String = "",
         var shortDescription: String = "",
@@ -3036,7 +3044,7 @@ class StoryQuest(
 
         other as StoryQuest
 
-        if (ID != other.ID) return false
+        if (id != other.id) return false
         if (name != other.name) return false
         if (description != other.description) return false
         if (shortDescription != other.shortDescription) return false
@@ -3055,7 +3063,7 @@ class StoryQuest(
     }
 
     override fun hashCode(): Int {
-        var result = ID.hashCode()
+        var result = id.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + description.hashCode()
         result = 31 * result + shortDescription.hashCode()
@@ -3104,7 +3112,7 @@ class StoryImage(
         var animOut: Int = 0
 
 ) : Serializable {
-    val drawable: Int
+    @Exclude @Transient var drawable: Int = 0
         @Exclude get() = drawableStorage[imageID]!!
 
     override fun equals(other: Any?): Boolean {
@@ -3272,7 +3280,7 @@ class FightLog(
 }
 
 open class NPC(
-        open var ID: String = "1",
+        open var id: String = "1",
         open var inDrawable: String = "00000",
         open var inBgDrawable: String = "00000",
         open var name: String = "",
@@ -3281,7 +3289,7 @@ open class NPC(
         open var charClassIndex: Int = 1,
         open var difficulty: Int? = null
 ) : Serializable {
-    val drawable: Int
+    @Exclude @Transient var drawable: Int = 0
         @Exclude get() = drawableStorage[inDrawable]!!
     var level: Int = 0
     var chosenSpellsDefense: MutableList<Spell?> = arrayOfNulls<Spell>(20).toMutableList()
@@ -3292,10 +3300,10 @@ open class NPC(
     var lifeSteal: Int = 0
     var health: Double = 175.0
     var energy: Int = 100
-    val charClass: CharClass
+    @Exclude @Transient var charClass: CharClass = CharClass()
         @Exclude get() = Data.charClasses[charClassIndex]
     var allowedSpells = listOf<Spell>()
-    var bgDrawable: Int = 0
+    @Exclude @Transient var bgDrawable: Int = 0
         @Exclude get() = drawableStorage[inBgDrawable]!!
 
     object Memory{
@@ -3365,11 +3373,11 @@ open class NPC(
 
         return db.collection("Data.npcs").orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
             temp = it.toObjects(NPC::class.java)
-            this.ID = if (!temp.isNullOrEmpty()) {
-                (temp[0].ID + 1).toString()
+            this.id = if (!temp.isNullOrEmpty()) {
+                (temp[0].id + 1).toString()
             } else "1"
         }.continueWithTask {
-            db.collection("Data.npcs").document(this.ID).set(this)
+            db.collection("Data.npcs").document(this.id).set(this)
         }
     }
 
@@ -3493,7 +3501,7 @@ open class NPC(
 
         other as NPC
 
-        if (ID != other.ID) return false
+        if (id != other.id) return false
         if (inDrawable != other.inDrawable) return false
         if (name != other.name) return false
         if (difficulty != other.difficulty) return false
@@ -3514,7 +3522,7 @@ open class NPC(
     }
 
     override fun hashCode(): Int {
-        var result = ID.hashCode()
+        var result = id.hashCode()
         result = 31 * result + inDrawable.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + description.hashCode()
@@ -3535,7 +3543,7 @@ open class NPC(
 }
 
 class Boss(
-        override var ID: String = "",
+        override var id: String = "",
         override var inDrawable: String = "00000",
         override var inBgDrawable: String = "00000",
         override var name: String = "",
@@ -3544,10 +3552,10 @@ class Boss(
         override var charClassIndex: Int = 1,
         override var difficulty: Int? = 7,
         var surface: Int = 0
-): NPC(ID, inDrawable, inBgDrawable, name, description, levelAppearance, charClassIndex, difficulty){
+): NPC(id, inDrawable, inBgDrawable, name, description, levelAppearance, charClassIndex, difficulty){
     var captured: Date = java.util.Calendar.getInstance().time
     var decayTime: Date = java.util.Calendar.getInstance().time
-    @Exclude private var df: Calendar = Calendar.getInstance()
+    @Exclude @Transient private var df: Calendar = Calendar.getInstance()
 
     fun getTimeLeft(): String {
         val temp = TimeUnit.MILLISECONDS.toSeconds(decayTime.time - java.util.Calendar.getInstance().time.time).toInt()
@@ -3579,7 +3587,7 @@ class Boss(
 }
 
 class Quest(
-        val ID: String = "0001",
+        val id: String = "0001",
         var name: String = "",
         var description: String = "",
         var level: Int = 0,
@@ -3635,7 +3643,7 @@ class Quest(
     }
 
     override fun hashCode(): Int {
-        var result = ID.hashCode()
+        var result = id.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + description.hashCode()
         result = 31 * result + level
@@ -3659,7 +3667,7 @@ class CustomTextView : TextView {
     private var mText: CharSequence? = null
     private var mIndex: Int = 0
     private var mDelay: Long = 50
-    private var customFont: Int = R.font.average_sans
+    private var customFont: Int = R.font.alegreya_sans_sc
     private var customTextSize: Float = Data.player.textSize
     var fontSizeType: SizeType = SizeType.adaptive
         set(value){
@@ -3690,7 +3698,7 @@ class CustomTextView : TextView {
         }
         this.setPadding(4, 4, 4, 4)
         this.movementMethod = ScrollingMovementMethod()
-        this.typeface = ResourcesCompat.getFont(context, customFont)
+        this.typeface = ResourcesCompat.getFont(context, Data.fontGallery[Data.player.textFont]!!)
         this.setTypeface(this.typeface, Typeface.BOLD)
     }
 
@@ -3729,6 +3737,26 @@ class CustomTextView : TextView {
     }
 }
 
+class EditTextWithClear : androidx.appcompat.widget.AppCompatEditText {
+
+    constructor(context: Context) : super(context) {
+        init()
+    }
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
+        init()
+    }
+
+    constructor(context: Context,
+                attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        init()
+    }
+
+    private fun init() {
+
+    }
+}
+
 class StoryViewPager : ViewPager {      //disabling the ViewPager's swipe
 
     var offScreenPageLimiCustom: Int = 2
@@ -3756,7 +3784,7 @@ class StoryViewPager : ViewPager {      //disabling the ViewPager's swipe
 class InboxCategory(
         var name: String = "My category",
         var color: Int = Color.BLUE,
-        val ID: Int = 0,
+        val id: Int = 0,
         var messages: MutableList<InboxMessage> = mutableListOf(),
         var status: MessageStatus = MessageStatus.Fight
 )
@@ -3767,7 +3795,7 @@ class InboxMessage(
         var receiver: String = "Receiver",
         var content: String = "Content",
         var subject: String = "object",
-        var ID: Int = 1,
+        var id: Int = 1,
         var category: String = "0001",
         var reward: Reward? = null,
         var status: MessageStatus = MessageStatus.New,
@@ -3796,7 +3824,7 @@ class InboxMessage(
     }
 
     fun changeStatus(statusX: MessageStatus, context: Context) {
-        Data.inbox.find { it.ID == this.ID } !!.status = statusX
+        Data.inbox.find { it.id == this.id } !!.status = statusX
     }
 
     override fun hashCode(): Int {
@@ -3805,7 +3833,7 @@ class InboxMessage(
         result = 31 * result + receiver.hashCode()
         result = 31 * result + content.hashCode()
         result = 31 * result + subject.hashCode()
-        result = 31 * result + ID
+        result = 31 * result + id
         result = 31 * result + category.hashCode()
         result = 31 * result + (reward?.hashCode() ?: 0)
         result = 31 * result + status.hashCode()
@@ -3828,7 +3856,7 @@ class InboxMessage(
         if (receiver != other.receiver) return false
         if (content != other.content) return false
         if (subject != other.subject) return false
-        if (ID != other.ID) return false
+        if (id != other.id) return false
         if (category != other.category) return false
         if (reward != other.reward) return false
         if (status != other.status) return false
@@ -3866,7 +3894,7 @@ class Surface(
         val boss: Boss? = null,
         val quests: HashMap<String, Quest> = hashMapOf()
 ) : Serializable {
-    val background: Int
+    @Exclude @Transient  var background: Int = 0
         @Exclude get() = drawableStorage[inBackground]!!
 
     override fun hashCode(): Int {
@@ -3922,11 +3950,11 @@ data class FactionMember(
 ): Comparable<FactionMember>, Serializable{
     var captureDate: Date = java.util.Calendar.getInstance().time
     var profilePictureID: String = nextInt(50000, 50003).toString()
-    var profilePicture: Int = 0
+    @Exclude @Transient var profilePicture: Int = 0
         @Exclude get(){
             return drawableStorage[profilePictureID]!!
         }
-    var membershipLength: Int = 0                    //days
+    @Exclude @Transient var membershipLength: Int = 0                    //days
         @Exclude get(){
             return ((java.util.Calendar.getInstance().time.time - captureDate.time) / 1000 / 60 / 60 / 24).toInt()
         }
@@ -3980,7 +4008,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
             field = value
         }*/
     var externalDescription: String = "This is external description."
-    var ID: Int = 0
+    var id: Int = 0
     var members: HashMap<String, FactionMember> = hashMapOf(this.leader to FactionMember(this.leader, FactionRole.LEADER, 1, Data.player.allies))
     var allyFactions: HashMap<String, String> = hashMapOf()
     var enemyFactions: HashMap<String, String> = hashMapOf()
@@ -4013,8 +4041,8 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     var democracy: Boolean = false
     var recruiter: String = this.leader
 
-    @Exclude var returnList: MutableList<Player> = mutableListOf()
-    @Exclude var returnedPlayer: Player? = null
+    @Exclude @Transient  var returnList: MutableList<Player> = mutableListOf()
+    @Exclude @Transient  var returnedPlayer: Player? = null
 
     fun writeLog(actionLog: FactionActionLog) {
         val db = FirebaseFirestore.getInstance()
@@ -4068,7 +4096,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
 
     fun kickMember(member: FactionMember, caller: String){
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("factions").document(this.ID.toString())
+        val docRef = db.collection("factions").document(this.id.toString())
         this.writeLog(FactionActionLog(caller, " kicked ", member.username))
         Data.player.writeInbox(member.username, InboxMessage(status = MessageStatus.Faction, receiver = member.username, sender = this.name, subject = "${Data.player.username} kicked you from ${this.name}.", content = "You've been kicked from ${this.name} by ${Data.player.factionRole.toString()} ${Data.player.username}."))
         docRef.update("members.${member.username}", FieldValue.delete())
@@ -4105,7 +4133,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
 
     fun upload(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("factions").document(this.ID.toString())
+        val docRef = db.collection("factions").document(this.id.toString())
 
         val dataMap: HashMap<String, Any?> = hashMapOf(
                 "captureDate" to this.captureDate,
@@ -4133,7 +4161,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
 
     fun create(): Task<Void>{
         val db = FirebaseFirestore.getInstance()
-        return db.collection("factions").document(this.ID.toString()).set(this)
+        return db.collection("factions").document(this.id.toString()).set(this)
     }
 
     @Exclude fun getInfoDesc(): String{
@@ -4148,11 +4176,11 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
         var temp: MutableList<Faction>
         return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
             temp = it.toObjects(Faction::class.java)
-            this.ID = if (!temp.isNullOrEmpty()) {
-                temp[0].ID + 1
+            this.id = if (!temp.isNullOrEmpty()) {
+                temp[0].id + 1
             } else 1
         }.continueWith {
-            docRef.document(this.ID.toString()).set(this)
+            docRef.document(this.id.toString()).set(this)
         }
     }
 
@@ -4350,7 +4378,6 @@ class RocketGame(
         if(coordinatesRocket.rocketTargetX == 0f){
             if(rocketBody.x > 0){
                 rocketBody.x -= 1
-                rocketBody.y = (height / 2).toFloat()
             }
         }else {
             if(kotlin.math.abs(coordinatesRocket.rocketTargetX - rocketBody.x) < speedX){
@@ -4396,7 +4423,7 @@ class RocketGame(
             imageView!!.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
             imageView?.layoutParams?.width = (width * 0.05).toInt()
             imageView?.layoutParams?.height = (width * 0.05).toInt()
-            imageView?.x = nextInt(width + (width * 0.05).toInt(), (width + width * 0.05).toInt() * 4).toFloat()
+            imageView?.x = nextInt(width + (width * 0.05).toInt(), (width + width * 0.05).toInt() * 2).toFloat()
             imageView?.y = nextInt(- imageView!!.height/2 , height + imageView!!.height/2).toFloat()
 
             parent.addView(imageView)

@@ -132,7 +132,7 @@ class Activity_Inbox : AppCompatActivity(){
                 buttonYes.setOnClickListener {
                     Data.inbox.removeAll(editModeMessages)
                     for(i in editModeMessages){
-                        Data.player.removeInbox(i.ID)
+                        Data.player.removeInbox(i.id)
                     }
                     editMode = false
                     this.openFileOutput("inbox${Data.player.username}.data", Context.MODE_PRIVATE).close()
@@ -361,7 +361,7 @@ class Activity_Inbox : AppCompatActivity(){
         if(Data.inboxSnapshot == null){
             init()
             val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
-            Data.inbox.sortByDescending { it.ID }
+            Data.inbox.sortByDescending { it.id }
             val docRef = db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
             Data.inboxSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                 if (e != null) {
@@ -380,12 +380,12 @@ class Activity_Inbox : AppCompatActivity(){
                        if(i.type == DocumentChange.Type.ADDED)inboxSnap.add(i.document.toObject(InboxMessage::class.java))
                     }
 
-                    inboxSnap.sortByDescending { it.ID }
+                    inboxSnap.sortByDescending { it.id }
                     Log.d("ontop", onTop.toString())
                     if(onTop && snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         Log.d("new Message", "received1")
                         for(i in inboxSnap){
-                            if(!Data.inbox.any { it.ID == i.ID } && i.status != MessageStatus.Read){
+                            if(!Data.inbox.any { it.id == i.id } && i.status != MessageStatus.Read){
                                 Data.inbox.add(i)
                                 Log.d("new Message", "received inner")
                                 Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
@@ -400,7 +400,7 @@ class Activity_Inbox : AppCompatActivity(){
                     }else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         Log.d("new Message", "recieved !ontop start ${Data.inbox.size}")
                         for(i in inboxSnap){
-                             if(!Data.inbox.any { it.ID == i.ID }  && i.status != MessageStatus.Read){
+                             if(!Data.inbox.any { it.id == i.id }  && i.status != MessageStatus.Read){
                                  Data.inbox.add(i)
                                  Log.d("new Message", "recieved !ontop inner")
                                  Data.inboxChangedMessages++
@@ -458,7 +458,7 @@ class Activity_Inbox : AppCompatActivity(){
             val viewHolder = rowMain.tag as ViewHolder
 
             val inboxCategories = Data.inboxCategories.values.toMutableList()
-            inboxCategories.sortBy { it.ID }
+            inboxCategories.sortBy { it.id }
 
             viewHolder.textViewInboxCategory.text = inboxCategories[position].name
             viewHolder.textViewInboxCategoryNumber.text = inboxCategories[position].messages.size.toString()
@@ -543,14 +543,14 @@ class Activity_Inbox : AppCompatActivity(){
 
             viewHolder.checkBoxInboxMessagesAction.setOnCheckedChangeListener { _, isChecked ->
                 if(isChecked){
-                    if(!activity.editModeMessages.any { it.ID == activity.currentCategory.messages[position].ID }) activity.editModeMessages.add(activity.currentCategory.messages[position])
+                    if(!activity.editModeMessages.any { it.id == activity.currentCategory.messages[position].id }) activity.editModeMessages.add(activity.currentCategory.messages[position])
                 }else{
                     activity.editModeMessages.remove(activity.currentCategory.messages[position])
                 }
                 textViewInboxActionCounter.text = activity.editModeMessages.size.toString()
             }
 
-            viewHolder.checkBoxInboxMessagesAction.isChecked = activity.editModeMessages.any { it.ID == activity.currentCategory.messages[position].ID }
+            viewHolder.checkBoxInboxMessagesAction.isChecked = activity.editModeMessages.any { it.id == activity.currentCategory.messages[position].id }
 
             viewHolder.checkBoxInboxMessagesAction.visibility = if(activity.editMode){
                 View.VISIBLE

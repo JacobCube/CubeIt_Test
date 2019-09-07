@@ -170,7 +170,7 @@ class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIc
         private fun getClickSpell(index:Int, spellButtons:Array<ImageView>){
             if(Data.player.chosenSpellsAttack.contains(null)){
                 val tempIndex = Data.player.chosenSpellsAttack.indexOf(null)
-                if(index != 0 && index != 1 && !Data.player.chosenSpellsAttack.any { it?.ID == Data.player.learnedSpells[index]!!.ID }) {
+                if(index != 0 && index != 1 && !Data.player.chosenSpellsAttack.any { it?.id == Data.player.learnedSpells[index]!!.id }) {
                     Data.player.chosenSpellsAttack[tempIndex] = Data.player.learnedSpells[index]
                     spellButtons[tempIndex + 2].setImageResource(Data.player.chosenSpellsAttack[tempIndex]!!.drawable)
                     spellButtons[tempIndex + 2].isEnabled = true

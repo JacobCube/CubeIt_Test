@@ -7,14 +7,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.Animation
@@ -95,7 +93,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         spellFightPlayer.setImageDrawable(imageView.drawable)
 
         disableSpellsFor(
-                if(enemySpell.ID == "0000" || playerSpell.ID == "0000"){
+                if(enemySpell.id == "0000" || playerSpell.id == "0000"){
                     600
                 }else{
                     1600
@@ -114,12 +112,12 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
                     override fun onAnimationEnd(animation: Animation) {
 
-                        if(enemySpell.ID != "0000" && playerSpell.ID == "0000"){
+                        if(enemySpell.id != "0000" && playerSpell.id == "0000"){
                             handler.postDelayed({
                                 spellFightPlayer.alpha = 0f
                                 spellFightPlayer.startAnimation(animationShieldResume)
                             }, 100)
-                        }else if(enemySpell.ID == "0000" && playerSpell.ID != "0000"){
+                        }else if(enemySpell.id == "0000" && playerSpell.id != "0000"){
                             handler.postDelayed({
                                 spellFightEnemy.alpha = 0f
                                 spellFightEnemy.startAnimation(animationShieldResume)
@@ -203,8 +201,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
         imageView.startAnimation(animationUseSpell)         //bar spell animation
 
-        if(enemySpell.ID == "0000"){                        //enemy's attack
-            if(playerSpell.ID == "0000"){
+        if(enemySpell.id == "0000"){                        //enemy's attack
+            if(playerSpell.id == "0000"){
                 spellFightEnemy.alpha = 1f
                 spellFightEnemy.startAnimation(animationShield)
             }else {
@@ -233,7 +231,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                             }
                         }
                 )
-                startDelay = if(playerSpell.ID != "0000"){
+                startDelay = if(playerSpell.id != "0000"){
                     1000
                 }else{
                     0
@@ -242,8 +240,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             }
         }
 
-        if(playerSpell.ID == "0000"){                            //player's attack
-            if(enemySpell.ID == "0000"){
+        if(playerSpell.id == "0000"){                            //player's attack
+            if(enemySpell.id == "0000"){
                 spellFightPlayer.alpha = 1f
                 spellFightPlayer.startAnimation(animationShield)
             }else {
@@ -272,7 +270,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                             }
                         }
                 )
-                startDelay = if(enemySpell.ID != "0000"){
+                startDelay = if(enemySpell.id != "0000"){
                     400
                 }else{
                     0
@@ -386,7 +384,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 }
                 field = value
             }
-        var EOT = mutableListOf<DamageOverTime>()       //effects over time (on this player)
+        var EOT = mutableListOf<FightEffect>()       //effects over time (on this player)
         var health = 0.0
             set(value){
                 ValueAnimator.ofInt(progressBarEnemyHealth.progress, value.toInt()).apply{                                  //Animating the differences in progress bar
@@ -451,7 +449,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 }
                 field = value
             }
-        var EOT = mutableListOf<DamageOverTime>()       //effects over time (on this player)
+        var EOT = mutableListOf<FightEffect>()       //effects over time (on this player)
         var health = 0.0
             set(value){
                 ValueAnimator.ofInt(progressBarPlayerHealth.progress, value.toInt()).apply{                                  //Animating the differences in progress bar

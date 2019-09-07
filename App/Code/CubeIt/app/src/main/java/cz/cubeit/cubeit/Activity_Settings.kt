@@ -10,6 +10,7 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.SeekBar
+import androidx.core.content.res.ResourcesCompat
 import kotlinx.android.synthetic.main.activity_settings.*
 
 
@@ -102,6 +103,18 @@ class ActivitySettings : AppCompatActivity(){
                 SystemFlow.writeFileText(this@ActivitySettings, "textSize${Data.player.username}.data", Data.player.textSize.toString())
             }
         })
+
+        textViewSettingsTextFont.text = Data.player.textFont
+        val gallery = Data.fontGallery.keys.toMutableList()
+        var galleryCounter = gallery.indexOf(Data.player.textFont)
+
+        imageViewSettingFontRight.setOnClickListener {
+            if(++galleryCounter >= gallery.size) galleryCounter = 0
+            textViewSettingsTextFont.text = gallery[galleryCounter]
+            Data.player.textFont = gallery[galleryCounter]
+            textViewSettingsSeekBar.typeface = ResourcesCompat.getFont(this, Data.fontGallery[Data.player.textFont]!!)
+            SystemFlow.writeFileText(this@ActivitySettings, "textFont${Data.player.username}.data", Data.player.textFont)
+        }
 
         switchSounds.setOnCheckedChangeListener { _, isChecked ->
             val svc = Intent(this, Data.bgMusic::class.java)

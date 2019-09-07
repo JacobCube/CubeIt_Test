@@ -41,10 +41,10 @@ class Fragment_Faction: Fragment(){
     var firstLoad = true
 
     companion object{
-        fun newInstance(ID: String? = null):Fragment_Faction{
+        fun newInstance(id: String? = null):Fragment_Faction{
             val fragment = Fragment_Faction()
             val args = Bundle()
-            args.putString("id", ID)
+            args.putString("id", id)
             fragment.arguments = args
             return fragment
         }
@@ -214,11 +214,11 @@ class Fragment_Faction: Fragment(){
         }
 
 
-        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR) && currentInstanceOfFaction!!.ID != Data.player.factionID){
+        viewTemp.buttonFactionAlly.visibility = if(Data.player.faction != null && !Data.player.faction!!.pendingInvitationsFaction.containsKey(currentInstanceOfFaction!!.id.toString()) && !myFaction && (Data.player.factionRole == FactionRole.LEADER || Data.player.factionRole == FactionRole.MODERATOR) && currentInstanceOfFaction!!.id != Data.player.factionID){
             View.VISIBLE
         }else View.GONE
 
-        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.ID.toString()) && !myFaction && Data.player.factionRole == FactionRole.LEADER && currentInstanceOfFaction!!.ID != Data.player.factionID){
+        viewTemp.buttonFactionEnemy.visibility = if(Data.player.faction != null && !Data.player.faction!!.enemyFactions.containsKey(currentInstanceOfFaction!!.id.toString()) && !myFaction && Data.player.factionRole == FactionRole.LEADER && currentInstanceOfFaction!!.id != Data.player.factionID){
             View.VISIBLE
         }else View.GONE
     }
@@ -301,7 +301,7 @@ class Fragment_Faction: Fragment(){
                     if (i.allies.contains(Data.player.username)) {
                         db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level, Data.player.allies)))
                         Data.player.factionRole = FactionRole.MEMBER
-                        Data.player.factionID = currentInstanceOfFaction?.ID
+                        Data.player.factionID = currentInstanceOfFaction?.id
                         Data.player.factionName = currentInstanceOfFaction?.name
                         containsAlly = true
                         activity!!.finish()
@@ -324,8 +324,8 @@ class Fragment_Faction: Fragment(){
                 val db = FirebaseFirestore.getInstance()
 
                 Data.player.writeInbox(currentInstanceOfFaction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.leader, sender = Data.player.username, subject = "${Data.player.username} wants to ally with your faction.", content = "Greetings!\nPlayer ${Data.player.username} from faction ${Data.player.factionName} wants to discuss about being ally with your faction.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}", isInvitation1 = true, invitation = Invitation("","","", InvitationType.factionAlly, Data.player.factionID!!, "")))
-                db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("pendingInvitationsFaction.${currentInstanceOfFaction!!.ID.toString()}" to currentInstanceOfFaction!!.name))
-                Data.player.faction!!.pendingInvitationsFaction[currentInstanceOfFaction!!.ID.toString()] = currentInstanceOfFaction!!.name
+                db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("pendingInvitationsFaction.${currentInstanceOfFaction!!.id.toString()}" to currentInstanceOfFaction!!.name))
+                Data.player.faction!!.pendingInvitationsFaction[currentInstanceOfFaction!!.id.toString()] = currentInstanceOfFaction!!.name
                 Toast.makeText(viewTemp.context, "Ally request was successfully sent, wait for their response.", Toast.LENGTH_LONG).show()
                 viewTemp.buttonFactionAlly.isEnabled = false
             }else Toast.makeText(viewTemp.context, "Failed loading the faction.", Toast.LENGTH_LONG).show()
@@ -347,9 +347,9 @@ class Fragment_Faction: Fragment(){
                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 buttonYes.setOnClickListener {
 
-                    db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("enemyFactions.${currentInstanceOfFaction!!.ID.toString()}" to currentInstanceOfFaction!!.name))
+                    db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("enemyFactions.${currentInstanceOfFaction!!.id.toString()}" to currentInstanceOfFaction!!.name))
                     db.collection("factions").document(currentInstanceOfFaction!!.name).update(mapOf("enemyFactions.${Data.player.factionID.toString()}" to Data.player.factionName))
-                    Data.player.faction!!.enemyFactions[currentInstanceOfFaction!!.ID.toString()] = currentInstanceOfFaction!!.name
+                    Data.player.faction!!.enemyFactions[currentInstanceOfFaction!!.id.toString()] = currentInstanceOfFaction!!.name
                     Data.player.writeInbox(currentInstanceOfFaction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.leader, sender = Data.player.username, subject = "${Data.player.factionName} put your faction on their enemy list!", content = "Greetings!\nPlayer ${Data.player.username} from faction ${Data.player.factionName} just put you on their faction's enemy list.\nYou gotta do something!"))
                     Toast.makeText(viewTemp.context, "Faction successfully added to your enemies.", Toast.LENGTH_LONG).show()
 

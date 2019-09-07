@@ -140,7 +140,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewMarketBarSeller"
         app:srcCompat="@color/loginColor" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketBarSeller"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -155,7 +155,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketBarPrice"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -173,7 +173,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketBarDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -191,7 +191,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketBarItem"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -208,7 +208,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketBarDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

@@ -25,7 +25,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.465" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/TextEmail"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -85,7 +85,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.623" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textPassword"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -125,7 +125,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toTopOf="@+id/Texguideline8" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/resetPass"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -192,7 +192,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/loginVersionInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

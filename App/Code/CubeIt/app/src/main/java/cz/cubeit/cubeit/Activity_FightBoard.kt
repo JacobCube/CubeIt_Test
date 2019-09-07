@@ -543,7 +543,7 @@ class ActivityFightBoard: AppCompatActivity(){
             viewHolder.textViewBoardLevel.text = factionList[position].level.toString()
             viewHolder.textViewBoardRowFaction.text = factionList[position].leader
 
-            if(factionList[position].ID == Data.player.factionID){
+            if(factionList[position].id == Data.player.factionID){
                 viewHolder.rowFightBoard.setColorFilter(R.color.colorSecondary, PorterDuff.Mode.MULTIPLY)
             } else viewHolder.rowFightBoard.clearColorFilter()
 

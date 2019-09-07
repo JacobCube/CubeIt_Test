@@ -81,7 +81,7 @@ class Activity_Story: AppCompatActivity(){
         imageViewStoryBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.story_bg, opts))
 
         Data.storyQuests.add(StoryQuest(
-                ID = "0001",
+                id = "0001",
                 name = "Quest name",
                 chapter = 1,
                 completed = false,
@@ -108,7 +108,7 @@ class Activity_Story: AppCompatActivity(){
                 )
         ))
         Data.storyQuests.add(StoryQuest(
-                ID = "0002",
+                id = "0002",
                 name = "Quest name",
                 chapter = 1,
                 completed = false,
@@ -153,6 +153,6 @@ class Activity_Story: AppCompatActivity(){
         }
     }
     fun onStoryClicked(storyQuest: StoryQuest){
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutStoryQuestInfo ,Fragment_Story_info.newInstance(storyQuest.ID)).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutStoryQuestInfo ,Fragment_Story_info.newInstance(storyQuest.id)).commit()
     }
 }

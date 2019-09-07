@@ -50,7 +50,6 @@ class Fragment_Board_Character_Profile : Fragment() {
         opts.inScaled = false
         view.profile_imageViewCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, playerProfile.charClass.drawable, opts))
 
-        view.profile_textViewInfoCharacter.fontSizeType = CustomTextView.SizeType.title
         view.profile_textViewInfoCharacter.text = playerProfile.username
 
         for(i in 0 until 10) {

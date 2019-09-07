@@ -25,6 +25,7 @@ import android.view.ContextThemeWrapper
 import android.view.MotionEvent
 import android.widget.PopupMenu
 import com.google.firebase.Timestamp
+import com.google.gson.Gson
 import java.lang.Math.abs
 
 
@@ -64,6 +65,8 @@ class Home : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_home)
+
+        Log.d("StoryQuest structure", Gson().toJson(Data.storyQuests[0]))
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false

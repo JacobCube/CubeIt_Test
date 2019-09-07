@@ -97,7 +97,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         spellFightEnemyNPC.setImageResource(enemySpell.drawable)
 
         disableSpellsFor(
-                if(enemySpell.ID == "0000" || playerSpell.ID == "0000"){
+                if(enemySpell.id == "0000" || playerSpell.id == "0000"){
                     700
                 }else{
                     1600
@@ -114,11 +114,11 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
             override fun onAnimationEnd(animation: Animation) {
 
-                if(enemySpell.ID != "0000" && playerSpell.ID == "0000"){
+                if(enemySpell.id != "0000" && playerSpell.id == "0000"){
                     handler.postDelayed({
                         imageView.startAnimation(animationShieldResume)
                     }, 250)
-                }else if(enemySpell.ID == "0000" && playerSpell.ID != "0000"){
+                }else if(enemySpell.id == "0000" && playerSpell.id != "0000"){
                     handler.postDelayed({
                         spellFightEnemyNPC.alpha = 0f
                         spellFightEnemyNPC.startAnimation(animationShieldResume)
@@ -134,7 +134,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
-        if(enemySpell.ID == "0000"){                                            //enemy's attack
+        if(enemySpell.id == "0000"){                                            //enemy's attack
             spellFightEnemyNPC.alpha = 1f
             spellFightEnemyNPC.startAnimation(animationShield)
         }else{
@@ -158,7 +158,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                             }
                         }
                 )
-                startDelay = if(playerSpell.ID == "0000"){
+                startDelay = if(playerSpell.id == "0000"){
                     100
                 }else {
                     1000
@@ -167,7 +167,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         }
 
-        if(playerSpell.ID == "0000"){                                           //player's attack
+        if(playerSpell.id == "0000"){                                           //player's attack
             imageView.startAnimation(animationShield)
         }else{
             imageView.animate().apply {
@@ -297,7 +297,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 }
                 field = value
             }
-        var EOT = mutableListOf<DamageOverTime>()       //effects over time (on this player)
+        var EOT = mutableListOf<FightEffect>()       //effects over time (on this player)
         var health = 0.0
             set(value){
                 ValueAnimator.ofInt(progressBarEnemyHealthNPC.progress, value.toInt()).apply{                                  //Animating the differences in progress bar
@@ -365,7 +365,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 }
                 field = value
             }
-        var EOT = mutableListOf<DamageOverTime>()       //effects over time (on this player)
+        var EOT = mutableListOf<FightEffect>()       //effects over time (on this player)
         var health = 0.0
             set(value){
                 ValueAnimator.ofInt(progressBarPlayerHealthNPC.progress, value.toInt()).apply{                                  //Animating the differences in progress bar

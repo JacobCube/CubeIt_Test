@@ -406,7 +406,7 @@
         app:layout_constraintTop_toTopOf="@+id/imageViewHomeInbox"
         app:srcCompat="@drawable/new_message_bg" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewHomeMailNew"
         android:layout_width="0dp"
         android:layout_height="0dp"

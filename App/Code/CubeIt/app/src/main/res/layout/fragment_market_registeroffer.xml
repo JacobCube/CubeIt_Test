@@ -230,7 +230,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline188"
         app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterCubeCoins" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRegisterLowerAfterText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

@@ -21,7 +21,7 @@ class Fragment_Story_Overview_Completed : Fragment() {
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        Data.player.storyQuestsCompleted.sortBy { it.ID.toIntOrNull() }
+        Data.player.storyQuestsCompleted.sortBy { it.id.toIntOrNull() }
 
         view.listViewStoryCompleted.adapter = StoryOverviewCompletedAdapter(Data.player.storyQuestsCompleted, activity!!)
 

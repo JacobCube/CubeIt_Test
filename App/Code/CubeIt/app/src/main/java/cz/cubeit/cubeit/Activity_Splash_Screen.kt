@@ -230,7 +230,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 imageViewSplashIcon.isEnabled = false
 
                 rocketGame.detach()
-                coordinatesRocket.update(0f, 0f)
+                coordinatesRocket.update(0f, metrics.heightPixels.toFloat() / 2)
                 rocketGame = RocketGame(1, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
                 rocketGame.initialize()
                 var endCount = 0

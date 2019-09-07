@@ -127,7 +127,7 @@ class FragmentDefense : Fragment(){
                 if(index+i < Data.player.learnedSpells.size){
                     if(Data.player.learnedSpells[index+i]!=null){
                         tempSpell.setImageResource(Data.player.learnedSpells[index+i]!!.drawable)
-                        textView.text = Data.player.chosenSpellsDefense.count { it?.ID == Data.player.learnedSpells[index + i]!!.ID }.toString()
+                        textView.text = Data.player.chosenSpellsDefense.count { it?.id == Data.player.learnedSpells[index + i]!!.id }.toString()
                         textView.visibility = View.VISIBLE
                         tempSpell.isEnabled = true
                     }else{

@@ -140,7 +140,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.57" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewShopMoney"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -199,7 +199,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline47"
         app:srcCompat="@drawable/bug_icon" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewShopCoin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -221,7 +221,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline47"
         app:layout_constraintTop_toTopOf="@+id/guideline9" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/bubleDialogShop"
         android:layout_width="0dp"
         android:layout_height="0dp"

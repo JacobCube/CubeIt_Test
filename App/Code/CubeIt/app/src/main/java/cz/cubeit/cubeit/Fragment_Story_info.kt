@@ -23,7 +23,7 @@ class Fragment_Story_info : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_story_info, container, false)
 
-        val quest = Data.storyQuests.filter { it.ID == arguments?.getString("questID") }[0]
+        val quest = Data.storyQuests.filter { it.id == arguments?.getString("questID") }[0]
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -35,9 +35,9 @@ class Fragment_Story_info : Fragment() {
         view.textViewStoryInfoQuestDescription.text = quest.description
 
         view.imageViewStoryInfoAccept.setOnClickListener {
-            if(!Data.player.storyQuestsCompleted.filter { it.ID == quest.ID }.isNullOrEmpty() && quest.ID == Data.player.storyQuestsCompleted.filter { it.ID == quest.ID }[0].ID){
+            if(!Data.player.storyQuestsCompleted.filter { it.id == quest.id }.isNullOrEmpty() && quest.id == Data.player.storyQuestsCompleted.filter { it.id == quest.id }[0].id){
                 Data.player.currentStoryQuest = quest
-                Data.player.storyQuestsCompleted.remove(Data.player.storyQuestsCompleted.filter { it.ID == quest.ID }[0])
+                Data.player.storyQuestsCompleted.remove(Data.player.storyQuestsCompleted.filter { it.id == quest.id }[0])
             }else{
                 Data.player.currentStoryQuest = quest
             }

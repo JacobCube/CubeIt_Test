@@ -77,7 +77,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.163" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewLoadingLog"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -89,7 +89,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -197,7 +197,7 @@
         app:srcCompat="@drawable/rocket_0"
         tools:visibility="visible" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

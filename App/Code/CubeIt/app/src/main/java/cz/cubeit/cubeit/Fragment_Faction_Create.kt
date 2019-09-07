@@ -63,7 +63,7 @@ class Fragment_Faction_Create : Fragment() {
 
                                     Data.player.factionRole = FactionRole.LEADER
                                     Data.player.factionName = faction.name
-                                    Data.player.factionID = faction.ID
+                                    Data.player.factionID = faction.id
                                     Data.player.faction = faction
                                     faction.create().addOnSuccessListener {
                                         (activity as Activity_Faction_Base).changePage(1)

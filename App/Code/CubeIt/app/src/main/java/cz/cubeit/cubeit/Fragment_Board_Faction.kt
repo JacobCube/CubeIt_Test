@@ -44,11 +44,11 @@ class Fragment_Board_Faction : Fragment() {
         view.textViewBoardFactionAllies.text = allyText
         view.textViewBoardFactionEnemies.text = enemyText
 
-        view.imageViewBoardFactionMail.isEnabled = chosenFaction.ID != Data.player.factionID
+        view.imageViewBoardFactionMail.isEnabled = chosenFaction.id != Data.player.factionID
 
         view.imageViewBoardFactionShow.setOnClickListener {
             val intent = Intent(view.context, Activity_Faction_Base()::class.java)
-            intent.putExtra("id", chosenFaction.ID.toString())
+            intent.putExtra("id", chosenFaction.id.toString())
             startActivity(intent)
         }
         view.imageViewBoardFactionMail.setOnClickListener {

@@ -75,7 +75,7 @@ class FragmentInboxMessage : Fragment() {
                     visibility = if(Data.player.factionID == null) View.VISIBLE else View.GONE
                     setOnClickListener {
                         (activity as Activity_Inbox).chosenMail.invitation.accept()
-                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.id)
                         (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
                         (activity!! as Activity_Inbox).refreshCategory()
                         activity!!.supportFragmentManager.beginTransaction().remove(this@FragmentInboxMessage).commitNow()
@@ -85,7 +85,7 @@ class FragmentInboxMessage : Fragment() {
                     visibility = View.VISIBLE
                     setOnClickListener {
                         (activity as Activity_Inbox).chosenMail.invitation.decline()
-                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.id)
                         (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
                         (activity!! as Activity_Inbox).refreshCategory()
                         activity!!.supportFragmentManager.beginTransaction().remove(this@FragmentInboxMessage).commitNow()
@@ -134,7 +134,7 @@ class FragmentInboxMessage : Fragment() {
                 window.isFocusable = true
                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 buttonYes.setOnClickListener {
-                    Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                    Data.player.removeInbox((activity as Activity_Inbox).chosenMail.id)
                     (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
                     (activity!! as Activity_Inbox).refreshCategory()
                     activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
@@ -171,13 +171,13 @@ class FragmentInboxMessage : Fragment() {
                 view.buttonInboxMessageGet.setOnClickListener {
                     if(Data.player.inventory.contains(null)){
                         view.buttonInboxMessageGet.isEnabled = false
-                        Data.inbox.find { it.ID == (activity as Activity_Inbox).chosenMail.ID }!!.apply {
+                        Data.inbox.find { it.id == (activity as Activity_Inbox).chosenMail.id }!!.apply {
                             reward!!.receive()
                             reward = null
                         }
-                        Data.inbox.remove(Data.inbox.find { it.ID == (activity as Activity_Inbox).chosenMail.ID }!!)
+                        Data.inbox.remove(Data.inbox.find { it.id == (activity as Activity_Inbox).chosenMail.id }!!)
 
-                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.ID)
+                        Data.player.removeInbox((activity as Activity_Inbox).chosenMail.id)
                         Data.refreshInbox(view.context)
                         (activity!! as Activity_Inbox).refreshCategory()
                     }else{

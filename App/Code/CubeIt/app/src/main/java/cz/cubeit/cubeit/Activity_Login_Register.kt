@@ -56,7 +56,7 @@ class ActivityLoginRegister(private val loginUsername: String = "", private val 
             }
         }
 
-        Log.d("json", Gson().toJson(Item()).toString())
+        Log.d("json", Gson().toJson(Item()) .toString())
         Log.d("Item class", "TEST: " + Item().getFields())
     }
 }

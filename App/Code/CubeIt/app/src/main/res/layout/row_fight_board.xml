@@ -84,7 +84,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.13" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewBoardLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
