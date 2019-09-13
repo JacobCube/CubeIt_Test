@@ -225,14 +225,14 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
 
     private class ViewPagerFactionOverview internal constructor(fm: FragmentManager, private val fractionID: String?) : FragmentPagerAdapter(fm){
 
-        override fun getItem(position: Int): Fragment? {
+        override fun getItem(position: Int): Fragment {
             Log.d("faction index", position.toString())
             return when(position) {
                 0 -> Fragment_Faction_Create()
                 1 -> Fragment_Faction.newInstance(fractionID)
                 2 -> Fragment_Faction_Edit()
                 3 -> Fragment_Faction_Managment()
-                else -> null
+                else -> Fragment_Faction_Create()
             }
         }
 

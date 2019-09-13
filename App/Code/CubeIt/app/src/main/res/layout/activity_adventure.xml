@@ -29,6 +29,7 @@
         android:max="100"
         android:progress="0"
         android:progressDrawable="@drawable/progress_active_quest"
+        android:focusable="false"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline135"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,6 +37,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewQuestProgress"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline135"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
         android:id="@+id/frameLayoutAdventureOverview"
@@ -98,16 +112,16 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
         android:clickable="true"
-        android:focusable="true"
+        android:focusable="false"
         android:src="@drawable/secondarymission"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/homeButtonBackAdventure"
-		 android:adjustViewBounds="true"
         android:layout_width="75dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:background="@drawable/emptyspellslotlarge"
         android:backgroundTint="@color/colorPrimary"
         android:src="@drawable/home_button"
@@ -122,19 +136,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
-
-    <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewQuestProgress"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:fontFamily="@font/average_sans"
-        android:gravity="center"
-        android:textSize="18sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/guideline135"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

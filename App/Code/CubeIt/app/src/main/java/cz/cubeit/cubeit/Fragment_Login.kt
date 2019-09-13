@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AlertDialog
@@ -71,8 +70,8 @@ class FragmentLogin : Fragment()  {
 
                         startActivity(intentSplash)
                         val db = FirebaseFirestore.getInstance()
-                        db.collection("Server").document("Generic").get().addOnSuccessListener {
-                            if(it.getString("Status") == "on"){
+                        db.collection("Server").document("Generic").get().addOnSuccessListener { documentSnapshot ->
+                            if(documentSnapshot.getString("Status") == "on"){
                                 Data.loadGlobalData(view.context).addOnSuccessListener{
 
                                     if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE){
@@ -148,7 +147,7 @@ class FragmentLogin : Fragment()  {
 
                                 val builder = AlertDialog.Builder(view.context)
                                 builder.setTitle("Server not available")
-                                builder.setMessage("Server is currently ${it.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(it.getBoolean("ShowDsc")!!)it.getString("ExternalDsc") else "")
+                                builder.setMessage("Server is currently ${documentSnapshot.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(documentSnapshot.getBoolean("ShowDsc")!!)documentSnapshot.getString("ExternalDsc") else "")
                                 if(dialog == null)dialog = builder.create()
                                 dialog!!.setCanceledOnTouchOutside(false)
                                 dialog!!.setCancelable(false)

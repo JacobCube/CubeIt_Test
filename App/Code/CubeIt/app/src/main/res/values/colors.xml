@@ -30,6 +30,7 @@
     <color name="leaderboard_second">#C0C0C0</color>
     <color name="leaderboard_third">#cd7f32</color>
 
+    <color name="empty_item">#7A7A7A</color>
     <color name="itemborder">#535353</color>
     <color name="itemborder_poor">#535353</color>
     <color name="itemborder_common">#FFFFFF</color>

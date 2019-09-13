@@ -131,7 +131,7 @@ class Activity_Character_Customization: AppCompatActivity(){
 
     class ViewPagerCharacterCustomization internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
-        override fun getItem(position: Int): Fragment? {
+        override fun getItem(position: Int): Fragment {
             val drawable = Data.charClasses[position+1].drawable
             return Fragment_Character.newInstance(drawable)
         }

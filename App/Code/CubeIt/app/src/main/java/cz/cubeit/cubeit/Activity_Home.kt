@@ -1,7 +1,5 @@
 package cz.cubeit.cubeit
 
-import android.animation.Animator
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
@@ -18,15 +16,9 @@ import android.util.Log
 import android.view.View
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
-import android.content.DialogInterface
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.view.ContextThemeWrapper
 import android.view.MotionEvent
 import android.widget.PopupMenu
-import com.google.firebase.Timestamp
-import com.google.gson.Gson
-import java.lang.Math.abs
 
 
 var playedSong = R.raw.playedsong
@@ -60,13 +52,12 @@ class Home : AppCompatActivity() {
     override fun onBackPressed() {
     }
 
+    @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_home)
-
-        Log.d("StoryQuest structure", Gson().toJson(Data.storyQuests[0]))
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -160,6 +151,91 @@ class Home : AppCompatActivity() {
         var initialTouchExitX = 0f
         var clickableExit = false
 
+        Data.itemClasses = mutableListOf(                   //should be cloud saved
+                LoadItems("0", mutableListOf(
+                        Runes(name = "Backpack", type = "Runes", drawableIn =  "00303", levelRq =  1, quality =  0, charClass =  0, description =  "Why is all your stuff so heavy?!", slot = 10, price = 1)
+                        ,Runes(name = "Zipper", type = "Runes", drawableIn =  "00300", levelRq =  1, quality =  0, charClass =  0, description =  "Helps you take enemy's loot faster", slot = 11, price = 1)
+                        ,Wearable(name = "Universal item 1", type =  "Wearable", drawableIn = "00301", levelRq =  1, quality =  0, charClass = 0, description =  "For everyone", slot = 2, price = 1)
+                        ,Wearable(name ="Universal item 2", type =  "Wearable", drawableIn =  "00302", levelRq =  1, quality = 0, charClass =  0, description =  "Not for everyone", slot =  3, price = 1)
+                )),
+                LoadItems("1", mutableListOf(
+                        Weapon(name = "Minigun prototype", type = "Weapon", drawableIn =  "00506", levelRq = 1, quality = 0,charClass = 1, description = "RATATATATATATATA", slot = 0, price = 1)
+                        ,Weapon(name = "Crossbow", type = "Weapon", drawableIn =  "00505", levelRq = 1, quality = 0,charClass = 1, description = "With your skill, it just whistles", slot = 0, price = 1)
+                        ,Weapon(name = "Granpa's teeth", type = "Weapon", drawableIn = "00504", levelRq = 1, quality = 0,charClass = 1, description = "Heirloom", slot = 1, price = 1)
+                        ,Wearable(name = "Metal mettalic boots", type ="Wearable", drawableIn = "00501", levelRq = 1, quality = 0,charClass = 1, description = "I'm not an emo, I just look like it", slot = 6, price = 1)
+                        ,Wearable(name = "Bitten trousers", type ="Wearable", drawableIn = "00500", levelRq = 1, quality = 0,charClass = 1, description = "It's a heirloom from my grandpa and grandma", slot = 7, price = 1)
+                        ,Wearable(name = "Cloak from the hood", type ="Wearable", drawableIn = "00502", levelRq = 1, quality = 0,charClass = 1, description = "That won't hide your face...unfortunately", slot = 8, price = 1)
+                        ,Wearable(name = "Hood from the hood", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 1, description = "Nice to (not) see you", slot = 9, price = 1)
+                )),
+                LoadItems("2", mutableListOf(
+                        Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 2, description = "The most sold weapon on black market", slot = 0, price = 1)
+                        ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 2, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                        ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 2, description = "I can't breath", slot = 4, price = 1)
+                        ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 2, description = "What is that smell?", slot = 5, price = 1)
+                        ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 2, description = "Can't carry it anymore", slot = 6, price = 1)
+                        ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 2, description = "Tight not high", slot = 7, price = 1)
+                        ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 2, description = "Chestplate protects!", slot = 8, price = 1)
+                        ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 2, description = "This doesn't make you any more clever", slot = 9, price = 1)
+                )),
+                LoadItems("3", mutableListOf(
+                        Weapon(name = "Long bow", type = "Weapon", drawableIn =  "02504", levelRq = 1, quality = 0,charClass = 3, description = "Shoot below the apple", slot = 0, price = 1)
+                        ,Weapon(name = "Shadow bow", type = "Weapon", drawableIn =  "02505", levelRq = 1, quality = 0,charClass = 3, description = "Shoot below the apple and it will hit the apple", slot = 0, price = 1)
+                        ,Wearable(name = "Light boots", type ="Wearable", drawableIn = "02500", levelRq = 1, quality = 0,charClass = 3, description = "Step by step.. tadatatatataaataaaa", slot = 6, price = 1)
+                        ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "02503", levelRq = 1, quality = 0,charClass = 3, description = "No idea how those bows fit in those", slot = 7, price = 1)
+                        ,Wearable(name = "Light armor", type ="Wearable", drawableIn = "02501", levelRq = 1, quality = 0,charClass = 3, description = "It's all just a mind game", slot = 8, price = 1)
+                        ,Wearable(name = "Light bycocket", type ="Wearable", drawableIn = "02502", levelRq = 1, quality = 0,charClass = 3, description = "Pointed in the front like a bird's beak", slot = 9, price = 1)
+                )),
+                LoadItems("4", mutableListOf(
+                        Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 4, description = "The most sold weapon on black market", slot = 0, price = 1)
+                        ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 4, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                        ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 4, description = "I can't breath", slot = 4, price = 1)
+                        ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 4, description = "What is that smell?", slot = 5, price = 1)
+                        ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 4, description = "Can't carry it anymore", slot = 6, price = 1)
+                        ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 4, description = "Tight not high", slot = 7, price = 1)
+                        ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 4, description = "Chestplate protects!", slot = 8, price = 1)
+                        ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 4, description = "This doesn't make you any more clever", slot = 9, price = 1)
+                )),
+                LoadItems("5", mutableListOf(
+                        Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 5, description = "The most sold weapon on black market", slot = 0, price = 1)
+                        ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 5, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                        ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 5, description = "I can't breath", slot = 4, price = 1)
+                        ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 5, description = "What is that smell?", slot = 5, price = 1)
+                        ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 5, description = "Can't carry it anymore", slot = 6, price = 1)
+                        ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 5, description = "Tight not high", slot = 7, price = 1)
+                        ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 5, description = "Chestplate protects!", slot = 8, price = 1)
+                        ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 5, description = "This doesn't make you any more clever", slot = 9, price = 1)
+                )),
+                LoadItems("6", mutableListOf(
+                        Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 6, description = "The most sold weapon on black market", slot = 0, price = 1)
+                        ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 6, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                        ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 6, description = "I can't breath", slot = 4, price = 1)
+                        ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 6, description = "What is that smell?", slot = 5, price = 1)
+                        ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 6, description = "Can't carry it anymore", slot = 6, price = 1)
+                        ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 6, description = "Tight not high", slot = 7, price = 1)
+                        ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 6, description = "Chestplate protects!", slot = 8, price = 1)
+                        ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 6, description = "This doesn't make you any more clever", slot = 9, price = 1)
+                )),
+                LoadItems("7", mutableListOf(
+                        Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 7, description = "The most sold weapon on black market", slot = 0, price = 1)
+                        ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 7, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                        ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 7, description = "I can't breath", slot = 4, price = 1)
+                        ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 7, description = "What is that smell?", slot = 5, price = 1)
+                        ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 7, description = "Can't carry it anymore", slot = 6, price = 1)
+                        ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 7, description = "Tight not high", slot = 7, price = 1)
+                        ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 7, description = "Chestplate protects!", slot = 8, price = 1)
+                        ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 7, description = "This doesn't make you any more clever", slot = 9, price = 1)
+                )),
+                LoadItems("8", mutableListOf(
+                        Weapon(name = "Cane pickaxe", type = "Weapon", drawableIn =  "07505", levelRq = 1, quality = 0,charClass = 8, description = "Even the smallest lick may kill you", slot = 0, price = 1)
+                        ,Weapon(name = "Cane shield", type = "Weapon", drawableIn = "07504", levelRq = 1, quality = 0,charClass = 8, description = "If you won't stop licking it, you're doomed", slot = 1, price = 1)
+                        ,Wearable(name = "Santa's boots", type ="Wearable", drawableIn = "07500", levelRq = 1, quality = 0,charClass = 8, description = "Can't carry it anymore", slot = 6, price = 1)
+                        ,Wearable(name = "Santa's metal boots", type ="Wearable", drawableIn = "07501", levelRq = 1, quality = 0,charClass = 8, description = "Can't carry it anymore", slot = 6, price = 1)
+                        ,Wearable(name = "Santa's trousers", type ="Wearable", drawableIn = "07506", levelRq = 1, quality = 0,charClass = 8, description = "Little bit outstratched after last Christmas", slot = 7, price = 1)
+                        ,Wearable(name = "Santa's sweater", type ="Wearable", drawableIn = "07502", levelRq = 1, quality = 0,charClass = 8, description = "Ew! Milk everywhere", slot = 8, price = 1)
+                        ,Wearable(name = "Santa's hat", type ="Wearable", drawableIn = "07503", levelRq = 1, quality = 0,charClass = 8, description = "HO HO HO!", slot = 9, price = 1)
+                ))
+        )
+
         imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this) {            //disconnect swipe / open menu
             override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
                 when (motionEvent.action) {
@@ -210,6 +286,7 @@ class Home : AppCompatActivity() {
                                 if(!imageViewExit.isEnabled) return true
                                 imageViewExit.isEnabled = false
                                 Data.logOut(this@Home)
+                                Data.uploadGlobalData()
                                 return true
                             }
                         }

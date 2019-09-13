@@ -255,8 +255,8 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                     newHigh = true
                                 }
 
-                                val rewardBottom = (GenericDB.Balance.rewardCoinsBottom * (Data.player.level * 0.8) * (0 + 1) * 0.75).toInt()
-                                val rewardTop = GenericDB.Balance.rewardCoinsTop * ((Data.player.level * 0.8) * (0 + 1) * 1.25).toInt()
+                                val rewardBottom = (GenericDB.balance.rewardCoinsBottom * (Data.player.level * 0.8) * (0 + 1) * 0.75).toInt()
+                                val rewardTop = GenericDB.balance.rewardCoinsTop * ((Data.player.level * 0.8) * (0 + 1) * 1.25).toInt()
                                 val reward = nextInt(rewardBottom, rewardTop) / 40
                                 Data.player.money += (reward * rocketGame.ticks/100)
 

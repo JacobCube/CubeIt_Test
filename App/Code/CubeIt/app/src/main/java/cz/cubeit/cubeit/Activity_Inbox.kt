@@ -40,7 +40,6 @@ class Activity_Inbox : AppCompatActivity(){
     lateinit var chosenMail: InboxMessage
     var onTop: Boolean = false
         set(value){
-            Log.d("nastavil jsem ontop", value.toString())
             field = value
         }
     var editMode: Boolean = false
@@ -381,33 +380,27 @@ class Activity_Inbox : AppCompatActivity(){
                     }
 
                     inboxSnap.sortByDescending { it.id }
-                    Log.d("ontop", onTop.toString())
                     if(onTop && snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         Log.d("new Message", "received1")
                         for(i in inboxSnap){
                             if(!Data.inbox.any { it.id == i.id } && i.status != MessageStatus.Read){
                                 Data.inbox.add(i)
-                                Log.d("new Message", "received inner")
                                 Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
                             }
                         }
-                        Log.d("new Message", "recieved after")
                         Data.refreshInbox(this)
                         init()
                         (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
                         (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
                         Data.inboxChanged = false
                     }else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
-                        Log.d("new Message", "recieved !ontop start ${Data.inbox.size}")
                         for(i in inboxSnap){
                              if(!Data.inbox.any { it.id == i.id }  && i.status != MessageStatus.Read){
                                  Data.inbox.add(i)
-                                 Log.d("new Message", "recieved !ontop inner")
                                  Data.inboxChangedMessages++
                                  Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
                              }
                         }
-                        Log.d("new Message", "recieved !ontop after ${Data.inbox.size}")
                         Data.inboxChanged = true
                         SystemFlow.writeFileText(this, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
                     }
@@ -422,7 +415,6 @@ class Activity_Inbox : AppCompatActivity(){
         if(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox) != null)supportFragmentManager.beginTransaction().remove(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)!!).commitNow()
 
         if(!intent.extras?.getString("receiver").isNullOrEmpty()){
-            Log.d("extra Data.inbox", "true - " + intent.extras?.getString("receiver"))  //works
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "write", messageReceiver = intent.extras?.getString("receiver")!!)).commit()
         }
     }
@@ -564,7 +556,7 @@ class Activity_Inbox : AppCompatActivity(){
                 viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
             }
 
-            rowMain.setOnClickListener {
+            viewHolder.imageViewInboxMessagesBg.setOnClickListener {
                 if(activity.editMode){
                     viewHolder.checkBoxInboxMessagesAction.isChecked = !viewHolder.checkBoxInboxMessagesAction.isChecked
                 }else {
@@ -581,7 +573,7 @@ class Activity_Inbox : AppCompatActivity(){
                 }
             }
 
-            rowMain.setOnLongClickListener {
+            viewHolder.imageViewInboxMessagesBg.setOnLongClickListener {
                 activity.editMode = !activity.editMode
                 if(activity.editMode) viewHolder.checkBoxInboxMessagesAction.isChecked = true
                 this.notifyDataSetChanged()

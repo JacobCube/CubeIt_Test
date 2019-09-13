@@ -36,8 +36,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import java.io.*
 import java.lang.Math.*
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.ZoneId
 import java.util.*
@@ -67,68 +72,48 @@ fun Date.formatToString(): String {
     return formatter.format(this)
 }
 
-fun Class<out Any>.getSHA256(){
-    var result = ""
-    this.declaredFields.forEach {
-        result += it.isAccessible.toString()
-        when(it.type){
-            Int::class.java -> {
-                result += it.getInt(this)
-            }
-            String::class.java -> {
-                result += it.getShort(this).toString()
-            }
-            else -> {
-                result += it.toGenericString()
-            }
-        }
-    }
-    println(result)
+fun Any.toJSON(): String{
+    return GsonBuilder().disableHtmlEscaping().create().toJson(this).replace(".0,",",").replace("null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null", "")
 }
 
 @Throws(IllegalAccessException::class, ClassCastException::class)
-fun Any.getFields(): String{
-    var result = ""
-    this::class.memberProperties.forEach { it ->
-        val member = it.getter.call(this)
-
-        result += (when(member){
-            Map::class.java -> {
-                ""
+fun Any.toSHA256(): String{            //algoritmus pro porovnání s daty ze serveru
+    val input: Any = when(this){            //parent/child třídy mají rozdílné chování při rozkladu na části, tento postup to vrací do parent podoby
+        is Weapon, is Wearable, is Runes -> {
+            (this as Item).toItem()
+        }
+        is Collection<*> -> {
+            Log.d("collection", (this.first() is LoadItems).toString())
+            if(this.isNotEmpty() && this.first() is LoadItems){
+                Log.d("SHA256_ITEMS", "called from outside")
+                this.forEach {
+                    (it as LoadItems).toItems()
+                }
+                this
+            }else {
+                val list = mutableListOf<Item>()
+                if(this.isNotEmpty() && this.first() is Item){
+                    this.forEach {
+                        list.add((it as Item).toItem())
+                    }
+                    list
+                }else this
             }
-            is Int -> {
-                member.toString()
-            }
-            is String -> {
-                member as String
-            }
-            is Collection<*> -> {
-                "[" + member.forEach { itItem ->
-                    itItem?.getFields()
-                } + "]"
-            }
-            else -> {
-                "else - ${member!!::class.java}"
-            }
-        })
+        }
+        else -> this
     }
+
+    val jsonString = GsonBuilder().disableHtmlEscaping().create().toJson(input).replace(".0,",",").replace(".0}", "}").replace("null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null", "")
+
+    var result = ""
+    val bytes = jsonString.toByteArray()
+    val md = MessageDigest.getInstance("SHA-256")
+    val digest = md.digest(bytes)
+    for (byte in digest) result += ("%02x".format(byte))
+
+    Log.d("jsonString", jsonString)
+
     return result
-
-    /*
-        - všechny záznamy v objektu, mapě/dictionary a kolekci jsem seřadil podle abecedy (ascending)
-        - v případě stringů jsem k celkovému stringu přidal hodnotu a oddělil ","
-        - v případě listů jsem na začátek přidal "[", hodnoty oddělil ",", a na konec "]"
-        - v případě map/dictionary jsem názvy seřadil podle abecedy, na začátek přidal "{", hodnoty oddělil ",", a na konec "}"
-        - ostatní typy jsem převedl na string a zase oddělil
-        - datumy jsou v iso formátu (převedeny na UTC)
-        - jednotlivé dokumenty jsem potom oddělil "\n"
-        Přibližný výsledek:
-        37,user1,[12,42,44],2015-03-25T12:00:00Z\n
-        28,user2,{admin,3},[27,36],2015-03-25T12:00:00Z
-        potom vytvorim SHA-256
-
-        current state - test,0,0,0,0,,0,2131231012,00001,0,0,0,0,0,0,test2,0,0,0,0,0,test23,
-     */
 }
 
 var drawableStorage = hashMapOf(
@@ -370,6 +355,7 @@ object Data {
 
     fun loadGlobalData(context: Context): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
+
         Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Items"))
 
         return db.collection("GenericDB").document("AppInfo").get().addOnSuccessListener { itGeneric ->
@@ -379,30 +365,30 @@ object Data {
 
                 if(GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE){
 
-                    Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Balance rates"))
+                    Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "balance rates"))
 
                     db.collection("globalDataChecksum").document("balance").get().addOnSuccessListener { snapshot ->
-                        GenericDB.Balance.updateData(if (SystemFlow.readObject(context, "balance.data") != 0) SystemFlow.readObject(context, "balance.data") as GenericDB.Balance else GenericDB.Balance)
-                        val dbChecksum = (snapshot.get("checksum") as Long).toInt()
+                        GenericDB.balance = (if (SystemFlow.readObject(context, "balance.data") != 0) SystemFlow.readObject(context, "balance.data") as GenericDB.Balance else GenericDB.balance)
+                        val dbChecksum = (snapshot.get("checksum") as String)
 
-                        Log.d("balance.checksum", GenericDB.Balance.hashCode().toString())
-                        if (dbChecksum != GenericDB.Balance.hashCode()) {      //is local stored data equal to current state of database?
-                            if (snapshot.toObject(GenericDB.Balance::class.java) != null) {
+                        if (dbChecksum != GenericDB.balance.toSHA256()) {      //is local stored data equal to current state of database?
+
+                            if (snapshot.toObject(GenericDB.balance::class.java) != null) {
                                 db.collection("GenericDB").document("Balance").get().addOnSuccessListener {itBalance: DocumentSnapshot ->
-                                    GenericDB.Balance.updateData(itBalance.toObject(GenericDB.Balance::class.java)!!)
-                                    SystemFlow.writeObject(context, "balance.data", GenericDB.Balance)            //write updated data to local storage
+                                    GenericDB.balance = (itBalance.toObject(GenericDB.Balance::class.java)!!)
+                                    SystemFlow.writeObject(context, "balance.data", GenericDB.balance)            //write updated data to local storage
                                     Log.d("balance", "loaded from firebase, rewritten")
                                 }
                             }
                         } else {
                             try {
-                                GenericDB.Balance.updateData(if (SystemFlow.readObject(context, "balance.data") != 0) SystemFlow.readObject(context, "balance.data") as GenericDB.Balance else GenericDB.Balance)
+                                GenericDB.balance = (if (SystemFlow.readObject(context, "balance.data") != 0){
+                                    SystemFlow.readObject(context, "balance.data") as GenericDB.Balance
+                                } else GenericDB.balance)
                             } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                                if (snapshot.toObject(GenericDB.Balance::class.java) != null) {
-                                    db.collection("GenericDB").document("Balance").get().addOnSuccessListener {
-                                        GenericDB.Balance.updateData(it.toObject(GenericDB.Balance::class.java)!!)
-                                        SystemFlow.writeObject(context, "balance.data", GenericDB.Balance)            //write updated data to local storage
-                                    }
+                                db.collection("GenericDB").document("balance").get().addOnSuccessListener {
+                                    GenericDB.balance = (it.toObject(GenericDB.Balance::class.java)!!)
+                                    SystemFlow.writeObject(context, "balance.data", GenericDB.balance)            //write updated data to local storage
                                 }
                             }
                         }
@@ -411,27 +397,24 @@ object Data {
 
                         db.collection("globalDataChecksum").document("items").get().addOnSuccessListener {
                             itemClasses = if (SystemFlow.readObject(context, "items.data") != 0) SystemFlow.readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
-                            val dbChecksum = (it.get("checksum") as Long).toInt()
+                            val dbChecksum = (it.get("checksum") as String)
 
-                            Log.d("itemclass.checksum", itemClasses.hashCode().toString())
-                            if (dbChecksum != itemClasses.hashCode()) {      //is local stored data equal to current state of database?
+                            if (dbChecksum != itemClasses.toSHA256()) {      //is local stored data equal to current state of database?
+
                                 db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
                                     val loadItemClasses = itItems.toObjects(LoadItems::class.java)
 
-                                    itemClasses = mutableListOf()
-                                    for (i in 0 until loadItemClasses.size) {
-                                        itemClasses.add(LoadItems())
-                                    }
+                                    itemClasses = loadItemClasses
 
-                                    for (i in 0 until loadItemClasses.size) {
-                                        for (j in 0 until loadItemClasses[i].items.size) {
-                                            itemClasses[i].items.add(when (loadItemClasses[i].items[j].type) {
-                                                "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
-                                                "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
-                                                "Runes" -> (loadItemClasses[i].items[j]).toRune()
-                                                "Item" -> loadItemClasses[i].items[j]
+                                    for (i in 0 until itemClasses.size) {
+                                        for (j in 0 until itemClasses[i].items.size) {
+                                            itemClasses[i].items[j] = when (itemClasses[i].items[j].type) {
+                                                "Wearable" -> (itemClasses[i].items[j]).toWearable()
+                                                "Weapon" -> (itemClasses[i].items[j]).toWeapon()
+                                                "Runes" -> (itemClasses[i].items[j]).toRune()
+                                                "Item" -> itemClasses[i].items[j]
                                                 else -> Item(inName = "Error item, report this please")
-                                            })
+                                            }
                                         }
                                     }
                                     SystemFlow.writeObject(context, "items.data", itemClasses)            //write updated data to local storage
@@ -472,10 +455,10 @@ object Data {
 
                         db.collection("globalDataChecksum").document("spells").get().addOnSuccessListener {
                             spellClasses = if (SystemFlow.readObject(context, "spells.data") != 0) SystemFlow.readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
-                            val dbChecksum = (it.get("checksum") as Long).toInt()
+                            val dbChecksum = (it.get("checksum") as String)
 
-                            Log.d("spellclass.checksum", spellClasses.hashCode().toString())
-                            if (dbChecksum != spellClasses.hashCode()) {      //is local stored data equal to current state of database?
+                            if (dbChecksum != spellClasses.toSHA256()) {      //is local stored data equal to current state of database?
+
                                 db.collection("spells").get().addOnSuccessListener { itSpells ->
                                     spellClasses = itSpells.toObjects(LoadSpells::class.java)
                                     SystemFlow.writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
@@ -499,10 +482,10 @@ object Data {
 
                         db.collection("globalDataChecksum").document("charclasses").get().addOnSuccessListener {
                             charClasses = if (SystemFlow.readObject(context, "charclasses.data") != 0) SystemFlow.readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
-                            val dbChecksum = (it.get("checksum") as Long).toInt()
+                            val dbChecksum = (it.get("checksum") as String)
 
-                            Log.d("charclass.checksum", charClasses.hashCode().toString())
-                            if (dbChecksum != charClasses.hashCode() || charClasses.isEmpty()) {      //is local stored data equal to current state of database?
+                            if (dbChecksum != charClasses.toSHA256()) {      //is local stored data equal to current state of database?
+
                                 db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
                                     charClasses = itCharclasses.toObjects(CharClass::class.java)
                                     SystemFlow.writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
@@ -524,16 +507,16 @@ object Data {
                     }.continueWithTask {
                         Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "NPCs"))
 
-                        db.collection("globalDataChecksum").document("npcs").get().addOnSuccessListener {
+                        db.collection("globalDataChecksum").document("npcs").get().addOnSuccessListener { snapshot ->
                             npcs = if (SystemFlow.readObject(context, "npcs.data") != 0) SystemFlow.readObject(context, "npcs.data") as HashMap<String, NPC> else hashMapOf()
-                            val dbChecksum = (it.get("checksum") as Long).toInt()
+                            val dbChecksum = (snapshot.get("checksum") as String)
 
-                            Log.d("npcs.checksum", npcs.hashCode().toString())
-                            if (dbChecksum != npcs.hashCode()) {      //is local stored data equal to current state of database?
+                            if (dbChecksum != npcs.values.sortedBy { it.id }.toSHA256()) {      //is local stored data equal to current state of database?
+
                                 db.collection("npcs").get().addOnSuccessListener { itNpcs ->
                                     val tempNpcs = itNpcs.toObjects(NPC::class.java)
                                     for(npcItem in tempNpcs){
-                                        npcs.put(npcItem.id, npcItem)
+                                        npcs[npcItem.id] = npcItem
                                     }
                                     SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
                                     Log.d("npcs", "loaded from firebase, rewritten")
@@ -546,7 +529,7 @@ object Data {
                                     db.collection("npcs").get().addOnSuccessListener { itNpcs ->
                                         val tempNpcs = itNpcs.toObjects(NPC::class.java)
                                         for(npcItem in tempNpcs){
-                                            npcs.put(npcItem.id, npcItem)
+                                            npcs[npcItem.id] = npcItem
                                         }
                                         SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
                                         //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
@@ -557,12 +540,17 @@ object Data {
                     }.continueWithTask {
                         Activity_Splash_Screen().setLogText(context.resources.getString(R.string.loading_log, "Adventure quests"))
 
-                        db.collection("globalDataChecksum").document("surfaces").get().addOnSuccessListener {
+                        db.collection("globalDataChecksum").document("surfaces").get().addOnSuccessListener { documentSnapshot ->
                             surfaces = if (SystemFlow.readObject(context, "surfaces.data") != 0) SystemFlow.readObject(context, "surfaces.data") as List<Surface> else listOf()
-                            val dbChecksum = (it.get("checksum") as Long).toInt()
+                            val dbChecksum = (documentSnapshot.get("checksum") as String)
 
-                            Log.d("surfaces.checksum", surfaces.hashCode().toString())
-                            if (dbChecksum != surfaces.hashCode()) {      //is local stored data equal to current state of database?
+                            surfaces = surfaces.sortedBy { it.id.toInt() }
+                            for(i in 0 until surfaces.size){
+                                surfaces[i].quests = surfaces[i].quests.toList().sortedBy { it.second.id.toInt() }.toMap()
+                            }
+
+                            if (dbChecksum != surfaces.toSHA256()) {      //is local stored data equal to current state of database?
+
                                 db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
                                     surfaces = itSurfaces.toObjects(Surface::class.java)
                                     SystemFlow.writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
@@ -586,10 +574,10 @@ object Data {
 
                         db.collection("globalDataChecksum").document("story").get().addOnSuccessListener {
                             storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
-                            val dbChecksum = (it.get("checksum") as Long).toInt()
+                            val dbChecksum = (it.get("checksum") as String)
 
-                            Log.d("storyquests.checksum", storyQuests.hashCode().toString())
-                            if (dbChecksum != storyQuests.hashCode()) {      //is local stored data equal to current state of database?
+                            if (dbChecksum != storyQuests.toSHA256()) {      //is local stored data equal to current state of database?
+
                                 db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
                                     storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
                                     SystemFlow.writeObject(context, "story.data", storyQuests)         //write updated data to local storage
@@ -723,62 +711,36 @@ object Data {
     //import of harcoded data to firebase   -   nepoužívat, je to jen pro ukázku
     fun uploadGlobalData() {
         val db = FirebaseFirestore.getInstance()
-        //val storyRef = db.collection("story")
+        val storyRef = db.collection("story")
         val charClassRef = db.collection("charclasses")
-        //val spellsRef = db.collection("spells")
+        val spellsRef = db.collection("spells")
         val itemsRef = db.collection("items")
-        //val npcsRef = db.collection("Data.npcs")
-        val surfacesRef = db.collection("Data.surfaces")
+        val npcsRef = db.collection("npcs")
+        val surfacesRef = db.collection("surfaces")
+        val balanceRef = db.collection("GenericDB").document("balance")
 
         /*for(i in 0 until Data.storyQuests.size){                                     //stories
             storyRef.document(Data.storyQuests[i].id)
-                    .set(hashMapOf<String, Any?>(
-                            "id" to Data.storyQuests[i].id,
-                            "name" to Data.storyQuests[i].name,
-                            "description" to Data.storyQuests[i].description,
-                            "chapter" to Data.storyQuests[i].chapter,
-                            "completed" to Data.storyQuests[i].completed,
-                            "progress" to Data.storyQuests[i].progress,
-                            "slides" to Data.storyQuests[i].slides,
-                            "reward" to Data.storyQuests[i].reward,
-                            "experience" to Data.storyQuests[i].experience,
-                            "coins" to Data.storyQuests[i].coins
-                    )).addOnSuccessListener {
+                    .set(storyQuests[i]
+                    ).addOnSuccessListener {
                         Log.d("COMPLETED story", "$i")
                     }.addOnFailureListener {
                         Log.d("story", "${it.cause}")
                     }
-        }*/
+        }
         for (i in 0 until charClasses.size) {                                     //charclasses
             charClassRef.document(charClasses[i].id)
-                    .set(hashMapOf<String, Any?>(
-                            "id" to charClasses[i].id,
-                            "dmgRatio" to charClasses[i].dmgRatio,
-                            "hpRatio" to charClasses[i].hpRatio,
-                            "staminaRatio" to charClasses[i].staminaRatio,
-                            "blockRatio" to charClasses[i].blockRatio,
-                            "armorRatio" to charClasses[i].armorRatio,
-                            "lifeSteal" to charClasses[i].lifeSteal,
-                            "inDrawable" to charClasses[i].inDrawable,
-                            "itemListIndex" to charClasses[i].itemListIndex,
-                            "spellListIndex" to charClasses[i].spellListIndex,
-                            "name" to charClasses[i].name,
-                            "description" to charClasses[i].description,
-                            "description2" to charClasses[i].description2,
-                            "itemlistUniversalIndex" to charClasses[i].itemlistUniversalIndex,
-                            "spellListUniversalIndex" to charClasses[i].spellListUniversalIndex
-                    )).addOnSuccessListener {
+                    .set(charClasses[i]
+                    ).addOnSuccessListener {
                         Log.d("COMPLETED charclasses", "$i")
                     }.addOnFailureListener {
                         Log.d("charclasses", "${it.cause}")
                     }
         }
-        /*for(i in 0 until spellClasses.size){                                     //spells
+        for(i in 0 until spellClasses.size){                                     //spells
             spellsRef.document(spellClasses[i].id)
-                    .set(hashMapOf<String, Any?>(
-                            "id" to spellClasses[i].id,
-                            "spells" to spellClasses[i].spells
-                    )).addOnSuccessListener {
+                    .set(spellClasses[i]
+                    ).addOnSuccessListener {
                         Log.d("COMPLETED spellclasses", "$i")
                     }.addOnFailureListener {
                         Log.d("spellclasses", "${it.cause}")
@@ -795,42 +757,34 @@ object Data {
                         Log.d("itemclasses", "${it.cause}")
                     }
         }
-        /*for(i in 0 until npcs.size){                                     //npcs
-            npcsRef.document(npcs[i].id)
-                    .set(hashMapOf<String, Any?>(
-                            "id" to npcs[i].id,
-                            "inDrawable" to npcs[i].inDrawable,
-                            "name" to npcs[i].name,
-                            "difficulty" to npcs[i].difficulty,
-                            "description" to npcs[i].description,
-                            "levelAppearance" to npcs[i].levelAppearance,
-                            "level" to npcs[i].level,
-                            "chosenSpellsDefense" to npcs[i].chosenSpellsDefense,
-                            "power" to npcs[i].power,
-                            "armor" to npcs[i].armor,
-                            "block" to npcs[i].block,
-                            "dmgOverTime" to npcs[i].dmgOverTime,
-                            "lifeSteal" to npcs[i].lifeSteal,
-                            "health" to npcs[i].health,
-                            "energy" to npcs[i].energy
-                    )).addOnSuccessListener {
+        /*for(i in 1..npcs.size){                                     //npcs
+            Log.d("CALING_NPC_OF", i.toString())
+            npcsRef.document(npcs[i.toString()]!!.id)
+                    .set(npcs[i.toString()]!!
+                    ).addOnSuccessListener {
                         Log.d("COMPLETED npcs", "$i")
                     }.addOnFailureListener {
                         Log.d("npcs", "${it.cause}")
                     }
-        }*/
+        }
         for (i in 0 until surfaces.size) {                                     //surfaces
             surfacesRef.document(i.toString())
-                    .set(hashMapOf(
-                            "background" to surfaces[i].inBackground,
-                            "boss" to surfaces[i].boss,
-                            "quests" to surfaces[i].quests
-                    )).addOnSuccessListener {
+                    .set(surfaces[i]
+                    ).addOnSuccessListener {
                         Log.d("COMPLETED surface", "$i")
                     }.addOnFailureListener {
                         Log.d("surface", "${it.cause}")
                     }
         }
+
+        balanceRef.set(GenericDB.balance).addOnSuccessListener {
+            Log.d("COMPLETED balance", "trueeeeee LULW")
+            Log.d("COMPLETED balance", GenericDB.balance.toJSON())
+            Log.d("COMPLETED balance", GenericDB.balance.toString())
+        }.addOnFailureListener {
+            Log.d("balance", "${it.cause}")
+        }*/
+
     }
 }
 
@@ -914,6 +868,7 @@ object FightBoard{
     }
 }
 
+
 object GameFlow{
 
     fun getStoryFragment(fragmentID: String, instanceID: String, slideNum: Int): Fragment {          //fragmentID - number of fragment, slideNum
@@ -929,7 +884,7 @@ object GameFlow{
         //val allowedItems: MutableList<Item?> = mutableListOf()
 
         //allItems.sortWith(compareBy { it!!.levelRq })
-        allItems.retainAll { playerX.level > it!!.levelRq - GenericDB.Balance.itemLvlGenBottom && playerX.level < it.levelRq + GenericDB.Balance.itemLvlGenTop}
+        allItems.retainAll { playerX.level > it!!.levelRq - GenericDB.balance.itemLvlGenBottom && playerX.level < it.levelRq + GenericDB.balance.itemLvlGenTop}
         if(itemType != null){
             allItems.retainAll { it!!.type == itemType}
         }
@@ -950,24 +905,50 @@ object GameFlow{
         if(tempArray.size == 0){
             return null
         }
+
         val itemReturned = tempArray[nextInt(0, tempArray.size)]
+        Log.d("itemReturned", itemReturned?.getStats().toString())
         val itemTemp: Item? = when (itemReturned?.type) {
-            "Weapon" -> Weapon(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
-            "Wearable" -> Wearable(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
-            "Runes" -> Runes(name = itemReturned.name, type = itemReturned.type, charClass = itemReturned.charClass, description = itemReturned.description, levelRq = itemReturned.levelRq, drawableIn = getKey(drawableStorage, itemReturned.drawable)!!, slot = itemReturned.slot)
+            "Weapon" -> Weapon(
+                    name = itemReturned.name,
+                    type = itemReturned.type,
+                    charClass = itemReturned.charClass,
+                    description = itemReturned.description,
+                    levelRq = itemReturned.levelRq,
+                    drawableIn = getKey(drawableStorage, itemReturned.drawable)!!,
+                    slot = itemReturned.slot
+            )
+            "Wearable" -> Wearable(
+                    name = itemReturned.name,
+                    type = itemReturned.type,
+                    charClass = itemReturned.charClass,
+                    description = itemReturned.description,
+                    levelRq = itemReturned.levelRq,
+                    drawableIn = getKey(drawableStorage, itemReturned.drawable)!!,
+                    slot = itemReturned.slot
+            )
+            "Runes" -> Runes(
+                    name = itemReturned.name,
+                    type = itemReturned.type,
+                    charClass = itemReturned.charClass,
+                    description = itemReturned.description,
+                    levelRq = itemReturned.levelRq,
+                    drawableIn = getKey(drawableStorage, itemReturned.drawable)!!,
+                    slot = itemReturned.slot
+            )
             else -> Item(inName = itemReturned!!.name, inType = itemReturned.type, inCharClass = itemReturned.charClass, inDescription = itemReturned.description, inLevelRq = itemReturned.levelRq, inDrawable = getKey(drawableStorage, itemReturned.drawable)!!, inSlot = itemReturned.slot)
         }
         itemTemp!!.levelRq = itemLevel ?: nextInt(playerG.level - 2, playerG.level + 1)
         if (inQuality == null) {
-            itemTemp.quality = when (nextInt(0, GenericDB.Balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
-                in 0 until GenericDB.Balance.itemQualityPerc["0"]!! -> GenericDB.Balance.itemQualityGenImpact["0"]!!        //39,03%
-                in GenericDB.Balance.itemQualityPerc["0"]!!+1 until GenericDB.Balance.itemQualityPerc["1"]!! -> GenericDB.Balance.itemQualityGenImpact["1"]!!     //27%
-                in GenericDB.Balance.itemQualityPerc["1"]!!+1 until GenericDB.Balance.itemQualityPerc["2"]!! -> GenericDB.Balance.itemQualityGenImpact["2"]!!     //20%
-                in GenericDB.Balance.itemQualityPerc["2"]!!+1 until GenericDB.Balance.itemQualityPerc["3"]!! -> GenericDB.Balance.itemQualityGenImpact["3"]!!     //8,41%
-                in GenericDB.Balance.itemQualityPerc["3"]!!+1 until GenericDB.Balance.itemQualityPerc["4"]!! -> GenericDB.Balance.itemQualityGenImpact["4"]!!     //5%
-                in GenericDB.Balance.itemQualityPerc["4"]!!+1 until GenericDB.Balance.itemQualityPerc["5"]!! -> GenericDB.Balance.itemQualityGenImpact["5"]!!     //0,5%
-                in GenericDB.Balance.itemQualityPerc["5"]!!+1 until GenericDB.Balance.itemQualityPerc["6"]!! -> GenericDB.Balance.itemQualityGenImpact["6"]!!     //0,08%
-                in GenericDB.Balance.itemQualityPerc["6"]!!+1 until GenericDB.Balance.itemQualityPerc["7"]!! -> GenericDB.Balance.itemQualityGenImpact["7"]!!    //0,01%
+            itemTemp.quality = when (nextInt(0, GenericDB.balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
+                in 0 until GenericDB.balance.itemQualityPerc["0"]!! -> GenericDB.balance.itemQualityGenImpact["0"]!!        //39,03%
+                in GenericDB.balance.itemQualityPerc["0"]!!+1 until GenericDB.balance.itemQualityPerc["1"]!! -> GenericDB.balance.itemQualityGenImpact["1"]!!     //27%
+                in GenericDB.balance.itemQualityPerc["1"]!!+1 until GenericDB.balance.itemQualityPerc["2"]!! -> GenericDB.balance.itemQualityGenImpact["2"]!!     //20%
+                in GenericDB.balance.itemQualityPerc["2"]!!+1 until GenericDB.balance.itemQualityPerc["3"]!! -> GenericDB.balance.itemQualityGenImpact["3"]!!     //8,41%
+                in GenericDB.balance.itemQualityPerc["3"]!!+1 until GenericDB.balance.itemQualityPerc["4"]!! -> GenericDB.balance.itemQualityGenImpact["4"]!!     //5%
+                in GenericDB.balance.itemQualityPerc["4"]!!+1 until GenericDB.balance.itemQualityPerc["5"]!! -> GenericDB.balance.itemQualityGenImpact["5"]!!     //0,5%
+                in GenericDB.balance.itemQualityPerc["5"]!!+1 until GenericDB.balance.itemQualityPerc["6"]!! -> GenericDB.balance.itemQualityGenImpact["6"]!!     //0,08%
+                in GenericDB.balance.itemQualityPerc["6"]!!+1 until GenericDB.balance.itemQualityPerc["7"]!! -> GenericDB.balance.itemQualityGenImpact["7"]!!    //0,01%
                 else -> 0
             }
         } else {
@@ -985,48 +966,48 @@ object GameFlow{
                 is Weapon -> {
                     when (nextInt(0, if (playerG.charClass.lifeSteal) 4 else 3)) {
                         0 -> {
-                            itemTemp.power += (pointsTemp * GenericDB.Balance.itemGenPowerRatio).toInt()
+                            itemTemp.power += (pointsTemp * GenericDB.balance.itemGenPowerRatio).toInt()
                         }
                         1 -> {
-                            itemTemp.block += (pointsTemp * GenericDB.Balance.itemGenBlockRatio).toInt()
+                            itemTemp.block += (pointsTemp * GenericDB.balance.itemGenBlockRatio).toInt()
                         }
                         2 -> {
-                            itemTemp.dmgOverTime += (pointsTemp * GenericDB.Balance.itemGenDOTRatio).toInt()
+                            itemTemp.dmgOverTime += (pointsTemp * GenericDB.balance.itemGenDOTRatio).toInt()
                         }
                         3 -> {
-                            itemTemp.lifeSteal += (pointsTemp * GenericDB.Balance.itemGenLSRatio).toInt()
+                            itemTemp.lifeSteal += (pointsTemp * GenericDB.balance.itemGenLSRatio).toInt()
                         }
                     }
                 }
                 is Wearable -> {
                     when (nextInt(0, 4)) {
                         0 -> {
-                            itemTemp.armor += (pointsTemp * GenericDB.Balance.itemGenArmorRatio).toInt()
+                            itemTemp.armor += (pointsTemp * GenericDB.balance.itemGenArmorRatio).toInt()
                         }
                         1 -> {
-                            itemTemp.block += (pointsTemp * GenericDB.Balance.itemGenBlockRatio).toInt()
+                            itemTemp.block += (pointsTemp * GenericDB.balance.itemGenBlockRatio).toInt()
                         }
                         2 -> {
-                            itemTemp.health += (pointsTemp * GenericDB.Balance.itemGenHealthRatio).toInt()
+                            itemTemp.health += (pointsTemp * GenericDB.balance.itemGenHealthRatio).toInt()
                         }
                         3 -> {
-                            itemTemp.energy += (pointsTemp * GenericDB.Balance.itemGenEnergyRatio).toInt()
+                            itemTemp.energy += (pointsTemp * GenericDB.balance.itemGenEnergyRatio).toInt()
                         }
                     }
                 }
                 is Runes -> {
                     when (nextInt(0, 4)) {
                         0 -> {
-                            itemTemp.armor += (pointsTemp * GenericDB.Balance.itemGenArmorRatio).toInt()
+                            itemTemp.armor += (pointsTemp * GenericDB.balance.itemGenArmorRatio).toInt()
                         }
                         1 -> {
-                            itemTemp.health += (pointsTemp * GenericDB.Balance.itemGenHealthRatio).toInt()
+                            itemTemp.health += (pointsTemp * GenericDB.balance.itemGenHealthRatio).toInt()
                         }
                         2 -> {
-                            itemTemp.adventureSpeed += (pointsTemp * GenericDB.Balance.itemGenASRatio).toInt()
+                            itemTemp.adventureSpeed += (pointsTemp * GenericDB.balance.itemGenASRatio).toInt()
                         }
                         3 -> {
-                            itemTemp.inventorySlots += (pointsTemp * GenericDB.Balance.itemGenISRatio).toInt()
+                            itemTemp.inventorySlots += (pointsTemp * GenericDB.balance.itemGenISRatio).toInt()
                         }
                     }
                 }
@@ -1138,8 +1119,51 @@ object GenericDB{
         }
     }
 
-    object Balance: Serializable{
-        var NPCRate = hashMapOf(
+    var balance = Balance()
+
+    class Balance: Serializable{
+        var bossHoursByDifficulty = hashMapOf(
+                "0" to 0
+                ,"1" to 1
+                ,"2" to 3
+                ,"3" to 5
+                ,"4" to 7
+                ,"5" to 9
+                ,"6" to 11
+                ,"7" to 16
+        )
+        var itemGenASRatio: Double = 0.13
+        var itemGenArmorRatio: Double = 0.5
+        var itemGenBlockRatio: Double = 0.1
+        var itemGenDOTRatio: Double = 1.0
+        var itemGenEnergyRatio: Double = 0.5
+        var itemGenHealthRatio: Double = 10.0
+        var itemGenISRatio: Double = 0.1
+        var itemGenLSRatio: Double = 1.0
+        var itemGenPowerRatio: Double = 1.0
+        var itemLvlGenBottom = 101
+        var itemLvlGenTop = 101
+        var itemQualityGenImpact = hashMapOf(
+                "0" to 0
+                ,"1" to 1
+                ,"2" to 3
+                ,"3" to 5
+                ,"4" to 7
+                ,"5" to 9
+                ,"6" to 11
+                ,"7" to 16
+        )
+        var itemQualityPerc = hashMapOf(
+                "0" to 3903
+                ,"1" to 6604
+                ,"2" to 8605
+                ,"3" to 9447
+                ,"4" to 9948
+                ,"5" to 9989
+                ,"6" to 9998
+                ,"7" to 10000
+        )
+        var npcRate = hashMapOf(
                 "0" to 0.3
                 ,"1" to 0.35
                 ,"2" to 0.4
@@ -1152,99 +1176,10 @@ object GenericDB{
                 ,"101" to 1.25
                 ,"102" to 1.5
         )
-        var itemQualityPerc = hashMapOf(
-                "0" to 3903
-                ,"1" to 6604
-                ,"2" to 8605
-                ,"3" to 9447
-                ,"4" to 9948
-                ,"5" to 9989
-                ,"6" to 9998
-                ,"7" to 10000
-        )
-        var itemQualityGenImpact = hashMapOf(
-                "0" to 0
-                ,"1" to 1
-                ,"2" to 3
-                ,"3" to 5
-                ,"4" to 7
-                ,"5" to 9
-                ,"6" to 11
-                ,"7" to 16
-        )
-        var bossHoursByDifficulty = hashMapOf(
-                "0" to 0
-                ,"1" to 1
-                ,"2" to 3
-                ,"3" to 5
-                ,"4" to 7
-                ,"5" to 9
-                ,"6" to 11
-                ,"7" to 16
-        )
-        var itemLvlGenBottom = 101
-        var itemLvlGenTop = 101
-        var rewardCoinsTop = 5
         var rewardCoinsBottom = 5
-        var rewardXpTop = 8
+        var rewardCoinsTop = 5
         var rewardXpBottom = 8
-        var itemGenPowerRatio: Double = 1.0
-        var itemGenArmorRatio: Double = 0.5
-        var itemGenHealthRatio: Double = 10.0
-        var itemGenASRatio: Double = 0.13
-        var itemGenBlockRatio: Double = 0.1
-        var itemGenISRatio: Double = 0.1
-        var itemGenEnergyRatio: Double = 0.5
-        var itemGenLSRatio: Double = 1.0
-        var itemGenDOTRatio: Double = 1.0
-
-        fun updateData(data: Balance){
-            this.NPCRate = data.NPCRate
-            this.itemQualityPerc = data.itemQualityPerc
-            this.itemQualityGenImpact = data.itemQualityGenImpact
-
-            this.itemLvlGenBottom = data.itemLvlGenBottom
-            this.itemLvlGenTop = data.itemLvlGenTop
-            this.rewardCoinsTop = data.rewardCoinsTop
-            this.rewardCoinsBottom = data.rewardCoinsBottom
-            this.rewardXpTop = data.rewardXpTop
-            this.rewardXpBottom = data.rewardXpBottom
-            this.itemGenPowerRatio = data.itemGenPowerRatio
-            this.itemGenArmorRatio = data.itemGenArmorRatio
-            this.itemGenHealthRatio = data.itemGenHealthRatio
-            this.itemGenASRatio = data.itemGenASRatio
-            this.itemGenBlockRatio = data.itemGenBlockRatio
-            this.itemGenISRatio = data.itemGenISRatio
-            this.itemGenEnergyRatio = data.itemGenEnergyRatio
-            this.itemGenLSRatio = data.itemGenLSRatio
-            this.itemGenDOTRatio = data.itemGenDOTRatio
-        }
-
-        override fun hashCode(): Int {
-            var result = itemLvlGenBottom
-            result = 31 * result + NPCRate.hashCode()
-            result = 31 * result + itemQualityPerc.hashCode()
-            result = 31 * result + itemQualityGenImpact.hashCode()
-            result = 31 * result + itemLvlGenTop.hashCode()
-            result = 31 * result + rewardCoinsTop.hashCode()
-            result = 31 * result + rewardCoinsBottom.hashCode()
-            result = 31 * result + rewardXpTop.hashCode()
-            result = 31 * result + rewardXpBottom.hashCode()
-            result = 31 * result + itemGenPowerRatio.hashCode()
-            result = 31 * result + itemGenArmorRatio.hashCode()
-            result = 31 * result + itemGenHealthRatio.hashCode()
-            result = 31 * result + itemGenASRatio.hashCode()
-            result = 31 * result + itemGenBlockRatio.hashCode()
-            result = 31 * result + itemGenISRatio.hashCode()
-            result = 31 * result + itemGenEnergyRatio.hashCode()
-            result = 31 * result + itemGenLSRatio.hashCode()
-            result = 31 * result + itemGenDOTRatio.hashCode()
-            return result
-        }
-
-        fun generateSHA256(): String{
-            return "${itemLvlGenBottom}-${NPCRate}"
-        }
+        var rewardXpTop = 8
     }
 }
 
@@ -1365,6 +1300,13 @@ class LoadItems(
         if (items != other.items) return false
 
         return true
+    }
+
+    fun toItems(){
+        Log.d("SHA256_ITEMS", "converting items to generic types")
+        for(i in 0 until this.items.size){
+            this.items[i] = this.items[i].toItem()
+        }
     }
 }
 
@@ -1681,7 +1623,9 @@ open class Player(
         var level: Int = 1
 ): Serializable {
     @Exclude @Transient var charClass: CharClass = CharClass()
-        @Exclude get() = Data.charClasses[charClassIndex]
+        @Exclude get(){
+            return if(Data.charClasses.size >= 1) Data.charClasses[charClassIndex] else CharClass()
+        }
     var look: MutableList<Int> = mutableListOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     var inventory: MutableList<Item?> = arrayOfNulls<Item?>(8).toMutableList()
     var equip: MutableList<Item?> = arrayOfNulls<Item?>(10).toMutableList()
@@ -1988,7 +1932,7 @@ open class Player(
         }
     }
 
-    fun createActiveQuest(quest: Quest): Task<Void> {
+    fun createActiveQuest(quest: Quest): Task<DocumentSnapshot> {
         Data.loadingActiveQuest = true
 
         Data.activeQuest = ActiveQuest(quest = quest)
@@ -2432,21 +2376,21 @@ open class Player(
 class ActiveQuest(
         var quest: Quest = Quest()
 ) {
-    @Transient @Exclude private var df: Calendar = Calendar.getInstance()
     lateinit var startTime: Date
-    lateinit var endTime: Date
+    var endTime: Date = java.util.Calendar.getInstance().time
     var secondsLeft: Int = 0
     var completed: Boolean = false
 
-    fun initialize(): Task<Void> {
+    fun initialize(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
-        return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).addOnSuccessListener{
+        return docRef.document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask{
             docRef.document("timeStamp").get().addOnSuccessListener {
                 startTime = it.getDate("timeStamp", behaviour)!!
 
+                val df: Calendar = Calendar.getInstance()
                 df.time = startTime
                 df.add(Calendar.SECOND, quest.secondsLength)
                 endTime = df.time
@@ -2513,9 +2457,9 @@ class Spell(
         var lifeSteal: Int = 0,
         var id: String = "0001",
         var block: Double = 1.0,
-        var grade: Int = 1,
-        @Transient @Exclude var animation: Int = 0
+        var grade: Int = 1
 ) : Serializable {
+    var animation: Int = 0
     @Exclude @Transient var drawable: Int = 0
         @Exclude get() = drawableStorage[inDrawable]!!
     @Exclude @Transient var weightRatio: Double = 0.0
@@ -2574,10 +2518,10 @@ class CharClass(
     var description2: String = ""
     var itemlistUniversalIndex: Int = 0
     var spellListUniversalIndex: Int = 0
-    var VIP: Boolean = false
+    var vip: Boolean = false
     var xpRatio: Double = 1.0                            //lower = better
         get(){
-            return if(VIP) 0.75 else 1.0
+            return if(vip) 0.75 else 1.0
         }
     var blockLimit = 50.0
     var lifeStealLimit = 50
@@ -2667,14 +2611,14 @@ open class Item(
 
     @Exclude fun getStats(): String {
         var textView = "${this.name}<br/>price: ${this.price}<br/>${when (this.quality) {
-            GenericDB.Balance.itemQualityGenImpact["0"]!! -> "<font color=#535353>Poor</font>"
-            GenericDB.Balance.itemQualityGenImpact["1"]!! -> "<font color=#FFFFFF>Common</font>"
-            GenericDB.Balance.itemQualityGenImpact["2"]!! -> "<font color=#8DD837>Uncommon</font>"
-            GenericDB.Balance.itemQualityGenImpact["3"]!! -> "<font color=#5DBDE9>Rare</font>"
-            GenericDB.Balance.itemQualityGenImpact["4"]!! -> "<font color=#058DCA>Very rare</font>"
-            GenericDB.Balance.itemQualityGenImpact["5"]!! -> "<font color=#9136A2>Epic gamer item</font>"
-            GenericDB.Balance.itemQualityGenImpact["6"]!! -> "<font color=#FF9800>Legendary</font>"
-            GenericDB.Balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
+            GenericDB.balance.itemQualityGenImpact["0"]!! -> "<font color=#535353>Poor</font>"
+            GenericDB.balance.itemQualityGenImpact["1"]!! -> "<font color=#FFFFFF>Common</font>"
+            GenericDB.balance.itemQualityGenImpact["2"]!! -> "<font color=#8DD837>Uncommon</font>"
+            GenericDB.balance.itemQualityGenImpact["3"]!! -> "<font color=#5DBDE9>Rare</font>"
+            GenericDB.balance.itemQualityGenImpact["4"]!! -> "<font color=#058DCA>Very rare</font>"
+            GenericDB.balance.itemQualityGenImpact["5"]!! -> "<font color=#9136A2>Epic gamer item</font>"
+            GenericDB.balance.itemQualityGenImpact["6"]!! -> "<font color=#FF9800>Legendary</font>"
+            GenericDB.balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -2706,14 +2650,14 @@ open class Item(
 
     @Exclude fun getStatsCompare(): String {
         var textView = "${this.name}<br/>price: ${this.price}<br/>${when (this.quality) {
-            GenericDB.Balance.itemQualityGenImpact["0"]!! -> "<font color=#535353>Poor</font>"
-            GenericDB.Balance.itemQualityGenImpact["1"]!! -> "<font color=#FFFFFF>Common</font>"
-            GenericDB.Balance.itemQualityGenImpact["2"]!! -> "<font color=#8DD837>Uncommon</font>"
-            GenericDB.Balance.itemQualityGenImpact["3"]!! -> "<font color=#5DBDE9>Rare</font>"
-            GenericDB.Balance.itemQualityGenImpact["4"]!! -> "<font color=#058DCA>Very rare</font>"
-            GenericDB.Balance.itemQualityGenImpact["5"]!! -> "<font color=#9136A2>Epic gamer item</font>"
-            GenericDB.Balance.itemQualityGenImpact["6"]!! -> "<font color=#FF9800>Legendary</font>"
-            GenericDB.Balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
+            GenericDB.balance.itemQualityGenImpact["0"]!! -> "<font color=#535353>Poor</font>"
+            GenericDB.balance.itemQualityGenImpact["1"]!! -> "<font color=#FFFFFF>Common</font>"
+            GenericDB.balance.itemQualityGenImpact["2"]!! -> "<font color=#8DD837>Uncommon</font>"
+            GenericDB.balance.itemQualityGenImpact["3"]!! -> "<font color=#5DBDE9>Rare</font>"
+            GenericDB.balance.itemQualityGenImpact["4"]!! -> "<font color=#058DCA>Very rare</font>"
+            GenericDB.balance.itemQualityGenImpact["5"]!! -> "<font color=#9136A2>Epic gamer item</font>"
+            GenericDB.balance.itemQualityGenImpact["6"]!! -> "<font color=#FF9800>Legendary</font>"
+            GenericDB.balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
         }\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
@@ -2791,31 +2735,117 @@ open class Item(
 
     @Exclude fun getBackground(): Int{
         return when(this.quality){
-            GenericDB.Balance.itemQualityGenImpact["0"]!! -> R.drawable.emptyslot_poor
-            GenericDB.Balance.itemQualityGenImpact["1"]!! -> R.drawable.emptyslot_common
-            GenericDB.Balance.itemQualityGenImpact["2"]!! -> R.drawable.emptyslot_uncommon
-            GenericDB.Balance.itemQualityGenImpact["3"]!! -> R.drawable.emptyslot_rare
-            GenericDB.Balance.itemQualityGenImpact["4"]!! -> R.drawable.emptyslot_very_rare
-            GenericDB.Balance.itemQualityGenImpact["5"]!! -> R.drawable.emptyslot_epic_gamer_item
-            GenericDB.Balance.itemQualityGenImpact["6"]!! -> R.drawable.emptyslot_legendary
-            GenericDB.Balance.itemQualityGenImpact["7"]!! -> R.drawable.emptyslot_heirloom
+            GenericDB.balance.itemQualityGenImpact["0"]!! -> R.drawable.emptyslot_poor
+            GenericDB.balance.itemQualityGenImpact["1"]!! -> R.drawable.emptyslot_common
+            GenericDB.balance.itemQualityGenImpact["2"]!! -> R.drawable.emptyslot_uncommon
+            GenericDB.balance.itemQualityGenImpact["3"]!! -> R.drawable.emptyslot_rare
+            GenericDB.balance.itemQualityGenImpact["4"]!! -> R.drawable.emptyslot_very_rare
+            GenericDB.balance.itemQualityGenImpact["5"]!! -> R.drawable.emptyslot_epic_gamer_item
+            GenericDB.balance.itemQualityGenImpact["6"]!! -> R.drawable.emptyslot_legendary
+            GenericDB.balance.itemQualityGenImpact["7"]!! -> R.drawable.emptyslot_heirloom
             else -> R.drawable.emptyslot
         }
     }
 
+    fun toItem(): Item{
+        return Item(
+                this.id
+                ,this.name
+                ,this.type
+                ,this.drawableIn
+                ,this.levelRq
+                ,this.quality
+                ,this.charClass
+                ,this.description
+                ,this.grade
+                ,this.power
+                ,this.armor
+                ,this.block
+                ,this.dmgOverTime
+                ,this.lifeSteal
+                ,this.health
+                ,this.energy
+                ,this.adventureSpeed
+                ,this.inventorySlots
+                ,this.slot
+                ,this.price
+                ,this.priceCubeCoins
+        )
+    }
+
     @Exclude fun toWearable(): Wearable {
-        return Wearable(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
-                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price, priceCubeCoins = this.priceCubeCoins)
+        return Wearable(
+                name = this.name,
+                type = this.type,
+                drawableIn = this.drawableIn,
+                levelRq = this.levelRq,
+                quality = this.quality,
+                charClass = this.charClass,
+                description = this.description,
+                grade = this.grade,
+                power = this.power,
+                armor = this.armor,
+                block = this.block,
+                dmgOverTime = this.dmgOverTime,
+                lifeSteal = this.lifeSteal,
+                health = this.health,
+                energy = this.energy,
+                adventureSpeed = this.adventureSpeed,
+                inventorySlots = this.inventorySlots,
+                slot = this.slot,
+                price = this.price,
+                priceCubeCoins = this.priceCubeCoins
+        )
     }
 
     @Exclude fun toRune(): Runes {
-        return Runes(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
-                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price, priceCubeCoins = this.priceCubeCoins)
+        return Runes(
+                name = this.name,
+                type = this.type,
+                drawableIn = this.drawableIn,
+                levelRq = this.levelRq,
+                quality = this.quality,
+                charClass = this.charClass,
+                description = this.description,
+                grade = this.grade,
+                power = this.power,
+                armor = this.armor,
+                block = this.block,
+                dmgOverTime = this.dmgOverTime,
+                lifeSteal = this.lifeSteal,
+                health = this.health,
+                energy = this.energy,
+                adventureSpeed = this.adventureSpeed,
+                inventorySlots = this.inventorySlots,
+                slot = this.slot,
+                price = this.price,
+                priceCubeCoins = this.priceCubeCoins
+        )
     }
 
     fun toWeapon(): Weapon {
-        return Weapon(name = this.name, type = this.type, drawableIn = this.drawableIn, levelRq = this.levelRq, quality = this.quality, charClass = this.charClass, description = this.description, grade = this.grade, power = this.power,
-                armor = this.armor, block = this.block, dmgOverTime = this.dmgOverTime, lifeSteal = this.lifeSteal, health = this.health, energy = this.energy, adventureSpeed = this.adventureSpeed, inventorySlots = this.inventorySlots, slot = this.slot, price = this.price, priceCubeCoins = this.priceCubeCoins)
+        return Weapon(
+                name = this.name,
+                type = this.type,
+                drawableIn = this.drawableIn,
+                levelRq = this.levelRq,
+                quality = this.quality,
+                charClass = this.charClass,
+                description = this.description,
+                grade = this.grade,
+                power = this.power,
+                armor = this.armor,
+                block = this.block,
+                dmgOverTime = this.dmgOverTime,
+                lifeSteal = this.lifeSteal,
+                health = this.health,
+                energy = this.energy,
+                adventureSpeed = this.adventureSpeed,
+                inventorySlots = this.inventorySlots,
+                slot = this.slot,
+                price = this.price,
+                priceCubeCoins = this.priceCubeCoins
+        )
     }
 
     override fun equals(other: Any?): Boolean {
@@ -2867,15 +2897,15 @@ data class Reward(
 
     @Exclude fun generate(inPlayer: Player = Data.player): Reward {
         if (this.type == null) {
-            this.type = when (nextInt(0, GenericDB.Balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
+            this.type = when (nextInt(0, GenericDB.balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
                 in 0 until 3903 -> 0        //39,03%
-                in GenericDB.Balance.itemQualityPerc["0"]!!+1 until GenericDB.Balance.itemQualityPerc["1"]!! -> 1     //27%
-                in GenericDB.Balance.itemQualityPerc["1"]!!+1 until GenericDB.Balance.itemQualityPerc["2"]!!-> 2     //20%
-                in GenericDB.Balance.itemQualityPerc["2"]!!+1 until GenericDB.Balance.itemQualityPerc["3"]!!-> 3     //8,41%
-                in GenericDB.Balance.itemQualityPerc["3"]!!+1 until GenericDB.Balance.itemQualityPerc["4"]!!-> 4     //5%
-                in GenericDB.Balance.itemQualityPerc["4"]!!+1 until GenericDB.Balance.itemQualityPerc["5"]!!-> 5     //0,5%
-                in GenericDB.Balance.itemQualityPerc["5"]!!+1 until GenericDB.Balance.itemQualityPerc["6"]!!-> 6     //0,08%
-                in GenericDB.Balance.itemQualityPerc["6"]!!+1 until GenericDB.Balance.itemQualityPerc["7"]!!-> 7    //0,01%
+                in GenericDB.balance.itemQualityPerc["0"]!!+1 until GenericDB.balance.itemQualityPerc["1"]!! -> 1     //27%
+                in GenericDB.balance.itemQualityPerc["1"]!!+1 until GenericDB.balance.itemQualityPerc["2"]!!-> 2     //20%
+                in GenericDB.balance.itemQualityPerc["2"]!!+1 until GenericDB.balance.itemQualityPerc["3"]!!-> 3     //8,41%
+                in GenericDB.balance.itemQualityPerc["3"]!!+1 until GenericDB.balance.itemQualityPerc["4"]!!-> 4     //5%
+                in GenericDB.balance.itemQualityPerc["4"]!!+1 until GenericDB.balance.itemQualityPerc["5"]!!-> 5     //0,5%
+                in GenericDB.balance.itemQualityPerc["5"]!!+1 until GenericDB.balance.itemQualityPerc["6"]!!-> 6     //0,08%
+                in GenericDB.balance.itemQualityPerc["6"]!!+1 until GenericDB.balance.itemQualityPerc["7"]!!-> 7    //0,01%
                 else -> 0
             }
         }
@@ -2902,8 +2932,8 @@ data class Reward(
         if (nextInt(0, 100) <= ((this.type!! + 1) * 10)) {
             item = GameFlow.generateItem(inPlayer, this.type)
         }
-        coins = nextInt((GenericDB.Balance.rewardCoinsBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), GenericDB.Balance.rewardCoinsTop * ((inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
-        experience = nextInt((GenericDB.Balance.rewardXpBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), (GenericDB.Balance.rewardXpTop * (inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
+        coins = nextInt((GenericDB.balance.rewardCoinsBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), GenericDB.balance.rewardCoinsTop * ((inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
+        experience = nextInt((GenericDB.balance.rewardXpBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), (GenericDB.balance.rewardXpTop * (inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
 
         return this
     }
@@ -2955,7 +2985,29 @@ data class Wearable(
         override var slot: Int = 0,
         override var price: Int = 0,
         override var priceCubeCoins: Int = 0
-) : Item(id, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
+) : Item(
+        id,
+        name,
+        type,
+        drawableIn,
+        levelRq,
+        quality,
+        charClass,
+        description,
+        grade,
+        power,
+        armor,
+        block,
+        dmgOverTime,
+        lifeSteal,
+        health,
+        energy,
+        adventureSpeed,
+        inventorySlots,
+        slot,
+        price,
+        priceCubeCoins
+)
 
 data class Runes(
         override var id: String = "",
@@ -2979,7 +3031,29 @@ data class Runes(
         override var slot: Int = 0,
         override var price: Int = 0,
         override var priceCubeCoins: Int = 0
-) : Item(id, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
+) : Item(
+        id,
+        name,
+        type,
+        drawableIn,
+        levelRq,
+        quality,
+        charClass,
+        description,
+        grade,
+        power,
+        armor,
+        block,
+        dmgOverTime,
+        lifeSteal,
+        health,
+        energy,
+        adventureSpeed,
+        inventorySlots,
+        slot,
+        price,
+        priceCubeCoins
+)
 
 data class Weapon(
         override var id: String = "",
@@ -3003,7 +3077,29 @@ data class Weapon(
         override var slot: Int = 0,
         override var price: Int = 0,
         override var priceCubeCoins: Int = 0
-) : Item(id, name, type, drawableIn, levelRq, quality, charClass, description, grade, power, armor, block, dmgOverTime, lifeSteal, health, energy, adventureSpeed, inventorySlots, slot, price, priceCubeCoins)
+) : Item(
+        id,
+        name,
+        type,
+        drawableIn,
+        levelRq,
+        quality,
+        charClass,
+        description,
+        grade,
+        power,
+        armor,
+        block,
+        dmgOverTime,
+        lifeSteal,
+        health,
+        energy,
+        adventureSpeed,
+        inventorySlots,
+        slot,
+        price,
+        priceCubeCoins
+)
 
 class StoryQuest(
         var id: String = "0001",
@@ -3019,7 +3115,7 @@ class StoryQuest(
         var skipToSlide: Int = 1,
         var mainEnemy: NPC = NPC()
 ) : Serializable {
-    var reward = Reward(difficulty).generate()
+    var reward = Reward(difficulty)
     var locked: Boolean = false
 
     @Exclude fun getStats(resources: Resources): String {
@@ -3314,15 +3410,15 @@ open class NPC(
     }
 
     @Exclude fun generate(difficultyX: Int? = null, playerX: Player): NPC {
-        this.difficulty = difficultyX ?: when (nextInt(0, GenericDB.Balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
-            in 0 until GenericDB.Balance.itemQualityPerc["0"]!! -> 0        //39,03%
-            in GenericDB.Balance.itemQualityPerc["0"]!!+1 until GenericDB.Balance.itemQualityPerc["1"]!! -> 1     //27%
-            in GenericDB.Balance.itemQualityPerc["1"]!!+1 until GenericDB.Balance.itemQualityPerc["2"]!! -> 2     //20%
-            in GenericDB.Balance.itemQualityPerc["2"]!!+1 until GenericDB.Balance.itemQualityPerc["3"]!! -> 3     //8,41%
-            in GenericDB.Balance.itemQualityPerc["3"]!!+1 until GenericDB.Balance.itemQualityPerc["4"]!! -> 4     //5%
-            in GenericDB.Balance.itemQualityPerc["4"]!!+1 until GenericDB.Balance.itemQualityPerc["5"]!! -> 5     //0,5%
-            in GenericDB.Balance.itemQualityPerc["5"]!!+1 until GenericDB.Balance.itemQualityPerc["6"]!! -> 6     //0,08%
-            in GenericDB.Balance.itemQualityPerc["6"]!!+1 until GenericDB.Balance.itemQualityPerc["7"]!! -> 7    //0,01%
+        this.difficulty = difficultyX ?: when (nextInt(0, GenericDB.balance.itemQualityPerc["7"]!!+1)) {                   //quality of an item by percentage
+            in 0 until GenericDB.balance.itemQualityPerc["0"]!! -> 0        //39,03%
+            in GenericDB.balance.itemQualityPerc["0"]!!+1 until GenericDB.balance.itemQualityPerc["1"]!! -> 1     //27%
+            in GenericDB.balance.itemQualityPerc["1"]!!+1 until GenericDB.balance.itemQualityPerc["2"]!! -> 2     //20%
+            in GenericDB.balance.itemQualityPerc["2"]!!+1 until GenericDB.balance.itemQualityPerc["3"]!! -> 3     //8,41%
+            in GenericDB.balance.itemQualityPerc["3"]!!+1 until GenericDB.balance.itemQualityPerc["4"]!! -> 4     //5%
+            in GenericDB.balance.itemQualityPerc["4"]!!+1 until GenericDB.balance.itemQualityPerc["5"]!! -> 5     //0,5%
+            in GenericDB.balance.itemQualityPerc["5"]!!+1 until GenericDB.balance.itemQualityPerc["6"]!! -> 6     //0,08%
+            in GenericDB.balance.itemQualityPerc["6"]!!+1 until GenericDB.balance.itemQualityPerc["7"]!! -> 7    //0,01%
             else -> 0
         }
 
@@ -3343,21 +3439,21 @@ open class NPC(
 
         val tempPlayer = chosenNPC.toPlayer()
         tempPlayer.equip = mutableListOf(
-                GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 0, itemType = "Weapon")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 1, itemType = "Weapon")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 2, itemType = "Wearable")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 3, itemType = "Wearable")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 4, itemType = "Wearable")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 5, itemType = "Wearable")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 6, itemType = "Wearable")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 7, itemType = "Wearable")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 8, itemType = "Wearable")
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 9, itemType = "Wearable")
+                GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 0, itemType = "Weapon")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 1, itemType = "Weapon")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 2, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 3, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 4, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 5, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 6, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 7, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 8, itemType = "Wearable")
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 9, itemType = "Wearable")
         )
 
         tempPlayer.backpackRunes = mutableListOf(
-                GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 10, itemType = "Runes")!!.toRune()
-                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.Balance.itemQualityGenImpact["7"], itemSlot = 11, itemType = "Runes")!!.toRune()
+                GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 10, itemType = "Runes")!!.toRune()
+                ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 11, itemType = "Runes")!!.toRune()
         )
         tempPlayer.syncStats()
         this.applyStats(tempPlayer)
@@ -3463,7 +3559,7 @@ open class NPC(
     }
 
     fun applyStats(playerX: Player){
-        val balanceRate: Double = GenericDB.Balance.NPCRate[this.difficulty.toString()]!!
+        val balanceRate: Double = GenericDB.balance.npcRate[this.difficulty.toString()]!!
         if(playerX.level <= 4)balanceRate * 0.01
 
         level = playerX.level
@@ -3543,14 +3639,14 @@ open class NPC(
 }
 
 class Boss(
-        override var id: String = "",
-        override var inDrawable: String = "00000",
-        override var inBgDrawable: String = "00000",
-        override var name: String = "",
-        override var description: String = "",
-        override var levelAppearance: Int = 0,
-        override var charClassIndex: Int = 1,
-        override var difficulty: Int? = 7,
+        @Transient override var id: String = "",
+        @Transient override var inDrawable: String = "00000",
+        @Transient override var inBgDrawable: String = "00000",
+        @Transient override var name: String = "",
+        @Transient override var description: String = "",
+        @Transient override var levelAppearance: Int = 0,
+        @Transient override var charClassIndex: Int = 1,
+        @Transient override var difficulty: Int? = 7,
         var surface: Int = 0
 ): NPC(id, inDrawable, inBgDrawable, name, description, levelAppearance, charClassIndex, difficulty){
     var captured: Date = java.util.Calendar.getInstance().time
@@ -3575,7 +3671,7 @@ class Boss(
             db.collection("ActiveQuest").document("timeStamp").get().addOnSuccessListener {
                 captured = it.getDate("timeStamp", behaviour)!!
                 df.time = captured
-                df.add(Calendar.HOUR, GenericDB.Balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!)
+                df.add(Calendar.HOUR, GenericDB.balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!)
                 decayTime = df.time
 
                 Data.player.currentSurfaces[this.surface].boss = this
@@ -3890,9 +3986,10 @@ enum class MessageStatus: Serializable {
 }*/
 
 class Surface(
-        val inBackground: String = "90000",
-        val boss: Boss? = null,
-        val quests: HashMap<String, Quest> = hashMapOf()
+        var inBackground: String = "90000",
+        var boss: Boss? = null,
+        var id: String = "0",
+        var quests: Map<String, Quest> = hashMapOf()
 ) : Serializable {
     @Exclude @Transient  var background: Int = 0
         @Exclude get() = drawableStorage[inBackground]!!
@@ -4040,9 +4137,6 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
     var fame: Int = 0
     var democracy: Boolean = false
     var recruiter: String = this.leader
-
-    @Exclude @Transient  var returnList: MutableList<Player> = mutableListOf()
-    @Exclude @Transient  var returnedPlayer: Player? = null
 
     fun writeLog(actionLog: FactionActionLog) {
         val db = FirebaseFirestore.getInstance()
@@ -4220,16 +4314,11 @@ class Invitation(
         when(this.type){
             InvitationType.faction -> {
                 if(Data.player.factionID == null){
-                    db.collection("factions").document(this.factionID.toString()).get().addOnSuccessListener {
-                        val temp: MutableList<String> = if(it == null) mutableListOf() else it.get("pendingInvitationsPlayer") as MutableList<String>
-                        if(temp.contains(Data.player.username)){
-                            db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
-                            db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level, Data.player.allies)))
-                            Data.player.factionRole = FactionRole.MEMBER
-                            Data.player.factionID = this.factionID
-                            Data.player.factionName = this.factionName
-                        }
-                    }
+                    db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
+                    db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level, Data.player.allies)))
+                    Data.player.factionRole = FactionRole.MEMBER
+                    Data.player.factionID = this.factionID
+                    Data.player.factionName = this.factionName
                 }
             }
             InvitationType.ally -> {

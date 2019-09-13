@@ -52,7 +52,7 @@ class Fragment_Story : Fragment() {
 
 class ViewPagerStoryQuest internal constructor(fm: FragmentManager, private val storyQuest: StoryQuest) : FragmentPagerAdapter(fm){
 
-    override fun getItem(position: Int): Fragment? {
+    override fun getItem(position: Int): Fragment {
         return GameFlow.getStoryFragment(storyQuest.slides[position].inFragment, storyQuest.slides[position].inInstanceID, position)
     }
 

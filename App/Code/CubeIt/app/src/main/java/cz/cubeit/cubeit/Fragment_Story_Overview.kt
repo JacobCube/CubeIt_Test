@@ -28,11 +28,11 @@ class Fragment_Story_Overview : Fragment() {
 
 class ViewPagerStoryOverview internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
-    override fun getItem(position: Int): Fragment? {
+    override fun getItem(position: Int): Fragment {
         return when(position) {
             0 -> Fragment_Story_Overview_Upcoming()
             1 -> Fragment_Story_Overview_Completed()
-            else -> null
+            else -> Fragment_Story_Overview_Upcoming()
         }
     }
 

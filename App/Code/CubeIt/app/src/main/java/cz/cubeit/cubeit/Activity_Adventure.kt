@@ -42,7 +42,6 @@ class Adventure : AppCompatActivity() {
     var overviewFilterItem: Boolean = true
     var overviewFilterCoins: Boolean = true
     private lateinit var overviewQuestIconTemp: ImageView
-    private var overviewRect = Rect()
 
     private var iconSideQuestsAnim = ValueAnimator()
 
@@ -68,9 +67,7 @@ class Adventure : AppCompatActivity() {
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val viewRect = Rect()
-
         frameLayoutMenuAdventure.getGlobalVisibleRect(viewRect)
-        overviewQuestIcon.getGlobalVisibleRect(overviewRect)
 
         if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuAdventure.y <= (displayY * 0.83).toFloat()) {
 
@@ -83,9 +80,6 @@ class Adventure : AppCompatActivity() {
             }
 
         }
-        /*if(!overviewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && overViewOpened){
-            overviewQuestIconTemp.performClick()
-        }*/
         return super.dispatchTouchEvent(ev)
     }
 
@@ -103,6 +97,10 @@ class Adventure : AppCompatActivity() {
             }else {
                 onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview))
             }
+        }
+
+        textViewQuestProgress.setOnClickListener {
+            progressAdventureQuest.performClick()
         }
 
         val dm = DisplayMetrics()
@@ -184,7 +182,7 @@ class Adventure : AppCompatActivity() {
         frameLayoutAdventureOverview.x = displayX.toFloat() - (overviewQuestIcon.width).toFloat()
 
         overviewQuestIcon.setOnClickListener {
-            it.getGlobalVisibleRect(overviewRect)
+            Log.d("overviewQuestIcon", "clicked")
 
             if(iconSideQuestsAnim.isRunning)iconSideQuestsAnim.pause()
             overViewOpened = if(!overViewOpened){
@@ -205,8 +203,7 @@ class Adventure : AppCompatActivity() {
                         }
                         override fun onAnimationRepeat(animation: Animator) {
                         }
-                    }
-                    )
+                    })
                     start()
                 }
                 true
@@ -512,7 +509,7 @@ class Adventure : AppCompatActivity() {
 
 class ViewPagerAdapterAdventure internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
-    override fun getItem(position: Int): Fragment? {
+    override fun getItem(position: Int): Fragment {
         return when(position) {
             0 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_1, R.drawable.map0, 0)
             1 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_2, R.drawable.map1, 1)
@@ -520,7 +517,7 @@ class ViewPagerAdapterAdventure internal constructor(fm: FragmentManager) : Frag
             3 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_4, R.drawable.map3, 3)
             4 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_5, R.drawable.map4, 4)
             5 -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_6, R.drawable.map5, 5)
-            else -> null
+            else -> Fragment_Adventure.newInstance(R.layout.fragment_adventure_1, R.drawable.map0, 0)
         }
     }
 

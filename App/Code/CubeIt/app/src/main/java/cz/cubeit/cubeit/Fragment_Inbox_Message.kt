@@ -34,7 +34,7 @@ class FragmentInboxMessage : Fragment() {
         }
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity!! as Activity_Inbox).onTop = true
     }

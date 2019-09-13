@@ -112,6 +112,7 @@ class ActivitySettings : AppCompatActivity(){
             if(++galleryCounter >= gallery.size) galleryCounter = 0
             textViewSettingsTextFont.text = gallery[galleryCounter]
             Data.player.textFont = gallery[galleryCounter]
+            textViewSettingsTextFont.typeface = ResourcesCompat.getFont(this, Data.fontGallery[Data.player.textFont]!!)
             textViewSettingsSeekBar.typeface = ResourcesCompat.getFont(this, Data.fontGallery[Data.player.textFont]!!)
             SystemFlow.writeFileText(this@ActivitySettings, "textFont${Data.player.username}.data", Data.player.textFont)
         }

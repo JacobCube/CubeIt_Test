@@ -139,11 +139,11 @@ class Spells: AppCompatActivity(){
 }
 class ViewPagerSpells internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
-    override fun getItem(position: Int): Fragment? {
+    override fun getItem(position: Int): Fragment {
         return when (position) {
             0 -> FragmentDefense()
             1 -> FragmentAttack()
-            else -> null
+            else -> FragmentDefense()
         }
     }
 

@@ -55,20 +55,17 @@ class ActivityLoginRegister(private val loginUsername: String = "", private val 
                 handler.postDelayed({hideSystemUI()},1000)
             }
         }
-
-        Log.d("json", Gson().toJson(Item()) .toString())
-        Log.d("Item class", "TEST: " + Item().getFields())
     }
 }
 
 
 class ViewPagerAdapterLoginRegister internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
-    override fun getItem(position: Int): Fragment? {
+    override fun getItem(position: Int): Fragment {
         return when(position) {
             0 -> FragmentLogin()
             1 -> Fragment_Register()
-            else -> null
+            else -> FragmentLogin()
         }
     }
 
