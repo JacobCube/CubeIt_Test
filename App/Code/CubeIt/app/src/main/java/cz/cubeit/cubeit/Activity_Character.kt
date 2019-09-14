@@ -128,7 +128,6 @@ class Activity_Character : AppCompatActivity() {
         hideSystemUI()
         Data.player.syncStats()
         setContentView(R.layout.activity_character)
-        textViewInfoItem.movementMethod = ScrollingMovementMethod()
         Data.newLevel = false
 
         progressBarCharacterXp.progress = Data.player.experience

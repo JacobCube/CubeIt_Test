@@ -143,15 +143,14 @@
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewShopMoney"
         android:layout_width="wrap_content"
+        android:textColor="@color/bg_basic_white"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/emptyslot"
+        android:background="@drawable/bg_logincolor_bottom_right_border"
         android:gravity="center"
-        android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="asdasdasd" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInfoItem"
@@ -225,11 +224,11 @@
         android:id="@+id/bubleDialogShop"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="15dp"
-        android:gravity="center"
-        android:text="Error ocurred"
         android:background="@drawable/bubledialogshop"
-        android:textColor="@android:color/holo_red_light"
+        android:gravity="center"
+        android:padding="15dp"
+        android:text="Error ocurred"
+        android:textColor="@color/progress_hp"
         android:textSize="20sp"
         android:textStyle="bold"
         android:visibility="invisible"

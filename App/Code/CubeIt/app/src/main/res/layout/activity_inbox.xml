@@ -79,7 +79,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/filter" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputSearchInbox"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -174,7 +174,7 @@
 
     </FrameLayout>
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"

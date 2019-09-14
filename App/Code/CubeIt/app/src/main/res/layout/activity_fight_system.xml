@@ -350,7 +350,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline90"
         app:layout_constraintTop_toTopOf="@+id/guideline41" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <TextView
         android:id="@+id/textViewPlayerStun"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -363,7 +363,7 @@
         app:layout_constraintStart_toStartOf="@+id/progressBarPlayerStun"
         app:layout_constraintTop_toTopOf="@+id/guideline104" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <TextView
         android:id="@+id/textViewEnemyStun"
         android:layout_width="0dp"
         android:layout_height="0dp"

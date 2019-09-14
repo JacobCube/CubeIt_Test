@@ -11,8 +11,8 @@ android {
         applicationId "cz.cubeit.cubeit"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 50
-        versionName "0.4.9.3"
+        versionCode 51
+        versionName "0.4.9.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

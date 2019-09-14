@@ -59,7 +59,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxDateFrom"
         android:layout_width="0dp"
@@ -83,7 +83,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSender"
         android:layout_width="0dp"
@@ -106,7 +106,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxReceiver"
         android:layout_width="0dp"
@@ -129,7 +129,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxDateTo"
         android:layout_width="0dp"
@@ -204,7 +204,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxSubject"
         android:layout_width="0dp"
@@ -227,7 +227,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline157" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxContent"
         android:layout_width="0dp"

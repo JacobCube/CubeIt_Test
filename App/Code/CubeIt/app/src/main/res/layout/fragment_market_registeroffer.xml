@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterUntilDate"
         android:layout_width="0dp"
@@ -40,7 +40,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline187"
         app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterItem" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterCoins"
         android:layout_width="wrap_content"
@@ -60,7 +60,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
         app:layout_constraintTop_toTopOf="@+id/imageViewMarketRegisterItem" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterCubeCoins"
         android:layout_width="wrap_content"
@@ -80,7 +80,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketRegisterCoins" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterLowerCoins"
         android:layout_width="wrap_content"
@@ -103,7 +103,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
         app:layout_constraintTop_toBottomOf="@+id/checkBoxMarketRegister" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketRegisterLowerCubeCoins"
         android:layout_width="0dp"

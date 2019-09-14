@@ -49,11 +49,11 @@ class Fragment_Faction_Create : Fragment() {
             viewTemp.buttonFactionCreateCreate.setOnClickListener {
                 if(Data.player.factionID == null) {
 
-                    if(viewTemp.editTextFactionCreateName.text.isNotBlank() && viewTemp.editTextFactionCreateName.text.length > 5 && viewTemp.editTextFactionCreateName.text.length < 13){
+                    if(viewTemp.editTextFactionCreateName.text!!.isNotBlank() && viewTemp.editTextFactionCreateName!!.text!!.length > 5 && viewTemp.editTextFactionCreateName!!.text!!.length < 13){
 
-                        if(viewTemp.editTextFactionCreateTax.text.isNotBlank()){
+                        if(viewTemp.editTextFactionCreateTax.text!!.isNotBlank()){
 
-                            if(viewTemp.editTextFactionCreateDescription.text.isNotBlank() && viewTemp.editTextFactionCreateDescription.text.length < 500){
+                            if(viewTemp.editTextFactionCreateDescription.text!!.isNotBlank() && viewTemp.editTextFactionCreateDescription.text!!.length < 500){
                                 viewTemp.buttonFactionCreateCreate.isEnabled = false
                                 faction.initialize().addOnSuccessListener {
                                     faction.taxPerDay = viewTemp.editTextFactionCreateTax.toString().toIntOrNull() ?: 0

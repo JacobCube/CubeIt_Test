@@ -53,7 +53,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.09" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputEmailLogin"
         android:layout_width="0dp"
@@ -106,7 +106,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.75" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputPassLogin"
         android:layout_width="0dp"

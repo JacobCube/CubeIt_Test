@@ -183,7 +183,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline206"
         app:layout_constraintTop_toTopOf="@+id/guideline205" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionGold"
         android:layout_width="80dp"
         android:layout_height="wrap_content"

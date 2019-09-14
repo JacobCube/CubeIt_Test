@@ -59,7 +59,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardUsername"
         android:layout_width="0dp"
@@ -84,7 +84,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardLevelBottom"
         android:layout_width="0dp"
@@ -108,7 +108,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardPosition"
         android:layout_width="0dp"
@@ -132,7 +132,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextBoardLevelTop"
         android:layout_width="0dp"

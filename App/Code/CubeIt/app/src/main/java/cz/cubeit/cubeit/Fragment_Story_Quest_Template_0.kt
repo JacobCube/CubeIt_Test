@@ -1,5 +1,6 @@
 package cz.cubeit.cubeit
 
+import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -41,6 +42,7 @@ class Fragment_Story_Quest_Template_0 : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewTemplate0 = inflater.inflate(R.layout.fragment_story_quest_template_0, container, false)
         if(!this.isAdded || arguments?.getInt("slideNum") == null || arguments!!.getString("questID") == null)return viewTemplate0

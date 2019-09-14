@@ -91,7 +91,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline76"
         app:srcCompat="@drawable/filter" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextMarketSearch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

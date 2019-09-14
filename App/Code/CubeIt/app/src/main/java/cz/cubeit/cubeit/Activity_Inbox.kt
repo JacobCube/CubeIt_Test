@@ -228,7 +228,7 @@ class Activity_Inbox : AppCompatActivity(){
             imageViewInboxStartSearch.setOnClickListener {
                 val inboxList = currentCategory
                 if (!editTextInboxSearch.text.isNullOrBlank()) {
-                    inboxList.messages = inboxList.messages.filter { it.content.contains(editTextInboxSearch.text) || it.subject.contains(editTextInboxSearch.text) || it.sender.contains(editTextInboxSearch.text) }.toMutableList()
+                    inboxList.messages = inboxList.messages.filter { it.content.contains(editTextInboxSearch.text!!) || it.subject.contains(editTextInboxSearch.text!!) || it.sender.contains(editTextInboxSearch.text!!) }.toMutableList()
                 }
                 currentCategory = inboxList
                 (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()

@@ -141,7 +141,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
                             startActivity(intent)
                         }
                         LoadingStatus.UNLOGGED -> {
-                            finish()
                             val intent = Intent(this@Activity_Splash_Screen, ActivityLoginRegister()::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             startActivity(intent)

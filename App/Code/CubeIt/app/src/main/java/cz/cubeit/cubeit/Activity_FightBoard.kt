@@ -254,7 +254,7 @@ class ActivityFightBoard: AppCompatActivity(){
 
             rotateAnimation.start()
 
-            if(editTextBoardSearch.text.matches(Regex("d+.*"))){
+            if(editTextBoardSearch.text!!.matches(Regex("d+.*"))){
                 val index = editTextBoardSearch.text.toString().toIntOrNull()
 
                 if(index != null){

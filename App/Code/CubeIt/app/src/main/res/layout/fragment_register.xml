@@ -39,7 +39,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline9"
         app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputUsernameReg"
         android:layout_width="0dp"
@@ -78,7 +78,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline9"
         app:layout_constraintTop_toTopOf="@+id/texguideline4" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputEmailReg"
         android:layout_width="0dp"
@@ -154,7 +154,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.53" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputPassReg"
         android:layout_width="0dp"
@@ -236,7 +236,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.69" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/inputRePassReg"
         android:layout_width="0dp"

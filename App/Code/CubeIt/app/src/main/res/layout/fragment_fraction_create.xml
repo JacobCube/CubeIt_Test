@@ -65,7 +65,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.575" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionCreateName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -91,7 +91,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionCreateTax"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -124,7 +124,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.37" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionCreateDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"

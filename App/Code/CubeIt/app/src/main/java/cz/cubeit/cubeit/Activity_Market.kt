@@ -278,7 +278,7 @@ class Activity_Market:AppCompatActivity(){
 
             imageViewSearchIconMarket.setOnClickListener {
                 imageViewLoadingMarket.startAnimation(rotateAnimation)
-                if(editTextMarketSearch.text.isNotEmpty()){
+                if(editTextMarketSearch.text!!.isNotEmpty()){
                     docRef.whereGreaterThanOrEqualTo("itemName", editTextMarketSearch.text.toString()).get().addOnSuccessListener {             //filter by its item's name
                         itemsList = it.toObjects(MarketOffer::class.java)
                         (listViewMarketItems.adapter as MarketItemsList).updateList(itemsList)

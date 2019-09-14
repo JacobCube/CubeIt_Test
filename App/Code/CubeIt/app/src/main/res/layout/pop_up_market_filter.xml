@@ -90,7 +90,7 @@
         app:layout_constraintTop_toTopOf="@+id/quideline153"
         app:layout_constraintVertical_bias="1.0" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketLvlFrom"
         android:layout_width="0dp"
@@ -106,7 +106,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketPriceFrom"
         android:layout_width="0dp"
@@ -122,7 +122,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline157" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketPriceTo"
         android:layout_width="0dp"
@@ -138,7 +138,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketLvlTo" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketLvlTo"
         android:layout_width="0dp"
@@ -154,7 +154,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
  android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextMarketSeller"
         android:layout_width="0dp"

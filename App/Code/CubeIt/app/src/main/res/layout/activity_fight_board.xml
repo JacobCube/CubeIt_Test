@@ -81,7 +81,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@color/loginColor" />
 
-    <EditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextBoardSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"

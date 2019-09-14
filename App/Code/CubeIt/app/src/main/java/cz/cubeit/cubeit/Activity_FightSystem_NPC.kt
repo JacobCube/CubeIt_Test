@@ -20,6 +20,7 @@ import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlinx.android.synthetic.main.activity_fight_system_npc.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.buttonCloseDialog
@@ -414,6 +415,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         hideSystemUI()
         setContentView(R.layout.activity_fight_system_npc)
         textViewStats = textViewSpellSpecsNPC
+
 
         playerFight = FightPlayer(Data.player)
 

@@ -64,9 +64,9 @@ class FragmentLogin : Fragment()  {
 
             if (cm.activeNetworkInfo?.isConnected == true){
 
-                if(view.inputEmailLogin.text.isNotBlank()){
+                if(view.inputEmailLogin.text!!.isNotBlank()){
 
-                    if(view.inputPassLogin.text.isNotBlank()){
+                    if(view.inputPassLogin.text!!.isNotBlank()){
 
                         startActivity(intentSplash)
                         val db = FirebaseFirestore.getInstance()

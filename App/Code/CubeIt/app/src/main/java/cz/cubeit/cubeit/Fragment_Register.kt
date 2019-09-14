@@ -52,11 +52,11 @@ class Fragment_Register : Fragment() {
 
             if (isConnected) {
 
-                if (view.inputUsernameReg.text.isNotBlank() && view.inputUsernameReg.text.length < 13 && view.inputUsernameReg.text.length > 5) {
+                if (view.inputUsernameReg.text!!.isNotBlank() && view.inputUsernameReg.text!!.length < 13 && view.inputUsernameReg.text!!.length > 5) {
 
-                    if (view.inputEmailReg.text.isNotBlank()) {
+                    if (view.inputEmailReg.text!!.isNotBlank()) {
 
-                        if (view.inputPassReg.text.isNotBlank()) {
+                        if (view.inputPassReg.text!!.isNotBlank()) {
 
                             val pass = view.inputPassReg.text.toString()
                             if(pass.length > 7 && pass.contains("\\d+".toRegex()) /*&& pass.contains("[A-Z ]+".toRegex())*/){
@@ -71,7 +71,7 @@ class Fragment_Register : Fragment() {
                                             handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha, versioned ${GenericDB.AppInfo.appVersion})")},100)
                                         }
 
-                                        if (view.inputEmailReg.text.isNotEmpty() && view.inputUsernameReg.text.isNotEmpty() && view.inputPassReg.text.isNotEmpty() && view.inputRePassReg.text.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
+                                        if (view.inputEmailReg.text!!.isNotEmpty() && view.inputUsernameReg.text!!.isNotEmpty() && view.inputPassReg.text!!.isNotEmpty() && view.inputRePassReg.text!!.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
                                             userPassword = view.inputPassReg.text.toString()
 
                                             Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))

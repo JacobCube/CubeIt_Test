@@ -3833,23 +3833,29 @@ class CustomTextView : TextView {
     }
 }
 
-class EditTextWithClear : androidx.appcompat.widget.AppCompatEditText {
+class CustomEditText : androidx.appcompat.widget.AppCompatEditText {
 
-    constructor(context: Context) : super(context) {
-        init()
+    enum class SizeType{
+        small,
+        adaptive,
+        title
     }
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init()
-    }
+    private var customFont: Int = R.font.alegreya_sans_sc
+    private var customTextSize: Float = Data.player.textSize
 
-    constructor(context: Context,
-                attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init()
-    }
+    constructor(context: Context) : super(context)
 
-    private fun init() {
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
+
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
+    init {
+        this.movementMethod = ScrollingMovementMethod()
+        this.scrollBarFadeDuration = 0
+        this.typeface = ResourcesCompat.getFont(context, Data.fontGallery[Data.player.textFont]!!)
+        this.setTypeface(this.typeface, Typeface.BOLD)
     }
 }
 

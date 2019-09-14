@@ -334,7 +334,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline90NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline41NPC" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <TextView
         android:id="@+id/textViewPlayerStunNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -347,7 +347,7 @@
         app:layout_constraintStart_toStartOf="@+id/progressBarPlayerStunNPC"
         app:layout_constraintTop_toTopOf="@+id/guideline104NPC" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <TextView
         android:id="@+id/textViewEnemyStunNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -67,13 +67,14 @@ class Fragment_Faction: Fragment(){
     private fun initMain(){
         Data.loadingStatus = LoadingStatus.LOGGING                           //procesing
         val intent = Intent(viewTemp.context, Activity_Splash_Screen::class.java)
+        intent.putExtra("refreshRate", (100).toLong())
 
         if(Data.player.factionID != null || factionID != null){
             if(factionID == null || factionID == ""){
                 if(Data.player.faction == null || Data.factionSnapshot == null || SystemFlow.factionChange){
-                    intent.putExtra("refreshRate", (100).toLong())
                     startActivity(intent)
                     Data.player.loadFaction().addOnSuccessListener {    //tries to load player's faction
+                        Data.loadingStatus = LoadingStatus.CLOSELOADING
                         currentInstanceOfFaction = Data.player.faction
                         SystemFlow.factionChange = false
 
@@ -140,7 +141,10 @@ class Fragment_Faction: Fragment(){
                         myFaction = false
                         init()
                         Data.loadingStatus = LoadingStatus.CLOSELOADING
-                    }else activity!!.finish()
+                    }else {
+                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                        activity!!.finish()
+                    }
                 }
             }
         }
@@ -179,7 +183,7 @@ class Fragment_Faction: Fragment(){
             childFragmentManager.beginTransaction().replace(R.id.frameLayoutFactionLog, Fragment_Faction_Log.newInstance(currentInstanceOfFaction!!)).commitAllowingStateLoss()
 
             viewTemp.imageViewFactionGoldPlus.setOnClickListener {
-                viewTemp.editTextFactionGold.setText(if (viewTemp.editTextFactionGold.text.isEmpty()) {
+                viewTemp.editTextFactionGold.setText(if (viewTemp.editTextFactionGold.text!!.isEmpty()) {
                     "0"
                 } else {
                     val temp = viewTemp.editTextFactionGold.text.toString().toInt()
@@ -187,7 +191,7 @@ class Fragment_Faction: Fragment(){
                 })
             }
             viewTemp.buttonFactionGoldOk.setOnClickListener {
-                if (viewTemp.editTextFactionGold.text.isNotBlank()) {
+                if (viewTemp.editTextFactionGold.text!!.isNotBlank()) {
                     val amount: Int = viewTemp.editTextFactionGold.text.toString().toInt()
                     if (Data.player.gold >= amount && amount != 0) {
                         viewTemp.editTextFactionGold.setBackgroundResource(0)

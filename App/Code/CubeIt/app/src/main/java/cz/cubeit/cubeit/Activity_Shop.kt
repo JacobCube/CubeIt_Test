@@ -62,7 +62,6 @@ class Activity_Shop : AppCompatActivity(){
                 }
                 start()
             }
-
         }
         return super.dispatchTouchEvent(ev)
     }
@@ -73,7 +72,8 @@ class Activity_Shop : AppCompatActivity(){
         Data.player.syncStats()
         setContentView(R.layout.activity_shop)
         textViewShopMoney.text = Data.player.money.toString()
-        textViewInfoItem.movementMethod = ScrollingMovementMethod()
+        textViewShopMoney.fontSizeType = CustomTextView.SizeType.title
+        textViewShopMoney.setPadding(10, 10, 10, 10)
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
