@@ -846,6 +846,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             window.dismiss()
             buttonAccept.isEnabled = false
             buttonAccept.isClickable = false
+            if(completed) Data.activeQuest!!.wonQuest()
             Data.activeQuest!!.delete().addOnSuccessListener {
                 if(completed){
                     reward?.receive()

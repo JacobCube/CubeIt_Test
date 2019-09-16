@@ -857,7 +857,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
     @SuppressLint("SetTextI18n")
     private fun endOfFight(winner:Player, view: View) {
-        if(fightEnded)return; finish()
+        if(fightEnded)return;
         fightEnded = true
 
         val window = PopupWindow(this)
@@ -904,20 +904,20 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             }
 
 
-            val log = FightLog(winnerName = winner.username, looserName = looserName, spellFlow = spellFlowLog, reward = reward!!, fame = fameGained, surrenderRound = if(surrender)roundCounter else null)
+            val log = FightLog(winnerName = winner.username, looserName = looserName, spellFlow = spellFlowLog, reward = reward, fame = fameGained, surrenderRound = if(surrender)roundCounter else null)
             log.init()
 
             //if(surrender)finish()
 
             textViewQuest.text = "${winner.username} won" +
                     "\n and earned:" +
-                    "\n${reward.getStats()}" +
+                    "\n${reward?.getStats()}" +
                     "\nand $fameGained fame points"
 
             window.isOutsideTouchable = false
             window.isFocusable = true
             window.setOnDismissListener {
-                if(winner.username == playerName)reward.receive()
+                if(winner.username == playerName)reward?.receive()
                 window.dismiss()
                 val endFight = Intent(this, Home::class.java)
                 endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -939,7 +939,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 this.overridePendingTransition(0, 0)
             }
 
-            if (reward.item != null) {
+            if (reward?.item != null) {
                 imageItem.setImageResource(reward.item!!.drawable)
                 imageItem.visibility = View.VISIBLE
                 imageItem.isEnabled = true

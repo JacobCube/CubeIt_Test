@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AppCompatActivity
-import android.text.method.ScrollingMovementMethod
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
@@ -703,263 +702,97 @@ class Activity_Character : AppCompatActivity() {
             val viewHolder = rowMain.tag as ViewHolder
 
             val handler = Handler()
-            val index:Int = if(position == 0) 0 else{
+            val indexAdapter:Int = if(position == 0) 0 else{
                 position*4
             }
 
-            for(i in 0..3){
-                val tempSlot = when(i){
-                    0->viewHolder.buttonInventory1
-                    1->viewHolder.buttonInventory2
-                    2->viewHolder.buttonInventory3
-                    3->viewHolder.buttonInventory4
-                    else->viewHolder.buttonInventory1
-                }
-                if(index+i<Data.player.inventory.size){
-                    if(playerC.inventory[index+i]!=null){
-                        tempSlot.setImageResource(Data.player.inventory[index+i]!!.drawable)
-                        tempSlot.setBackgroundResource(Data.player.inventory[index+i]!!.getBackground())
-                        tempSlot.isEnabled = true
+            class Node(
+                    val component:ImageView,
+                    val index: Int
+            ){
+                var enabled: Boolean = true
+
+                init {
+                    if(indexAdapter + this.index < Data.player.inventory.size){
+                        if(playerC.inventory[indexAdapter + this.index] != null){
+                            component.setImageResource(Data.player.inventory[indexAdapter + this.index]!!.drawable)
+                            component.setBackgroundResource(Data.player.inventory[indexAdapter + this.index]!!.getBackground())
+                            component.isEnabled = true
+                        }else{
+                            component.setImageResource(0)
+                            component.setBackgroundResource(R.drawable.emptyslot)
+                            component.isEnabled = false
+                        }
                     }else{
-                        tempSlot.setImageResource(0)
-                        tempSlot.setBackgroundResource(R.drawable.emptyslot)
-                        tempSlot.isEnabled = false
+                        component.isEnabled = false
+                        component.setBackgroundResource(0)
+                        component.setImageResource(0)
                     }
-                }else{
-                    tempSlot.isEnabled = false
-                    tempSlot.isClickable = false
-                    tempSlot.setBackgroundResource(0)
-                    tempSlot.setImageResource(0)
+
+                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
+                        override fun onClick() {
+                            super.onClick()
+                            //if(!hidden && lastClicked=="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
+                            lastClicked="inventory${this@Node.index}$position"
+                            textViewInfoItem.setHTMLText(playerC.inventory[indexAdapter + this@Node.index]?.getStatsCompare()!!)
+                        }
+
+                        override fun onDoubleClick() {
+                            super.onDoubleClick()
+                            getDoubleClick(indexAdapter + this@Node.index, playerC, viewHolder.buttonInventory2)
+                            if(playerC.inventory[indexAdapter + this@Node.index] != null){
+                                textViewInfoItem.setHTMLText(playerC.inventory[indexAdapter + this@Node.index]?.getStatsCompare()!!)
+                            }
+                            notifyDataSetChanged()
+                            //handler.postDelayed({ dragItemSync()}, 500)
+                        }
+
+                        /*override fun onLongClick() {
+                            super.onLongClick()
+                            viewHolder.buttonInventory1.tag = "Inventory" + (index+1)
+                            draggedItem = playerC.inventory[index+1]
+                            when(playerC.inventory[index+1]){
+                                is Weapon, is Wearable -> {
+                                    equipView.setOnDragListener(equipDragListener)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                        bagView.cancelDragAndDrop()
+                                    }
+                                }
+                                is Runes ->{
+                                    bagView.setOnDragListener(runesDragListener)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                        equipView.cancelDragAndDrop()
+                                    }
+                                }
+                            }
+                            viewHolder.buttonInventory2.setImageResource(0)
+                            sourceOfDrag = "inventory"
+
+                            val item = ClipData.Item((index+1).toString())
+                            val mimeTypes = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)
+
+                            val data = ClipData(item.toString(), mimeTypes, item)
+
+                            val myShadow = MyDragShadowBuilder(viewHolder.buttonInventory1)
+
+                            ClipDataIndex = index+1
+                            // Starts the drag
+                            viewHolder.buttonInventory2.startDrag(
+                                    data,   // the data to be dragged
+                                    myShadow,   // the drag shadow builder
+                                    null,       // no need to use local data
+                                    0           // flags (not currently used, set to 0)
+                            )
+                        }*/
+                    })
                 }
             }
 
-            viewHolder.buttonInventory1.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
-                override fun onClick() {
-                    super.onClick()
-                    //if(!hidden && lastClicked=="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-                    lastClicked="inventory0$position"
-                    textViewInfoItem.setHTMLText(playerC.inventory[index]?.getStatsCompare()!!)
-                }
+            Node(viewHolder.buttonInventory1, 0)
+            Node(viewHolder.buttonInventory2, 1)
+            Node(viewHolder.buttonInventory3, 2)
+            Node(viewHolder.buttonInventory4, 3)
 
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    getDoubleClick(index, playerC, viewHolder.buttonInventory1)
-                    if(playerC.inventory[index]!=null){
-                        textViewInfoItem.setHTMLText(playerC.inventory[index]?.getStatsCompare()!!)
-                    }
-                    notifyDataSetChanged()
-                    handler.postDelayed({ dragItemSync()}, 500)
-                }
-
-                /*override fun onLongClick() {
-                    super.onLongClick()
-                    viewHolder.buttonInventory1.tag = "$index"
-                    draggedItem = playerC.inventory[index]
-                    when (playerC.inventory[index]) {
-                        is Weapon, is Wearable -> {
-                            equipView.setOnDragListener(equipDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                bagView.cancelDragAndDrop()
-                            }
-                        }
-                        is Runes ->{
-                            bagView.setOnDragListener(runesDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                equipView.cancelDragAndDrop()
-                            }
-                        }
-                    }
-                    viewHolder.buttonInventory1.setImageResource(0)
-                    sourceOfDrag = "inventory"
-
-                    val item = ClipData.Item(viewHolder.buttonInventory1.tag as CharSequence)
-                    val mimeTypes = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)
-
-                    val data = ClipData(viewHolder.buttonInventory1.tag.toString(), mimeTypes, item)
-
-                    val myShadow = MyDragShadowBuilder(viewHolder.buttonInventory1)
-                    ClipDataIndex = index
-
-                    // Starts the drag
-                    viewHolder.buttonInventory1.startDrag(
-                            data,   // the data to be dragged
-                            myShadow,   // the drag shadow builder
-                            null,       // no need to use local data
-                            0           // flags (not currently used, set to 0)
-                    )
-                }*/
-            })
-
-            viewHolder.buttonInventory2.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
-                override fun onClick() {
-                    super.onClick()
-                    //if(!hidden && lastClicked=="inventory1$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-                    lastClicked="inventory1$position"
-                    textViewInfoItem.setHTMLText(playerC.inventory[index+1]?.getStatsCompare()!!)
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    getDoubleClick(index+1, playerC, viewHolder.buttonInventory2)
-                    if(playerC.inventory[index+1]!=null){
-                        textViewInfoItem.setHTMLText(playerC.inventory[index+1]?.getStatsCompare()!!)
-                    }
-                    notifyDataSetChanged()
-                    handler.postDelayed({ dragItemSync()}, 500)
-                }
-
-                /*override fun onLongClick() {
-                    super.onLongClick()
-                    viewHolder.buttonInventory1.tag = "Inventory" + (index+1)
-                    draggedItem = playerC.inventory[index+1]
-                    when(playerC.inventory[index+1]){
-                        is Weapon, is Wearable -> {
-                            equipView.setOnDragListener(equipDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                bagView.cancelDragAndDrop()
-                            }
-                        }
-                        is Runes ->{
-                            bagView.setOnDragListener(runesDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                equipView.cancelDragAndDrop()
-                            }
-                        }
-                    }
-                    viewHolder.buttonInventory2.setImageResource(0)
-                    sourceOfDrag = "inventory"
-
-                    val item = ClipData.Item((index+1).toString())
-                    val mimeTypes = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)
-
-                    val data = ClipData(item.toString(), mimeTypes, item)
-
-                    val myShadow = MyDragShadowBuilder(viewHolder.buttonInventory1)
-
-                    ClipDataIndex = index+1
-                    // Starts the drag
-                    viewHolder.buttonInventory2.startDrag(
-                            data,   // the data to be dragged
-                            myShadow,   // the drag shadow builder
-                            null,       // no need to use local data
-                            0           // flags (not currently used, set to 0)
-                    )
-                }*/
-            })
-
-            viewHolder.buttonInventory3.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
-                override fun onClick() {
-                    super.onClick()
-                    //if(!hidden && lastClicked=="inventory2$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-                    lastClicked="inventory2$position"
-                    textViewInfoItem.setHTMLText(playerC.inventory[index+2]?.getStatsCompare()!!)
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    getDoubleClick(index+2, playerC, viewHolder.buttonInventory3)
-                    if(playerC.inventory[index+2]!=null){
-                        textViewInfoItem.setHTMLText(playerC.inventory[index+2]?.getStatsCompare()!!)
-                    }
-                    notifyDataSetChanged()
-                    handler.postDelayed({ dragItemSync()}, 500)
-                }
-
-                /*override fun onLongClick() {
-                    super.onLongClick()
-                    viewHolder.buttonInventory1.tag = "Inventory" + (index+2)
-                    draggedItem = playerC.inventory[index+2]
-                    when(playerC.inventory[index+2]){
-                        is Weapon, is Wearable -> {
-                            equipView.setOnDragListener(equipDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                bagView.cancelDragAndDrop()
-                            }
-                        }
-                        is Runes ->{
-                            bagView.setOnDragListener(runesDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                equipView.cancelDragAndDrop()
-                            }
-                        }
-                    }
-                    viewHolder.buttonInventory3.setImageResource(0)
-                    sourceOfDrag = "inventory"
-
-                    val item = ClipData.Item((index+2).toString())
-                    val mimeTypes = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)
-
-                    val data = ClipData(item.toString(), mimeTypes, item)
-
-                    val myShadow = MyDragShadowBuilder(viewHolder.buttonInventory1)
-
-                    ClipDataIndex = index+2
-                    // Starts the drag
-                    viewHolder.buttonInventory3.startDrag(
-                            data,   // the data to be dragged
-                            myShadow,   // the drag shadow builder
-                            null,       // no need to use local data
-                            0           // flags (not currently used, set to 0)
-                    )
-                }*/
-            })
-
-            viewHolder.buttonInventory4.setOnTouchListener(object : Class_OnSwipeTouchListener(context) {
-                override fun onClick() {
-                    super.onClick()
-                    //if(!hidden && lastClicked=="inventory3$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-                    lastClicked="inventory3$position"
-                    textViewInfoItem.setHTMLText(playerC.inventory[index+3]?.getStatsCompare()!!)
-                }
-
-                override fun onDoubleClick() {
-                    super.onDoubleClick()
-                    getDoubleClick(index+3, playerC, viewHolder.buttonInventory4)
-                    if(playerC.inventory[index+3]!=null){
-                        textViewInfoItem.setHTMLText(playerC.inventory[index+3]?.getStatsCompare()!!)
-                    }
-                    notifyDataSetChanged()
-                    handler.postDelayed({ dragItemSync()}, 500)
-                }
-
-                /*override fun onLongClick() {
-                    super.onLongClick()
-                    viewHolder.buttonInventory1.tag = "Inventory" + (index+3)
-                    draggedItem = playerC.inventory[index+3]
-                    when(playerC.inventory[index+3]){
-                        is Weapon, is Wearable -> {
-                            equipView.setOnDragListener(equipDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                bagView.cancelDragAndDrop()
-                            }
-                        }
-                        is Runes ->{
-                            bagView.setOnDragListener(runesDragListener)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                equipView.cancelDragAndDrop()
-                            }
-                        }
-                    }
-                    viewHolder.buttonInventory4.setImageResource(0)
-                    sourceOfDrag = "inventory"
-
-                    val item = ClipData.Item((index+3).toString())
-                    val mimeTypes = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)
-
-                    val data = ClipData(item.toString(), mimeTypes, item)
-
-                    val myShadow = MyDragShadowBuilder(viewHolder.buttonInventory1)
-
-                    ClipDataIndex = index+3
-                    // Starts the drag
-                    viewHolder.buttonInventory4.startDrag(
-                            data,   // the data to be dragged
-                            myShadow,   // the drag shadow builder
-                            null,       // no need to use local data
-                            0           // flags (not currently used, set to 0)
-                    )
-                }*/
-            })
             return rowMain
         }
         private fun getDoubleClick(index: Int, playerC:Player, view:ImageView) {
@@ -1030,21 +863,23 @@ class Activity_Character : AppCompatActivity() {
                         }
                     }
 
-                    is Weapon,is Wearable -> if (playerC.equip[playerC.inventory[index]!!.slot] == null) {
-                        /*button.setImageResource(playerC.inventory[index]!!.drawable)
-                        button.isEnabled = true*/
-                        playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
-                        playerC.inventory[index] = null
-                    } else {
-                        /*button.setImageResource(playerC.inventory[index]!!.drawable)
-                        button.isEnabled = true*/
-                        tempMemory = playerC.equip[playerC.inventory[index]!!.slot]
-                        playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
-                        playerC.inventory[index] = tempMemory
-                        view.setImageResource(playerC.inventory[index]!!.drawable)
-                        view.setBackgroundResource(playerC.inventory[index]!!.getBackground())
-                        dragItemSync()
-                    }
+                    is Weapon,is Wearable -> if(playerC.inventory[index]!!.levelRq <= Data.player.level){
+                        if (playerC.equip[playerC.inventory[index]!!.slot] == null) {
+                            /*button.setImageResource(playerC.inventory[index]!!.drawable)
+                            button.isEnabled = true*/
+                            playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
+                            playerC.inventory[index] = null
+                        } else {
+                            /*button.setImageResource(playerC.inventory[index]!!.drawable)
+                            button.isEnabled = true*/
+                            tempMemory = playerC.equip[playerC.inventory[index]!!.slot]
+                            playerC.equip[playerC.inventory[index]!!.slot] = playerC.inventory[index]
+                            playerC.inventory[index] = tempMemory
+                            view.setImageResource(playerC.inventory[index]!!.drawable)
+                            view.setBackgroundResource(playerC.inventory[index]!!.getBackground())
+                            dragItemSync()
+                        }
+                    }else view.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short_small))
                 }
                 val frg = supportFragmentManager.findFragmentById(R.id.frameLayoutCharacterStats)
 

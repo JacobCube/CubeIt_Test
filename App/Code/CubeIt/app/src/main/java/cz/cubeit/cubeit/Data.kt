@@ -83,9 +83,7 @@ fun Any.toSHA256(): String{            //algoritmus pro porovnání s daty ze se
             (this as Item).toItem()
         }
         is Collection<*> -> {
-            Log.d("collection", (this.first() is LoadItems).toString())
             if(this.isNotEmpty() && this.first() is LoadItems){
-                Log.d("SHA256_ITEMS", "called from outside")
                 this.forEach {
                     (it as LoadItems).toItems()
                 }
@@ -110,8 +108,6 @@ fun Any.toSHA256(): String{            //algoritmus pro porovnání s daty ze se
     val md = MessageDigest.getInstance("SHA-256")
     val digest = md.digest(bytes)
     for (byte in digest) result += ("%02x".format(byte))
-
-    Log.d("jsonString", jsonString)
 
     return result
 }
@@ -377,7 +373,6 @@ object Data {
                                 db.collection("GenericDB").document("Balance").get().addOnSuccessListener {itBalance: DocumentSnapshot ->
                                     GenericDB.balance = (itBalance.toObject(GenericDB.Balance::class.java)!!)
                                     SystemFlow.writeObject(context, "balance.data", GenericDB.balance)            //write updated data to local storage
-                                    Log.d("balance", "loaded from firebase, rewritten")
                                 }
                             }
                         } else {
@@ -1163,7 +1158,7 @@ object GenericDB{
                 ,"6" to 9998
                 ,"7" to 10000
         )
-        var npcRate = hashMapOf(
+        var npcrate = hashMapOf(
                 "0" to 0.3
                 ,"1" to 0.35
                 ,"2" to 0.4
@@ -1626,7 +1621,6 @@ open class Player(
         @Exclude get(){
             return if(Data.charClasses.size >= 1) Data.charClasses[charClassIndex] else CharClass()
         }
-    var look: MutableList<Int> = mutableListOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     var inventory: MutableList<Item?> = arrayOfNulls<Item?>(8).toMutableList()
     var equip: MutableList<Item?> = arrayOfNulls<Item?>(10).toMutableList()
     var backpackRunes: MutableList<Runes?> = arrayOfNulls<Runes?>(2).toMutableList()
@@ -1699,7 +1693,7 @@ open class Player(
 
     @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - problem with Serializabling
     @Transient @Exclude var textSize: Float = 16f
-    @Transient @Exclude var textFont: String = "alegreya_sans_sc"
+    @Transient @Exclude var textFont: String = "average_sans"
 
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
@@ -1716,7 +1710,7 @@ open class Player(
         val db = FirebaseFirestore.getInstance()
         val userStringHelper: HashMap<String, Any?> = hashMapOf(
                 "username" to this.username,
-                "look" to this.look,
+                //"look" to this.look,
                 "level" to this.level,
                 "charClass" to this.charClass,
                 "power" to this.power,
@@ -1741,7 +1735,7 @@ open class Player(
                 "currentSurfaces" to this.currentSurfaces,
                 "appearOnTop" to this.appearOnTop,
                 "experience" to this.experience,
-                "fame" to this.fame,
+                //"fame" to this.fame,
                 "online" to this.online,
                 "newPlayer" to this.newPlayer,
                 "description" to this.description,
@@ -1795,8 +1789,8 @@ open class Player(
             } else break
         }
 
-        userString["username"] = this.username
-        userString["look"] = this.look
+        //userString["username"] = this.username
+        //userString["look"] = this.look
         userString["level"] = this.level
         userString["charClassIndex"] = this.charClassIndex
         userString["power"] = this.power
@@ -1821,9 +1815,9 @@ open class Player(
         userString["currentSurfaces"] = this.currentSurfaces
         userString["appearOnTop"] = this.appearOnTop
         userString["experience"] = this.experience
-        userString["fame"] = this.fame
+        //userString["fame"] = this.fame
         userString["online"] = this.online
-        userString["newPlayer"] = this.newPlayer
+        //userString["newPlayer"] = this.newPlayer
         userString["description"] = this.description
         userString["storyQuestsCompleted"] = this.storyQuestsCompleted
         userString["currentStoryQuest"] = this.currentStoryQuest
@@ -1851,7 +1845,7 @@ open class Player(
 
         userString["username"] = this.username
         userString["userId"] = inUserId
-        userString["look"] = this.look
+        //userString["look"] = this.look
         userString["level"] = this.level
         userString["charClassIndex"] = this.charClassIndex
         userString["power"] = this.power
@@ -2376,10 +2370,17 @@ open class Player(
 class ActiveQuest(
         var quest: Quest = Quest()
 ) {
+    enum class Result{
+        WON,
+        LOST,
+        WAITING
+    }
+
     lateinit var startTime: Date
     var endTime: Date = java.util.Calendar.getInstance().time
     var secondsLeft: Int = 0
     var completed: Boolean = false
+    var result: Result = Result.WAITING
 
     fun initialize(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
@@ -2404,6 +2405,13 @@ class ActiveQuest(
         val db = FirebaseFirestore.getInstance()
         Data.activeQuest = null
         return db.collection("users").document(Data.player.username).collection("ActiveQuest").document("quest").delete()
+    }
+
+    fun wonQuest(): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        this.result = Result.WON
+        val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest").document("quest")
+        return docRef.update(mapOf("result" to this.result))
     }
 
     @Exclude fun getLength(): String{
@@ -3353,12 +3361,12 @@ class FightLog(
         var winnerName: String = "",
         var looserName: String = "",
         var spellFlow: MutableList<FightUsedSpell> = mutableListOf(),
-        var reward: Reward = Reward(),
+        var reward: Reward? = Reward(),
         var fame: Int = 0,
         var surrenderRound: Int? = null
-){
+): Serializable{
     var id: Int = 0
-    var captured = FieldValue.serverTimestamp()
+    var captured = java.util.Calendar.getInstance().time
 
     fun init(){
         val db = FirebaseFirestore.getInstance()
@@ -3437,7 +3445,7 @@ open class NPC(
         this.inBgDrawable = chosenNPC.inBgDrawable
         this.levelAppearance = chosenNPC.levelAppearance
 
-        val tempPlayer = chosenNPC.toPlayer()
+        val tempPlayer = chosenNPC.toPlayer()                   //TODO less random
         tempPlayer.equip = mutableListOf(
                 GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 0, itemType = "Weapon")
                 ,GameFlow.generateItem(playerG = tempPlayer, inQuality = GenericDB.balance.itemQualityGenImpact["7"], itemSlot = 1, itemType = "Weapon")
@@ -3559,8 +3567,7 @@ open class NPC(
     }
 
     fun applyStats(playerX: Player){
-        val balanceRate: Double = GenericDB.balance.npcRate[this.difficulty.toString()]!!
-        if(playerX.level <= 4)balanceRate * 0.01
+        val balanceRate: Double = GenericDB.balance.npcrate[this.difficulty.toString()]!!
 
         level = playerX.level
         power = (playerX.power * balanceRate).toInt()
