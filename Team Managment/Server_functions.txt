@@ -5,6 +5,3 @@
 4) Web listener (releases, ...)
 5) In app messages, push in messages, notifications in general
 6) Action on loading from document? - when any faction is loaded - clear the log older than 7 days...
-
-Note: we're theoretically able to disable server for few hours and just run some sort of cleaner, 
-however I feel like that would not be the perfect solution and would prefer something elastic
