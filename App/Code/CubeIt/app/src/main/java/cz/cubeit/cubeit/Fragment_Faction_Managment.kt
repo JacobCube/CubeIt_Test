@@ -3,6 +3,7 @@ package cz.cubeit.cubeit
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -104,12 +105,15 @@ class Fragment_Faction_Managment : Fragment() {
                 popup.setOnMenuItemClickListener {
                     when(it.title){
                         "Delete invitation" -> {
-                            Data.player.faction!!.allyFactions.remove(collection[position])
+                            Log.d("delete_invitation", Data.player.faction!!.pendingInvitationsFaction.toString())
+                            Data.player.faction!!.pendingInvitationsFaction.remove(getKey(Data.player.faction!!.pendingInvitationsFaction, collection[position]))
+                            Data.player.faction!!.upload()
+                            Log.d("delete_invitation", Data.player.faction!!.pendingInvitationsFaction.toString())
                             this.notifyDataSetChanged()
                             true
                         }
                         "Remove from list" -> {
-                            Data.player.faction!!.enemyFactions.remove(collection[position])
+                            Data.player.faction!!.enemyFactions.remove(getKey(Data.player.faction!!.enemyFactions, collection[position]))
                             this.notifyDataSetChanged()
                             true
                         }

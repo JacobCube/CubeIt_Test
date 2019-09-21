@@ -1,5 +1,7 @@
 package cz.cubeit.cubeit
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Service
@@ -12,7 +14,7 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
+import android.media.Image
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
@@ -26,6 +28,9 @@ import android.text.method.ScrollingMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -36,19 +41,15 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import java.io.*
 import java.lang.Math.*
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.ZoneId
 import java.util.*
 import kotlin.collections.HashMap
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.full.memberProperties
 
 /*
 TODO simulace jízdy metrem - uživatel zadá příkaz v době, kdy je připojený k internetu, z něco se však postupně odpojuje, toto by bylo aplikované u callů s vyšší priritou v rámci uživatelské přátelskosti,
@@ -59,6 +60,12 @@ fun Float.round(decimals: Int): Float {
     var multiplier = 1.0
     repeat(decimals) { multiplier *= 10 }
     return  (kotlin.math.round(this * multiplier) / multiplier).toFloat()
+}
+
+fun Double.round(decimals: Int): Double {
+    var multiplier = 1.0
+    repeat(decimals) { multiplier *= 10 }
+    return  (kotlin.math.round(this * multiplier) / multiplier)
 }
 
 @SuppressLint("SimpleDateFormat")
@@ -169,6 +176,11 @@ var drawableStorage = hashMapOf(
         , "50000" to R.drawable.profile_pic_cat_0
         , "50001" to R.drawable.profile_pic_cat_1
         , "50002" to R.drawable.profile_pic_cat_2
+        , "50003" to R.drawable.profile_pic_cat_3
+        , "50004" to R.drawable.profile_pic_cat_4
+        , "50005" to R.drawable.profile_pic_cat_5
+        , "50006" to R.drawable.profile_pic_cat_6
+        , "50007" to R.drawable.profile_pic_cat_7
 
         //others
         , "90000" to R.drawable.map0
@@ -245,9 +257,13 @@ object Data {
             "Still better than most of your friends.",
             "I guess this game is not built for everybody.",
             "Man up.",
+            "Just keep trying, it's not that hard",
+            "Possible talent?",
+            "I can't watch this anymore.",
+            "",
             "It was definitely game's fault.",
-            "Yep! Game's fault.",
-            "Yo are you even trying?"
+            "Yep! Definitely game's fault.",
+            "Are you even trying?"
     )
 
     val fontGallery: HashMap<String, Int> = hashMapOf(
@@ -308,8 +324,8 @@ object Data {
 
     fun logOut(context: Activity) {
         val intentSplash = Intent(context.baseContext, Activity_Splash_Screen::class.java)
-        loadingStatus = LoadingStatus.LOGGING
         context.startActivity(intentSplash)
+        loadingScreenType = LoadingType.Normal
 
         this.player.online = false
         this.player.uploadPlayer().addOnSuccessListener {
@@ -1344,7 +1360,7 @@ enum class LoadingType : Serializable{
     var chosenSpellsAttack: MutableList<Spell?> = arrayOfNulls<Spell?>(6).toMutableList()
     var money: Int = Data.player.money
     var shopOffer: MutableList<Item?> = mutableListOf()
-    var notifications: Boolean = Data.player.notifications
+    var notificationsEvent: Boolean = Data.player.notificationsEvent
     var music: Boolean = Data.player.music
     var appearOnTop: Boolean = false
     var online: Boolean = true
@@ -1374,7 +1390,7 @@ enum class LoadingType : Serializable{
         tempPlayer.adventureSpeed = this.adventureSpeed
         tempPlayer.inventorySlots = this.inventorySlots
         tempPlayer.money = this.money
-        tempPlayer.notifications = this.notifications
+        tempPlayer.notificationsEvent = this.notificationsEvent
         tempPlayer.music = this.music
         tempPlayer.appearOnTop = this.appearOnTop
         tempPlayer.online = this.online
@@ -1468,7 +1484,7 @@ enum class LoadingType : Serializable{
                 "chosenSpellsAttack" to this.chosenSpellsAttack,
                 "coins" to this.money,
                 "shopOffer" to this.shopOffer,
-                "notifications" to this.notifications,
+                "notificationsEvent" to this.notificationsEvent,
                 "music" to this.music,
                 "currentSurfaces" to this.currentSurfaces,
                 "appearOnTop" to this.appearOnTop,
@@ -1546,7 +1562,7 @@ enum class LoadingType : Serializable{
         userString["chosenSpellsAttack"] = this.chosenSpellsAttack
         userString["money"] = this.money
         userString["shopOffer"] = this.shopOffer
-        userString["notifications"] = this.notifications
+        userString["notificationsEvent"] = this.notificationsEvent
         userString["music"] = this.music
         userString["currentSurfaces"] = this.currentSurfaces
         userString["appearOnTop"] = this.appearOnTop
@@ -1594,7 +1610,7 @@ enum class LoadingType : Serializable{
         userString["chosenSpellsAttack"] = this.chosenSpellsAttack
         userString["coins"] = this.money
         userString["shopOffer"] = this.shopOffer
-        userString["notifications"] = this.notifications
+        userString["notificationsEvent"] = this.notificationsEvent
         userString["music"] = this.music
         userString["currentSurfaces"] = this.currentSurfaces
         userString["appearOnTop"] = this.appearOnTop
@@ -1630,7 +1646,9 @@ open class Player(
     var money: Int = 100
     var cubeCoins: Int = 0
     var shopOffer: MutableList<Item?> = mutableListOf(Item(), Item(), Item(), Item(), Item(), Item(), Item(), Item())
-    var notifications: Boolean = true
+    var notificationsEvent: Boolean = true
+    var notificationsInbox: Boolean = true
+    var notificationsFaction: Boolean = true
     var music: Boolean = true
     var experience: Int = 0
         set(value){
@@ -1730,7 +1748,7 @@ open class Player(
                 "chosenSpellsAttack" to this.chosenSpellsAttack,
                 "coins" to this.money,
                 "shopOffer" to this.shopOffer,
-                "notifications" to this.notifications,
+                "notificationsEvent" to this.notificationsEvent,
                 "music" to this.music,
                 "currentSurfaces" to this.currentSurfaces,
                 "appearOnTop" to this.appearOnTop,
@@ -1810,7 +1828,7 @@ open class Player(
         userString["chosenSpellsAttack"] = this.chosenSpellsAttack
         userString["money"] = this.money
         userString["shopOffer"] = this.shopOffer
-        userString["notifications"] = this.notifications
+        userString["notificationsEvent"] = this.notificationsEvent
         userString["music"] = this.music
         userString["currentSurfaces"] = this.currentSurfaces
         userString["appearOnTop"] = this.appearOnTop
@@ -1865,7 +1883,7 @@ open class Player(
         userString["chosenSpellsAttack"] = this.chosenSpellsAttack
         userString["coins"] = this.money
         userString["shopOffer"] = this.shopOffer
-        userString["notifications"] = this.notifications
+        userString["notificationsEvent"] = this.notificationsEvent
         userString["music"] = this.music
         userString["currentSurfaces"] = this.currentSurfaces
         userString["appearOnTop"] = this.appearOnTop
@@ -1906,6 +1924,7 @@ open class Player(
             docRef.document("quest").get().addOnSuccessListener {
 
                 Data.activeQuest = it.toObject(ActiveQuest::class.java, behaviour)
+                if(Data.activeQuest?.result != ActiveQuest.Result.WAITING) Data.activeQuest = null
 
                 if (Data.activeQuest != null) {
 
@@ -2117,7 +2136,7 @@ open class Player(
                 this.adventureSpeed = loadedPlayer.adventureSpeed
                 this.inventorySlots = loadedPlayer.inventorySlots
                 this.money = loadedPlayer.money
-                this.notifications = loadedPlayer.notifications
+                this.notificationsEvent = loadedPlayer.notificationsEvent
                 this.music = loadedPlayer.music
                 this.appearOnTop = loadedPlayer.appearOnTop
                 this.online = loadedPlayer.online
@@ -2401,15 +2420,15 @@ class ActiveQuest(
         }
     }
 
-    fun delete(): Task<Void> {
+    /*fun delete(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         Data.activeQuest = null
         return db.collection("users").document(Data.player.username).collection("ActiveQuest").document("quest").delete()
-    }
+    }*/
 
-    fun wonQuest(): Task<Void> {
+    fun complete(result: Result = Result.WAITING): Task<Void> {
         val db = FirebaseFirestore.getInstance()
-        this.result = Result.WON
+        this.result = result
         val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest").document("quest")
         return docRef.update(mapOf("result" to this.result))
     }
@@ -2619,13 +2638,13 @@ open class Item(
 
     @Exclude fun getStats(): String {
         var textView = "${this.name}<br/>price: ${this.price}<br/>${when (this.quality) {
-            GenericDB.balance.itemQualityGenImpact["0"]!! -> "<font color=#535353>Poor</font>"
-            GenericDB.balance.itemQualityGenImpact["1"]!! -> "<font color=#FFFFFF>Common</font>"
-            GenericDB.balance.itemQualityGenImpact["2"]!! -> "<font color=#8DD837>Uncommon</font>"
-            GenericDB.balance.itemQualityGenImpact["3"]!! -> "<font color=#5DBDE9>Rare</font>"
-            GenericDB.balance.itemQualityGenImpact["4"]!! -> "<font color=#058DCA>Very rare</font>"
-            GenericDB.balance.itemQualityGenImpact["5"]!! -> "<font color=#9136A2>Epic gamer item</font>"
-            GenericDB.balance.itemQualityGenImpact["6"]!! -> "<font color=#FF9800>Legendary</font>"
+            in GenericDB.balance.itemQualityGenImpact["0"]!! until GenericDB.balance.itemQualityGenImpact["1"]!! -> "<font color=#535353>Poor</font>"
+            in GenericDB.balance.itemQualityGenImpact["1"]!! until GenericDB.balance.itemQualityGenImpact["2"]!! -> "<font color=#FFFFFF>Common</font>"
+            in GenericDB.balance.itemQualityGenImpact["2"]!! until GenericDB.balance.itemQualityGenImpact["3"]!! -> "<font color=#8DD837>Uncommon</font>"
+            in GenericDB.balance.itemQualityGenImpact["3"]!! until GenericDB.balance.itemQualityGenImpact["4"]!! -> "<font color=#5DBDE9>Rare</font>"
+            in GenericDB.balance.itemQualityGenImpact["4"]!! until GenericDB.balance.itemQualityGenImpact["5"]!! -> "<font color=#058DCA>Very rare</font>"
+            in GenericDB.balance.itemQualityGenImpact["5"]!! until GenericDB.balance.itemQualityGenImpact["6"]!! -> "<font color=#9136A2>Epic gamer item</font>"
+            in GenericDB.balance.itemQualityGenImpact["6"]!! until GenericDB.balance.itemQualityGenImpact["7"]!! -> "<font color=#FF9800>Legendary</font>"
             GenericDB.balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
@@ -2743,13 +2762,13 @@ open class Item(
 
     @Exclude fun getBackground(): Int{
         return when(this.quality){
-            GenericDB.balance.itemQualityGenImpact["0"]!! -> R.drawable.emptyslot_poor
-            GenericDB.balance.itemQualityGenImpact["1"]!! -> R.drawable.emptyslot_common
-            GenericDB.balance.itemQualityGenImpact["2"]!! -> R.drawable.emptyslot_uncommon
-            GenericDB.balance.itemQualityGenImpact["3"]!! -> R.drawable.emptyslot_rare
-            GenericDB.balance.itemQualityGenImpact["4"]!! -> R.drawable.emptyslot_very_rare
-            GenericDB.balance.itemQualityGenImpact["5"]!! -> R.drawable.emptyslot_epic_gamer_item
-            GenericDB.balance.itemQualityGenImpact["6"]!! -> R.drawable.emptyslot_legendary
+            in GenericDB.balance.itemQualityGenImpact["0"]!! until GenericDB.balance.itemQualityGenImpact["1"]!! -> R.drawable.emptyslot_poor
+            in GenericDB.balance.itemQualityGenImpact["1"]!! until GenericDB.balance.itemQualityGenImpact["2"]!! -> R.drawable.emptyslot_common
+            in GenericDB.balance.itemQualityGenImpact["2"]!! until GenericDB.balance.itemQualityGenImpact["3"]!! -> R.drawable.emptyslot_uncommon
+            in GenericDB.balance.itemQualityGenImpact["3"]!! until GenericDB.balance.itemQualityGenImpact["4"]!! -> R.drawable.emptyslot_rare
+            in GenericDB.balance.itemQualityGenImpact["4"]!! until GenericDB.balance.itemQualityGenImpact["5"]!! -> R.drawable.emptyslot_very_rare
+            in GenericDB.balance.itemQualityGenImpact["5"]!! until GenericDB.balance.itemQualityGenImpact["6"]!! -> R.drawable.emptyslot_epic_gamer_item
+            in GenericDB.balance.itemQualityGenImpact["6"]!! until GenericDB.balance.itemQualityGenImpact["7"]!! -> R.drawable.emptyslot_legendary
             GenericDB.balance.itemQualityGenImpact["7"]!! -> R.drawable.emptyslot_heirloom
             else -> R.drawable.emptyslot
         }
@@ -3723,14 +3742,14 @@ class Quest(
     @Exclude fun getStats(resources: Resources): String {
         return "${resources.getString(R.string.quest_title, this.name)}<br/>${resources.getString(R.string.quest_generic, this.description)}<br/>difficulty: " +
                 resources.getString(R.string.quest_generic, when (this.level) {
-                    0 -> "<font color='lime'>Peaceful</font>"
-                    1 -> "<font color='green'>Easy</font>"
-                    2 -> "<font color='yellow'>Medium rare</font>"
-                    3 -> "<font color='orange'>Medium</font>"
-                    4 -> "<font color='red'>Well done</font>"
-                    5 -> "<font color='brown'>Hard rare</font>"
-                    6 -> "<font color='maroon'>Hard</font>"
-                    7 -> "<font color='olive'>Evil</font>"
+                    0 -> "<font color='#7A7A7A'>Peaceful</font>"
+                    1 -> "<font color='#535353'>Easy</font>"
+                    2 -> "<font color='#8DD837'>Medium rare</font>"
+                    3 -> "<font color='#5DBDE9'>Medium</font>"
+                    4 -> "<font color='red'>#058DCA</font>"
+                    5 -> "<font color='#9136A2'>Hard rare</font>"
+                    6 -> "<font color='#FF9800'>Hard</font>"
+                    7 -> "<font color='#FFE500'>Evil</font>"
                     else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
                 }) + " (" +
                 when {
@@ -4059,7 +4078,7 @@ data class FactionMember(
         //var faction: Faction = Faction("")
 ): Comparable<FactionMember>, Serializable{
     var captureDate: Date = java.util.Calendar.getInstance().time
-    var profilePictureID: String = nextInt(50000, 50003).toString()
+    var profilePictureID: String = nextInt(50000, 50008).toString()
     @Exclude @Transient var profilePicture: Int = 0
         @Exclude get(){
             return drawableStorage[profilePictureID]!!
@@ -4107,7 +4126,7 @@ class FactionChatComponent(
         var content: String = ""
 )
 
-class Faction(                     //TODO ally faction, enemy factions; TODO Firebase rules
+class Faction(                     //TODO new messages in chat
         var name: String = "template",
         var leader: String = Data.player.username
 ): Serializable{
@@ -4170,6 +4189,12 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
         }
     }
 
+    fun changeMemberProfile(username: String, profilePictureID: String): Task<Void>{
+        Log.d("member_picture", profilePictureID)
+        this.members[username]!!.profilePictureID = profilePictureID
+        return this.upload()
+    }
+
     operator fun contains(username: String): Boolean{
         return this.members[username] != null
     }
@@ -4209,33 +4234,34 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
         docRef.update("members.${member.username}", FieldValue.delete())
     }
 
-    fun promoteMember(member: FactionMember, caller: String){
-        member.role = when{
-            member.role == FactionRole.MEMBER -> FactionRole.MODERATOR
-            member.role == FactionRole.MODERATOR ->{
-                this.leader = member.username
+    fun promoteMember(username: String, caller: String){
+        this.members[username]!!.role = when{
+            this.members[username]!!.role == FactionRole.MEMBER -> FactionRole.MODERATOR
+            this.members[username]!!.role == FactionRole.MODERATOR ->{
+                this.members[getKey(this.members, this.members.values.find { it.role == FactionRole.LEADER })]!!.role = FactionRole.MODERATOR
+                this.leader = username
                 FactionRole.LEADER
             }
-            else -> member.role
+            else -> this.members[username]!!.role
         }
-        this.writeLog(FactionActionLog(caller, " promoted ", member.username))
+        this.writeLog(FactionActionLog(caller, " promoted ", username))
         this.upload()
     }
 
-    fun demoteMember(member: FactionMember, caller: String){
-        member.role = when{
-            member.role == FactionRole.MEMBER -> {
-                this.kickMember(member, caller)
-                member.role
+    fun demoteMember(username: String, caller: String){
+        this.members[username]!!.role = when{
+            this.members[username]!!.role == FactionRole.MEMBER -> {
+                this.kickMember(this.members[username]!!, caller)
+                this.members[username]!!.role
             }
-            member.role == FactionRole.MODERATOR ->{
-                member.role = FactionRole.MEMBER
+            this.members[username]!!.role == FactionRole.MODERATOR ->{
+                this.members[username]!!.role = FactionRole.MEMBER
                 this.upload()
                 FactionRole.MEMBER
             }
-            else -> member.role
+            else -> this.members[username]!!.role
         }
-        this.writeLog(FactionActionLog(caller, " demoted ", member.username))
+        this.writeLog(FactionActionLog(caller, " demoted ", this.members[username]!!.username))
     }
 
     fun upload(): Task<Void> {
@@ -4245,6 +4271,7 @@ class Faction(                     //TODO ally faction, enemy factions; TODO Fir
         val dataMap: HashMap<String, Any?> = hashMapOf(
                 "captureDate" to this.captureDate,
                 "description" to this.description,
+                "members" to this.members,
                 "externalDescription" to this.externalDescription,
                 "allyFactions" to this.allyFactions,
                 "enemyFactions" to this.enemyFactions,
@@ -4405,123 +4432,447 @@ enum class ServerStatus{
     restarting
 }
 
-class RocketGame(
-        var level: Int = 3,
-        var rocketBody: ImageView,
-        var parent: ConstraintLayout,
-        var width: Int = 0,
-        var height: Int = 0
+class RocketGameScore(
+        var length: Double = 0.0,     //in seconds
+        var user: String = "MexxFM"
 ){
-    var rocketMultiplier: Double = 1.0
-    var meteorMaxMultiplier: Double = 1.0
-    var speed: Double = 7.0
-    private var meteors: MutableList<Meteor> = mutableListOf()
-    var ticks: Int = 0
-    var startPointX: Double= 0.0
-    var startPointY: Double = 0.0
-    var ticksNeeded: Int = 0
-    var speedX: Double = 0.0
-    var speedY: Double = 0.0
-    var viewRect: Rect = Rect()
-    var meteorViewRect: Rect = Rect()
+    var captured = java.util.Calendar.getInstance().time
+    var id: Int = 0
 
-    fun detach(){
-        //parent.removeViews(parent.childCount - meteors.size, meteors.size)
-        for(i in meteors){
-            i.detach()
+    fun init(): Task<QuerySnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("RocketGame").orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            val temp = it.toObjects(RocketGameScore::class.java)
+            if(temp.isNotEmpty()){
+                this.id = temp.first().id + 1
+            }else {
+                this.id = 1
+            }
+            db.collection("RocketGame").document(this.id.toString()).set(this).addOnSuccessListener {  }
         }
     }
 
-    fun initialize(){
+    fun uploadAsScore(idIn: Int): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("RocketGame").document(idIn.toString()).update(
+                mapOf(
+                        "length" to this.length,
+                        "user" to this.user,
+                        "captured" to this.captured
+                )
+        )
+    }
+}
+
+enum class RGEffectType{
+    SMALLER,            //50%
+    BIGGER,             //25%
+    FASTER,             //20%
+    SLOWER              //50%
+}
+
+class RocketGame constructor(
+        context: Context,
+        attrs: AttributeSet
+) : ImageView(context, attrs){
+
+    var level: Int = 3
+    var parent: ConstraintLayout = ConstraintLayout(context)
+    private var widthIn: Int = 0
+    private var heightIn: Int = 0
+    private var tickLengthMillis: Int = 10
+
+    fun init(parent: ConstraintLayout, widthIn: Int, heightIn: Int, tickLengthMillis: Int, originalWidthIn: Int, originalHeightIn: Int){
+        this.parent = parent
+        this.widthIn = widthIn
+        this.heightIn = heightIn
+        this.tickLengthMillis = tickLengthMillis
+        originalHeight = originalHeightIn
+        originalWidth = originalWidthIn
+        coordinatesRocket.heightBound = heightIn
+        coordinatesRocket.widthBound = widthIn
+    }
+
+    var rocketMultiplier: Double = 1.0
+    var meteorMaxMultiplier: Double = 1.0
+    var speed: Double = 7.0
+    var meteorSpeed: Double = 7.0
+    private var meteors: MutableList<Meteor> = mutableListOf()
+    private var effects: MutableList<RocketGameEffect> = mutableListOf()
+    var activeEffect: RocketGameEffect? = null
+    var effectsLimit: Int = 0
+
+    var originalWidth: Int = 0
+    var originalHeight: Int = 0
+
+    var extraCoins = 0
+    var ticks: Double = 0.0
+    var startPointX: Double= 0.0
+    var startPointY: Double = 0.0
+    var speedX: Double = 0.0
+    var speedY: Double = 0.0
+
+    var rewardedIndexes: MutableList<String> = mutableListOf()
+    var viewRect: Rect = Rect()
+    var meteorViewRect: Rect = Rect()
+    var meteorViewTag: String = ""
+    var effectViewRect: Rect = Rect()
+
+    var coordinatesRocket: ComponentCoordinates = ComponentCoordinates()
+
+    fun detach(){
+        for(i in meteors){
+            i.detach()
+        }
+        for(i in effects){
+            i.detach()
+        }
+        this.layoutParams.width = originalWidth
+        this.layoutParams.height = originalHeight
+        level = 1
+        ticks = 0.0
+        activeEffect = null
+    }
+
+    fun initialize(){                                        //lvl up
         this.rocketMultiplier = level.toDouble() / 20
         this.meteorMaxMultiplier = level.toDouble() / 30
         this.speed = 7 + 2 * rocketMultiplier
 
-        for(i in meteors.size until level){
+        for(i in meteors.size - 1 until level){
             meteors.add(addMeteor())
         }
+        if(this.level >= nextInt(2, 4)) addEffect()         //generate effect every new level
     }
 
     private fun addMeteor(): Meteor{
-        val meteor = Meteor(parent.context, parent)
         meteors.add(Meteor(parent.context, parent))
-        return meteor.initialize(width, height)
+        return meteors.last().initialize(widthIn, heightIn, meteors.lastIndex)
     }
 
-    fun onTick(coordinatesRocket: ComponentCoordinates): Boolean{
+    private fun addEffect(): RocketGameEffect {
+        val effectType = when (nextInt(0, 4)) {
+            0 -> RGEffectType.SMALLER
+            1 -> RGEffectType.FASTER
+            2 -> RGEffectType.SLOWER
+            3 -> RGEffectType.BIGGER
+            else -> RGEffectType.SLOWER
+        }
+        effects.add(RocketGameEffect(((level * 0.75) * 950).toInt(), effectType, parent.context, parent))
+        return effects.last().initialize(widthIn, heightIn, effects.lastIndex)
+    }
+
+    private var imageViewReward: ImageView? = null
+
+    private fun plusCoin(){
+        val tempRect = Rect()
+        tempRect.set((viewRect.left * 0.9).toInt(), (viewRect.top * 0.9).toInt(), (viewRect.right * 1.1).toInt(), (viewRect.bottom * 1.1).toInt())
+
+        if(Rect.intersects(tempRect, meteorViewRect) && !rewardedIndexes.contains(meteorViewTag)){
+            rewardedIndexes.add(meteorViewTag)
+
+            if(activeEffect != null) activeEffect!!.durationMillis += 1000
+            extraCoins++
+            imageViewReward = ImageView(context)
+            imageViewReward?.setImageResource(R.drawable.coin_basic)
+            imageViewReward?.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+            imageViewReward?.layoutParams?.width = (widthIn * 0.04).toInt()
+            imageViewReward?.layoutParams?.height = (widthIn * 0.04).toInt()
+            imageViewReward?.y = 0f
+            imageViewReward?.x = (widthIn / 2).toFloat()
+            imageViewReward?.tag = "coin"
+
+            parent.addView(imageViewReward)
+
+            imageViewReward?.animate()?.apply {
+                y((widthIn * 0.1).toFloat())
+                alpha(1f)
+                setListener(
+                    object : Animator.AnimatorListener {
+                        override fun onAnimationStart(animation: Animator) {
+                        }
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            parent.removeView(parent.findViewWithTag("coin"))
+                        }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                        }
+
+                        override fun onAnimationRepeat(animation: Animator) {
+                        }
+                    })
+                startDelay = 50
+                start()
+            }
+        }
+    }
+
+    private fun ImageView.getHitRect2(): Rect {
+        val rect = Rect()
+        rect.left = ((this.left + this.translationX).toInt())
+        rect.top = ((this.top + this.translationY).toInt())
+        rect.right = rect.left + this.width
+        rect.bottom = rect.top + this.height
+        return rect
+    }
+
+    fun onTick(): Boolean{
         if(ticks >= (level * 0.75) * 1000){
             level++
             initialize()
         }
+        ticks++
+        viewRect = this.getHitRect2()
+
+        for(i: Int in 0 until effects.size){
+            if(i < effects.size){           //needed for some reason
+                effects[i].speed = meteorSpeed * 0.75
+                effects[i].imageView?.getHitRect(effectViewRect)
+                if(effects[i].imageView!!.x <= - effects[i].imageView!!.width){         //pokud uživatel nestihl aktivovat daný efekt
+                    effects[i].detach()
+                    effects.removeAt(i)
+                }else {
+                    effects[i].imageView!!.x -= effects[i].speed.toFloat()
+                }
+                if(Rect.intersects(viewRect, effectViewRect)){
+                    val effect = effects[i]
+
+                    if(activeEffect != null){
+                        activeEffect = null
+
+                        handler.removeCallbacksAndMessages(null)
+                        handler.postDelayed({
+                            activeEffect = effect
+                        }, 50)
+                    }else activeEffect = effect
+
+                    when(activeEffect!!.effectType){
+                        RGEffectType.SMALLER -> {
+                            this@RocketGame.layoutParams.width = (originalWidth * 0.5).toInt()
+                            this@RocketGame.layoutParams.height = (originalHeight * 0.5).toInt()
+                            parent.invalidate()
+                            //parent.forceLayout()
+                            /*val anim = AnimationUtils.loadAnimation(parent.context, R.anim.animation_rocketgame_smaller)
+
+                            anim.setAnimationListener(object : Animation.AnimationListener {
+                                override fun onAnimationStart(animation: Animation?) {
+                                }
+
+                                override fun onAnimationRepeat(animation: Animation?) {
+                                }
+
+                                override fun onAnimationEnd(animation: Animation?) {
+                                    Log.d("originalHeight", originalHeight.toString())
+                                    Log.d("originalWidth", originalWidth.toString())
+                                    this@RocketGame.layoutParams.width = (originalWidth * 0.5).toInt()
+                                    this@RocketGame.layoutParams.height = (originalHeight * 0.5).toInt()
+                                    parent.invalidate()
+                                    parent.forceLayout()
+
+                                    viewRect = this@RocketGame.getHitRect2()
+                                }
+                            })
+
+                            this.startAnimation(anim)*/
+                        }
+                        RGEffectType.BIGGER -> {
+                            this@RocketGame.layoutParams.width = (originalWidth * 1.25).toInt()
+                            this@RocketGame.layoutParams.height = (originalHeight * 1.25).toInt()
+                            parent.invalidate()
+                            //parent.forceLayout()
+                            /*val anim = AnimationUtils.loadAnimation(parent.context, R.anim.animation_rocketgame_bigger)
+
+                            anim.setAnimationListener(object : Animation.AnimationListener {
+                                override fun onAnimationStart(animation: Animation?) {
+                                }
+
+                                override fun onAnimationRepeat(animation: Animation?) {
+                                }
+
+                                override fun onAnimationEnd(animation: Animation?) {
+                                    Log.d("originalHeight", originalHeight.toString())
+                                    Log.d("originalWidth", originalWidth.toString())
+                                    this@RocketGame.layoutParams.width = (originalWidth * 1.25).toInt()
+                                    this@RocketGame.layoutParams.height = (originalHeight * 1.25).toInt()
+                                    parent.invalidate()
+                                    parent.forceLayout()
+
+                                    viewRect = this@RocketGame.getHitRect2()
+                                }
+                            })
+
+                            this.startAnimation(anim)*/
+                        }
+                        RGEffectType.SLOWER -> {
+                            speedX = speed * 0.5
+                            speedY = speed * 0.4
+                            meteorSpeed *= 0.5
+                        }
+                        RGEffectType.FASTER -> {
+                            speedX = speed * 1.2
+                            speedY = speed * 0.96
+                            meteorSpeed *= 1.2
+                        }
+                    }
+                    effects[i].detach()
+                    effects.removeAt(i)
+                }
+            }
+        }
+
         for(i: Int in 0 until meteors.size){
             meteors[i].imageView?.getHitRect(meteorViewRect)
-            rocketBody.getHitRect(viewRect)
+            meteorViewTag = meteors[i].imageView?.tag.toString()
             if(Rect.intersects(viewRect, meteorViewRect)) return false
 
-            meteors[i].speed = nextInt(((3.5 + 2 * rocketMultiplier) *10).toInt(), ((3.5 + 3.5 * rocketMultiplier) * 1.4 * 10).toInt()).toDouble() / 10.0
+            plusCoin()
+
+            meteors[i].speed = meteorSpeed
             if(meteors[i].imageView != null){
                 if(meteors[i].imageView!!.x <= -meteors[i].imageView!!.width){
                     meteors[i].detach()
-                    meteors[i].initialize(width, height)
+                    meteors[i].initialize(widthIn, heightIn, i)
+                    rewardedIndexes.remove(i.toString())
                 }else {
                     meteors[i].imageView!!.x -= meteors[i].speed.toFloat()
                 }
             }
         }
 
-        //if(coordinatesRocket.rocketTargetY != 0f) ticksNeeded = min((abs(startPointX - coordinatesRocket.rocketTargetX) / speed).toInt(), (abs(startPointY - coordinatesRocket.rocketTargetY) / (height.toDouble() / width.toDouble() * speed)).toInt())
+        if(activeEffect != null && activeEffect!!.durationMillis > 0){
+            activeEffect!!.durationMillis -= tickLengthMillis
 
-        speedX = speed //(abs(startPointX - coordinatesRocket.rocketTargetX) / ticksNeeded)
-        speedY = speed * 0.8 //(abs(startPointY - coordinatesRocket.rocketTargetY) / ticksNeeded)
+            when(activeEffect!!.effectType){
+                RGEffectType.FASTER -> {
+                    ticks += 0.25
+                }
+                RGEffectType.SLOWER -> {
+                    ticks -= 0.5
+                }
+            }
+        }else {
+            if(activeEffect != null){
+                when(activeEffect!!.effectType){
+                    RGEffectType.BIGGER -> {
+                        this@RocketGame.layoutParams.width = originalWidth
+                        this@RocketGame.layoutParams.height = originalHeight
+                        parent.invalidate()
+                        //parent.forceLayout()
+                        //AnimationUtils.loadAnimation(parent.context, R.anim.animation_rocketgame_from_bigger)
+                    }
+                    RGEffectType.SMALLER -> {
+                        this@RocketGame.layoutParams.width = originalWidth
+                        this@RocketGame.layoutParams.height = originalHeight
+                        parent.invalidate()
+                        //parent.forceLayout()
+                        //AnimationUtils.loadAnimation(parent.context, R.anim.animation_rocketgame_from_smaller)
+                    }
+                    //else -> AnimationUtils.loadAnimation(parent.context, R.anim.animation_rocketgame_from_smaller)
+                }
+                /*anim.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(animation: Animation?) {
+                    }
+
+                    override fun onAnimationRepeat(animation: Animation?) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animation?) {
+                        Log.d("originalHeight", originalHeight.toString())
+                        Log.d("originalWidth", originalWidth.toString())
+                        this@RocketGame.layoutParams.width = originalWidth
+                        this@RocketGame.layoutParams.height = originalHeight
+                        parent.invalidate()
+                        parent.forceLayout()
+
+                        viewRect = this@RocketGame.getHitRect2()
+                    }
+                })*/
+                activeEffect = null
+            }
+            speedX = speed
+            speedY = speed * 0.8
+            meteorSpeed = ((3.5 + 2 * rocketMultiplier) *10).toInt().toDouble() / 10.0
+        }
 
         if(speedX.isNaN() || speedX.isInfinite()) speedX = 0.0
         if(speedY.isNaN() || speedY.isInfinite()) speedY = 0.0
 
         if(coordinatesRocket.rocketTargetX == 0f){
-            if(rocketBody.x > 0){
-                rocketBody.x -= 1
+            if(this.x > 0){
+                this.x -= 1
             }
         }else {
-            if(kotlin.math.abs(coordinatesRocket.rocketTargetX - rocketBody.x) < speedX){
-                rocketBody.x = coordinatesRocket.rocketTargetX
+            if(kotlin.math.abs(coordinatesRocket.rocketTargetX - this.x) < speedX){
+                this.x = coordinatesRocket.rocketTargetX
             }else {
-                if(coordinatesRocket.rocketTargetX <= rocketBody.x){
-                    rocketBody.x -= speedX.toFloat()
+                if(coordinatesRocket.rocketTargetX <= this.x){
+                    this.x -= speedX.toFloat()
                 }else{
-                    rocketBody.x += speedX.toFloat()
+                    this.x += speedX.toFloat()
                 }
             }
 
-            if(kotlin.math.abs(coordinatesRocket.rocketTargetY - rocketBody.y) < speedY){
-                rocketBody.y = coordinatesRocket.rocketTargetY
+            if(kotlin.math.abs(coordinatesRocket.rocketTargetY - this.y) < speedY){
+                this.y = coordinatesRocket.rocketTargetY
             }else {
-                if(coordinatesRocket.rocketTargetY <= rocketBody.y){
-                    rocketBody.y -= speedY.toFloat()
+                if(coordinatesRocket.rocketTargetY <= this.y){
+                    this.y -= speedY.toFloat()
                 }else {
-                    rocketBody.y += speedY.toFloat()
+                    this.y += speedY.toFloat()
                 }
             }
         }
         return true
     }
 
-    private class Meteor(
-            var context: Context,
-            var parent: ConstraintLayout
+    open class Meteor(
+            open var context: Context,
+            open var parent: ConstraintLayout
     ){
         var speed: Double = 3.5
         var imageView: ImageView? = null
-        var type: Int = 0
-        var ticks: Int = 0
-        var targetTicksX: Int = 0
-        var targetTicksY: Int = 0
 
-        fun initialize(width: Int, height: Int): Meteor{
+        open fun initialize(width: Int, height: Int, index: Int): Meteor{
             imageView = ImageView(context)
-            imageView?.setImageResource(when(nextInt(0 ,1)){
+            imageView?.setImageResource(when(nextInt(1 ,2)){
                 0 -> R.drawable.meteor_0
                 else -> R.drawable.meteor_1
             })
+            imageView!!.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+            imageView?.layoutParams?.width = (width * 0.05).toInt()
+            imageView?.layoutParams?.height = (width * 0.05).toInt()
+
+            imageView?.x = nextInt(width + (width * 0.05).toInt(), (width + width * 0.05).toInt() * 2).toFloat()
+            imageView?.y = nextInt(- imageView!!.height/2 , height + imageView!!.height/2).toFloat()
+            imageView?.tag = index.toString()                                               //using tag for close by rewarding system - plusCoin()
+
+            parent.addView(imageView)
+            return this
+        }
+
+        open fun detach(){
+            parent.removeView(this.imageView)
+        }
+    }
+
+    class RocketGameEffect(
+            var durationMillis: Int = 0,
+            var effectType: RGEffectType = RGEffectType.SMALLER,
+            override var context: Context,
+            override var parent: ConstraintLayout
+    ): Meteor(context, parent) {
+        var drawableEffect: Int = 0
+
+        override fun initialize(width: Int, height: Int, index: Int): RocketGameEffect {
+            imageView = ImageView(context)
+            drawableEffect = when(this.effectType){
+                RGEffectType.SMALLER -> R.drawable.rg_effect_smaller
+                RGEffectType.BIGGER -> R.drawable.rg_effect_bigger
+                RGEffectType.SLOWER -> R.drawable.rg_effect_slower
+                RGEffectType.FASTER -> R.drawable.rg_effect_faster
+            }
+            imageView?.setImageResource(drawableEffect)
             imageView!!.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
             imageView?.layoutParams?.width = (width * 0.05).toInt()
             imageView?.layoutParams?.height = (width * 0.05).toInt()
@@ -4530,10 +4881,6 @@ class RocketGame(
 
             parent.addView(imageView)
             return this
-        }
-
-        fun detach(){
-            parent.removeView(this.imageView)
         }
     }
 }
@@ -4544,31 +4891,30 @@ class ComponentCoordinates(
         var widthBound: Int = 0,
         var heightBound: Int = 0
 ){
-    lateinit var component: ImageView
     var rocketTargetX: Float = 0f
     var rocketTargetY: Float = 0f
 
-    fun update(xIn: Float, yIn: Float, rocketGame: RocketGame? = null){
+    fun update(xIn: Float, yIn: Float, rocketGame: RocketGame){
         this.x = xIn
         this.y = yIn
-        rocketGame?.startPointX = component.x.toDouble()
-        rocketGame?.startPointY = component.y.toDouble()
-        rocketGame?.onTick(this)
+        rocketGame.startPointX = rocketGame.x.toDouble()
+        rocketGame.startPointY = rocketGame.y.toDouble()
+        //rocketGame?.onTick(this)
 
-        rocketTargetX = if(xIn + component.width < widthBound && xIn - component.width / 2 > 0){
-            xIn - component.width / 2
-        }else if(xIn + component.width < widthBound){
+        rocketTargetX = if(xIn + rocketGame.width < widthBound && xIn - rocketGame.width / 2 > 0){
+            xIn - rocketGame.width / 2
+        }else if(xIn + rocketGame.width < widthBound){
             1f
         }else {
-            (widthBound - component.width / 2).toFloat()
+            (widthBound -rocketGame.width / 2).toFloat()
         }
 
-        rocketTargetY = if(yIn + component.height < heightBound && yIn - component.height > 0){
-            yIn - component.height / 2
-        }else if(yIn + component.height < heightBound){
-            (- component.height / 2).toFloat()
+        rocketTargetY = if(yIn - rocketGame.height / 2 < heightBound && yIn > 0){
+            yIn - rocketGame.height / 2
+        }else if(yIn - rocketGame.height < 0){
+            (rocketGame.height / 2).toFloat()
         }else {
-            (heightBound - component.height / 2).toFloat()
+            (heightBound - rocketGame.height / 2).toFloat()
         }
     }
 }

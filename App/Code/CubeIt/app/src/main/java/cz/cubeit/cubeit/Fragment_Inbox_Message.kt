@@ -116,6 +116,7 @@ class FragmentInboxMessage : Fragment() {
 
             view.textViewInboxMessageTime.text = (activity as Activity_Inbox).chosenMail.sentTime.toString()
 
+            view.imageViewInboxSend.isEnabled = (activity as Activity_Inbox).chosenMail.status != MessageStatus.Sent
             view.imageViewInboxSend.setOnClickListener {
                 activity!!.supportFragmentManager.beginTransaction().detach(this).commit()
                 activity!!.supportFragmentManager.beginTransaction().attach(this).commit()
@@ -159,6 +160,7 @@ class FragmentInboxMessage : Fragment() {
                 if((activity as Activity_Inbox).chosenMail.reward!!.item != null){
                     view.imageViewInboxMessageItem.visibility = View.VISIBLE
                     view.imageViewInboxMessageItem.setImageResource((activity as Activity_Inbox).chosenMail.reward!!.item!!.drawable)
+                    view.imageViewInboxMessageItem.setBackgroundResource((activity as Activity_Inbox).chosenMail.reward!!.item!!.getBackground())
 
                     view.imageViewInboxMessageItem.setOnClickListener {
                         view.textViewInboxItemInfo.visibility = if(view.textViewInboxItemInfo.visibility == View.GONE){

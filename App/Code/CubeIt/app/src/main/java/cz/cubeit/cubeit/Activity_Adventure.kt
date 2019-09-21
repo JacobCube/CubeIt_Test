@@ -264,6 +264,7 @@ class Adventure : AppCompatActivity() {
         val quest:Quest = Data.player.currentSurfaces[surface].quests[index]
 
         if (quest.reward.item != null) {
+            imageViewAdventure.setBackgroundResource(quest.reward.item!!.getBackground())
             imageViewAdventure.setImageResource(quest.reward.item!!.drawable)
             imageViewAdventure.visibility = View.VISIBLE
             imageViewAdventure.isEnabled = true

@@ -940,6 +940,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             }
 
             if (reward?.item != null) {
+                imageItem.setBackgroundResource(reward.item!!.getBackground())
                 imageItem.setImageResource(reward.item!!.drawable)
                 imageItem.visibility = View.VISIBLE
                 imageItem.isEnabled = true

@@ -25,8 +25,10 @@ import kotlinx.android.synthetic.main.fragment_faction.*
 import kotlinx.android.synthetic.main.fragment_faction.view.*
 import kotlinx.android.synthetic.main.pop_up_market_offer.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
+import kotlinx.android.synthetic.main.popup_dialog_listview.view.*
 import kotlinx.android.synthetic.main.row_faction_members.view.*
 import kotlinx.android.synthetic.main.row_faction_mng_invitation.view.*
+import kotlinx.android.synthetic.main.row_faction_pictures.view.*
 import kotlin.math.max
 
 
@@ -39,6 +41,7 @@ class Fragment_Faction: Fragment(){
     var displayX = 0.0
     var logClosed = true
     var firstLoad = true
+    var chosenPictureID: String = ""
 
     companion object{
         fun newInstance(id: String? = null):Fragment_Faction{
@@ -152,7 +155,7 @@ class Fragment_Faction: Fragment(){
 
     private fun init() {
 
-        viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberDesc, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction, mutableListOf(), activity!!)
+        viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberDesc, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction, mutableListOf(), activity!!, this)
         (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
         if (!myFaction && Data.player.factionID != null && Data.player.factionRole == FactionRole.LEADER) {
             viewTemp.buttonFactionAlly.visibility = View.VISIBLE
@@ -375,7 +378,7 @@ class Fragment_Faction: Fragment(){
     }
 
 
-    private class FactionMemberList(val faction: Faction, val memberDesc: CustomTextView, val context: Context, val playerMember: FactionMember?, val myFaction: Boolean, var members: MutableList<FactionMember> = mutableListOf(), val activity: Activity) : BaseAdapter() {
+    private class FactionMemberList(val faction: Faction, val memberDesc: CustomTextView, val context: Context, val playerMember: FactionMember?, val myFaction: Boolean, var members: MutableList<FactionMember> = mutableListOf(), val activity: Activity, val parentFragment: Fragment_Faction) : BaseAdapter() {
 
         override fun getCount(): Int {
             return members.size / 4 + 1
@@ -527,8 +530,10 @@ class Fragment_Faction: Fragment(){
                     popupMenu.findItem(R.id.menu_faction_message).isVisible = false
                     popupMenu.findItem(R.id.menu_faction_show_profile).isVisible = false
                     popupMenu.findItem(R.id.menu_faction_leave).isVisible = true
+                    popupMenu.findItem(R.id.menu_faction_picture).isVisible = true
                 }else {
                     popupMenu.findItem(R.id.menu_faction_leave).isVisible = false
+                    popupMenu.findItem(R.id.menu_faction_picture).isVisible = false
                     popupMenu.findItem(R.id.menu_faction_message).isVisible = true
                     popupMenu.findItem(R.id.menu_faction_show_profile).isVisible = true
                 }
@@ -562,11 +567,11 @@ class Fragment_Faction: Fragment(){
                             context.startActivity(intent)
                         }
                         "Promote" -> {
-                            faction.promoteMember(member, Data.player.username)
+                            faction.promoteMember(member.username, Data.player.username)
                             parent.notifyDataSetChanged()
                         }
                         "Demote" -> {
-                            faction.demoteMember(member, Data.player.username)
+                            faction.demoteMember(member.username, Data.player.username)
                             parent.notifyDataSetChanged()
                         }
                         "Kick" -> {
@@ -620,6 +625,32 @@ class Fragment_Faction: Fragment(){
                             }
                             window.showAtLocation(viewP, Gravity.CENTER,0,0)
                         }
+                        "Picture" ->{
+                            val viewP = activity.layoutInflater.inflate(R.layout.popup_dialog_listview, null, false)
+                            val window = PopupWindow(context)
+                            window.contentView = viewP
+                            val buttonYes: Button = viewP.buttonDialogListViewOk
+                            val buttonNo:ImageView = viewP.buttonCloseDialogListView
+                            val listView: ListView = viewP.listViewDialogListView
+                            (parent as FactionMemberList).parentFragment.chosenPictureID = member.profilePictureID
+
+                            listView.adapter = MemberProfilePicture(parent.parentFragment)
+                            window.isOutsideTouchable = false
+                            window.isFocusable = true
+                            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                            buttonYes.setOnClickListener {
+                                faction.changeMemberProfile(member.username, parent.parentFragment.chosenPictureID)
+                                window.dismiss()
+                                popupMenu.close()
+                                parent.notifyDataSetChanged()
+                            }
+                            buttonNo.setOnClickListener {
+                                window.dismiss()
+                            }
+                            window.showAtLocation(viewP, Gravity.CENTER,0,0)
+
+
+                        }
                     }
                     true
                 }
@@ -627,6 +658,90 @@ class Fragment_Faction: Fragment(){
                 popup.show()
             }
         }
+    }
+
+    private class MemberProfilePicture(val parent :Fragment_Faction) : BaseAdapter() {
+
+        var picturesList: HashMap<String, Int> = hashMapOf(
+                 "50000" to R.drawable.profile_pic_cat_0
+                , "50001" to R.drawable.profile_pic_cat_1
+                , "50002" to R.drawable.profile_pic_cat_2
+                , "50003" to R.drawable.profile_pic_cat_3
+                , "50004" to R.drawable.profile_pic_cat_4
+                , "50005" to R.drawable.profile_pic_cat_5
+                , "50006" to R.drawable.profile_pic_cat_6
+                , "50007" to R.drawable.profile_pic_cat_7
+        )
+        var picturesListValues = picturesList.values.toMutableList()
+
+        override fun getCount(): Int {
+            return picturesList.size / 5 + 1
+        }
+
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
+
+        override fun getItem(position: Int): Any {
+            return "TEST STRING"
+        }
+
+        override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
+            val rowMain: View
+
+            if (convertView == null) {
+                val layoutInflater = LayoutInflater.from(viewGroup!!.context)
+                rowMain = layoutInflater.inflate(R.layout.row_faction_pictures, viewGroup, false)
+                val viewHolder = ViewHolder(rowMain.imageViewFactionPicturesRow0, rowMain.imageViewFactionPicturesRow1, rowMain.imageViewFactionPicturesRow2, rowMain.imageViewFactionPicturesRow3, rowMain.imageViewFactionPicturesRow4)
+                rowMain.tag = viewHolder
+            } else {
+                rowMain = convertView
+            }
+            val viewHolder = rowMain.tag as ViewHolder
+
+            val indexAdapter:Int = if(position == 0) 0 else{
+                position * 5
+            }
+
+            class Node(
+                    var component: ImageView,
+                    var index: Int = 0
+            ){
+                var pictureID: String = ""
+
+                init {
+                    if(this@MemberProfilePicture.picturesList.size > indexAdapter + index){
+                        pictureID = getKey(picturesList, picturesListValues[indexAdapter + index])!!
+
+                        if(this.pictureID == parent.chosenPictureID){
+                            component.setBackgroundResource(R.color.experience)
+                        }else {
+                            component.setBackgroundResource(android.R.color.transparent)
+                        }
+                        component.setImageResource(this@MemberProfilePicture.picturesListValues[indexAdapter + index])
+                        component.isEnabled = true
+                    }else {
+                        component.setBackgroundResource(0)
+                        component.setImageResource(0)
+                        component.isEnabled = false
+                    }
+
+                    component.setOnClickListener {
+                        parent.chosenPictureID = pictureID
+                        this@MemberProfilePicture.notifyDataSetChanged()
+                    }
+                }
+            }
+
+            Node(viewHolder.picture0, 0)
+            Node(viewHolder.picture1, 1)
+            Node(viewHolder.picture2, 2)
+            Node(viewHolder.picture3, 3)
+            Node(viewHolder.picture4, 4)
+
+            return rowMain
+        }
+        private class ViewHolder(val picture0: ImageView, val picture1: ImageView, val picture2: ImageView, val picture3: ImageView, val picture4: ImageView)
     }
 }
 

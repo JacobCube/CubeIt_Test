@@ -8,37 +8,33 @@ import kotlinx.android.synthetic.main.activity_splash_screen.*
 import android.view.animation.RotateAnimation
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.drm.DrmStore
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
-import android.os.Looper
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.PopupWindow
-import android.widget.TextView
+import android.widget.*
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.popup_dialog_minigame.view.*
-import java.lang.reflect.Method
+import kotlinx.android.synthetic.main.row_minigame_score.view.*
 import java.util.*
+import kotlin.math.round
 import kotlin.random.Random.Default.nextInt
 
 var textViewLog: TextView? = null
 
 class Activity_Splash_Screen: AppCompatActivity(){
 
-    private var coordinatesRocket = ComponentCoordinates()
     var keepSplash: Boolean = false
     var rocketTimer: TimerTask? = null
     var activeTimer: Timer = Timer()
+    var rocketGameLoadedScores = false
+    var resetSwitch: Switch? = null
+    var popWindow: PopupWindow = PopupWindow()
 
     fun setLogText(text: String){
         if(textViewLog != null)textViewLog!!.text = text
@@ -68,6 +64,21 @@ class Activity_Splash_Screen: AppCompatActivity(){
         activeTimer.cancel()
         activeTimer.purge()
         handler.removeCallbacksAndMessages(null)
+        Data.loadingStatus = LoadingStatus.CLOSELOADING
+        if(popWindow.isShowing) popWindow.dismiss()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(resetSwitch != null){
+            if(resetSwitch!!.isChecked){
+                resetSwitch!!.isChecked = false
+                resetSwitch!!.isChecked = true
+            }else {
+                resetSwitch!!.isChecked = true
+                resetSwitch!!.isChecked = false
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,13 +87,16 @@ class Activity_Splash_Screen: AppCompatActivity(){
         setContentView(R.layout.activity_splash_screen)
         textViewLog = textViewLoadingLog
 
+        if(Data.loadingScreenType == LoadingType.RocketGamePad){
+            switchSplashScreenType.visibility = View.GONE
+            switchSplashScreenLoading.visibility = View.GONE
+        }else {
+            switchSplashScreenType.visibility = View.VISIBLE
+            switchSplashScreenLoading.visibility = View.VISIBLE
+        }
+
         val metrics = DisplayMetrics()
         windowManager.defaultDisplay.getRealMetrics(metrics)
-
-        coordinatesRocket.component = imageViewSplashRocket
-        coordinatesRocket.heightBound = metrics.heightPixels
-        coordinatesRocket.widthBound = metrics.widthPixels
-        var rocketGame = RocketGame(3, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -124,7 +138,12 @@ class Activity_Splash_Screen: AppCompatActivity(){
             keepSplash = isChecked
         }
 
-        if(intent?.extras?.getBoolean("keepLoading") != null) switchSplashScreenLoading.isChecked = intent!!.extras!!.getBoolean("keepLoading")
+        if(intent?.extras?.getBoolean("keepLoading") != null){
+            switchSplashScreenLoading.isChecked = intent!!.extras!!.getBoolean("keepLoading")
+            if(!switchSplashScreenLoading.isChecked){
+                imageViewSplashCoins.visibility = View.GONE
+            }
+        }
 
         rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
 
@@ -207,14 +226,20 @@ class Activity_Splash_Screen: AppCompatActivity(){
             imageViewSplashReddit.scaleY = value
         }
 
+        resetSwitch = switchSplashScreenType
+
         switchSplashScreenType.setOnCheckedChangeListener { _, isChecked ->
             if(isChecked){
                 pumpInAnimationIG.pause()
                 rotateAnimation.cancel()
 
+                imageViewSplashCoins.visibility = View.VISIBLE
+                textViewSplashTimeEffect.visibility = View.VISIBLE
+                imageViewSplashEffect.visibility = View.GONE
                 imageViewSplashIG.visibility = View.GONE
                 imageViewSplashIcon.visibility = View.GONE
                 imageViewSplashDiscord.visibility = View.GONE
+                textViewSplashTimeEffect.text = ""
                 imageViewSplashMessage.visibility = View.GONE
                 imageViewSplashReddit.visibility = View.GONE
 
@@ -228,48 +253,69 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 textViewSplashTime.visibility = View.VISIBLE
                 imageViewSplashIcon.isEnabled = false
 
-                rocketGame.detach()
-                coordinatesRocket.update(0f, metrics.heightPixels.toFloat() / 2)
-                rocketGame = RocketGame(1, imageViewSplashRocket, layoutSplashScreen, metrics.widthPixels, metrics.heightPixels)
-                rocketGame.initialize()
+                imageViewSplashRocket.detach()
+                imageViewSplashRocket.coordinatesRocket.update(0f, metrics.heightPixels.toFloat() / 2 + (imageViewSplashRocket.height / 2), imageViewSplashRocket)
+                imageViewSplashRocket.layoutParams.width = (metrics.widthPixels * 0.14).toInt()
+
+                imageViewSplashRocket.init(layoutSplashScreen, metrics.widthPixels, metrics.heightPixels, 10, (metrics.widthPixels * 0.14).toInt(), (metrics.widthPixels * 0.14 / 1.9).toInt())
+                imageViewSplashRocket.initialize()
                 var endCount = 0
                 var ended = false
+                var visibleCoins = 0
 
                 rocketTimer = object : TimerTask() {
                     @SuppressLint("SetTextI18n")
                     override fun run() {
                         runOnUiThread {
-                            rocketTimer = this
+                            if(imageViewSplashRocket.visibility != View.VISIBLE) imageViewSplashRocket.visibility = View.VISIBLE
+                            if(visibleCoins < imageViewSplashRocket.extraCoins){
+                                textViewSplashCoins.text = imageViewSplashRocket.extraCoins.toString()
+                                visibleCoins = imageViewSplashRocket.extraCoins
+                            }
 
-                            if (rocketGame.onTick(coordinatesRocket)) {
-                                rocketGame.ticks++
-                                textViewSplashTime.text = "Level ${rocketGame.level} - ${(rocketGame.ticks).toDouble() / 100}s"
+                            if(imageViewSplashRocket.onTick()) {
+                                textViewSplashTime.text = "Level ${imageViewSplashRocket.level} - ${(imageViewSplashRocket.ticks) / 100}s"
+
+                                if(imageViewSplashRocket.activeEffect != null){
+                                    textViewSplashTimeEffect.text = (imageViewSplashRocket.activeEffect!!.durationMillis / 100).toString()
+                                    if(imageViewSplashEffect.visibility != View.VISIBLE){
+                                        imageViewSplashEffect.visibility = View.VISIBLE
+                                        imageViewSplashEffect.setImageResource(imageViewSplashRocket.activeEffect!!.drawableEffect)
+                                    }
+                                }else {
+                                    if(imageViewSplashEffect.visibility != View.GONE){
+                                        imageViewSplashEffect.visibility = View.GONE
+                                        textViewSplashTimeEffect.text = ""
+                                    }
+                                }
                             } else if(!ended){
                                 ended = true
                                 this.cancel()
 
                                 var newHigh = false
-                                if ((rocketGame.ticks.toDouble() / 100) >= Data.player.rocketGameScoreSeconds) {
-                                    Data.player.rocketGameScoreSeconds = rocketGame.ticks.toDouble() / 100
+                                if ((imageViewSplashRocket.ticks / 100) >= Data.player.rocketGameScoreSeconds) {
+                                    Data.player.rocketGameScoreSeconds = imageViewSplashRocket.ticks / 100
                                     newHigh = true
                                 }
 
                                 val rewardBottom = (GenericDB.balance.rewardCoinsBottom * (Data.player.level * 0.8) * (0 + 1) * 0.75).toInt()
                                 val rewardTop = GenericDB.balance.rewardCoinsTop * ((Data.player.level * 0.8) * (0 + 1) * 1.25).toInt()
-                                val reward = nextInt(rewardBottom, rewardTop) / 40
-                                Data.player.money += (reward * rocketGame.ticks/100)
+                                val reward = (((nextInt(rewardBottom, rewardTop) / 40) * imageViewSplashRocket.ticks/100) + imageViewSplashRocket.extraCoins * Data.player.level * 0.1).round(2)
+                                Data.player.money += reward.toInt()
 
                                 val viewP = layoutInflater.inflate(R.layout.popup_dialog_minigame, null, false)
-                                val window = PopupWindow(this@Activity_Splash_Screen)
-                                window.contentView = viewP
-                                viewP.textViewDialogMGGenericInfo.text = "\t~" + (rewardBottom + ((rewardTop - rewardBottom) / 2)) / 20 + " coins /s"
-                                viewP.textViewDialogMGInfo.text = "You lost.\n" + if (newHigh) "Wow! New high score!" else {
-                                    Data.rocketGameNotHigh[nextInt(0, Data.rocketGameNotHigh.size)]
-                                } + "\n\n You lasted for ${(rocketGame.ticks).toDouble() / 100}s (lvl. ${rocketGame.level})\nAnd received $reward coins."
+                                popWindow = PopupWindow(this@Activity_Splash_Screen)
+                                popWindow.contentView = viewP
 
-                                window.setOnDismissListener {
-                                    rocketGame.ticks = 0
-                                    window.dismiss()
+                                var scores: MutableList<RocketGameScore> = mutableListOf()
+                                viewP.textViewDialogMGGenericInfo.text = "\t~" + (rewardBottom + ((rewardTop - rewardBottom) / 2)) / 40 + " coins /s"
+                                viewP.textViewDialogMGInfo.setHTMLText("You lost.<br/>" + if (newHigh) "<font color='green'>Wow! New high score!</font>" else {
+                                    "<font color='red'>" + Data.rocketGameNotHigh[nextInt(0, Data.rocketGameNotHigh.size)] + "</font>"
+                                } + "<br/> You lasted for ${(imageViewSplashRocket.ticks) / 100}s (lvl. ${imageViewSplashRocket.level})<br/>And received $reward coins (${imageViewSplashRocket.extraCoins * Data.player.level * 0.1} bonus).")
+
+                                popWindow.setOnDismissListener {
+                                    imageViewSplashRocket.detach()
+                                    popWindow.dismiss()
                                 }
 
                                 viewP.buttonDialogMGOk.setOnClickListener {
@@ -303,28 +349,51 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                         else -> {
                                         }
                                     }
-                                    window.dismiss()
+                                    popWindow.dismiss()
                                 }
 
                                 viewP.buttonDialogMGAgain.setOnClickListener {
                                     ended = false
                                     switchSplashScreenType.isChecked = false
                                     switchSplashScreenType.isChecked = true
-                                    window.dismiss()
+                                    popWindow.dismiss()
                                 }
 
                                 viewP.buttonDialogMGClose.setOnClickListener {
                                     viewP.buttonDialogMGOk.performClick()
                                 }
 
-                                window.isOutsideTouchable = false
-                                window.isFocusable = false
-                                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                                popWindow.isOutsideTouchable = false
+                                popWindow.isFocusable = false
+                                popWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-                                window.showAtLocation(viewP, Gravity.CENTER, 0, 0)
+                                popWindow.showAtLocation(viewP, Gravity.CENTER, 0, 0)
+
+                                val myScore = RocketGameScore(((imageViewSplashRocket.ticks) / 100), Data.player.username)
+                                val db = FirebaseFirestore.getInstance()
+                                val scoresLimit = 10
+                                db.collection("RocketGame").orderBy("length").limit(scoresLimit.toLong()).get().addOnSuccessListener { querySnapshot ->
+                                    scores = querySnapshot.toObjects(RocketGameScore::class.java)
+                                    scores.sortByDescending { it.length }
+
+                                    for(i in 0 until scoresLimit){
+                                        if(scores.size < i + 1){
+                                            scores.add(myScore)
+                                            myScore.init()
+                                            break
+                                        }else if(myScore.length > scores[i].length){
+                                            myScore.uploadAsScore(scores[i].id)
+                                            scores[i] = myScore
+                                            break
+                                        }
+                                    }
+                                    scores.sortByDescending { it.length }
+
+                                    viewP.listViewDialogMG.adapter = RocketGameScores(scores)
+                                }
                             }
 
-                            if ((rocketGame.ticks - endCount * 200) > 200) {
+                            if ((imageViewSplashRocket.ticks - endCount * 200) > 200) {
                                 endCount++
                                 if (!keepSplash) {
                                     when (Data.loadingStatus) {
@@ -369,14 +438,20 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 Timer().scheduleAtFixedRate(rocketTimer, 0, 10)
 
             }else {
+                textViewSplashTimeEffect.visibility = View.GONE
+                imageViewSplashEffect.visibility = View.GONE
+
                 if(!pumpInAnimationIG.isRunning || pumpInAnimationIG.isPaused) pumpInAnimationIG.start()
+
+                rotateAnimation.duration = 2000
                 imageViewSplashIcon.startAnimation(rotateAnimation)
                 rocketTimer?.cancel()
                 activeTimer.cancel()
                 activeTimer.purge()
-                rocketGame.detach()
+                imageViewSplashRocket.detach()
                 textViewSplashTime.visibility = View.GONE
 
+                imageViewSplashCoins.visibility = View.GONE
                 imageViewSplashIG.visibility = View.VISIBLE
                 imageViewSplashIcon.visibility = View.VISIBLE
                 imageViewSplashDiscord.visibility = View.VISIBLE
@@ -418,20 +493,17 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {
-                        coordinatesRocket.update(motionEvent.rawX, motionEvent.rawY)
+                        imageViewSplashRocket.coordinatesRocket.update(motionEvent.rawX, motionEvent.rawY, imageViewSplashRocket)
                         return true
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        coordinatesRocket.update(motionEvent.rawX, motionEvent.rawY)
+                        imageViewSplashRocket.coordinatesRocket.update(motionEvent.rawX, motionEvent.rawY, imageViewSplashRocket)
                         return true
                     }
                 }
                 return super.onTouch(view, motionEvent)
             }
         })
-
-        /*val animSet: AnimatorSet = AnimatorSet()
-        animSet.playTogether()*/
 
 
         imageViewSplashIG.setOnClickListener {
@@ -513,5 +585,45 @@ class Activity_Splash_Screen: AppCompatActivity(){
         }
 
     }
+    private class RocketGameScores(val scores: List<RocketGameScore>) : BaseAdapter() {
 
+        override fun getCount(): Int {
+            return scores.size
+        }
+
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
+
+        override fun getItem(position: Int): Any {
+            return "TEST STRING"
+        }
+
+        override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
+            val rowMain: View
+
+            if (convertView == null) {
+                val layoutInflater = LayoutInflater.from(viewGroup!!.context)
+                rowMain = layoutInflater.inflate(R.layout.row_minigame_score, viewGroup, false)
+                val viewHolder = ViewHolder(rowMain.textViewRowMGPosition, rowMain.textViewRowMGName, rowMain.textViewRowMGLength, rowMain.imageViewRowMGBg)
+                rowMain.tag = viewHolder
+            } else {
+                rowMain = convertView
+            }
+            val viewHolder = rowMain.tag as ViewHolder
+
+            viewHolder.textViewPosition.text = (position + 1).toString()
+            viewHolder.textViewName.text = scores[position].user
+            viewHolder.textViewLength.text = scores[position].length.toString()
+
+            viewHolder.imageViewBg.setImageResource(if(scores[position].user == Data.player.username){
+                R.color.experience
+            }else {
+                android.R.color.transparent
+            })
+
+            return rowMain
+        }
+        private class ViewHolder(val textViewPosition: CustomTextView, val textViewName: CustomTextView, val textViewLength: CustomTextView, val imageViewBg: ImageView)
+    }
 }

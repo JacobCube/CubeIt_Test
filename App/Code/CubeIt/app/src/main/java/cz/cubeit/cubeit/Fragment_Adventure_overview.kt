@@ -214,14 +214,14 @@ class AdventureQuestsOverview(var sideQuestsAdventure: MutableList<Quest>, val c
         viewHolder.textViewName.text = sideQuestsAdventure[position].name
 
         val text = resourcesAdventure!!.getString(R.string.quest_generic, when(sideQuestsAdventure[position].level){
-            0 -> "<font color='lime'>Peaceful</font>"
-            1 -> "<font color='green'>Easy</font>"
-            2 -> "<font color='yellow'>Medium rare</font>"
-            3 -> "<font color='orange'>Medium</font>"
-            4 -> "<font color='red'>Well done</font>"
-            5 -> "<font color='brown'>Hard rare</font>"
-            6 -> "<font color='maroon'>Hard</font>"
-            7 -> "<font color='olive'>Evil</font>"
+            0 -> "<font color='#7A7A7A'>Peaceful</font>"
+            1 -> "<font color='#535353'>Easy</font>"
+            2 -> "<font color='#8DD837'>Medium rare</font>"
+            3 -> "<font color='#5DBDE9'>Medium</font>"
+            4 -> "<font color='red'>#058DCA</font>"
+            5 -> "<font color='#9136A2'>Hard rare</font>"
+            6 -> "<font color='#FF9800'>Hard</font>"
+            7 -> "<font color='#FFE500'>Evil</font>"
             else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
         })
 

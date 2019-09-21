@@ -16,9 +16,10 @@
         android:src="@drawable/shop_bg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <ListView
         android:id="@+id/listViewShopInventory"
@@ -196,7 +197,8 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline48"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline47"
-        app:srcCompat="@drawable/bug_icon" />
+        app:srcCompat="@drawable/coin_basic"
+        tools:visibility="visible" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewShopCoin"

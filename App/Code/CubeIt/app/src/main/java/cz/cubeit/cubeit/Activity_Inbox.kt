@@ -381,11 +381,10 @@ class Activity_Inbox : AppCompatActivity(){
 
                     inboxSnap.sortByDescending { it.id }
                     if(onTop && snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
-                        Log.d("new Message", "received1")
                         for(i in inboxSnap){
                             if(!Data.inbox.any { it.id == i.id } && i.status != MessageStatus.Read){
                                 Data.inbox.add(i)
-                                Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
+                                if(i.status != MessageStatus.Sent) Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
                             }
                         }
                         Data.refreshInbox(this)
@@ -398,7 +397,7 @@ class Activity_Inbox : AppCompatActivity(){
                              if(!Data.inbox.any { it.id == i.id }  && i.status != MessageStatus.Read){
                                  Data.inbox.add(i)
                                  Data.inboxChangedMessages++
-                                 Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
+                                 if(i.status != MessageStatus.Sent) Toast.makeText(this, "New message has arrived", Toast.LENGTH_SHORT).show()
                              }
                         }
                         Data.inboxChanged = true

@@ -64,7 +64,9 @@ class ActivitySettings : AppCompatActivity(){
 
         supportFragmentManager.beginTransaction().add(R.id.frameLayoutBugReport, Fragment_Bug_report()).commitNow()
 
-        switchNotifications.isChecked = Data.player.notifications
+        switchNotificationsInbox.isChecked = Data.player.notificationsInbox
+        switchNotificationsEvent.isChecked = Data.player.notificationsEvent
+        switchNotificationsFaction.isChecked = Data.player.notificationsFaction
         switchSounds.isChecked = Data.player.music
         switchAppearOnTop.isChecked = Data.player.appearOnTop
 
@@ -128,12 +130,20 @@ class ActivitySettings : AppCompatActivity(){
             Data.player.music = isChecked
         }
 
-        switchNotifications.setOnCheckedChangeListener { _, isChecked ->
-            Data.player.notifications = isChecked
-        }
-
         switchAppearOnTop.setOnCheckedChangeListener { _, isChecked ->
             Data.player.appearOnTop = isChecked
+        }
+
+        switchNotificationsInbox.setOnCheckedChangeListener { _, isChecked ->
+            Data.player.notificationsInbox = isChecked
+        }
+
+        switchNotificationsFaction.setOnCheckedChangeListener{ _, isChecked ->
+            Data.player.notificationsFaction = isChecked
+        }
+
+        switchNotificationsEvent.setOnCheckedChangeListener{_, isChecked ->
+            Data.player.notificationsEvent = isChecked
         }
 
         imageViewBugIcon.layoutParams.height = (displayY/10 * 1.8).toInt()

@@ -20,7 +20,6 @@ import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
-import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlinx.android.synthetic.main.activity_fight_system_npc.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.buttonCloseDialog
@@ -837,6 +836,18 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         window.isFocusable = true
         window.setOnDismissListener {
             window.dismiss()
+
+            buttonAccept.isEnabled = false
+            buttonAccept.isClickable = false
+
+            if(Data.activeQuest!!.result == ActiveQuest.Result.WAITING){
+                Data.activeQuest!!.complete(if(completed) ActiveQuest.Result.WON else ActiveQuest.Result.LOST).addOnSuccessListener {
+                    if(completed) reward?.receive()
+
+                    Data.activeQuest = null
+                }
+            }
+
             val endFight = Intent(this, Home::class.java)
             endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(endFight)
@@ -844,16 +855,6 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         }
         buttonAccept.setOnClickListener {
             window.dismiss()
-            buttonAccept.isEnabled = false
-            buttonAccept.isClickable = false
-            if(completed) Data.activeQuest!!.wonQuest()
-            Data.activeQuest!!.delete().addOnSuccessListener {
-                if(completed){
-                    reward?.receive()
-                }
-                Data.activeQuest = null
-            }
-
             val endFight = Intent(this, Home::class.java)
             endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(endFight)
@@ -868,6 +869,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         }
 
         if (reward?.item != null && completed) {
+            imageItem.setBackgroundResource(reward!!.item!!.getBackground())
             imageItem.setImageResource(reward!!.item!!.drawable)
             imageItem.visibility = View.VISIBLE
             imageItem.isEnabled = true

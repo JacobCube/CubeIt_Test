@@ -701,7 +701,6 @@ class Activity_Character : AppCompatActivity() {
             } else rowMain = convertView
             val viewHolder = rowMain.tag as ViewHolder
 
-            val handler = Handler()
             val indexAdapter:Int = if(position == 0) 0 else{
                 position*4
             }

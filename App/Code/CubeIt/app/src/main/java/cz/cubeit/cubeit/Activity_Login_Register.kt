@@ -50,6 +50,8 @@ class ActivityLoginRegister(private val loginUsername: String = "", private val 
         viewPagerLoginRegister!!.adapter = adapter
         viewPagerLoginRegister!!.offscreenPageLimit = 2
 
+        Data.loadingScreenType = LoadingType.Normal
+
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 handler.postDelayed({hideSystemUI()},1000)

@@ -45,9 +45,11 @@
         <item name="android:gestureColor">@android:color/white</item>
         <item name="android:colorControlHighlight">@android:color/white</item>
         <item name="android:colorFocusedHighlight">@android:color/white</item>
-        <item name="android:popupBackground">@color/loginColor</item>
         <item name="android:textColor">@color/colorSecondary</item>
+        <item name="android:scrollbars">none</item>
         <item name="android:background">@color/loginColor</item>
+        <item name="android:divider">@color/colorSecondary</item>
+        <item name="android:dividerHeight">0.5dp</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

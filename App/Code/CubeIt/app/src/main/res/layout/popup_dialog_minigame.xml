@@ -11,12 +11,14 @@
         android:id="@+id/imageViewDialogMGBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,5:4"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:adjustViewBounds="true"
+        app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/bg_basic_logincolor_light" />
 
     <Button
@@ -24,30 +26,28 @@
         style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
         android:text="@android:string/ok"
         android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline224" />
+        app:layout_constraintStart_toStartOf="@+id/textViewDialogMGInfo" />
 
     <Button
         android:id="@+id/buttonDialogMGAgain"
         style="@style/AppTheme.Button.Dark"
-        android:layout_width="wrap_content"
+        android:layout_width="94dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="1dp"
         android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
         android:text="Try again"
         android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline27"
-        app:layout_constraintStart_toStartOf="@+id/guideline224" />
+        app:layout_constraintStart_toEndOf="@+id/buttonDialogMGOk" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline26"
@@ -76,25 +76,23 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
         android:text="Minigame lost"
         android:textColor="@color/black"
-        android:textSize="18sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/buttonDialogMGAgain"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintEnd_toStartOf="@+id/guideline224"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDialogMGGenericInfo" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewDialogMGGenericInfo"
+        app:layout_constraintVertical_bias="0.0" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewDialogMGGenericInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
         android:fontFamily="@font/average_sans"
         android:gravity="start"
         android:textColor="@color/black"
@@ -108,6 +106,8 @@
         android:id="@+id/buttonDialogMGClose"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginBottom="2dp"
         android:adjustViewBounds="true"
         android:tint="@android:color/holo_red_dark"
         app:layout_constraintBottom_toTopOf="@+id/guideline26"
@@ -115,5 +115,22 @@
         app:layout_constraintStart_toStartOf="@+id/guideline27"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
+
+    <ListView
+        android:id="@+id/listViewDialogMG"
+        android:layout_width="150dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_basic_logincolor_dark"
+        android:divider="@color/colorSecondary"
+        android:dividerHeight="1dp"
+        android:minWidth="150dp"
+        android:paddingTop="8dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonDialogMGAgain"
+        app:layout_constraintTop_toBottomOf="@+id/buttonDialogMGClose" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

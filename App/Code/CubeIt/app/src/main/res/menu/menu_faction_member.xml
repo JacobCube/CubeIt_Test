@@ -24,4 +24,7 @@
     <item android:id="@+id/menu_faction_leave"
         android:title="@string/menu_faction_member_7" />
 
+    <item android:id="@+id/menu_faction_picture"
+        android:title="@string/menu_faction_member_8" />
+
 </menu>

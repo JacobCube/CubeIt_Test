@@ -182,18 +182,16 @@
         app:layout_constraintStart_toStartOf="@+id/guideline121"
         app:layout_constraintTop_toTopOf="@+id/imageViewSplash" />
 
-    <ImageView
+    <cz.cubeit.cubeit.RocketGame
         android:id="@+id/imageViewSplashRocket"
-        android:layout_width="0dp"
+        android:layout_width="100dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
+        android:src="@drawable/rocket_0"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:0.6"
-        app:layout_constraintEnd_toStartOf="@+id/guideline122"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintDimensionRatio="W,1:1.9"
         app:layout_constraintStart_toStartOf="@+id/guideline121"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageViewSplashIcon"
         app:srcCompat="@drawable/rocket_0"
         tools:visibility="visible" />
 
@@ -210,5 +208,53 @@
         app:layout_constraintStart_toEndOf="@+id/imageViewSplashReddit"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewSplashTimeEffect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text=""
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/imageViewSplashEffect"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewSplashEffect"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/rg_effect_bigger"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewSplashTimeEffect"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewSplashTimeEffect"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewSplashCoins"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:adjustViewBounds="true"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewLoadingLog"
+        app:srcCompat="@drawable/coin_basic" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewSplashCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewSplashCoins"
+        app:layout_constraintStart_toEndOf="@+id/imageViewSplashCoins"
+        app:layout_constraintTop_toTopOf="@+id/imageViewSplashCoins" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
