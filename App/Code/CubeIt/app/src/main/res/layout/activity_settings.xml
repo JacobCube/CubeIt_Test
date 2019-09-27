@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutSettings"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:configChanges="orientation"
+    android:screenOrientation="sensorLandscape">
+
+
+    <ImageView
+        android:id="@+id/imageViewActivitySettings"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@color/loginColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Switch
+        android:id="@+id/switchNotificationsFaction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Faction nofitications"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintStart_toStartOf="@+id/switchNotificationsInbox"
+        app:layout_constraintTop_toBottomOf="@+id/switchNotificationsInbox"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchNotificationsEvent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Special events nofitications"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintStart_toStartOf="@+id/switchNotificationsFaction"
+        app:layout_constraintTop_toBottomOf="@+id/switchNotificationsFaction"
+        tools:checked="true" />
+
+    <SeekBar
+        android:id="@+id/seekBarSettingsTextSize"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:max="14"
+        android:progress="0"
+        app:layout_constraintEnd_toStartOf="@+id/guideline199"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSettingsSeekBar" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewSettingsTextFont"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewSettingFontRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/seekBarSettingsTextSize"
+        tools:text="@android:string/dialog_alert_title" />
+
+    <Switch
+        android:id="@+id/switchNotificationsInbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Inbox notifications"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintStart_toStartOf="@+id/guideline199"
+        app:layout_constraintTop_toTopOf="@+id/switchSounds"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchAppearOnTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Bubble after minimization"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchSounds"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchSounds"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Sounds"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:checked="true" />
+
+    <ImageView
+        android:id="@+id/homeButtonBackSettings"
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/emptyspellslotlarge"
+        android:backgroundTint="@color/colorPrimary"
+        android:src="@drawable/home_button"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewBugIcon"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:rotation="180"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline82"
+        app:srcCompat="@drawable/bug_icon"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteY="0dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline139"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <ImageView
+        android:id="@+id/imageViewMenuUpSettings"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:rotation="180"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline139"
+        app:srcCompat="@drawable/setting3rows" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutBugReport"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/colorSecondary"
+        android:padding="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageViewBugIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline82"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/frameLayoutMenuSettings"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+    </FrameLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline82"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline199"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewSettingsSeekBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Text size matters"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/switchAppearOnTop"
+        app:layout_constraintTop_toBottomOf="@+id/switchAppearOnTop" />
+
+    <ImageView
+        android:id="@+id/imageViewSettingFontRight"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewSettingsTextFont"
+        app:layout_constraintDimensionRatio="H,1:2"
+        app:layout_constraintEnd_toStartOf="@+id/guideline199"
+        app:layout_constraintTop_toTopOf="@+id/textViewSettingsTextFont"
+        app:srcCompat="@drawable/right_arrow" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

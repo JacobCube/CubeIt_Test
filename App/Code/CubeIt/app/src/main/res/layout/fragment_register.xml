@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="ExtraText">
+
+    <ImageView
+        android:id="@+id/layoutRegister"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:src="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline69"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.09" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:text="Username"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline7"
+        app:layout_constraintEnd_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/inputUsernameReg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
+        android:hint="username"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="text"
+        android:nextFocusForward="@+id/inputEmailReg"
+        android:textColor="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
+        app:layout_constraintBottom_toTopOf="@+id/guideline7"
+        app:layout_constraintEnd_toStartOf="@+id/guideline17"
+        app:layout_constraintStart_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/Texguideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.401" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/TextEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:text="Email"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline11"
+        app:layout_constraintEnd_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/texguideline4" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/inputEmailReg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
+        android:hint="e-mail"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textEmailAddress"
+        android:nextFocusLeft="@id/inputPassReg"
+        android:nextFocusRight="@id/inputPassReg"
+        android:nextFocusDown="@id/inputPassReg"
+        android:nextFocusForward="@id/inputPassReg"
+        android:textColor="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
+        app:layout_constraintBottom_toTopOf="@+id/guideline11"
+        app:layout_constraintEnd_toStartOf="@+id/guideline17"
+        app:layout_constraintStart_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/texguideline4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/texguideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.56" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:text="Password, repeat "
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/texguideline8"
+        app:layout_constraintEnd_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/texguideline7" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRegisterPasswordinfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:text="7+ characters,\nat least 1 number"
+        android:textColor="@color/colorGrey"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/guideline17"
+        app:layout_constraintTop_toTopOf="@+id/texguideline7" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRegisterUsernameinfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/average_sans"
+        android:gravity="center"
+        android:text="6 - 15 characters"
+        android:textColor="@color/colorGrey"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline7"
+        app:layout_constraintStart_toStartOf="@+id/guideline17"
+        app:layout_constraintTop_toTopOf="@+id/Texguideline4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.53" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/inputPassReg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
+        android:hint="password"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textPassword"
+        android:nextFocusLeft="@id/inputRePassReg"
+        android:nextFocusRight="@id/inputRePassReg"
+        android:nextFocusDown="@id/inputRePassReg"
+        android:nextFocusForward="@id/inputRePassReg"
+        android:selectAllOnFocus="false"
+        android:textColor="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
+        app:layout_constraintBottom_toTopOf="@+id/texguideline8"
+        app:layout_constraintEnd_toStartOf="@+id/texguideline6"
+        app:layout_constraintStart_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/texguideline7" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/texguideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.492" />
+
+    <ImageView
+        android:id="@+id/arrowAccExists1"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:onClick="onClickArrowLoginRegister"
+        android:src="@drawable/left_arrow"
+        app:layout_constraintBottom_toTopOf="@+id/guideline69"
+        app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/texguideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.72" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/texguideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.96" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/texguideline8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.848" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.275" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.506" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.69" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/inputRePassReg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/average_sans"
+        android:hint="repeat"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="false"
+        android:textColor="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
+        app:layout_constraintBottom_toTopOf="@+id/texguideline8"
+        app:layout_constraintEnd_toStartOf="@+id/guideline17"
+        app:layout_constraintStart_toStartOf="@+id/guideline10"
+        app:layout_constraintTop_toTopOf="@+id/texguideline7" />
+
+    <ImageView
+        android:id="@+id/buttonRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+
+        android:src="@drawable/registerbutton"
+        app:layout_constraintBottom_toTopOf="@+id/texguideline"
+        app:layout_constraintEnd_toStartOf="@+id/guideline17"
+        app:layout_constraintStart_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/texguideline8" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.724" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
