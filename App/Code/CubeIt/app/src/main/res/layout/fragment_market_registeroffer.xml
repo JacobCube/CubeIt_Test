@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewMarketRegisterBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@color/loginColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextMarketRegisterUntilDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:focusable="false"
+        android:hint="expiry date"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="date|datetime"
+        android:nextFocusLeft="@+id/spinnerInboxCategory"
+        android:nextFocusRight="@+id/spinnerInboxCategory"
+        android:nextFocusUp="@+id/spinnerInboxCategory"
+        android:nextFocusDown="@+id/spinnerInboxCategory"
+        android:nextFocusForward="@+id/spinnerInboxCategory"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline187"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterItem" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextMarketRegisterCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:hint="cube coins"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="number"
+        android:nextFocusLeft="@+id/editTextBoardPosition"
+        android:nextFocusRight="@+id/editTextBoardPosition"
+        android:nextFocusUp="@+id/editTextBoardPosition"
+        android:nextFocusDown="@+id/editTextBoardPosition"
+        android:nextFocusForward="@+id/editTextBoardPosition"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline188"
+        app:layout_constraintTop_toTopOf="@+id/imageViewMarketRegisterItem" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextMarketRegisterCubeCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:hint="cubix"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="number"
+        android:nextFocusLeft="@+id/editTextBoardPosition"
+        android:nextFocusRight="@+id/editTextBoardPosition"
+        android:nextFocusUp="@+id/editTextBoardPosition"
+        android:nextFocusDown="@+id/editTextBoardPosition"
+        android:nextFocusForward="@+id/editTextBoardPosition"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline188"
+        app:layout_constraintTop_toBottomOf="@+id/editTextMarketRegisterCoins" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextMarketRegisterLowerCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:alpha="0.5"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="lower CC"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="number"
+        android:nextFocusLeft="@+id/editTextBoardPosition"
+        android:nextFocusRight="@+id/editTextBoardPosition"
+        android:nextFocusUp="@+id/editTextBoardPosition"
+        android:nextFocusDown="@+id/editTextBoardPosition"
+        android:nextFocusForward="@+id/editTextBoardPosition"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="12sp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toStartOf="@+id/guideline188"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxMarketRegister" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextMarketRegisterLowerCubeCoins"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:alpha="0.5"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="lower cubix"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="number"
+        android:nextFocusLeft="@+id/editTextBoardPosition"
+        android:nextFocusRight="@+id/editTextBoardPosition"
+        android:nextFocusUp="@+id/editTextBoardPosition"
+        android:nextFocusDown="@+id/editTextBoardPosition"
+        android:nextFocusForward="@+id/editTextBoardPosition"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="12sp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toStartOf="@+id/guideline188"
+        app:layout_constraintStart_toStartOf="@+id/editTextMarketRegisterLowerCoins"
+        app:layout_constraintTop_toBottomOf="@+id/editTextMarketRegisterLowerCoins" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline186"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.46" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline190"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline188"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.755" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline187"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.82" />
+
+    <ImageView
+        android:id="@+id/imageViewMarketRegisterItem"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/emptyslot"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline187"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ListView
+        android:id="@+id/listViewMarketRegisterInventory"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:divider="@null"
+        android:dividerHeight="0sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline51"
+        app:layout_constraintEnd_toStartOf="@+id/guideline186"
+        app:layout_constraintStart_toStartOf="@+id/guideline190"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/imageViewMarketRegisterConfirm"
+        style="@style/AppTheme.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="16dp"
+        android:text="Confirm"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline187"
+        app:srcCompat="@drawable/loginbutton" />
+
+    <ImageView
+        android:id="@+id/imageViewMarketRegisterCoins"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextMarketRegisterCoins"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline188"
+        app:layout_constraintTop_toTopOf="@+id/editTextMarketRegisterCoins"
+        app:srcCompat="@android:drawable/ic_input_add" />
+
+    <ImageView
+        android:id="@+id/imageViewMarketRegisterCubeCoins"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextMarketRegisterCubeCoins"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline188"
+        app:layout_constraintTop_toTopOf="@+id/editTextMarketRegisterCubeCoins"
+        app:srcCompat="@android:drawable/ic_input_add" />
+
+    <CheckBox
+        android:id="@+id/checkBoxMarketRegister"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="16dp"
+        android:buttonTint="@android:color/white"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewMarketRegisterCoins"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline188"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterCubeCoins" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewMarketRegisterLowerAfterText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:gravity="end"
+        android:text="Lower price after expiration"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/checkBoxMarketRegister"
+        app:layout_constraintEnd_toStartOf="@+id/guideline188"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline186"
+        app:layout_constraintTop_toTopOf="@+id/checkBoxMarketRegister" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline51"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.55" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

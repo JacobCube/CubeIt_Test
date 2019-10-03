@@ -1,0 +1,72 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <!--<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>-->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimaryDarker</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorSecondary</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:actionBarSize">0dp</item>
+    </style>
+
+    <style name="AppTheme.Button" parent="Widget.AppCompat.Button.Colored">
+        <item name="colorButtonNormal">@android:color/holo_red_dark</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+    <style name="AppTheme.Button.Dark" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:colorControlHighlight">@android:color/white</item>
+        <item name="android:colorFocusedHighlight">@android:color/white</item>
+        <item name="android:background">@drawable/bg_button_logincolor</item>
+        <item name="android:textColor">@color/colorSecondary</item>
+        <item name="android:gestureColor">@android:color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/average_sans</item>
+    </style>
+
+    <style name="FactionPopupMenu" parent="@android:style/Widget.PopupMenu">
+        <item name="android:gestureColor">@android:color/white</item>
+        <item name="android:colorControlHighlight">@android:color/white</item>
+        <item name="android:colorFocusedHighlight">@android:color/white</item>
+        <item name="android:textColor">@color/colorSecondary</item>
+        <item name="android:scrollbars">none</item>
+        <item name="android:background">@drawable/bg_popup_menu_logincolor</item>
+        <item name="android:divider">@color/colorSecondary</item>
+        <item name="android:dividerHeight">0.5dp</item>
+    </style>
+
+    <style name="FilterBg" parent="@android:style/Widget.PopupMenu">
+        <item name="android:gestureColor">@android:color/white</item>
+        <item name="android:colorControlHighlight">@android:color/white</item>
+        <item name="android:colorFocusedHighlight">@android:color/white</item>
+        <item name="android:textColor">@color/bg_basic_white</item>
+        <item name="android:scrollbars">none</item>
+        <item name="android:background">@color/pop_up_bg</item>
+        <item name="android:divider">@color/colorSecondary</item>
+        <item name="android:dividerHeight">0.5dp</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
+
+</resources>

@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorSecondary"
+    android:configChanges="orientation"
+    android:minHeight="0dp"
+    android:padding="1dp"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewFragmentInboxMessage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@color/colorGrey"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextInboxSubject"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@color/loginColor"
+        android:ems="10"
+        android:hint="Subject"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textPersonName"
+        android:nextFocusLeft="@id/editTextInboxContent"
+        android:nextFocusRight="@id/editTextInboxContent"
+        android:nextFocusDown="@id/editTextInboxContent"
+        android:nextFocusForward="@id/editTextInboxContent"
+        android:textColor="@color/colorSecondary"
+        android:textColorHint="@color/colorSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/guideline110"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextInboxReciever"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/loginColor"
+        android:ems="10"
+        android:hint="Reciever"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textPersonName"
+        android:nextFocusLeft="@id/editTextInboxSubject"
+        android:nextFocusRight="@id/editTextInboxSubject"
+        android:nextFocusUp="@id/editTextInboxSubject"
+        android:nextFocusDown="@id/editTextInboxSubject"
+        android:nextFocusForward="@id/editTextInboxSubject"
+        android:textColor="@color/colorSecondary"
+        android:textColorHint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/editTextInboxSubject"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewInboxOpenMenu"
+        app:layout_constraintStart_toStartOf="@+id/guideline150"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextInboxContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/loginColor"
+        android:ems="10"
+        android:gravity="start"
+        android:hint="Message"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textMultiLine"
+        android:nextFocusLeft="@id/spinnerInboxPriority"
+        android:nextFocusRight="@id/spinnerInboxPriority"
+        android:nextFocusDown="@id/spinnerInboxPriority"
+        android:nextFocusForward="@id/spinnerInboxPriority"
+        android:scrollbars="vertical"
+        android:textAlignment="center"
+        android:textColor="@color/colorSecondary"
+        android:textColorHint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline110"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSubject"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Spinner
+        android:id="@+id/spinnerInboxPriority"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:minHeight="20dp"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxSend"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/right_arrow"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline165"
+        app:layout_constraintTop_toTopOf="@+id/guideline84" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline84"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.76" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline148"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.44" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline110"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.72" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline146"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.92" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline165"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.85905224" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline147"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline150"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.36" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline149"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.62" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxMessageTime"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/loginColor"
+        android:text="time"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/editTextInboxContent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxMessageCubeCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="380dp"
+        android:text="TextView"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageCoins" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxMessageCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toTopOf="@+id/guideline148" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxMessageXp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageCubeCoins" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageItem"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline146"
+        app:layout_constraintHorizontal_bias="0.526"
+        app:layout_constraintStart_toStartOf="@+id/guideline147"
+        app:layout_constraintTop_toTopOf="@+id/editTextInboxContent"
+        app:srcCompat="@drawable/backpack"
+        tools:visibility="visible" />
+
+    <Button
+        android:id="@+id/buttonInboxMessageGet"
+        android:layout_width="75dp"
+        android:layout_height="50dp"
+        android:text="get"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline84"
+        app:layout_constraintEnd_toStartOf="@+id/guideline146"
+        app:layout_constraintStart_toStartOf="@+id/guideline147" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxMessageSender"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/loginColor"
+        android:textStyle="bold"
+        android:text="from Player"
+        android:textColor="@color/colorSecondary"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/editTextInboxSubject"
+        app:layout_constraintEnd_toStartOf="@+id/editTextInboxReciever"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewDeleteMessage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:tint="@android:color/holo_red_dark"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline165"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toTopOf="@+id/guideline84"
+        app:srcCompat="@drawable/head_close"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageAccept"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
+        android:tint="@android:color/holo_green_light"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline84"
+        app:layout_constraintDimensionRatio="H,1:0.75"
+        app:layout_constraintEnd_toStartOf="@+id/guideline165"
+        app:layout_constraintStart_toStartOf="@+id/guideline110"
+        app:srcCompat="@drawable/completed"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageDecline"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline84"
+        app:layout_constraintDimensionRatio="H,1:0.75"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline165"
+        app:srcCompat="@drawable/decline_icon"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxOpenMenu"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:tint="@color/colorSecondary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextInboxReciever"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline110"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_dialog_dialer"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxMessageDropDown"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/spinnerInboxPriority"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="@+id/spinnerInboxPriority"
+        app:layout_constraintTop_toTopOf="@+id/spinnerInboxPriority"
+        app:srcCompat="@drawable/arrow_down" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

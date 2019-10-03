@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFightBoard"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:configChanges="orientation"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewActivityInbox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:src="@color/loginColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ListView
+        android:id="@+id/listViewInboxCategories"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline77"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewInboxIcon"></ListView>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline76"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.12" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline109"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxStartSearch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline151"
+        app:layout_constraintStart_toStartOf="@+id/guideline106"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/search_icon" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxArrowBack"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline85"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/left_arrow" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxFilter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline151"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/filter" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/inputSearchInbox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:ems="10"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textPersonName"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewActionBar"
+        app:layout_constraintEnd_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline77"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.21" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutMenuBoard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline85"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.90" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline106"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.70" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline151"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.80" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxIcon"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline109"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/email_icon" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nothing to show"
+        android:textColor="@color/loginColor_2"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline109"
+        app:layout_constraintEnd_toStartOf="@+id/guideline106"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSearch" />
+
+    <ListView
+        android:id="@+id/listViewInboxMessages"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="@+id/guideline76">
+
+    </ListView>
+
+    <FrameLayout
+        android:id="@+id/frameLayoutInbox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="2dp"
+        app:layout_constraintBottom_toBottomOf="@+id/listViewInboxMessages"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/listViewInboxMessages"
+        app:layout_constraintTop_toTopOf="@+id/listViewInboxMessages">
+
+    </FrameLayout>
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextInboxSearch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:ems="10"
+        android:hint="Search..."
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textPersonName"
+        android:textColor="@color/colorSecondary"
+        android:textColorHint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintEnd_toStartOf="@+id/guideline106"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toTopOf="@+id/imageViewActivityInbox" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxActionMoveTo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/guideline151"
+        app:layout_constraintTop_toTopOf="@+id/guideline76"
+        app:srcCompat="@android:drawable/ic_menu_set_as"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxActionDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/guideline151"
+        app:layout_constraintTop_toTopOf="@+id/guideline76"
+        app:srcCompat="@android:drawable/ic_menu_delete"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxActionCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:text="0"
+        android:textColor="@color/bg_basic_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintStart_toEndOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintTop_toTopOf="@+id/imageViewInboxActionDelete"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxActionCloseEditMode"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:tint="@color/bg_basic_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/textViewInboxActionCounter"
+        app:layout_constraintTop_toTopOf="@+id/imageViewInboxActionDelete"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/head_close"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

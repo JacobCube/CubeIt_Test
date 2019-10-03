@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">help</string>
+    <string name="no_image">No Image</string>
+    <string name="developed_by">Developed by CubeIt.cz</string>
+    <string name="first_fragment">First Fragment</string>
+    <string name="second_fragment">Second Fragment</string>
+    <string name="third_fragment">Third Fragment</string>
+    <string name="experience_adventure">You will receive: %1$d experience</string>
+    <string name="settings_sounds">Sounds: %1$d </string>
+    <string name="title_activity_test_menu">test_activity_menu</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="character_ratio">Power: %1$s \nArmor: %2$s \nBlock: %3$s \nHealth: %4$s \nStamina: %5$s \nLifeSteal: %6$s</string>
+    <string name="loading_log">%1$s have started loading…</string>
+    <string name="filter_down">%1$s 0x25BC</string>
+    <string name="filter_up">%1$s 0x25B2</string>
+    <string name="faction_gold">Gold: %1$s</string>
+
+    <string name="quest_title"><big><font face="normal" color="#C0B02D">%1$s</font></big></string>
+    <string name="quest_number"><font face="normal" color="#C0B02D">%1$d</font></string>
+    <string name="quest_generic"><font face="normal" color="#161B42">%1$s</font></string>
+
+    <string name="menu_faction_member_0">Message</string>
+    <string name="menu_faction_member_1">Ally</string>
+    <string name="menu_faction_member_2">Show profile</string>
+    <string name="menu_faction_member_3">Promote</string>
+    <string name="menu_faction_member_4">Demote</string>
+    <string name="menu_faction_member_5">Kick</string>
+    <string name="menu_faction_member_6">Warn</string>
+    <string name="menu_faction_member_7">Leave</string>
+    <string name="menu_faction_member_8">Picture</string>
+
+    <string name="menu_charclasses_0">Character</string>
+    <string name="menu_charclasses_1">Vampire</string>
+    <string name="menu_charclasses_2">Dwarf</string>
+    <string name="menu_charclasses_3">Archer</string>
+    <string name="menu_charclasses_4">Wizard</string>
+    <string name="menu_charclasses_5">Sniper</string>
+    <string name="menu_charclasses_6">Mermaid</string>
+    <string name="menu_charclasses_7">Elf</string>
+    <string name="menu_charclasses_8">Warrior</string>
+
+
+    <string name="username">username</string>
+    <string name="splash_normal">Normal</string>
+    <string name="splash_rocket_game">Rocket game</string>
+
+</resources>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="1dp"
+    android:screenOrientation="sensorLandscape">
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRowFactionLogTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:gravity="center_horizontal"
+        android:text="@android:string/dialog_alert_title"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewRowFactionLogContent" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRowFactionLogContent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="2dp"
+        android:gravity="center_vertical"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline212"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.83" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRowFactionLogName"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:textStyle="bold"
+        android:layout_marginStart="4dp"
+        android:gravity="center"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewRowFactionLogTime"
+        app:layout_constraintStart_toEndOf="@+id/textViewRowFactionLogTime"
+        app:layout_constraintTop_toTopOf="@+id/textViewRowFactionLogTime" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

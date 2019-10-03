@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/homeLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/layoutHome"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/Story"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:background="@null"
+        app:layout_constraintBottom_toTopOf="@+id/guideline114"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline111"
+        app:layout_constraintRight_toLeftOf="@+id/guideline112"
+        app:layout_constraintTop_toTopOf="@+id/guideline113"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline111"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.41" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline112"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.52" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline113"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.39" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline114"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.66" />
+
+    <Button
+        android:id="@+id/Character"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/guideline118"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline115"
+        app:layout_constraintRight_toLeftOf="@+id/guideline116"
+        app:layout_constraintTop_toTopOf="@+id/guideline117"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline115"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.19" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline116"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.27" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline117"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.26" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline118"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.76" />
+
+    <Button
+        android:id="@+id/Shop"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/guideline1112"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline119"
+        app:layout_constraintRight_toLeftOf="@+id/guideline1110"
+        app:layout_constraintTop_toTopOf="@+id/guideline1111"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline119"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.04" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1110"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.12" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline227"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.09" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1111"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.45" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1112"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.69" />
+
+    <Button
+        android:id="@+id/Hatch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/guideline1116"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline1113"
+        app:layout_constraintRight_toLeftOf="@+id/guideline1114"
+        app:layout_constraintTop_toTopOf="@+id/guideline1115"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1113"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.35" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1114"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1115"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.66" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1116"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.78" />
+
+    <Button
+        android:id="@+id/Adventure"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/guideline1120"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline1117"
+        app:layout_constraintRight_toLeftOf="@+id/guideline1118"
+        app:layout_constraintTop_toTopOf="@+id/guideline1119"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1117"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.37" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1118"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.59" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1119"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.78" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1120"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <Button
+        android:id="@+id/Skills"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/guideline1124"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline1121"
+        app:layout_constraintRight_toLeftOf="@+id/guideline1122"
+        app:layout_constraintTop_toTopOf="@+id/guideline1123"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1121"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.68" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1122"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.76" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1123"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.26" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline225"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1124"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.69" />
+
+    <Button
+        android:id="@+id/SettingsHome"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/guideline1128"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline1125"
+        app:layout_constraintRight_toLeftOf="@+id/guideline1126"
+        app:layout_constraintTop_toTopOf="@+id/guideline1127"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1125"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.82" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1126"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1127"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.78" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1128"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.98" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewHomeStats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_basic_logincolor_dark_bottom"
+        android:paddingStart="15dp"
+        android:paddingTop="15dp"
+        android:paddingEnd="15dp"
+        android:paddingBottom="15dp"
+        android:text="TextView"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewExit"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewExit"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="2dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/exit"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline1126"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewExitLeave"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/left_arrow"
+        android:tint="@color/loginColor_2"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewExit"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/imageViewExit"
+        app:layout_constraintTop_toTopOf="@+id/imageViewExit"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <ImageView
+        android:id="@+id/imageViewHomeInbox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline225"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/email_icon" />
+
+    <Button
+        android:id="@+id/buttonHomeMarket"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_marginTop="8dp"
+        android:text="market"
+        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
+        app:layout_constraintStart_toStartOf="@+id/guideline119"
+        app:layout_constraintTop_toTopOf="@+id/guideline1124" />
+
+    <Button
+        android:id="@+id/buttonHomeFaction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_marginBottom="8dp"
+        android:text="faction"
+        app:layout_constraintBottom_toTopOf="@+id/guideline113"
+        app:layout_constraintEnd_toStartOf="@+id/guideline112"
+        app:layout_constraintStart_toStartOf="@+id/guideline111" />
+
+    <ImageView
+        android:id="@+id/imageViewHomeMailNew"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintDimensionRatio="H, 1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
+        app:layout_constraintStart_toStartOf="@+id/guideline227"
+        app:layout_constraintTop_toTopOf="@+id/imageViewHomeInbox"
+        app:srcCompat="@drawable/new_message_bg" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewHomeMailNew"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="@color/bg_basic_white"
+        android:text="1"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewHomeMailNew"
+        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
+        app:layout_constraintStart_toStartOf="@+id/imageViewHomeMailNew"
+        app:layout_constraintTop_toTopOf="@+id/imageViewHomeMailNew" />
+
+    <ImageView
+        android:id="@+id/imageViewHomeStatsCoin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewHomeStatsCoins"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/textViewHomeStats"
+        app:layout_constraintTop_toTopOf="@+id/textViewHomeStatsCoins"
+        app:srcCompat="@drawable/coin_basic" />
+
+    <TextView
+        android:id="@+id/textViewHomeStatsCoins"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="2dp"
+        android:text="TextView"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintStart_toEndOf="@+id/imageViewHomeStatsCoin"
+        app:layout_constraintTop_toTopOf="@+id/textViewHomeStats" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
