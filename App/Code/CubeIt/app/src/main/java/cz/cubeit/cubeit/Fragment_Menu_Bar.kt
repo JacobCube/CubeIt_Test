@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.os.Bundle
+import android.os.Handler
 import androidx.fragment.app.Fragment
 import android.util.DisplayMetrics
 import android.util.Log
@@ -166,36 +167,66 @@ class Fragment_Menu_Bar : Fragment() {
         this.refresh()
 
             view.buttonAdventure.setOnClickListener {
+                view.buttonAdventure.isEnabled = false
+                Handler().postDelayed({
+                    view.buttonAdventure.isEnabled = true
+                }, 150)
+
                 val intent = Intent(view.context, Adventure::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonFight.setOnClickListener {
+                view.buttonFight.isEnabled = false
+                Handler().postDelayed({
+                    view.buttonFight.isEnabled = true
+                }, 150)
+
                 val intent = Intent(view.context, ActivityFightBoard::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonDefence.setOnClickListener {
+                view.buttonDefence.isEnabled = false
+                Handler().postDelayed({
+                    view.buttonDefence.isEnabled = true
+                }, 150)
+
                 val intent = Intent(view.context, Spells::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonCharacter.setOnClickListener {
+                view.buttonCharacter.isEnabled = false
+                Handler().postDelayed({
+                    view.buttonCharacter.isEnabled = true
+                }, 150)
+
                 val intent = Intent(view.context, Activity_Character::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonSettings.setOnClickListener {
+                view.buttonSettings.isEnabled = false
+                Handler().postDelayed({
+                    view.buttonSettings.isEnabled = true
+                }, 150)
+
                 val intent = Intent(view.context, ActivitySettings::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)
             }
             view.buttonShop.setOnClickListener {
+                view.buttonShop.isEnabled = false
+                Handler().postDelayed({
+                    view.buttonShop.isEnabled = true
+                }, 150)
+
                 val intent = Intent(view.context, Activity_Shop::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)

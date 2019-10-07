@@ -48,6 +48,20 @@
         app:layout_constraintGuide_percent="0.52" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline194"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.53" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline193"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.51" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline113"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -387,6 +401,7 @@
     <Button
         android:id="@+id/buttonHomeFaction"
         android:layout_width="wrap_content"
+        android:stateListAnimator="@null"
         android:layout_height="wrap_content"
         style="@style/AppTheme.Button.Dark"
         android:layout_marginBottom="8dp"
@@ -400,11 +415,26 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="4dp"
+        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="H, 1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline1110"
         app:layout_constraintStart_toStartOf="@+id/guideline227"
         app:layout_constraintTop_toTopOf="@+id/imageViewHomeInbox"
         app:srcCompat="@drawable/new_message_bg" />
+
+    <ImageView
+        android:id="@+id/imageViewHomeFactionNew"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:visibility="gone"
+        android:adjustViewBounds="true"
+        app:layout_constraintDimensionRatio="H, 1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline194"
+        app:layout_constraintStart_toStartOf="@+id/guideline193"
+        app:layout_constraintTop_toTopOf="@+id/guideline225"
+        app:srcCompat="@drawable/new_message_bg"
+        tools:visibility="visible" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewHomeMailNew"
@@ -430,7 +460,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewHomeStatsCoins"
         app:srcCompat="@drawable/coin_basic" />
 
-    <TextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewHomeStatsCoins"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

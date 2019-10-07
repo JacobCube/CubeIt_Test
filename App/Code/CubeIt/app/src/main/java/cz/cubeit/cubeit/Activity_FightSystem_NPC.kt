@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
@@ -116,11 +117,11 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             override fun onAnimationEnd(animation: Animation) {
 
                 if(enemySpell.id != "0000" && playerSpell.id == "0000"){
-                    handler.postDelayed({
+                    Handler().postDelayed({
                         imageView.startAnimation(animationShieldResume)
                     }, 250)
                 }else if(enemySpell.id == "0000" && playerSpell.id != "0000"){
-                    handler.postDelayed({
+                    Handler().postDelayed({
                         spellFightEnemyNPC.alpha = 0f
                         spellFightEnemyNPC.startAnimation(animationShieldResume)
                     }, 250)
@@ -228,7 +229,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             alpha = 0.5f
         }
 
-        handler.postDelayed(
+        Handler().postDelayed(
                 {
                     Spell0NPC.apply {
                         isEnabled = true
@@ -458,7 +459,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({ hideSystemUI() }, 1000)
+                Handler().postDelayed({ hideSystemUI() }, 1000)
             }
         }
         val dm = DisplayMetrics()
@@ -857,7 +858,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
     private fun endOfFight(completed: Boolean, view: View) {
         fightEnded = true
 
-        val endFight = Intent(this, Adventure::class.java)
+        val endFight = Intent(this, Activity_Character::class.java)
         endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
         val window = PopupWindow(this)
@@ -919,13 +920,15 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 override fun onStartHold(x: Float, y: Float) {
                     super.onStartHold(x, y)
                     if(holdValid){
+                        viewP.textViewPopUpInfo.setHTMLText(reward!!.item!!.getStats())
+                        viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                        val coordinates = SystemFlow.resolveLayoutLocation(this@FightSystemNPC, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                         if(!Data.loadingActiveQuest && !windowPop.isShowing){
                             viewP.textViewPopUpInfo.setHTMLText(reward!!.item!!.getStatsCompare())
                             viewP.imageViewPopUpInfoItem.setBackgroundResource(reward!!.item!!.getBackground())
                             viewP.imageViewPopUpInfoItem.setImageResource(reward!!.item!!.drawable)
 
-
-                            val coordinates = SystemFlow.resolveLayoutLocation(this@FightSystemNPC, x, y, viewP.width, viewP.height)
                             windowPop.showAsDropDown(this@FightSystemNPC.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                         }
                     }

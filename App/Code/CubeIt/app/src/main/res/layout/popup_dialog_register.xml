@@ -23,6 +23,7 @@
         android:id="@+id/textViewPopRegisterError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:text="Given username already exist."
         android:textColor="@color/red_error"
         android:visibility="gone"
@@ -75,23 +76,23 @@
         android:id="@+id/editTextPopRegisterName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:ems="10"
         android:hint="@string/username"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/textViewPopRegisterError"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline26" />
 
     <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/customTextView"
+        android:id="@+id/textViewPopRegisterTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:text="How shall we address you?"
         android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline26"
         app:layout_constraintEnd_toStartOf="@+id/guideline27"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/buttonCloseDialogRegister" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

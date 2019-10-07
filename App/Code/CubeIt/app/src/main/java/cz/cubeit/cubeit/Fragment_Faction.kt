@@ -69,7 +69,7 @@ class Fragment_Faction: Fragment(){
     }
 
     override fun onDestroyView() {
-        super.onDestroy()
+        super.onDestroyView()
         logClosed = true
     }
 
@@ -95,7 +95,6 @@ class Fragment_Faction: Fragment(){
                                 val docRef = db.collection("factions").document(Data.player.factionID!!.toString())
                                 Data.factionSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                                     if (e != null) {
-                                        Log.w("Faction listener", "Listen failed.", e)
                                         return@addSnapshotListener
                                     }
 
@@ -105,23 +104,29 @@ class Fragment_Faction: Fragment(){
                                         "Server"
 
                                     if (snapshot != null && snapshot.exists()) {
-                                        Log.d("Faction listener", "$source data: ${snapshot.data}")
                                         val newFaction = snapshot.toObject(Faction::class.java)
                                         if(newFaction == null) activity!!.finish()
+                                        newFaction?.actionLog?.sortByDescending { it.captured }
+                                        Data.player.faction?.actionLog?.sortByDescending { it.captured }
 
                                         if(Data.player.faction != null && Data.player.faction == newFaction!!){
                                             currentInstanceOfFaction = Data.player.faction
                                         }else {
+                                            if(newFaction?.actionLog != currentInstanceOfFaction?.actionLog){
+                                                Data.factionLogChanged = true
+                                                viewTemp.imageViewFactionLogNew.visibility = View.VISIBLE
+                                            }
+
                                             currentInstanceOfFaction = newFaction
                                             Data.player.faction = newFaction
                                         }
                                         if(isAdded && isVisible)init()
-                                        if(Data.player.faction != newFaction!! && !isVisible)SystemFlow.factionChange = true
+                                        if(Data.player.faction != newFaction!! && !isVisible){
+                                            SystemFlow.factionChange = true
+                                        }
 
                                         (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
 
-                                    } else {
-                                        Log.d("Faction listener", "$source data: null n error")
                                     }
                                 }
                             }
@@ -186,6 +191,7 @@ class Fragment_Faction: Fragment(){
         viewTemp.textViewFactionTitle.text = currentInstanceOfFaction!!.name
 
         if(myFaction){
+            Log.d("factionLogChanged", Data.factionLogChanged.toString())
             viewTemp.imageViewFactionLogNew.visibility = if(Data.factionLogChanged){
                 View.VISIBLE
             }else {
@@ -260,8 +266,6 @@ class Fragment_Faction: Fragment(){
         viewTemp.imageViewFactionOpenLog.setOnClickListener {
             viewTemp.imageViewFactionLogNew.visibility = View.GONE
             Data.factionLogChanged = false
-            Data.player.faction!!.actionLog.sortByDescending { it.captured }
-            SystemFlow.writeObject(viewTemp.context, "factionLog${Data.player.username}.data", Data.player.faction!!.actionLog.first())
             viewTemp.imageViewFactionOpenLog.bringToFront()
 
             if(logClosed){

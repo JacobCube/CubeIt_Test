@@ -13,6 +13,7 @@ import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.os.Handler
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
@@ -127,11 +128,13 @@ class FragmentLogin : Fragment() {
             }
 
             override fun onAnimationEnd(animation: Animation?) {
+                viewTemp.buttonLoginDiffAcc.visibility = View.VISIBLE
                 viewTemp.imageViewLoginLoading.visibility = View.GONE
                 viewTemp.loginPopUpBackground.foreground.alpha = 0
             }
 
             override fun onAnimationStart(animation: Animation?) {
+                viewTemp.buttonLoginDiffAcc.visibility = View.GONE
                 viewTemp.loginPopUpBackground.bringToFront()
                 viewTemp.imageViewLoginLoading.bringToFront()
                 viewTemp.imageViewLoginLoading.visibility = View.VISIBLE
@@ -142,6 +145,9 @@ class FragmentLogin : Fragment() {
         mGoogleSignInClient!!.silentSignIn().addOnSuccessListener {
             firebaseAuthWithGoogle(it)
             Snackbar.make(viewTemp, "Welcome back!", Snackbar.LENGTH_SHORT).show()
+        }.addOnFailureListener {
+            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            if(cm.activeNetworkInfo?.isConnected == false) Snackbar.make(viewTemp, "Connection problem occurred.", Snackbar.LENGTH_SHORT).show()
         }
 
         viewTemp.imageViewLoginGoogleSignIn.setOnClickListener {
@@ -172,7 +178,7 @@ class FragmentLogin : Fragment() {
 
                                         if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE) {
                                             Activity_Splash_Screen().closeLoading()
-                                            handler.postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", viewTemp.context) }, 100)
+                                            Handler().postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", viewTemp.context) }, 100)
                                         }
 
                                         if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE) {
@@ -235,7 +241,7 @@ class FragmentLogin : Fragment() {
                 }
             } else {
                 viewTemp.buttonLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
-                handler.postDelayed({ Snackbar.make(viewTemp, "Your device is not connected to the internet. Please check your connection and try again.", Snackbar.LENGTH_SHORT).show() }, 50)
+                Handler().postDelayed({ Snackbar.make(viewTemp, "Your device is not connected to the internet. Please check your connection and try again.", Snackbar.LENGTH_SHORT).show() }, 50)
             }
         }
 
@@ -347,7 +353,7 @@ class FragmentLogin : Fragment() {
 
                             mAuth!!.signInWithCredential(credential)
                                     .addOnCompleteListener(activity!!) { task ->
-                                        handler.postDelayed({if(loadingAnimation != null)  loadingAnimation!!.cancel() }, 100)
+                                        Handler().postDelayed({if(loadingAnimation != null)  loadingAnimation!!.cancel() }, 100)
                                         startActivity(intentSplash)
                                         if (task.isSuccessful) {
                                             // Sign in success, update UI with the signed-in user's information
@@ -361,7 +367,7 @@ class FragmentLogin : Fragment() {
                                                         Data.loadGlobalData(activity!!).addOnSuccessListener {
                                                             if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE) {
                                                                 Activity_Splash_Screen().closeLoading()
-                                                                handler.postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", activity!!) }, 100)
+                                                                Handler().postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", activity!!) }, 100)
                                                             } else {
                                                                 signInToUser(user, activity!!)
                                                             }
@@ -436,6 +442,7 @@ class FragmentLogin : Fragment() {
                                                 viewTemp.loginPopUpBackground.foreground.alpha = 150
                                             }
                                             viewP.textViewPopRegisterError.visibility = View.VISIBLE
+                                            viewP.textViewPopRegisterError.text = "Given username already exist."
                                             viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity!!, R.anim.animation_shaky_short))
 
                                         } else {
@@ -460,8 +467,6 @@ class FragmentLogin : Fragment() {
                                                             Data.loadingStatus = LoadingStatus.CLOSELOADING
                                                         }
                                                     }
-                                                    //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
-
 
                                                 }.addOnFailureListener {
                                                     Data.loadingStatus = LoadingStatus.CLOSELOADING
@@ -473,12 +478,14 @@ class FragmentLogin : Fragment() {
                                     }
                                 } else {
                                     viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity!!, R.anim.animation_shaky_short))
+                                    viewP.textViewPopRegisterError.visibility = View.VISIBLE
+                                    viewP.textViewPopRegisterError.text = getString(R.string.register_username)
                                 }
                             }
                             popWindow!!.showAtLocation(viewTemp, Gravity.CENTER, 0, 0)
                             viewTemp.loginPopUpBackground.bringToFront()
                             viewTemp.loginPopUpBackground.foreground.alpha = 150
-                            handler.postDelayed({
+                            Handler().postDelayed({
                                 viewTemp.loginPopUpBackground.foreground.alpha = 150
                             }, 50)
                         }

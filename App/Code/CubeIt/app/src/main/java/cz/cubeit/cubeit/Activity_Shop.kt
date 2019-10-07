@@ -3,13 +3,16 @@ package cz.cubeit.cubeit
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.view.*
@@ -17,17 +20,16 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_shop.*
-import kotlinx.android.synthetic.main.activity_shop.textViewInfoItem
+import kotlinx.android.synthetic.main.activity_shop.textViewShopItemInfo
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_shop_inventory.view.*
 import kotlinx.android.synthetic.main.row_shop_offer.view.*
-
-var lastClicked = ""
 
 class Activity_Shop : AppCompatActivity(){
 
     private var hidden = false
     var displayY = 0.0
+    var lastClicked = ""
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -66,6 +68,11 @@ class Activity_Shop : AppCompatActivity(){
         return super.dispatchTouchEvent(ev)
     }
 
+    fun refreshListViews(){
+        (listViewShopOffers.adapter as ShopOffer).notifyDataSetChanged()
+        (listViewShopInventory.adapter as ShopInventory).notifyDataSetChanged()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemUI()
@@ -84,7 +91,7 @@ class Activity_Shop : AppCompatActivity(){
         val animDownText: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_shop_text_down)
 
-        textViewInfoItem.startAnimation(animDownText)
+        textViewShopItemInfo.startAnimation(animDownText)
         val originalCoinY = imageViewShopCoin.y
 
         val dm = DisplayMetrics()
@@ -97,13 +104,16 @@ class Activity_Shop : AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
 
-        listViewShopInventory.adapter = ShopInventory(hidden, animUpText, animDownText, Data.player, textViewInfoItem, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewShopInventory, textViewShopMoney)
-        listViewShopOffers.adapter = ShopOffer(hidden, animUpText, animDownText, Data.player, textViewInfoItem, listViewShopInventory.adapter as ShopInventory, this, textViewShopMoney, listViewShopInventory)
+        listViewShopInventory.adapter = ShopInventory(this, Data.player, textViewShopItemInfo, layoutInflater.inflate(R.layout.popup_dialog,null), this, listViewShopInventory, textViewShopMoney)
+        listViewShopOffers.adapter = ShopOffer(this, Data.player, textViewShopItemInfo, listViewShopInventory.adapter as ShopInventory, this, textViewShopMoney, listViewShopInventory)
         listViewShopOffers.layoutParams.width = (displayY * 0.87).toInt()
+        listViewShopInventory.setOnDragListener(inventoryShopDragListener)
+
+        listViewShopOffers.setOnDragListener(shopOfferDragListener)
 
         var animationRefresh = ValueAnimator()
 
@@ -151,7 +161,15 @@ class Activity_Shop : AppCompatActivity(){
             }
         }
     }
-    private class ShopInventory(var hidden:Boolean, val animUpText:Animation, val animDownText:Animation, val playerS:Player, val textViewInfoItem: CustomTextView, val viewInflater:View, val context:Context, val listView:ListView, val textViewMoney:TextView) : BaseAdapter() {
+    private class ShopInventory(
+            val parent: Activity_Shop,
+            val playerS:Player,
+            val textViewInfoItem: CustomTextView,
+            val viewInflater:View,
+            val context:Context,
+            val listView:ListView,
+            val textViewMoney:TextView
+    ) : BaseAdapter() {
 
         override fun getCount(): Int {
             return playerS.inventorySlots / 4 + 1
@@ -190,29 +208,61 @@ class Activity_Shop : AppCompatActivity(){
                         if(playerS.inventory[this.index] != null){
                             component.setImageResource(playerS.inventory[this.index]!!.drawable)
                             component.setBackgroundResource(playerS.inventory[this.index]!!.getBackground())
+                            component.isClickable = true
                             component.isEnabled = true
                         }else{
                             component.setImageResource(0)
                             component.setBackgroundResource(R.drawable.emptyslot)
-                            component.isEnabled = false
+                            component.isClickable = false
                         }
+                        component.background.clearColorFilter()
                     }else{
+                        component.isClickable = false
                         component.isEnabled = false
                         component.setBackgroundResource(0)
                         component.setImageResource(0)
                     }
 
+                    component.tag = this.index.toString()
+                    component.setOnDragListener(parent.inventoryShopDragListener)
+
                     component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
                         override fun onClick() {
                             super.onClick()
-                            //if(!hidden && lastClicked==="inventory0$position"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-                            lastClicked="inventory${this@Node.index}$position"
-                            textViewInfoItem.setHTMLText(playerS.inventory[this@Node.index]?.getStatsCompare()!!)
+                            textViewInfoItem.setHTMLText(playerS.inventory[this@Node.index]?.getStatsCompare() ?: "")
                         }
 
                         override fun onDoubleClick() {
                             super.onDoubleClick()
-                            getDoubleClick(this@Node.index, context, viewInflater, listView, playerS, textViewMoney, textViewInfoItem)
+                            getDoubleClick(this@Node.index, context, viewInflater, listView, textViewMoney, textViewInfoItem)
+                        }
+
+                        override fun onLongClick() {
+                            super.onLongClick()
+                            textViewInfoItem.setHTMLText(playerS.inventory[this@Node.index]?.getStatsCompare()!!)
+
+                            if(Data.player.shopOffer[this@Node.index] != null){
+                                val item = ClipData.Item(this@Node.index.toString())
+
+                                // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                                // the already-created item. This will create a new ClipDescription object within the
+                                // ClipData, and set its MIME type entry to "text/plain"
+                                val dragData = ClipData(
+                                        "inventory-shop",
+                                        arrayOf(this@Node.index.toString()),
+                                        item)
+
+                                // Instantiates the drag shadow builder.
+                                val myShadow = ItemDragListener(component)
+
+                                // Starts the drag
+                                component.startDrag(
+                                        dragData,   // the data to be dragged
+                                        myShadow,   // the drag shadow builder
+                                        null,       // no need to use local data
+                                        0           // flags (not currently used, set to 0)
+                                )
+                            }
                         }
                     })
                 }
@@ -230,9 +280,7 @@ class Activity_Shop : AppCompatActivity(){
     }
 
     private class ShopOffer(
-            var hidden:Boolean,
-            val animUpText: Animation,
-            val animDownText: Animation,
+            val parent: Activity_Shop,
             val player:Player,
             val textViewInfoItem: CustomTextView,
             val InventoryShop:BaseAdapter,
@@ -285,19 +333,41 @@ class Activity_Shop : AppCompatActivity(){
                         }
                     }else this.component.isClickable = false
 
+                    component.tag = this.index.toString()
+
                     component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
                         override fun onClick() {
                             super.onClick()
-                            lastClicked="offer${this@Node.index}$position"
                             textViewInfoItem.setHTMLText(Data.player.shopOffer[this@Node.index]?.getStatsCompare(true)!!)
                         }
 
-                        override fun onDoubleClick() {
-                            super.onDoubleClick()
-                            component.isPressed = false
-                            getDoubleClickOffer(this@Node.index, player, textViewInfoItem, textViewMoney, inventory)
-                            notifyDataSetChanged()
-                            InventoryShop.notifyDataSetChanged()
+                        override fun onLongClick() {
+                            super.onLongClick()
+
+                            textViewInfoItem.setHTMLText(Data.player.shopOffer[this@Node.index]?.getStatsCompare(true)!!)
+
+                            if(Data.player.shopOffer[this@Node.index] != null){
+                                val item = ClipData.Item(this@Node.index.toString())
+
+                                // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                                // the already-created item. This will create a new ClipDescription object within the
+                                // ClipData, and set its MIME type entry to "text/plain"
+                                val dragData = ClipData(
+                                        "offer",
+                                        arrayOf(this@Node.index.toString()),
+                                        item)
+
+                                // Instantiates the drag shadow builder.
+                                val myShadow = ItemDragListener(component)
+
+                                // Starts the drag
+                                component.startDrag(
+                                        dragData,   // the data to be dragged
+                                        myShadow,   // the drag shadow builder
+                                        null,       // no need to use local data
+                                        0           // flags (not currently used, set to 0)
+                                )
+                            }
                         }
                     })
                 }
@@ -314,7 +384,7 @@ class Activity_Shop : AppCompatActivity(){
     }
 
     companion object {
-        private fun getDoubleClick(index:Int, context:Context, view:View, listViewInventoryShop:ListView, player:Player, textViewMoney:TextView, textViewInfoItem:TextView){
+        private fun getDoubleClick(index:Int, context:Context, view:View, listViewInventoryShop:ListView, textViewMoney:TextView, textViewInfoItem:TextView){
             val window = PopupWindow(context)
             window.contentView = view
             val buttonYes:Button = view.buttonYes
@@ -338,14 +408,14 @@ class Activity_Shop : AppCompatActivity(){
             window.showAtLocation(view, Gravity.CENTER,0,0)
         }
 
-        private fun getDoubleClickOffer(index:Int, player:Player, textViewInfoItem:TextView, textViewMoney: TextView, listViewInventoryShop: ListView){
+        private fun getDoubleClickOffer(index: Int, viewIndex: Int, textViewInfoItem:TextView, textViewMoney: TextView, listViewInventoryShop: ListView){
             if(Data.player.cubeCoins >= Data.player.shopOffer[index]!!.priceCubeCoins && Data.player.cubix >= Data.player.shopOffer[index]!!.priceCubix){
-                if(Data.player.inventory.contains(null)){
+                if(Data.player.inventory[viewIndex] == null){
                     Data.player.cubeCoins -= Data.player.shopOffer[index]!!.priceCubeCoins
                     textViewMoney.text = Data.player.cubeCoins.toString()
                     Data.player.shopOffer[index]!!.priceCubeCoins /= 2
-                    Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.shopOffer[index]
-                    Data.player.shopOffer[index] = GameFlow.generateItem(player)
+                    Data.player.inventory[viewIndex] = Data.player.shopOffer[index]
+                    Data.player.shopOffer[index] = GameFlow.generateItem(Data.player)
                     textViewInfoItem.visibility = View.INVISIBLE
                 }else{
                     listViewInventoryShop.startAnimation(AnimationUtils.loadAnimation(textViewMoney.context, R.anim.animation_shaky_short))
@@ -354,6 +424,166 @@ class Activity_Shop : AppCompatActivity(){
             }else{
                 textViewMoney.startAnimation(AnimationUtils.loadAnimation(textViewMoney.context, R.anim.animation_shaky_short))
                 //Snackbar.make(textViewInfoItem, "Not enough cube coins!", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val inventoryShopDragListener = View.OnDragListener { v, event ->               //used in Fragment_Board_Character_Profile
+        val itemIndex: Int
+        val item: Item?
+
+        when (event.action) {
+            DragEvent.ACTION_DRAG_STARTED -> {
+                if (event.clipDescription.label == "offer") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.shopOffer[itemIndex]
+                    val viewIndex = v?.tag?.toString()?.toIntOrNull()
+
+                    if(item != null && viewIndex != null && Data.player.inventory[viewIndex] == null) {
+                        v.background?.setColorFilter(this.resources.getColor(R.color.loginColor_2), PorterDuff.Mode.SRC_ATOP)
+                        v.invalidate()
+
+                        true
+                    }else Data.player.inventory.contains(null)
+
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_ENTERED -> {
+                if (event.clipDescription.label == "offer") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.shopOffer[itemIndex]
+                    val viewIndex = v?.tag?.toString()?.toIntOrNull()
+
+                    if(item != null && viewIndex != null && Data.player.inventory[viewIndex] == null) {
+                        v.background?.setColorFilter(Color.YELLOW, PorterDuff.Mode.SRC_ATOP)
+                        v.invalidate()
+
+                        true
+                    }else Data.player.inventory.contains(null)
+
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_EXITED -> {
+                if (event.clipDescription.label == "offer") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.shopOffer[itemIndex]
+                    val viewIndex = v?.tag?.toString()?.toIntOrNull()
+
+                    if(item != null && viewIndex != null && Data.player.inventory[viewIndex] == null) {
+                        v.background?.setColorFilter(this.resources.getColor(R.color.loginColor_2), PorterDuff.Mode.SRC_ATOP)
+                        v.invalidate()
+
+                        true
+                    }else Data.player.inventory.contains(null)
+
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DROP -> {
+                if (event.clipDescription.label == "offer") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.shopOffer[itemIndex]
+                    val viewIndex = v?.tag?.toString()?.toIntOrNull()
+
+                    if(item != null){
+                        if(viewIndex != null && Data.player.inventory[viewIndex] == null) {
+                            (v as ImageView?)?.background?.clearColorFilter()
+                            v.invalidate()
+
+                            getDoubleClickOffer(itemIndex, viewIndex, textViewShopItemInfo, textViewShopMoney, listViewShopInventory)
+
+                            true
+                        }else if(Data.player.inventory.contains(null)){
+                            getDoubleClickOffer(itemIndex, Data.player.inventory.indexOf(null), textViewShopItemInfo, textViewShopMoney, listViewShopInventory)
+
+                            true
+                        }else false
+                    } else false
+
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DRAG_ENDED -> {
+                v.post {
+                    this.refreshListViews()
+                }
+
+                true
+            }
+            else -> {
+                false
+            }
+        }
+    }
+
+    val shopOfferDragListener = View.OnDragListener { v, event ->               //used in Fragment_Board_Character_Profile
+        val itemIndex: Int
+        val item: Item?
+
+        when (event.action) {
+            DragEvent.ACTION_DRAG_STARTED -> {
+                if (event.clipDescription.label == "inventory-shop") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+                    item != null
+
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_ENTERED -> {
+                if (event.clipDescription.label == "inventory-shop") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+                    item != null
+
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_EXITED -> {
+                if (event.clipDescription.label == "inventory-shop") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+                    item != null
+
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DROP -> {
+                if (event.clipDescription.label == "inventory-shop") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null) {
+
+                        getDoubleClick(itemIndex, this, layoutInflater.inflate(R.layout.popup_dialog,null), listViewShopInventory, textViewShopMoney, textViewShopItemInfo)
+
+                        true
+                    }else false
+
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DRAG_ENDED -> {
+                this.refreshListViews()
+
+                true
+            }
+            else -> {
+                false
             }
         }
     }

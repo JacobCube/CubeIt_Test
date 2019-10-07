@@ -25,16 +25,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
         android:text="text\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\n"
         android:textSize="18sp"
         app:layout_constraintDimensionRatio="H,"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.4"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewPopUpInfoBg"
         app:layout_constraintStart_toEndOf="@+id/imageViewPopUpInfoItem"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/imageViewPopUpInfoPin" />
 
     <ImageView
         android:id="@+id/imageViewPopUpInfoItem"
@@ -52,6 +50,36 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.5" />
+        app:layout_constraintGuide_percent="0.37" />
+
+    <TextView
+        android:id="@+id/textViewPopUpInfoDrag"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:lines="2"
+        android:text=" "
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline191"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewPopUpInfoPin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:visibility="gone"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline191"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/pin_icon" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline191"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.88" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,6 +16,7 @@ open class Class_HoldTouchListener(val externalView: View, val isActivity: Boole
     var originalY: Float = 0f
 
     var validDoubleClick = false
+    var longClickHandler = Handler()
 
     init {
         externalView.post {
@@ -25,19 +26,26 @@ open class Class_HoldTouchListener(val externalView: View, val isActivity: Boole
     }
 
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+        if(!externalView.isClickable){
+            return false
+        }
+
         when(motionEvent.action){
             MotionEvent.ACTION_DOWN -> {
                 initialTouchX = motionEvent.rawX
                 initialTouchY = motionEvent.rawY
 
+                Handler().removeCallbacksAndMessages(null)
+
+                externalView.isPressed = true
                 percent = (externalView.width.toDouble() / 100)
-                Log.d("holdListener 1 perc.", percent.toString())
 
                 onStartHold(motionEvent.rawX, motionEvent.rawY)
                 clickableTemp = true
                 Handler().postDelayed({             //enable user to just preview the view, not click it, so we need to make a delay to recognize user's preview
                     clickableTemp = false
                 }, 100)
+
             }
             MotionEvent.ACTION_UP -> {
                 onCancelHold()
@@ -46,9 +54,11 @@ open class Class_HoldTouchListener(val externalView: View, val isActivity: Boole
                 if(clickableTemp) onClick()
             }
             MotionEvent.ACTION_OUTSIDE -> {
-                    onCancelHold()
+                externalView.isPressed = false
+                onCancelHold()
             }
             MotionEvent.ACTION_CANCEL -> {
+                externalView.isPressed = false
                 onCancelHold()
                 onCancelMove()
             }
@@ -67,14 +77,12 @@ open class Class_HoldTouchListener(val externalView: View, val isActivity: Boole
                     if(externalView.x >= displayX - displayX * 0.01 || (motionEvent.rawX >= displayX - displayX * 0.01 && (motionEvent.rawX - initialTouchX) > externalView.width * 0.25)){
                         onSuccessSwipe()
                     }
-
-                    Log.d("holdlistener_alpha", (1 - (reachedPercentage / 100)).toString())
                     //externalView.alpha = 1 - (reachedPercentage / 100).toFloat()
                 }
                 onMove()
             }
         }
-        return true
+        return externalView.isClickable
     }
 
     open fun onCancelMove(){
@@ -102,7 +110,7 @@ open class Class_HoldTouchListener(val externalView: View, val isActivity: Boole
         validDoubleClick = true
         Handler().postDelayed({
             validDoubleClick = false
-        }, 150)
+        }, 200)
     }
 
     open fun onDoubleClick(){

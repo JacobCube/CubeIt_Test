@@ -5,9 +5,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.Handler
 import androidx.core.content.ContextCompat.startActivity
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
@@ -25,6 +28,11 @@ import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.popup_info_dialog.view.*
 import kotlinx.android.synthetic.main.row_market_items.view.*
 import java.text.SimpleDateFormat
+import android.provider.SyncStateContract.Helpers.update
+import android.view.MotionEvent
+import android.view.View.OnTouchListener
+import androidx.core.content.ContextCompat.getDrawable
+
 
 class Activity_Market:AppCompatActivity(){
 
@@ -107,7 +115,7 @@ class Activity_Market:AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
         frameLayoutMarket = frameLayoutMarketRegisterOffer
@@ -133,7 +141,7 @@ class Activity_Market:AppCompatActivity(){
             }
         })
 
-        docRef.orderBy("creationTime", Query.Direction.DESCENDING).limit(25).get().addOnCompleteListener {
+        docRef.whereEqualTo("itemClass", Data.player.charClassIndex).orderBy("creationTime", Query.Direction.DESCENDING).limit(25).get().addOnCompleteListener {
             if(it.isSuccessful){
                 itemsList = it.result!!.toObjects(MarketOffer::class.java)
             }
@@ -173,27 +181,27 @@ class Activity_Market:AppCompatActivity(){
 
             filterPrice = when(filterPrice){            //sorting by cubix asc/desc first 2 clicks, continues sorting by cubecoins - resets
                 0 -> {
-                    textViewMarketBarPrice.text = "priceCubeCoins " + String(Character.toChars(0x25BC))
+                    textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25BC))
                     itemsList.sortByDescending{ it.priceCoins }
                     1
                 }
                 1 -> {
-                    textViewMarketBarPrice.text = "priceCubeCoins " + String(Character.toChars(0x25B2))
+                    textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25B2))
                     itemsList.sortBy{ it.priceCoins }
                     2
                 }
                 2 -> {
-                    textViewMarketBarPrice.text = "priceCubeCoins " + String(Character.toChars(0x25BC)) + String(Character.toChars(0x25BC))
+                    textViewMarketBarPrice.text = "Cubix " + String(Character.toChars(0x25BC)) + String(Character.toChars(0x25BC))
                     itemsList.sortByDescending{ it.priceCubeCoins }
                     3
                 }
                 3 -> {
-                    textViewMarketBarPrice.text = "priceCubeCoins " + String(Character.toChars(0x25B2)) + String(Character.toChars(0x25B2))
+                    textViewMarketBarPrice.text = "Cubix " + String(Character.toChars(0x25B2)) + String(Character.toChars(0x25B2))
                     itemsList.sortBy{ it.priceCubeCoins }
                     0
                 }
                 else -> {
-                    textViewMarketBarPrice.text = "priceCubeCoins " + String(Character.toChars(0x25BC))
+                    textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25BC))
                     itemsList.sortByDescending{ it.priceCoins }
                     1
                 }
@@ -202,8 +210,8 @@ class Activity_Market:AppCompatActivity(){
         }
 
         textViewMarketBarDate.setOnClickListener {
-            if(textViewMarketBarPrice.text.toString() != "priceCubeCoins"){
-                textViewMarketBarPrice.text = "priceCubeCoins"
+            if(textViewMarketBarPrice.text.toString() != "CC"){
+                textViewMarketBarPrice.text = "CC"
                 filterPrice = 0
             }
             if(textViewMarketBarItem.text.toString() != "item"){
@@ -224,8 +232,8 @@ class Activity_Market:AppCompatActivity(){
         }
 
         textViewMarketBarItem.setOnClickListener {
-            if(textViewMarketBarPrice.text.toString() != "priceCubeCoins"){
-                textViewMarketBarPrice.text = "priceCubeCoins"
+            if(textViewMarketBarPrice.text.toString() != "CC"){
+                textViewMarketBarPrice.text = "CC"
                 filterPrice = 0
             }
             if(textViewMarketBarDate.text.toString() != "exp. date"){
@@ -254,25 +262,25 @@ class Activity_Market:AppCompatActivity(){
             ArrayAdapter.createFromResource(
                     this,
                     R.array.charclasses,
-                    R.layout.spinner_market_item
+                    R.layout.spinner_inbox_item
             ).also { adapter ->
-                adapter.setDropDownViewResource(R.layout.spinner_market_item)
+                adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
                 viewPop.spinnerMarketClass.adapter = adapter
             }
             ArrayAdapter.createFromResource(
                     this,
                     R.array.item_types,
-                    R.layout.spinner_market_item
+                    R.layout.spinner_inbox_item
             ).also { adapter ->
-                adapter.setDropDownViewResource(R.layout.spinner_market_item)
+                adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
                 viewPop.spinnerMarketType.adapter = adapter
             }
             ArrayAdapter.createFromResource(
                     this,
                     R.array.item_quality,
-                    R.layout.spinner_market_item
+                    R.layout.spinner_inbox_item
             ).also { adapter ->
-                adapter.setDropDownViewResource(R.layout.spinner_market_item)
+                adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
                 viewPop.spinnerMarketQuality.adapter = adapter
             }
 
@@ -491,30 +499,78 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
         viewHolder.textViewMarketUntilDate.text = SimpleDateFormat("yyyy/MM/dd").format(itemsListAdapter[position].expiryDate).toString()
         viewHolder.textViewMarketSeller.text = itemsListAdapter[position].seller
 
-        val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)//layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+        val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
         val windowPop = PopupWindow(activity)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        var viewPinned = false
+        var dx = 0
+        var dy = 0
+        var x = 0
+        var y = 0
+
+        viewP.imageViewPopUpInfoPin.visibility = View.VISIBLE
+        viewP.imageViewPopUpInfoPin.setOnClickListener {
+            viewPinned = if(viewPinned){
+                windowPop.dismiss()
+                viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
+                false
+            }else {
+                val drawable = activity.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
+                drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
+                viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
+                true
+            }
+        }
+
+        viewP.textViewPopUpInfoDrag.setOnTouchListener { view, motionEvent ->
+            when (motionEvent.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dx = motionEvent.x.toInt()
+                    dy = motionEvent.y.toInt()
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    x = motionEvent.rawX.toInt()
+                    y = motionEvent.rawY.toInt()
+                    windowPop.update(x - dx, y - dy, -1, -1)
+                }
+                MotionEvent.ACTION_UP -> {
+                    windowPop.dismiss()
+                    val xOff = if(x - dx <= 0){
+                        5
+                    } else {
+                        x -dx
+                    }
+                    val yOff = if(y - dy <= 0){
+                        5
+                    } else {
+                        y -dy
+                    }
+                    windowPop.showAsDropDown(activity.window.decorView.rootView, xOff, yOff)
+                }
+            }
+            true
+        }
 
         viewHolder.imageViewMarketItem.setOnTouchListener(object: Class_HoldTouchListener(viewHolder.imageViewMarketItem, false, 0f, false){
 
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
-                if(!windowPop.isShowing){
+                if(!windowPop.isShowing && !viewPinned){
+                    viewP.textViewPopUpInfo.setHTMLText(itemsListAdapter[position].item!!.getStats())
+                    viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                    val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                     viewP.textViewPopUpInfo.setHTMLText(itemsListAdapter[position].item!!.getStatsCompare())
                     viewP.imageViewPopUpInfoItem.setImageResource(itemsListAdapter[position].item!!.drawable)
                     viewP.imageViewPopUpInfoItem.setBackgroundResource(itemsListAdapter[position].item!!.getBackground())
-                    windowPop.showAsDropDown(
-                            viewHolder.imageViewMarketItem,
-                            viewHolder.imageViewMarketItem.x.toInt() + viewHolder.imageViewMarketItem.width / 2,
-                            viewHolder.imageViewMarketItem.y.toInt() + viewHolder.imageViewMarketItem.height + 10
-                    )
+                    windowPop.showAsDropDown(activity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                 }
             }
 
             override fun onCancelHold() {
                 super.onCancelHold()
-                if(windowPop.isShowing) windowPop.dismiss()
+                if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
             }
         })
         viewHolder.imageViewMarketItem.setOnClickListener {

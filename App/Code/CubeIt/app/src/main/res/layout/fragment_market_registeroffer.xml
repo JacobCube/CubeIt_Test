@@ -35,7 +35,7 @@
         android:nextFocusForward="@+id/spinnerInboxCategory"
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline187"
         app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterItem" />
@@ -56,7 +56,7 @@
         android:nextFocusForward="@+id/editTextBoardPosition"
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
         app:layout_constraintTop_toTopOf="@+id/imageViewMarketRegisterItem" />
 
@@ -76,7 +76,7 @@
         android:nextFocusForward="@+id/editTextBoardPosition"
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketRegisterCoins" />
 
@@ -98,7 +98,7 @@
         android:nextFocusForward="@+id/editTextBoardPosition"
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
         app:layout_constraintTop_toBottomOf="@+id/checkBoxMarketRegister" />
@@ -121,7 +121,7 @@
         android:nextFocusForward="@+id/editTextBoardPosition"
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
         app:layout_constraintStart_toStartOf="@+id/editTextMarketRegisterLowerCoins"
@@ -161,6 +161,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:clickable="false"
         android:background="@drawable/emptyslot"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -173,9 +174,10 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
         android:divider="@null"
         android:dividerHeight="0sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline51"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline186"
         app:layout_constraintStart_toStartOf="@+id/guideline190"
         app:layout_constraintTop_toTopOf="parent" />

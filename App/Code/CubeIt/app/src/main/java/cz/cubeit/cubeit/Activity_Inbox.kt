@@ -17,6 +17,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.os.Handler
 import android.util.Log
 import com.google.android.material.shape.CutCornerTreatment
 import com.google.android.material.snackbar.Snackbar
@@ -99,10 +100,14 @@ class Activity_Inbox : AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
-    fun refreshCategory(){
-        currentCategory = Data.inboxCategories[currentCategory.status]!!
+    fun refreshCategory(forceCategory: Boolean = false){
+        if(!forceCategory){
+            currentCategory = Data.inboxCategories[currentCategory.status]!!
+        }
         (categories as AdapterInboxCategories).notifyDataSetChanged()
-        (messagesAdapter as AdapterInboxMessages).notifyDataSetChanged()
+        (messagesAdapter as AdapterInboxMessages).refreshMessages(forceCategory)
+
+        Log.d("inboxCategory size", currentCategory.messages.size.toString())
     }
 
     @SuppressLint("SetTextI18n")
@@ -115,7 +120,7 @@ class Activity_Inbox : AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({ hideSystemUI() }, 1000)
+                Handler().postDelayed({ hideSystemUI() }, 1000)
             }
         }
 
@@ -302,7 +307,7 @@ class Activity_Inbox : AppCompatActivity(){
                 }
 
                 buttonApply.setOnClickListener {
-                    var inboxList: MutableList<InboxMessage> = if (spinnerCategory.selectedItemPosition == 0) {
+                    val inboxList: MutableList<InboxMessage> = if (spinnerCategory.selectedItemPosition == 0) {
                         Data.inbox
                     } else {
                         when (spinnerCategory.selectedItemPosition) {
@@ -317,26 +322,30 @@ class Activity_Inbox : AppCompatActivity(){
                         }
                     }
 
+                    var newList = mutableListOf<InboxMessage>()
+
                     if (!dateFrom.text.isNullOrBlank()) {
-                        inboxList = inboxList.filter { it.sentTime >= SimpleDateFormat("yyyy/MM/dd").parse(dateFrom.text.toString()) }.toMutableList()
+                        newList = inboxList.filter { it.sentTime >= SimpleDateFormat("yyyy/MM/dd").parse(dateFrom.text.toString()) }.toMutableList()
                     }
                     if (!dateTo.text.isNullOrBlank()) {
-                        inboxList = inboxList.filter { it.sentTime <= SimpleDateFormat("yyyy/MM/dd").parse(dateTo.text.toString()) }.toMutableList()
+                        newList = inboxList.filter { it.sentTime <= SimpleDateFormat("yyyy/MM/dd").parse(dateTo.text.toString()) }.toMutableList()
                     }
-                    if (sender.text.isNullOrBlank()) {
-                        inboxList = inboxList.filter { it.sender.contains(sender.text.toString()) }.toMutableList()
+                    if (!sender.text.isNullOrBlank()) {
+                        newList = inboxList.filter { it.sender.contains(sender.text.toString()) }.toMutableList()
                     }
-                    if (receiver.text.isNullOrBlank()) {
-                        inboxList = inboxList.filter { it.receiver.contains(receiver.text.toString()) }.toMutableList()
+                    if (!receiver.text.isNullOrBlank()) {
+                        newList = inboxList.filter { it.receiver.contains(receiver.text.toString()) }.toMutableList()
                     }
-                    if (subject.text.isNullOrBlank()) {
-                        inboxList = inboxList.filter { it.subject.contains(subject.text.toString()) }.toMutableList()
+                    if (!subject.text.isNullOrBlank()) {
+                        newList = inboxList.filter { it.subject.contains(subject.text.toString()) }.toMutableList()
                     }
-                    if (content.text.isNullOrBlank()) {
-                        inboxList = inboxList.filter { it.content.contains(content.text.toString()) }.toMutableList()
+                    if (!content.text.isNullOrBlank()) {
+                        newList = inboxList.filter { it.content.contains(content.text.toString()) }.toMutableList()
                     }
-                    currentCategory = InboxCategory(messages = inboxList)
-                    (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
+
+                    currentCategory = InboxCategory(messages = newList)
+                    Log.d("inboxCategory size", currentCategory.messages.size.toString())
+                    refreshCategory(true)
                     window.dismiss()
                 }
 
@@ -519,6 +528,14 @@ class Activity_Inbox : AppCompatActivity(){
         override fun notifyDataSetChanged() {
             activity.currentCategory = Data.inboxCategories[activity.currentCategory.status]!!
             super.notifyDataSetChanged()
+        }
+
+        fun refreshMessages(forceCategory: Boolean = false) {
+            if(!forceCategory){
+                activity.currentCategory = Data.inboxCategories[activity.currentCategory.status]!!
+            }
+            super.notifyDataSetChanged()
+            Log.d("inboxCategory size", activity.currentCategory.messages.size.toString())
         }
 
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {

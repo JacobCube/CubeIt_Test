@@ -154,11 +154,9 @@ class FragmentInboxMessage : Fragment() {
                 view.buttonInboxMessageGet.visibility = View.VISIBLE
                 view.buttonInboxMessageGet.isEnabled = true
                 view.textViewInboxMessageCoins.visibility = View.VISIBLE
-                view.textViewInboxMessageCubeCoins.visibility = View.VISIBLE
-                view.textViewInboxMessageXp.visibility = View.VISIBLE
-                view.textViewInboxMessageCoins.text = "${chosenMail.reward!!.cubeCoins}"
-                view.textViewInboxMessageCubeCoins.text = "cubix: ${chosenMail.reward!!.cubix}"
-                view.textViewInboxMessageXp.setHTMLText("<font color='#4d6dc9'><b>xp</b></font>${chosenMail.reward!!.experience}")
+                view.textViewInboxMessageCoins.text = "CC: ${chosenMail.reward!!.cubeCoins}" +
+                        "\ncubix: ${chosenMail.reward!!.cubix}" +
+                        "\n<font color='#4d6dc9'><b>xp</b></font>${chosenMail.reward!!.experience}"
 
                 if(chosenMail.reward!!.item != null){
                     view.imageViewInboxMessageItem.visibility = View.VISIBLE
@@ -174,12 +172,15 @@ class FragmentInboxMessage : Fragment() {
 
                         override fun onStartHold(x: Float, y: Float) {
                             super.onStartHold(x, y)
+                            viewP.textViewPopUpInfo.setHTMLText(chosenMail.reward!!.item!!.getStats())
+                            viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                            val coordinates = SystemFlow.resolveLayoutLocation(activity!!, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                             if(!windowPop.isShowing){
                                 viewP.textViewPopUpInfo.setHTMLText(chosenMail.reward!!.item!!.getStatsCompare())
                                 viewP.imageViewPopUpInfoItem.setImageResource(chosenMail.reward!!.item!!.drawable)
                                 viewP.imageViewPopUpInfoItem.setBackgroundResource(chosenMail.reward!!.item!!.getBackground())
 
-                                val coordinates = SystemFlow.resolveLayoutLocation(activity!!, x, y, viewP.width, viewP.height)
                                 windowPop.showAsDropDown(activity!!.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                             }
                         }
@@ -316,6 +317,8 @@ class FragmentInboxMessage : Fragment() {
 
                                 if (view.editTextInboxContent.text.toString().length < 500) {
 
+                                    val activityTemp = activity!!
+
                                     if (view.editTextInboxReciever.text.toString() == "Faction") {
                                         Data.player.loadFaction(view.context).addOnSuccessListener {
                                             if (Data.player.faction != null) {
@@ -329,6 +332,7 @@ class FragmentInboxMessage : Fragment() {
                                                             sender = Data.player.username
                                                     ))
                                                 }
+                                                (activityTemp as Activity_Inbox).makeMeASnack("Message to your faction has been successfully sent.", Snackbar.LENGTH_SHORT)
                                             }
                                         }
                                     } else {
@@ -339,7 +343,7 @@ class FragmentInboxMessage : Fragment() {
                                                 content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
                                                 sender = Data.player.username
                                         )).addOnSuccessListener {
-                                            Snackbar.make(activity!!.window.decorView.rootView, "Message to ${view.editTextInboxReciever.text} has been sent.", Snackbar.LENGTH_SHORT).show()
+                                            (activityTemp as Activity_Inbox).makeMeASnack("Message to ${view.editTextInboxReciever.text} has been successfully sent.", Snackbar.LENGTH_SHORT)
                                         }.continueWithTask {
 
                                             val temp = InboxMessage(

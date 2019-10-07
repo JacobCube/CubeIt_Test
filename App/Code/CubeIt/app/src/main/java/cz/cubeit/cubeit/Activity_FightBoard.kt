@@ -10,6 +10,7 @@ import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -133,7 +134,7 @@ class ActivityFightBoard: AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
 
@@ -172,9 +173,10 @@ class ActivityFightBoard: AppCompatActivity(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             listViewPlayers.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
                 imageViewMenuUpBoard.visibility = View.GONE
+                val handler = Handler()
                 handler.removeCallbacksAndMessages(null)
                 handler.postDelayed({
-                    imageViewMenuUpBoard.visibility = View.VISIBLE
+                    if(imageViewMenuUpBoard.visibility != View.VISIBLE) imageViewMenuUpBoard.visibility = View.VISIBLE
                 }, 1000)
             }
         }
@@ -467,8 +469,7 @@ class ActivityFightBoard: AppCompatActivity(){
     }
 
     fun compareStats(playerX: Player){
-        handler.removeCallbacksAndMessages(null)
-        handler.postDelayed(
+        Handler().postDelayed(
                 {
                     textViewFightBoardCompare.visibility = if(textViewFightBoardCompare.visibility != View.VISIBLE)View.VISIBLE else View.GONE
                     textViewBoardCompare.setHTMLText(Data.player.compareMeWith(playerX))

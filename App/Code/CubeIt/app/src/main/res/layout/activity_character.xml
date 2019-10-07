@@ -30,7 +30,7 @@
 
 
     <ListView
-        android:id="@+id/inventoryListView"
+        android:id="@+id/listViewInventory"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:choiceMode="singleChoice"
@@ -43,19 +43,19 @@
         app:layout_constraintTop_toTopOf="@+id/guideline233" />
 
     <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewInfoItem"
+        android:id="@+id/textViewShopItemInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/stats_info"
         android:clickable="false"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
         android:focusable="false"
         android:gravity="center_horizontal"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
         android:paddingBottom="4dp"
         android:scrollbars="vertical"
         android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/inventoryListView"
+        app:layout_constraintBottom_toTopOf="@+id/listViewInventory"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline7"
@@ -74,7 +74,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.45" />
+        app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline129"
@@ -90,6 +90,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="1dp"
         android:animationResolution="@android:integer/config_longAnimTime"
         android:max="100"
         android:progress="100"
@@ -120,10 +121,10 @@
         android:id="@+id/textViewCharacterXp"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="2dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center"
         android:text="0/1"
+        android:textColor="@color/bg_basic_white"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/progressBarCharacterXp"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
@@ -190,6 +191,7 @@
     <ImageView
         android:id="@+id/imageViewCharacterBag"
         android:layout_width="0dp"
+        android:tag="bagBg"
         android:layout_height="0dp"
         android:src="@drawable/character_bag"
         app:layout_constraintBottom_toTopOf="@+id/guideline59"
@@ -197,23 +199,12 @@
         app:layout_constraintStart_toStartOf="@+id/guideline6"
         app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
-    <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textPlayer2"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:gravity="start"
-        android:text="1050"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/guideline142"
-        app:layout_constraintEnd_toStartOf="@+id/guideline7"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <ImageView
-        android:id="@+id/buttonBag1"
+        android:id="@+id/imageViewRune0"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/emptyslot"
+        android:tag="0"
         app:layout_constraintBottom_toTopOf="@+id/guideline59"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline127"
@@ -221,10 +212,11 @@
         app:layout_constraintStart_toStartOf="@+id/guideline" />
 
     <ImageView
-        android:id="@+id/buttonBag0"
+        android:id="@+id/imageViewRune1"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/emptyslot"
+        android:tag="1"
         app:layout_constraintBottom_toTopOf="@+id/guideline59"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline46"

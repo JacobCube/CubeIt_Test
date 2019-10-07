@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
@@ -115,12 +116,12 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                     override fun onAnimationEnd(animation: Animation) {
 
                         if(enemySpell.id != "0000" && playerSpell.id == "0000"){
-                            handler.postDelayed({
+                            Handler().postDelayed({
                                 spellFightPlayer.alpha = 0f
                                 spellFightPlayer.startAnimation(animationShieldResume)
                             }, 100)
                         }else if(enemySpell.id == "0000" && playerSpell.id != "0000"){
-                            handler.postDelayed({
+                            Handler().postDelayed({
                                 spellFightEnemy.alpha = 0f
                                 spellFightEnemy.startAnimation(animationShieldResume)
                             }, 100)
@@ -209,7 +210,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 spellFightEnemy.startAnimation(animationShield)
             }else {
                 spellFightPlayer.bringToFront()
-                handler.postDelayed({
+                Handler().postDelayed({
                     spellFightEnemy.alpha = 1f
                     spellFightEnemy.startAnimation(animationShield)
                 }, 100)
@@ -248,7 +249,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 spellFightPlayer.startAnimation(animationShield)
             }else {
                 spellFightEnemy.bringToFront()
-                handler.postDelayed({
+                Handler().postDelayed({
                     spellFightPlayer.alpha = 1f
                     spellFightPlayer.startAnimation(animationShield)
                 }, 100)
@@ -316,7 +317,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             alpha = 0.5f
         }
 
-        handler.postDelayed(
+        Handler().postDelayed(
                 {
                     Spell0.apply {
                         isEnabled = true
@@ -496,7 +497,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({ hideSystemUI() }, 1000)
+                Handler().postDelayed({ hideSystemUI() }, 1000)
             }
         }
         val dm = DisplayMetrics()
@@ -862,7 +863,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         if(fightEnded) return
         fightEnded = true
 
-        val endFight = Intent(this, ActivityFightBoard::class.java)
+        val endFight = Intent(this, Activity_Character::class.java)
         endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
         val window = PopupWindow(this)
@@ -873,13 +874,12 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         val buttonAccept: Button = viewPop.buttonAccept
         val buttonClose: ImageView = viewPop.buttonCloseDialog
         val imageItem: ImageView = viewPop.imageViewAdventure
-        val textViewStats: CustomTextView = viewPop.textViewItemStats
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
-        var reward: Reward? = Reward().generate(winner).decreaseBy(10)
+        var reward: Reward? = Reward().generate(winner).decreaseBy(10.0, true)
         val playerName = playerFight.playerFight.username
         val enemyName = enemy.enemy.username
-        var fameGained = nextInt(0, 100)
+        var fameGained = nextInt(0, 51)
 
         if (playerName == enemyName) {
             startActivity(endFight)
@@ -891,7 +891,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             if (winner.username == playerName) {
 
                 fameGained *= enemy.enemy.fame / playerFight.playerFight.fame
-
+                fameGained = kotlin.math.min(fameGained, 75)
 
                 if (enemy.enemy.fame <= fameGained) fameGained = enemy.enemy.fame
                 if (playerFight.playerFight.fame !in (enemy.enemy.fame * 0.75).toInt()..(enemy.enemy.fame * 5)) {                   //TODO fame by fame difference
@@ -908,6 +908,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 ))
             } else {
                 fameGained *= playerFight.playerFight.fame / enemy.enemy.fame
+                fameGained = kotlin.math.min(fameGained, 75)
 
                 if (playerFight.playerFight.fame <= fameGained) fameGained = playerFight.playerFight.fame
                 if (enemy.enemy.fame !in (playerFight.playerFight.fame * 0.75).toInt()..(playerFight.playerFight.fame * 1.25).toInt()) {
@@ -940,9 +941,8 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             textViewQuest.text = "${winner.username} won" +
                     "\n and earned:" +
-                    "\n$fameGained fame points"
-            viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${if(reward?.experience == null)0 else reward.experience}"
-            + if(reward?.experience == null) "\n(User is too behind, winner doesn't deserve any bonus reward!)" else "")
+                    "\n$fameGained fame points" + if(reward?.experience == null) "\n(User is too behind, winner doesn't deserve any bonus reward!)" else ""
+            viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${if(reward?.experience == null)0 else reward.experience}")
             viewPop.textViewPopAdventureCC.text = "${if(reward?.cubeCoins == null)0 else reward.cubeCoins}"
 
             if(winner.username == Data.player.username) reward?.receive()
@@ -978,12 +978,15 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                     override fun onStartHold(x: Float, y: Float) {
                         super.onStartHold(x, y)
                         if(holdValid){
+                            viewP.textViewPopUpInfo.setHTMLText(reward.item!!.getStats())
+                            viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                            val coordinates = SystemFlow.resolveLayoutLocation(this@FightSystem, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                             if(!Data.loadingActiveQuest && !windowPop.isShowing){
                                 viewP.textViewPopUpInfo.setHTMLText(reward.item!!.getStatsCompare())
                                 viewP.imageViewPopUpInfoItem.setBackgroundResource(reward.item!!.getBackground())
                                 viewP.imageViewPopUpInfoItem.setImageResource(reward.item!!.drawable)
 
-                                val coordinates = SystemFlow.resolveLayoutLocation(this@FightSystem, x, y, viewP.width, viewP.height)
                                 windowPop.showAsDropDown(this@FightSystem.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                             }
                         }
@@ -1007,7 +1010,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 imageItem.isEnabled = false
             }
 
-            window.showAtLocation(view, Gravity.CENTER, 0, 0)
+            if(!surrender) window.showAtLocation(view, Gravity.CENTER, 0, 0)
         }
     }
 }

@@ -74,7 +74,7 @@ class Home : AppCompatActivity() {
         }
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& Data.player.appearOnTop) {
-                //If the draw over permission is not available open the settings screen to grant the permission.
+                //If the draw over permission is not available open the menu_settings_icon screen to grant the permission.
 
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:$packageName"))
@@ -85,7 +85,7 @@ class Home : AppCompatActivity() {
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
         textViewHomeStatsCoins.text = Data.player.cubeCoins.toString()
@@ -103,6 +103,9 @@ class Home : AppCompatActivity() {
             }, 5000)
         }
 
+        imageViewHomeFactionNew.visibility = if(Data.factionLogChanged){
+            View.VISIBLE
+        }else View.GONE
 
         val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
         val docRef = db.collection("Server").document("Generic")
@@ -181,7 +184,7 @@ class Home : AppCompatActivity() {
                         originalXExit = imageViewExit.x
                         initialTouchExitX = motionEvent.rawX
                         clickableExit = true
-                        handler.postDelayed({clickableExit = false}, 100)
+                        Handler().postDelayed({clickableExit = false}, 100)
                         return true
                     }
                     MotionEvent.ACTION_UP -> {
@@ -189,7 +192,7 @@ class Home : AppCompatActivity() {
                         imageViewExitLeave.x = originalXExit + imageViewExitLeave.width
 
                         if(clickableExit){
-                            handler.removeCallbacksAndMessages(null)
+                            Handler().removeCallbacksAndMessages(null)
 
                             val wrapper = ContextThemeWrapper(this@Home, R.style.FactionPopupMenu)
                             val popup = PopupMenu(wrapper, imageViewExit)
@@ -242,41 +245,76 @@ class Home : AppCompatActivity() {
         })
 
         Story.setOnClickListener {
+            Story.isEnabled = false
+            Handler().postDelayed({
+                Story.isEnabled = true
+            }, 150)
+
             val intent = Intent(this, Activity_Story()::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
 
         Hatch.setOnClickListener{
+            Hatch.isEnabled = false
+            Handler().postDelayed({
+                Hatch.isEnabled = true
+            }, 150)
+
             val intent = Intent(this, cz.cubeit.cubeit.ActivityFightBoard::class.java)
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         Skills.setOnClickListener{
+            Skills.isEnabled = false
+            Handler().postDelayed({
+                Skills.isEnabled = true
+            }, 150)
+
             val intent = Intent(this, Spells()::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         Character.setOnClickListener{
+            Character.isEnabled = false
+            Handler().postDelayed({
+                Character.isEnabled = true
+            }, 150)
+
             val intent = Intent(this, cz.cubeit.cubeit.Activity_Character::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         SettingsHome.setOnClickListener{
+            SettingsHome.isEnabled = false
+            Handler().postDelayed({
+                SettingsHome.isEnabled = true
+            }, 150)
+
             val intent = Intent(this, cz.cubeit.cubeit.ActivitySettings::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         Shop.setOnClickListener {
+            Shop.isEnabled = false
+            Handler().postDelayed({
+                Shop.isEnabled = true
+            }, 150)
+
             val intent = Intent(this, cz.cubeit.cubeit.Activity_Shop::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             this.overridePendingTransition(0,0)
         }
         Adventure.setOnClickListener{
+            Adventure.isEnabled = false
+            Handler().postDelayed({
+                Adventure.isEnabled = true
+            }, 150)
+
             val intent = Intent(this, cz.cubeit.cubeit.Adventure::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)

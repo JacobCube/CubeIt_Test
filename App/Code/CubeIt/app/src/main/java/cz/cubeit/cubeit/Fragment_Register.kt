@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AlertDialog
@@ -77,7 +78,7 @@ class Fragment_Register : Fragment() {
                                         Data.loadGlobalData(view.context).addOnSuccessListener {
                                             if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE){
                                                 Activity_Splash_Screen().closeLoading()
-                                                handler.postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha, versioned ${GenericDB.AppInfo.appVersion})")},100)
+                                                Handler().postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha, versioned ${GenericDB.AppInfo.appVersion})")},100)
                                             }
 
                                             if (view.inputEmailReg.text!!.isNotEmpty() && view.inputUsernameReg.text!!.isNotEmpty() && view.inputPassReg.text!!.isNotEmpty() && view.inputRePassReg.text!!.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
@@ -143,7 +144,7 @@ class Fragment_Register : Fragment() {
                 }
             }else {
                 view.buttonRegister.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                handler.postDelayed({Snackbar.make(view, "Your device is not connected to the internet. Please check your connection and try again.", Snackbar.LENGTH_SHORT).show()},50)
+                Handler().postDelayed({Snackbar.make(view, "Your device is not connected to the internet. Please check your connection and try again.", Snackbar.LENGTH_SHORT).show()},50)
             }
         }
 

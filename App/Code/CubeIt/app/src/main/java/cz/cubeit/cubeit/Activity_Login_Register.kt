@@ -12,11 +12,7 @@ import android.widget.ImageView
 import kotlinx.android.synthetic.main.activity_login_register.*
 
 
-
-
-val handler = Handler()
-
-class ActivityLoginRegister(): AppCompatActivity(){
+class ActivityLoginRegister: AppCompatActivity(){
 
     fun onClickArrowLoginRegister(v:View){
         when(v.toString()[v.toString().lastIndex-1]){
@@ -53,7 +49,7 @@ class ActivityLoginRegister(): AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
     }

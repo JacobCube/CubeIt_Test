@@ -37,11 +37,16 @@ class Fragment_Market_RegisterOffer : Fragment() {
 
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
+                viewP.textViewPopUpInfo.setHTMLText(createdOffer.item!!.getStats())
+                viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                val coordinates = SystemFlow.resolveLayoutLocation(activity!!, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                 if(!windowPop.isShowing && createdOffer.item != null){
                     viewP.textViewPopUpInfo.setHTMLText(createdOffer.item!!.getStats())
                     viewP.imageViewPopUpInfoItem.setBackgroundResource(createdOffer.item!!.getBackground())
                     viewP.imageViewPopUpInfoItem.setImageResource(createdOffer.item!!.drawable)
-                    windowPop.showAsDropDown(view.imageViewMarketRegisterItem,view.imageViewMarketRegisterItem.width / 2, view.imageViewMarketRegisterItem.height + 10)
+
+                    windowPop.showAsDropDown(activity!!.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                 }
             }
 
@@ -56,32 +61,10 @@ class Fragment_Market_RegisterOffer : Fragment() {
                     view.imageViewMarketRegisterItem.setImageResource(0)
                     view.imageViewMarketRegisterItem.setBackgroundResource(R.drawable.emptyslot)
                     createdOffer.item = null
+                    view.imageViewMarketRegisterItem.isClickable = false
                 }
             }
         })
-
-
-        /*view.imageViewMarketRegisterItem.setOnTouchListener(object : Class_OnSwipeTouchListener(view.context, view.imageViewMarketRegisterItem) {
-            override fun onClick() {
-                super.onClick()
-                handler.removeCallbacksAndMessages(null)
-                if(createdOffer.item != null){
-                    if(view.textViewMarketItemInfo.visibility != View.VISIBLE) view.textViewMarketItemInfo.visibility = View.VISIBLE
-                    view.textViewMarketItemInfo.setHTMLText(createdOffer.item!!.getStats())
-                };
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                handler.removeCallbacksAndMessages(null)
-                if(createdOffer.item != null){
-                    view.imageViewMarketRegisterItem.setImageResource(0)
-                    view.imageViewMarketRegisterItem.setBackgroundResource(R.drawable.emptyslot)
-                    view.textViewMarketItemInfo.visibility = View.GONE
-                    createdOffer.item = null
-                }
-            }
-        })*/
 
         view.imageViewMarketRegisterCoins.setOnClickListener {
             view.editTextMarketRegisterCoins.setText((if(view.editTextMarketRegisterCoins.text.toString().toIntOrNull()!=null){
@@ -150,64 +133,72 @@ class Fragment_Market_RegisterOffer : Fragment() {
 
         view.imageViewMarketRegisterConfirm.setOnClickListener {
             if(createdOffer.item != null){
-                if(!view.editTextMarketRegisterCoins.text.isNullOrBlank()){
-                    view.editTextMarketRegisterCoins.setBackgroundColor(0)
+
+                if(!view.editTextMarketRegisterCoins.text.isNullOrBlank() && !view.editTextMarketRegisterCubeCoins.text.isNullOrBlank()){
+
                     if(!view.editTextMarketRegisterUntilDate.text.isNullOrBlank()) {
-                        view.editTextMarketRegisterUntilDate.setBackgroundColor(0)
 
-                        if (!createdOffer.closeAfterExpiry && view.editTextMarketRegisterLowerCoins.text.isNullOrBlank() && view.editTextMarketRegisterLowerCubeCoins.text.isNullOrBlank()) {
-                            view.editTextMarketRegisterLowerCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                            view.editTextMarketRegisterLowerCubeCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                            Snackbar.make(view, "Some of the fields are required!", Snackbar.LENGTH_SHORT).show()
-                        } else {
-                            if (view.editTextMarketRegisterLowerCubeCoins.text.toString() == "") {
-                                view.editTextMarketRegisterLowerCubeCoins.setText("0")
-                            }
-                            if (view.editTextMarketRegisterLowerCoins.text.toString() == "") {
-                                view.editTextMarketRegisterLowerCoins.setText("0")
-                            }
-                            if (view.editTextMarketRegisterCubeCoins.text.toString() == "") {
-                                view.editTextMarketRegisterCubeCoins.setText("0")
-                            }
-                            if (view.editTextMarketRegisterCoins.text.toString() == "") {
-                                view.editTextMarketRegisterCoins.setText("0")
-                            }
-                            with(createdOffer) {
-                                if (!closeAfterExpiry) {
-                                    afterExpiryCoins = view.editTextMarketRegisterLowerCoins.text.toString().toInt()
-                                    afterExpiryCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
-                                }
-                                expiryDate = SimpleDateFormat("yyyy/MM/dd").parse(view.editTextMarketRegisterUntilDate.text.toString())
-                                seller = Data.player.username
-                                priceCoins = view.editTextMarketRegisterCoins.text.toString().toInt()
-                                if(priceCoins < createdOffer.item!!.priceCubeCoins) priceCoins = createdOffer.item!!.priceCubeCoins
-                                priceCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
-                                if(priceCubeCoins < createdOffer.item!!.priceCubix) priceCubeCoins = createdOffer.item!!.priceCubix
-                            }
-                            val tempIndex = Data.player.inventory.indexOf(createdOffer.item)
-                            val tempActivity = activity!!
+                        if(view.editTextMarketRegisterCoins.text.toString().toIntOrNull() != null && (view.editTextMarketRegisterCoins.text.toString().toInt() >= createdOffer.item!!.priceCubeCoins && view.editTextMarketRegisterCubeCoins.text.toString().toInt() >= createdOffer.item!!.priceCubix)){
 
-                            Data.player.inventory[tempIndex] = null
-                            Data.player.uploadPlayer().addOnSuccessListener {
-                                Data.player.fileOffer(createdOffer).addOnCompleteListener {
-                                    Snackbar.make(tempActivity.window.decorView.rootView, if (it.isSuccessful) {
-                                        "Your offer has been successfully added!"
-                                    } else {
-                                        Data.player.inventory[tempIndex] = createdOffer.item
-                                        Data.player.uploadPlayer()
-                                        "Your request to add offer has failed!"
-                                    }, Snackbar.LENGTH_SHORT).show()
+                            if (!createdOffer.closeAfterExpiry && view.editTextMarketRegisterLowerCoins.text.isNullOrBlank() && view.editTextMarketRegisterLowerCubeCoins.text.isNullOrBlank()) {
+                                view.editTextMarketRegisterLowerCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                                view.editTextMarketRegisterLowerCubeCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                                Snackbar.make(view, "Some of the fields are required!", Snackbar.LENGTH_SHORT).show()
+                            } else {
+                                if (view.editTextMarketRegisterLowerCubeCoins.text.toString() == "") {
+                                    view.editTextMarketRegisterLowerCubeCoins.setText("0")
                                 }
-                            }.addOnFailureListener {
-                                Snackbar.make(tempActivity.window.decorView.rootView, "Your request to add offer has failed!", Snackbar.LENGTH_SHORT).show()
+                                if (view.editTextMarketRegisterLowerCoins.text.toString() == "") {
+                                    view.editTextMarketRegisterLowerCoins.setText("0")
+                                }
+                                if (view.editTextMarketRegisterCubeCoins.text.toString() == "") {
+                                    view.editTextMarketRegisterCubeCoins.setText("0")
+                                }
+                                if (view.editTextMarketRegisterCoins.text.toString() == "") {
+                                    view.editTextMarketRegisterCoins.setText("0")
+                                }
+                                with(createdOffer) {
+                                    if (!closeAfterExpiry) {
+                                        afterExpiryCoins = view.editTextMarketRegisterLowerCoins.text.toString().toInt()
+                                        afterExpiryCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
+                                    }
+                                    expiryDate = SimpleDateFormat("yyyy/MM/dd").parse(view.editTextMarketRegisterUntilDate.text.toString())
+                                    seller = Data.player.username
+                                    priceCoins = view.editTextMarketRegisterCoins.text.toString().toInt()
+                                    if(priceCoins < createdOffer.item!!.priceCubeCoins) priceCoins = createdOffer.item!!.priceCubeCoins
+                                    priceCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
+                                    if(priceCubeCoins < createdOffer.item!!.priceCubix) priceCubeCoins = createdOffer.item!!.priceCubix
+                                }
+                                val tempIndex = Data.player.inventory.indexOf(createdOffer.item)
+                                val tempActivity = activity!!
+
+                                Data.player.inventory[tempIndex] = null
+                                Data.player.uploadPlayer().addOnSuccessListener {
+                                    Data.player.fileOffer(createdOffer).addOnCompleteListener {
+                                        Snackbar.make(tempActivity.window.decorView.rootView, if (it.isSuccessful) {
+                                            "Your offer has been successfully added!"
+                                        } else {
+                                            Data.player.inventory[tempIndex] = createdOffer.item
+                                            Data.player.uploadPlayer()
+                                            "Your request to add offer has failed!"
+                                        }, Snackbar.LENGTH_SHORT).show()
+                                    }
+                                }.addOnFailureListener {
+                                    Snackbar.make(tempActivity.window.decorView.rootView, "Your request to add offer has failed!", Snackbar.LENGTH_SHORT).show()
+                                }
+                                (activity as Activity_Market).closeRegister()
                             }
-                            (activity as Activity_Market).closeRegister()
+                        }else{
+                            view.editTextMarketRegisterCubeCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                            view.editTextMarketRegisterCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                            Snackbar.make(view, "Don't rip yourself off like this!", Snackbar.LENGTH_SHORT).show()
                         }
                     }else{
                         view.editTextMarketRegisterUntilDate.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                         Snackbar.make(view, "Field required!", Snackbar.LENGTH_SHORT).show()
                     }
                 }else{
+                    view.editTextMarketRegisterCubeCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     view.editTextMarketRegisterCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Snackbar.make(view, "Field required!", Snackbar.LENGTH_SHORT).show()
                 }
@@ -252,50 +243,25 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
             position * 4
         }
 
-        for (i in 0..3) {
-            val tempSlot = when (i) {
-                0 -> viewHolder.buttonInventory1
-                1 -> viewHolder.buttonInventory2
-                2 -> viewHolder.buttonInventory3
-                3 -> viewHolder.buttonInventory4
-                else -> viewHolder.buttonInventory1
-            }
-            if (index + i < Data.player.inventory.size) {
-                if (playerC.inventory[index + i] != null) {
-                    tempSlot.setImageResource(Data.player.inventory[index + i]!!.drawable)
-                    tempSlot.setBackgroundResource(Data.player.inventory[index + i]!!.getBackground())
-                    tempSlot.isEnabled = true
-                } else {
-                    tempSlot.setImageResource(0)
-                    tempSlot.setBackgroundResource(R.drawable.emptyslot)
-                    tempSlot.isEnabled = false
-                }
-            } else {
-                tempSlot.isEnabled = false
-                tempSlot.isClickable = false
-                tempSlot.setBackgroundResource(0)
-                tempSlot.setImageResource(0)
-            }
-        }
-
         class Node(
             val index: Int = 0,
-            component: ImageView
+            val component: ImageView
         ){
             init {
-                if (index < Data.player.inventory.size) {
+                if (this.index < Data.player.inventory.size) {
 
                     if (playerC.inventory[this.index] != null) {
                         component.apply {
                             setImageResource(Data.player.inventory[this@Node.index]!!.drawable)
                             setBackgroundResource(Data.player.inventory[this@Node.index]!!.getBackground())
+                            isClickable = true
                             isEnabled = true
                         }
                     } else {
                         component.apply {
                             setImageResource(0)
                             setBackgroundResource(R.drawable.emptyslot)
-                            isEnabled = false
+                            isClickable = false
                         }
                     }
                 } else {
@@ -315,12 +281,15 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
 
                     override fun onStartHold(x: Float, y: Float) {
                         super.onStartHold(x, y)
+                        viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]!!.getStats())
+                        viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                        val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                         if(!windowPop.isShowing){
                             viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]!!.getStatsCompare())
                             viewP.imageViewPopUpInfoItem.setImageResource(Data.player.inventory[this@Node.index]!!.drawable)
                             viewP.imageViewPopUpInfoItem.setBackgroundResource(Data.player.inventory[this@Node.index]!!.getBackground())
 
-                            val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.width, viewP.height)
                             windowPop.showAsDropDown(activity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                         }
                     }
@@ -350,6 +319,7 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
     fun getDoubleClick(index: Int){
         imageViewItem.setImageResource(playerC.inventory[index]!!.drawable)
         imageViewItem.setBackgroundResource(playerC.inventory[index]!!.getBackground())
+        imageViewItem.isClickable = true
         createdOffer.item = playerC.inventory[index]
     }
 

@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Rect
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
@@ -63,7 +64,7 @@ class Activity_Story: AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
 

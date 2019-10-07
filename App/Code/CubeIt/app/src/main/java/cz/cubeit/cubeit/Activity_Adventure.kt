@@ -2,10 +2,12 @@ package cz.cubeit.cubeit
 
 import android.animation.Animator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -88,7 +90,9 @@ class Adventure : AppCompatActivity() {
     }
 
     fun checkForQuest(){
+        overviewQuestIcon.isEnabled = false
         Data.player.checkForQuest().addOnSuccessListener {
+            overviewQuestIcon.isEnabled = true
             if(Data.activeQuest != null){
                 progressAdventureQuest.visibility = View.VISIBLE
                 progressAdventureQuest.y = -100f
@@ -143,6 +147,7 @@ class Adventure : AppCompatActivity() {
                 overviewQuestIconTemp.performClick()
             }
         }.addOnFailureListener {
+            overviewQuestIcon.isEnabled = true
             Toast.makeText(this, "Error occurred during loading current quest!", Toast.LENGTH_LONG).show()
         }
     }
@@ -166,7 +171,7 @@ class Adventure : AppCompatActivity() {
                     Snackbar.make(progressAdventureQuest, "Your inventory cannot be full!", Snackbar.LENGTH_SHORT).show()
                 }
             }else {
-                onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview), layoutInflater.inflate(R.layout.popup_info_dialog, null, false))
+                onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview), layoutInflater.inflate(R.layout.popup_info_dialog, null, false), this)
             }
         }
 
@@ -187,7 +192,7 @@ class Adventure : AppCompatActivity() {
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
 
@@ -257,9 +262,7 @@ class Adventure : AppCompatActivity() {
     }
 
     fun changeSurface(surfaceIndex:Int, viewPagerAdventure: ViewPager){
-        val handler = Handler()
-        cz.cubeit.cubeit.handler.removeCallbacksAndMessages(null)
-        handler.postDelayed({viewPagerAdventure.setCurrentItem(surfaceIndex, true) }, 10)
+        Handler().postDelayed({viewPagerAdventure.setCurrentItem(surfaceIndex, true) }, 10)
     }
 
     fun onClickQuest(view: View){
@@ -307,6 +310,54 @@ class Adventure : AppCompatActivity() {
         val windowPop = PopupWindow(view.context)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        var viewPinned = false
+        var dx = 0
+        var dy = 0
+        var x = 0
+        var y = 0
+
+        viewP.imageViewPopUpInfoPin.visibility = View.VISIBLE
+        viewP.imageViewPopUpInfoPin.setOnClickListener {
+            viewPinned = if(viewPinned){
+                windowPop.dismiss()
+                viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
+                false
+            }else {
+                val drawable = this.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
+                drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
+                viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
+                true
+            }
+        }
+
+        viewP.textViewPopUpInfoDrag.setOnTouchListener { _, motionEvent ->
+            when (motionEvent.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dx = motionEvent.x.toInt()
+                    dy = motionEvent.y.toInt()
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    x = motionEvent.rawX.toInt()
+                    y = motionEvent.rawY.toInt()
+                    windowPop.update(x - dx, y - dy, -1, -1)
+                }
+                MotionEvent.ACTION_UP -> {
+                    windowPop.dismiss()
+                    val xOff = if(x - dx <= 0){
+                        5
+                    } else {
+                        x -dx
+                    }
+                    val yOff = if(y - dy <= 0){
+                        5
+                    } else {
+                        y -dy
+                    }
+                    windowPop.showAsDropDown(this.window.decorView.rootView, xOff, yOff)
+                }
+            }
+            true
+        }
 
         val holdValid =  quest.reward.item != null
         imageViewAdventure.setOnTouchListener(object: Class_HoldTouchListener(imageViewAdventure, false, 0f, false){
@@ -314,12 +365,15 @@ class Adventure : AppCompatActivity() {
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
                 if(holdValid){
+                    viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
+                    viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                    val coordinates = SystemFlow.resolveLayoutLocation(this@Adventure, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                     if(!Data.loadingActiveQuest && !windowPop.isShowing){
                         viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
                         viewP.imageViewPopUpInfoItem.setBackgroundResource(quest.reward.item!!.getBackground())
                         viewP.imageViewPopUpInfoItem.setImageResource(quest.reward.item!!.drawable)
 
-                        val coordinates = SystemFlow.resolveLayoutLocation(this@Adventure, x, y, viewP.width, viewP.height)
                         windowPop.showAsDropDown(this@Adventure.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                     }
                 }
@@ -413,7 +467,7 @@ class Adventure : AppCompatActivity() {
         window.showAtLocation(view, Gravity.CENTER,0,0)
     }
 
-    fun onClickQuestOverview(surface:Int, index:Int, context:Context, questA: Quest? = null, questIn: Quest? = null, progressAdventureQuest: ProgressBar, textViewQuestProgress: TextView, viewPopQuest: View, viewPagerAdventure: ViewPager, fromFragment: Boolean, fragmentOverview: Fragment?, viewP: View){
+    fun onClickQuestOverview(surface:Int, index:Int, context:Context, questA: Quest? = null, questIn: Quest? = null, progressAdventureQuest: ProgressBar, textViewQuestProgress: TextView, viewPopQuest: View, viewPagerAdventure: ViewPager, fromFragment: Boolean, fragmentOverview: Fragment?, viewP: View, usedActivity: Activity){
         val quest:Quest = questA ?: questIn?: Data.player.currentSurfaces[surface].quests[index]
 
         val window = PopupWindow(context)
@@ -452,9 +506,57 @@ class Adventure : AppCompatActivity() {
 
         textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
 
-        val windowPop = PopupWindow(context)
+        val windowPop = PopupWindow(usedActivity)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        var viewPinned = false
+        var dx = 0
+        var dy = 0
+        var x = 0
+        var y = 0
+
+        viewP.imageViewPopUpInfoPin.visibility = View.VISIBLE
+        viewP.imageViewPopUpInfoPin.setOnClickListener {
+            viewPinned = if(viewPinned){
+                windowPop.dismiss()
+                viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
+                false
+            }else {
+                val drawable = this.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
+                drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
+                viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
+                true
+            }
+        }
+
+        viewP.textViewPopUpInfoDrag.setOnTouchListener { view, motionEvent ->
+            when (motionEvent.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dx = motionEvent.x.toInt()
+                    dy = motionEvent.y.toInt()
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    x = motionEvent.rawX.toInt()
+                    y = motionEvent.rawY.toInt()
+                    windowPop.update(x - dx, y - dy, -1, -1)
+                }
+                MotionEvent.ACTION_UP -> {
+                    windowPop.dismiss()
+                    val xOff = if(x - dx <= 0){
+                        5
+                    } else {
+                        x -dx
+                    }
+                    val yOff = if(y - dy <= 0){
+                        5
+                    } else {
+                        y -dy
+                    }
+                    windowPop.showAsDropDown(this.window.decorView.rootView, xOff, yOff)
+                }
+            }
+            true
+        }
 
         val holdValid =  quest.reward.item != null
         imageViewAdventure.setOnTouchListener(object: Class_HoldTouchListener(imageViewAdventure, false, 0f, false){
@@ -462,11 +564,16 @@ class Adventure : AppCompatActivity() {
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
                 if(holdValid){
+                    viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
+                    viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                    val coordinates = SystemFlow.resolveLayoutLocation(usedActivity, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
                     if(!Data.loadingActiveQuest && !windowPop.isShowing){
                         viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
                         viewP.imageViewPopUpInfoItem.setBackgroundResource(quest.reward.item!!.getBackground())
                         viewP.imageViewPopUpInfoItem.setImageResource(quest.reward.item!!.drawable)
-                        windowPop.showAsDropDown(textViewStats)
+
+                        windowPop.showAsDropDown(usedActivity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                     }
                 }
             }
@@ -474,7 +581,7 @@ class Adventure : AppCompatActivity() {
             override fun onCancelHold() {
                 super.onCancelHold()
                 if(holdValid){
-                    if(windowPop.isShowing) windowPop.dismiss()
+                    if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
                 }
             }
         })
@@ -495,13 +602,7 @@ class Adventure : AppCompatActivity() {
 
                 Data.player.createActiveQuest(quest, surface).addOnSuccessListener {
 
-
                     if(questA == null)(fragmentOverview as Fragment_Adventure_overview).resetAdapter(true)
-                    /*if(!fromFragment){
-                        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commitNow()
-                    }else{
-
-                    }*/
 
                     if(Data.activeQuest != null){
                         progressAdventureQuest.visibility = View.VISIBLE

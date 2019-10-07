@@ -47,9 +47,10 @@
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowSpelllChoosing"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="0"
+        android:gravity="center"
         android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/button1Choosing"
@@ -59,9 +60,10 @@
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowSpelllChoosing2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="0"
+        android:gravity="center"
         android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/button1Choosing"

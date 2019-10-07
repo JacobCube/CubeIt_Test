@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.os.Bundle
+import android.os.Handler
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
@@ -89,7 +90,7 @@ class Spells: AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
 

@@ -47,7 +47,7 @@
         android:layout_height="0dp"
         android:gravity="center_horizontal"
         android:text="TextView"
-        android:textColor="@color/colorSecondary"
+        android:textColor="@color/loginColor_2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline172"
         app:layout_constraintStart_toStartOf="@+id/guideline178"

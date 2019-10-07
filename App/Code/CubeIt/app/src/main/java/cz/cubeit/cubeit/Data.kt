@@ -54,6 +54,7 @@ import java.lang.Math.*
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.collections.HashMap
 import java.util.concurrent.TimeUnit
@@ -85,6 +86,14 @@ fun Date.formatToString(): String {
         formatter.timeZone = TimeZone.getDefault()
     }
     return formatter.format(this)
+}
+
+fun View.isTouchable(isTouchable: Boolean){
+    this.isClickable = isTouchable
+    this.isFocusable = isTouchable
+    this.setOnTouchListener { _, _ ->
+        isTouchable
+    }
 }
 
 fun Any.toJSON(): String{
@@ -145,7 +154,7 @@ var drawableStorage = hashMapOf(
 //fixes bug: whenever project directory changes in drawables,
 // stored drawable IDs are not equal to the drawables anymore, so it changes their final image
 
-        //spells
+        //menu_spells_icon
         "00000" to R.drawable.basicattack_spell
         , "00001" to R.drawable.shield_spell
         , "00002" to R.drawable.firespell
@@ -348,8 +357,11 @@ object Data {
 
     var newLevel = false
 
-    var factionStatusChanged: Boolean = false
     var factionLogChanged: Boolean = false
+        set(value){
+            Log.d("factionLogChanged", value.toString())
+            field = value
+        }
     var inboxChanged: Boolean = false
     var inboxChangedMessages: Int = 0
 
@@ -398,7 +410,6 @@ object Data {
         loadingStatus = LoadingStatus.UNLOGGED
         newLevel = false
         inboxChanged = false
-        factionStatusChanged = false
 
         factionSnapshot?.remove()
         inboxSnapshot?.remove()
@@ -512,10 +523,10 @@ object Data {
 
                             if (dbChecksum != spellClasses.toSHA256()) {      //is local stored data equal to current state of database?
 
-                                db.collection("spells").get().addOnSuccessListener { itSpells ->
+                                db.collection("menu_spells_icon").get().addOnSuccessListener { itSpells ->
                                     spellClasses = itSpells.toObjects(LoadSpells::class.java)
-                                    SystemFlow.writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
-                                    Log.d("spells", "loaded from firebase, rewritten")
+                                    SystemFlow.writeObject(context, "menu_spells_icon.data", spellClasses)            //write updated data to local storage
+                                    Log.d("menu_spells_icon", "loaded from firebase, rewritten")
                                     //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
                                 }
                             } else {
@@ -629,6 +640,8 @@ object Data {
                             storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
                             val dbChecksum = (it.get("checksum") as String)
 
+                            Log.d("storyQuests", storyQuests.toSHA256())
+                            Log.d("storyQuests", storyQuests.toJSON())
                             if (dbChecksum != storyQuests.toSHA256()) {      //is local stored data equal to current state of database?
 
                                 db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
@@ -682,7 +695,7 @@ object Data {
                 }
             }
         }.continueWithTask {
-            db.collection("spells").get().addOnSuccessListener {
+            db.collection("menu_spells_icon").get().addOnSuccessListener {
                 spellClasses = it.toObjects(LoadSpells::class.java)
             }
         }.continueWithTask {
@@ -727,7 +740,7 @@ object Data {
                 }.addOnFailureListener {
                     Log.d("items checksum: ", "${it.cause}")
                 }
-        checksumRef.document("spells")
+        checksumRef.document("menu_spells_icon")
                 .set(hashMapOf<String, Any?>(
                         "checksum" to Data.spellClasses.hashCode()
                 )).addOnSuccessListener {
@@ -766,13 +779,13 @@ object Data {
         val db = FirebaseFirestore.getInstance()
         val storyRef = db.collection("story")
         val charClassRef = db.collection("charclasses")
-        val spellsRef = db.collection("spells")
+        val spellsRef = db.collection("menu_spells_icon")
         val itemsRef = db.collection("items")
         val npcsRef = db.collection("npcs")
         val surfacesRef = db.collection("surfaces")
         val balanceRef = db.collection("GenericDB").document("balance")
 
-        /*for(i in 0 until Data.storyQuests.size){                                     //stories
+        for(i in 0 until Data.storyQuests.size){                                     //stories
             storyRef.document(Data.storyQuests[i].id)
                     .set(storyQuests[i]
                     ).addOnSuccessListener {
@@ -781,7 +794,7 @@ object Data {
                         Log.d("story", "${it.cause}")
                     }
         }
-        for (i in 0 until charClasses.size) {                                     //charclasses
+        /*for (i in 0 until charClasses.size) {                                     //charclasses
             charClassRef.document(charClasses[i].id)
                     .set(charClasses[i]
                     ).addOnSuccessListener {
@@ -790,7 +803,7 @@ object Data {
                         Log.d("charclasses", "${it.cause}")
                     }
         }
-        for(i in 0 until spellClasses.size){                                     //spells
+        for(i in 0 until spellClasses.size){                                     //menu_spells_icon
             spellsRef.document(spellClasses[i].id)
                     .set(spellClasses[i]
                     ).addOnSuccessListener {
@@ -819,8 +832,8 @@ object Data {
                     }.addOnFailureListener {
                         Log.d("npcs", "${it.cause}")
                     }
-        }
-        for (i in 0 until surfaces.size) {                                     //surfaces
+        }*/
+        for (i in surfaces.indices) {                                     //surfaces
             surfacesRef.document(i.toString())
                     .set(surfaces[i]
                     ).addOnSuccessListener {
@@ -830,7 +843,7 @@ object Data {
                     }
         }
 
-        balanceRef.set(GenericDB.balance).addOnSuccessListener {
+        /*balanceRef.set(GenericDB.balance).addOnSuccessListener {
             Log.d("COMPLETED balance", "trueeeeee LULW")
             Log.d("COMPLETED balance", GenericDB.balance.toJSON())
             Log.d("COMPLETED balance", GenericDB.balance.toString())
@@ -845,7 +858,74 @@ object FightBoard{
     var playerListReturn: MutableList<Player> = mutableListOf()     //call getPlayerList(Int) to load the list
     var factionListReturn: MutableList<Faction> = mutableListOf()   //call getFactionList(Int) to load the list
 
-    fun getFactionList(pageNumber: Int): Task<QuerySnapshot> { // returns each page
+    enum class BoardType{
+        Players,
+        Factions,
+        Market
+    }
+
+        /*To save database from loading bigger chunks of data frequently.
+        Every time any sort of list board is being loaded, this object should be created and used to prevent from user loading
+        the same list again in period of 5 minutes.
+        */
+    class BoardList(
+            var list: MutableList<Any> = mutableListOf(),
+            var captured: Date = java.util.Calendar.getInstance().time,
+            var type: BoardType = BoardType.Players
+    ) {
+            fun setUpNew(list: MutableList<Any>, context: Context){
+                this.list = list
+
+                SystemFlow.writeObject(context, "boardList${Data.player.username}.data", this)
+            }
+
+            private fun findLocal(context: Context): Boolean{
+                return if(SystemFlow.readObject(context, "boardList${Data.player.username}.data") != 0) {
+                    val loadedList = SystemFlow.readObject(context, "boardList${Data.player.username}.data") as? BoardList
+
+                    if(loadedList != null){
+                        this.list = loadedList.list
+                        this.captured = loadedList.captured
+                        this.type = loadedList.type
+                    }
+                    true
+                }else false
+            }
+
+            fun isLoadable(context: Context): Boolean{
+                if(!findLocal(context)){
+                    return true
+                }
+
+                val currentTime = java.util.Calendar.getInstance().time
+                val diff = kotlin.math.abs(currentTime.time - captured.time)
+
+                return diff / 1000 / 60 >= 5                //is the difference higher than 5 minutes?
+            }
+
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as BoardList
+
+                if (list != other.list) return false
+                if (captured != other.captured) return false
+                if (type != other.type) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = list.hashCode()
+                result = 31 * result + captured.hashCode()
+                result = 31 * result + type.hashCode()
+                return result
+            }
+    }
+
+    fun getFactionList(pageNumber: Int): Task<QuerySnapshot> {      // returns each page
         val db = FirebaseFirestore.getInstance()
 
         val upperPlayerRange = pageNumber * 50
@@ -866,7 +946,7 @@ object FightBoard{
         }
     }
 
-    fun getPlayerList(pageNumber: Int): Task<QuerySnapshot> { // returns each page
+    fun getPlayerList(pageNumber: Int): Task<QuerySnapshot> {        // returns each page
         val db = FirebaseFirestore.getInstance()
 
         val upperPlayerRange = pageNumber * 50
@@ -944,10 +1024,6 @@ object GameFlow{
             allItems.retainAll { it!!.slot == itemSlot}
         }
 
-        for(i in allItems){
-            Log.d("return item", i!!.getStats())
-        }
-
         return allItems
     }
 
@@ -959,7 +1035,6 @@ object GameFlow{
         }
 
         val itemReturned = tempArray[nextInt(0, tempArray.size)]
-        Log.d("itemReturned", itemReturned?.getStats().toString())
         val itemTemp: Item? = when (itemReturned?.type) {
             "Weapon" -> Weapon(
                     name = itemReturned.name,
@@ -1084,10 +1159,7 @@ object SystemFlow{
         val parent = activity.window.decorView.rootView
 
         return Coordinates(
-                if(x in parent.width / 2 * 0.8 .. parent.width / 2 * 1.2){
-                    (parent.width / 2).toFloat()
-
-                }else if(x >= parent.width - x){
+                if(x >= parent.width - x){
                     if(x - viewX < 0){
                         0f
                     }else {
@@ -1102,12 +1174,13 @@ object SystemFlow{
                 },
 
                 if(y in parent.height / 2 * 0.8 .. parent.height / 2 * 1.2){
-                    (parent.height / 2).toFloat()
+                    ((parent.height / 2) - (viewY / 2)).toFloat()
 
-                }else if(y >= parent.height - y){
+                }else if(y >= parent.height / 2){
                     if(y - viewY < 0){
                         0f
                     }else {
+                        Log.d("viewY", viewY.toString())
                         y - viewY
                     }
                 }else {
@@ -1176,6 +1249,8 @@ object SystemFlow{
         loadingImage.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)       //TODO pivot doesn't work. Again...
         loadingImage.layoutParams.width = (activityWidth * 0.1).toInt()
         loadingImage.layoutParams.height = (activityWidth * 0.1).toInt()
+        loadingImage.pivotX = (activityWidth * 0.05).toFloat()
+        loadingImage.pivotY = (activityWidth * 0.05).toFloat()
 
         loadingImage.x = ((activityWidth / 2 - (activityWidth * 0.1 / 2).toInt()).toFloat())
         loadingImage.y = 0f
@@ -1194,8 +1269,8 @@ object SystemFlow{
 
             override fun onAnimationStart(animation: Animation?) {
                 loadingBg.alpha = 0.5f
-                /*loadingImage.pivotX = (activityWidth * 0.05).toFloat()
-                loadingImage.pivotY = (activityWidth * 0.05).toFloat()*/
+                loadingImage.pivotX = (activityWidth * 0.05).toFloat()
+                loadingImage.pivotY = (activityWidth * 0.05).toFloat()
                 Log.d("loadingimg_pivotX", loadingImage.pivotX.toString())
                 loadingBg.bringToFront()
                 loadingImage.bringToFront()
@@ -1203,13 +1278,8 @@ object SystemFlow{
         })
 
         loadingImage.post {
-            loadingImage.pivotX = (activityWidth * 0.05).toFloat()
-            loadingImage.pivotY = (activityWidth * 0.05).toFloat()
-            loadingImage.post {
-                Handler().postDelayed({
-                    loadingImage.startAnimation(loadingAnimation)
-                }, 500)
-            }
+            parent.invalidate()
+            parent.getChildAt(parent.childCount - 1).startAnimation(loadingAnimation)
         }
 
         return loadingAnimation
@@ -1465,7 +1535,9 @@ class LifecycleListener(val context: Context) : LifecycleObserver {
         Data.player.syncStats()
         if (Data.player.music && Data.player.username != "player") {
             val svc = Intent(context, Data.bgMusic::class.java)
-            context.startService(svc)
+            Handler().postDelayed({
+                context.startService(svc)
+            }, 500)
         }
         Data.player.online = true
         Data.player.uploadSingleItem("online")
@@ -2310,7 +2382,7 @@ open class Player(
         }
     }
 
-    @Exclude fun fileOffer(marketOffer: MarketOffer): Task<Task<Void>> {
+    @Exclude fun fileOffer(marketOffer: MarketOffer): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("market")
 
@@ -2321,9 +2393,9 @@ open class Player(
                 temp[0].id + 1
             } else 1
         }.continueWithTask {
-            marketOffer.initialize().addOnCompleteListener {  }
-        }.continueWith {
-            docRef.document(marketOffer.id.toString()).set(marketOffer)
+            marketOffer.initialize().continueWithTask {
+                docRef.document(marketOffer.id.toString()).set(marketOffer).addOnSuccessListener {  }
+            }
         }
     }
 
@@ -2338,12 +2410,14 @@ open class Player(
                 this.factionRole = temp.members[this.username]!!.role
 
                 faction!!.actionLog.sortByDescending { it.captured }
-                var lastLog: FactionActionLog = FactionActionLog()
-                if (SystemFlow.readObject(context, "factionLog${Data.player.username}.data") != 0){
-                    lastLog = SystemFlow.readObject(context, "factionLog${Data.player.username}.data") as FactionActionLog
+                var lastLog = FactionActionLog()
+                if (SystemFlow.readObject(context, "factionLog${Data.player.factionID}.data") != 0){
+                    lastLog = SystemFlow.readObject(context, "factionLog${Data.player.factionID}.data") as FactionActionLog
                 }
 
                 Data.factionLogChanged = faction!!.actionLog.first() != lastLog
+                SystemFlow.writeObject(context, "factionLog${Data.player.factionID}.data", faction!!.actionLog.first())
+
             }else {
                 this.faction = null
                 this.factionName = null
@@ -2855,8 +2929,8 @@ open class Item(
     @Exclude @Transient var drawable: Int = 0
         @Exclude get() = drawableStorage[drawableIn]!!
 
-    @Exclude fun getStats(): String {
-        var textView = "<b>${this.name}</b><br/>sell price: ${this.priceCubeCoins}<br/><b>${when (this.quality) {
+    @Exclude fun getQualityString(): String{
+        return when (this.quality) {
             in GenericDB.balance.itemQualityGenImpact["0"]!! until GenericDB.balance.itemQualityGenImpact["1"]!! -> "<font color=#535353>Poor</font>"
             in GenericDB.balance.itemQualityGenImpact["1"]!! until GenericDB.balance.itemQualityGenImpact["2"]!! -> "<font color=#FFFFFF>Common</font>"
             in GenericDB.balance.itemQualityGenImpact["2"]!! until GenericDB.balance.itemQualityGenImpact["3"]!! -> "<font color=#8DD837>Uncommon</font>"
@@ -2867,7 +2941,11 @@ open class Item(
             GenericDB.balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
             else -> "unspecified"
         }
-        }</b>\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
+    }
+
+    @Exclude fun getStats(): String {
+        var textView = "<b>${this.name}</b><br/>sell price: ${this.priceCubeCoins}<br/><b>" +
+                "${this.getQualityString()}</b>\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
             0 -> "everyone"
             1 -> "Vampire"
             2 -> "Dwarf"
@@ -2895,18 +2973,9 @@ open class Item(
     }
 
     @Exclude fun getStatsCompare(buying: Boolean = false): String {
-        var textView = "<b>${this.name}</b><br/>${if(buying && this.priceCubeCoins > Data.player.cubeCoins) "price <font color=red><b>${this.priceCubeCoins}</b></font>" else if(buying) "price <font color=green><b>${this.priceCubeCoins}</b></font>" else "sell price: <b>${this.priceCubeCoins}</b>"}<br/><b>${when (this.quality) {
-            in GenericDB.balance.itemQualityGenImpact["0"]!! until GenericDB.balance.itemQualityGenImpact["1"]!! -> "<font color=#535353>Poor</font>"
-            in GenericDB.balance.itemQualityGenImpact["1"]!! until GenericDB.balance.itemQualityGenImpact["2"]!! -> "<font color=#FFFFFF>Common</font>"
-            in GenericDB.balance.itemQualityGenImpact["2"]!! until GenericDB.balance.itemQualityGenImpact["3"]!! -> "<font color=#8DD837>Uncommon</font>"
-            in GenericDB.balance.itemQualityGenImpact["3"]!! until GenericDB.balance.itemQualityGenImpact["4"]!! -> "<font color=#5DBDE9>Rare</font>"
-            in GenericDB.balance.itemQualityGenImpact["4"]!! until GenericDB.balance.itemQualityGenImpact["5"]!! -> "<font color=#058DCA>Very rare</font>"
-            in GenericDB.balance.itemQualityGenImpact["5"]!! until GenericDB.balance.itemQualityGenImpact["6"]!! -> "<font color=#9136A2>Epic gamer item</font>"
-            in GenericDB.balance.itemQualityGenImpact["6"]!! until GenericDB.balance.itemQualityGenImpact["7"]!! -> "<font color=#FF9800>Legendary</font>"
-            GenericDB.balance.itemQualityGenImpact["7"]!! -> "<font color=#FFE500>Heirloom</font>"
-            else -> "unspecified"
-        }
-        }</b>\t(lv. ${this.levelRq})<br/>${when (this.charClass) {
+        var textView = "<b>${this.name}</b><br/>${if(buying && this.priceCubeCoins > Data.player.cubeCoins) "price <font color=red><b>${this.priceCubeCoins}</b></font>" else if(buying) "price <font color=green><b>${this.priceCubeCoins}</b></font>" else "sell price: <b>${this.priceCubeCoins}</b>"}<br/><b>" +
+                "${this.getQualityString()}</b>\t(lv. ${this.levelRq})<br/>" +
+                "${when (this.charClass) {
             0 -> "everyone"
             1 -> "Vampire"
             2 -> "Dwarf"
@@ -3180,6 +3249,7 @@ data class Reward(
         }
         cubeCoins = nextInt((GenericDB.balance.rewardCoinsBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), GenericDB.balance.rewardCoinsTop * ((inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
         experience = nextInt((GenericDB.balance.rewardXpBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), (GenericDB.balance.rewardXpTop * (inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
+        if(item != null) this.decreaseBy(1.5, false)
 
         return this
     }
@@ -3204,11 +3274,11 @@ data class Reward(
         }
     }
 
-    fun decreaseBy(value: Int): Reward{
-        this.experience /= value
-        this.cubeCoins /= value
-        this.cubix /= value
-        if(this.item != null && nextInt(0, 101) in 0 .. value * 5 + 1 ){        //value acts as a percentage (times 2) of losing the item - value = 10 => 50 percent to lose item
+    fun decreaseBy(value: Double, loseItem: Boolean): Reward{
+        this.experience = (this.experience.toDouble() / value).toInt()
+        this.cubeCoins = (this.cubeCoins.toDouble() / value).toInt()
+        this.cubix = (this.cubix.toDouble() / value).toInt()
+        if(loseItem && this.item != null && nextInt(0, 101) in 0 .. (value * 5 + 1).toInt() ){        //value acts as a percentage (times 2) of losing the item - value = 10 => 50 percent to lose item
             this.item = null
         }
 
@@ -3457,10 +3527,6 @@ class StorySlide(
 ) : Serializable {
     var enemy: NPC = NPC()
 
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
-
     override fun hashCode(): Int {
         var result = inFragment.hashCode()
         result = 31 * result + inInstanceID.hashCode()
@@ -3469,6 +3535,22 @@ class StorySlide(
         result = 31 * result + difficulty
         result = 31 * result + (enemy.hashCode())
         return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as StorySlide
+
+        if (inFragment != other.inFragment) return false
+        if (inInstanceID != other.inInstanceID) return false
+        if (textContent != other.textContent) return false
+        if (images != other.images) return false
+        if (difficulty != other.difficulty) return false
+        if (enemy != other.enemy) return false
+
+        return true
     }
 
 }
@@ -3482,15 +3564,24 @@ class StoryImage(
     @Exclude @Transient var drawable: Int = 0
         @Exclude get() = drawableStorage[imageID]!!
 
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
-
     override fun hashCode(): Int {
         var result = imageID.hashCode()
         result = 31 * result + animIn
         result = 31 * result + animOut
         return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as StoryImage
+
+        if (imageID != other.imageID) return false
+        if (animIn != other.animIn) return false
+        if (animOut != other.animOut) return false
+
+        return true
     }
 
 }
@@ -3530,14 +3621,14 @@ class MarketOffer(
     val itemType: Int
         get() = item!!.slot
 
-    @Exclude fun initialize(): Task<Void> {
+    @Exclude fun initialize(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
         val df: Calendar = Calendar.getInstance()
 
         val docRef = db.collection("users").document(Data.player.username)
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
-        return docRef.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).addOnSuccessListener{
+        return docRef.collection("ActiveQuest").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).continueWithTask{
             docRef.collection("ActiveQuest").document("timeStamp").get().addOnSuccessListener {
                 val time = it.getTimestamp("timeStamp", behaviour)!!.toDate()
 
@@ -3548,6 +3639,7 @@ class MarketOffer(
                     df.add(Calendar.DAY_OF_MONTH, 5)
 
                     afterExpiryDate = df.time
+                    Log.d("afterExpiryDate", afterExpiryDate.formatToString())
                 }
             }
         }
@@ -3579,17 +3671,7 @@ class MarketOffer(
     }*/
 
     @Exclude fun getGenericStatsOffer(): String{
-        return "item quality: ${when (this.item?.quality) {
-            0 -> "<font color=#535353>Poor</font>"
-            1 -> "<font color=#FFFFFF>Common</font>"
-            2 -> "<font color=#8DD837>Uncommon</font>"
-            3 -> "<font color=#5DBDE9>Rare</font>"
-            4 -> "<font color=#058DCA>Very rare</font>"
-            6 -> "<font color=#9136A2>Epic gamer item</font>"
-            8 -> "<font color=#FF9800>Legendary</font>"
-            11 -> "<font color=#FFE500>Heirloom</font>"
-            else -> "unspecified"
-        }}<br/>class: ${when (this.item?.charClass) {
+        return "item quality: ${ this.item?.getQualityString() }<br/>class: ${when (this.item?.charClass) {
             0 -> "everyone"
             1 -> "Vampire"
             2 -> "Dwarf"
@@ -3616,7 +3698,7 @@ class MarketOffer(
                 }
     }
     @Exclude fun getSpecStatsOffer(): String{
-        return "Coins: ${this.priceCoins}<br/>CubeCoins: ${this.priceCubeCoins}"
+        return "CC: ${this.priceCoins}<br/>Cubix: ${this.priceCubeCoins}"
     }
 }
 
@@ -3825,7 +3907,7 @@ open class NPC(
         }else {
             Memory.defCounter = 0
             this.chosenSpellsDefense[round] = if(energyX >= Memory.nextSpell.energy){
-                Memory.savingCounter -= (this.chosenSpellsDefense[round]!!.energy / 25)
+                Memory.savingCounter -= (Memory.nextSpell.energy ?: 25 / 25)
                 Memory.nextSpell
             }else {
                 Memory.savingCounter++
@@ -4087,16 +4169,14 @@ class CustomTextView : TextView {
         }
         this.movementMethod = ScrollingMovementMethod()
 
-        if(boldTemp){
-            Handler().postDelayed({
-                if(!alreadyHtml)this.setHTMLText("<b>${this.text}</b>")
-            }, 1)
+        this.post {
+            if(boldTemp && !alreadyHtml)this.setHTMLText("<b>${this.text}</b>")
         }
     }
 
-    constructor(context: Context) : super(context) {}
+    constructor(context: Context) : super(context)
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
     fun setFont(fontID: Int){
         this.customFont = fontID
@@ -4123,10 +4203,11 @@ class CustomTextView : TextView {
     fun setHTMLText(text: String) {
         if(!alreadyHtml) alreadyHtml = true
 
+        val textString = if(boldTemp) "<b>$text</b>" else text
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY), BufferType.SPANNABLE)
+            setText(Html.fromHtml(textString, Html.FROM_HTML_MODE_LEGACY), BufferType.SPANNABLE)
         } else {
-            setText(Html.fromHtml(text), BufferType.SPANNABLE)
+            setText(Html.fromHtml(textString), BufferType.SPANNABLE)
         }
     }
 }
@@ -4161,9 +4242,9 @@ class CustomEditText : androidx.appcompat.widget.AppCompatEditText {
         this.scrollBarSize = 0
         this.scrollBarFadeDuration = 0
 
-        Handler().postDelayed({
+        /*Handler().postDelayed({
             this.setHTMLText("<b>${this.text}</b>")
-        }, 50)
+        }, 50)*/
 
         /*this.movementMethod = ScrollingMovementMethod()
         this.scrollBarFadeDuration = 0
@@ -4405,6 +4486,36 @@ data class FactionMember(
         this.level = Data.player.level
         return this
     }
+
+    override fun hashCode(): Int {
+        var result = username.hashCode()
+        result = 31 * result + role.hashCode()
+        result = 31 * result + level
+        result = 31 * result + allies.hashCode()
+        result = 31 * result + captureDate.hashCode()
+        result = 31 * result + profilePictureID.hashCode()
+        result = 31 * result + goldGiven.hashCode()
+        result = 31 * result + activeDate.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as FactionMember
+
+        if (username != other.username) return false
+        if (role != other.role) return false
+        if (level != other.level) return false
+        if (allies != other.allies) return false
+        if (captureDate != other.captureDate) return false
+        if (profilePictureID != other.profilePictureID) return false
+        if (goldGiven != other.goldGiven) return false
+        if (activeDate != other.activeDate) return false
+
+        return true
+    }
 }
 
 class FactionActionLog(
@@ -4416,6 +4527,28 @@ class FactionActionLog(
     @Exclude fun getDesc(): String{
         return this.captured.toLocaleString() + ": " + this.caller + this.action + this.receiver
     }
+
+    override fun hashCode(): Int {
+        var result = caller.hashCode()
+        result = 31 * result + action.hashCode()
+        result = 31 * result + receiver.hashCode()
+        result = 31 * result + captured.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as FactionActionLog
+
+        if (caller != other.caller) return false
+        if (action != other.action) return false
+        if (receiver != other.receiver) return false
+        if (captured != other.captured) return false
+
+        return true
+    }
 }
 
 class FactionChatComponent(
@@ -4423,7 +4556,7 @@ class FactionChatComponent(
         var content: String = ""
 )
 
-class Faction(                     //TODO new messages in chat
+class Faction(
         var name: String = "template",
         var leader: String = Data.player.username
 ): Serializable{
@@ -4631,6 +4764,64 @@ class Faction(                     //TODO new messages in chat
             string += i.getDesc() + "\n"
         }
         return string
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + leader.hashCode()
+        result = 31 * result + captureDate.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + externalDescription.hashCode()
+        result = 31 * result + id
+        result = 31 * result + members.hashCode()
+        result = 31 * result + allyFactions.hashCode()
+        result = 31 * result + enemyFactions.hashCode()
+        result = 31 * result + pendingInvitationsPlayer.hashCode()
+        result = 31 * result + pendingInvitationsFaction.hashCode()
+        result = 31 * result + taxPerDay
+        result = 31 * result + level
+        result = 31 * result + experience
+        result = 31 * result + gold
+        result = 31 * result + warnMessage.hashCode()
+        result = 31 * result + invitationMessage.hashCode()
+        result = 31 * result + actionLog.hashCode()
+        result = 31 * result + openToAllies.hashCode()
+        result = 31 * result + fame
+        result = 31 * result + democracy.hashCode()
+        result = 31 * result + recruiter.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Faction
+
+        if (name != other.name) return false
+        if (leader != other.leader) return false
+        if (captureDate != other.captureDate) return false
+        if (description != other.description) return false
+        if (externalDescription != other.externalDescription) return false
+        if (id != other.id) return false
+        if (members != other.members) return false
+        if (allyFactions != other.allyFactions) return false
+        if (enemyFactions != other.enemyFactions) return false
+        if (pendingInvitationsPlayer != other.pendingInvitationsPlayer) return false
+        if (pendingInvitationsFaction != other.pendingInvitationsFaction) return false
+        if (taxPerDay != other.taxPerDay) return false
+        if (level != other.level) return false
+        if (experience != other.experience) return false
+        if (gold != other.gold) return false
+        if (warnMessage != other.warnMessage) return false
+        if (invitationMessage != other.invitationMessage) return false
+        if (actionLog != other.actionLog) return false
+        if (openToAllies != other.openToAllies) return false
+        if (fame != other.fame) return false
+        if (democracy != other.democracy) return false
+        if (recruiter != other.recruiter) return false
+
+        return true
     }
 }
 

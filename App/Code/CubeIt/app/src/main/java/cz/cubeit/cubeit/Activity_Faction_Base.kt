@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
@@ -91,7 +92,7 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({ hideSystemUI() }, 1000)
+                Handler().postDelayed({ hideSystemUI() }, 1000)
             }
         }
 

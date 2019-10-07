@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.PorterDuff
 import android.os.Bundle
+import android.os.Handler
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -143,7 +144,7 @@ class Fragment_Faction_Create : Fragment() {
 
             rowMain.setOnClickListener {
                 rowMain.isEnabled = false
-                handler.postDelayed({rowMain.isEnabled = true}, 50)
+                Handler().postDelayed({rowMain.isEnabled = true}, 50)
                 if(add){
                     activity.faction.pendingInvitationsPlayer.add(collection[position])
                     activity.inviteAllies.remove(collection[position])

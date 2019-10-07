@@ -3,6 +3,7 @@ package cz.cubeit.cubeit
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
@@ -134,7 +135,7 @@ class Fragment_Faction_Managment : Fragment() {
 
             rowMain.setOnLongClickListener {
                 rowMain.isEnabled = false
-                handler.postDelayed({rowMain.isEnabled = true}, 50)
+                Handler().postDelayed({rowMain.isEnabled = true}, 50)
 
                 parent.update()
                 true

@@ -3,12 +3,10 @@ package cz.cubeit.cubeit
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.content.ClipDescription
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
-import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.FragmentManager
@@ -19,29 +17,70 @@ import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_character.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
 import kotlin.math.abs
 
-private var ClipDataIndex:Int? = null
-private var draggedItem:Item? = null
-private var sourceOfDrag = ""
-private var openedBagViewStats = false
 
 @Suppress("DEPRECATION")
 class Activity_Character : AppCompatActivity() {
-    private var lastClicked = ""
     private var hidden = false
     private val handler = Handler()
     private var clicks = 0
     var animUpText: Animation? = null
     var animDownText: Animation? = null
     var displayY: Double = 0.0
+    var inventoryListView: ListView? = null
+    lateinit var textViewInfoItemTemp: CustomTextView
+    lateinit var imageViewRune0Temp: ImageView
+    lateinit var imageViewRune1Temp: ImageView
+    lateinit var context: Context
 
     var animatorStatsUp = ValueAnimator()
     var animatorStatsDown = ValueAnimator()
     var statsShowed = false
     var statsLocked = false
+
+    fun refreshItemsLayout(updateStats: Boolean = false){
+        if(inventoryListView != null){
+            Log.d("refreshItemsLayout", "refreshed")
+            Data.player.syncStats()
+            (inventoryListView!!.adapter as InventoryView).dragItemSync()
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
+
+            initBag()
+            if(updateStats) updateCharStats()
+        }
+    }
+
+    private fun initBag(){
+        if(Data.player.backpackRunes[1] != null){
+            imageViewRune1Temp.setBackgroundResource(Data.player.backpackRunes[1]!!.getBackground())
+            imageViewRune1Temp.setImageResource(Data.player.backpackRunes[1]!!.drawable)
+            imageViewRune1Temp.isClickable = true
+        } else{
+            imageViewRune1Temp.setImageResource(0)
+            imageViewRune1Temp.setBackgroundResource(R.drawable.emptyslot)
+            imageViewRune1Temp.isClickable = false
+        }
+
+        if(Data.player.backpackRunes[0] != null){
+            imageViewRune0Temp.setImageResource(Data.player.backpackRunes[0]!!.drawable)
+            imageViewRune0Temp.setBackgroundResource(Data.player.backpackRunes[0]!!.getBackground())
+            imageViewRune0Temp.isClickable = true
+        }else{
+            imageViewRune0Temp.setBackgroundResource(R.drawable.emptyslot)
+            imageViewRune0Temp.setImageResource(0)
+            imageViewRune0Temp.isClickable = false
+        }
+
+        imageViewRune1Temp.background.clearColorFilter()
+        imageViewRune1Temp.clearColorFilter()
+
+        imageViewRune0Temp.background.clearColorFilter()
+        imageViewRune0Temp.clearColorFilter()
+    }
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -69,7 +108,7 @@ class Activity_Character : AppCompatActivity() {
         progressBarCharacterXp.progress = Data.player.experience
         progressBarCharacterXp.max = (Data.player.level * 0.75 * (8 * (Data.player.level*0.8) * (3))).toInt()
         textViewCharacterLevel.text = Data.player.level.toString()
-        textViewCharacterXp.text = progressBarCharacterXp.progress.toString() + " / " + progressBarCharacterXp.max.toString()
+        textViewCharacterXp.text = "${progressBarCharacterXp.progress} / ${progressBarCharacterXp.max}"
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
@@ -129,11 +168,24 @@ class Activity_Character : AppCompatActivity() {
         setContentView(R.layout.activity_character)
         Data.newLevel = false
 
+        imageViewRune0Temp = imageViewRune0
+        imageViewRune1Temp = imageViewRune1
+        inventoryListView = listViewInventory
+        textViewInfoItemTemp = textViewShopItemInfo
+        context = this
+
+        initBag()
+
         progressBarCharacterXp.progress = Data.player.experience
         progressBarCharacterXp.max = (Data.player.level * 0.75 * (8 * (Data.player.level*0.8) * (3))).toInt()
         textViewCharacterLevel.text = Data.player.level.toString()
         textViewCharacterXp.text = progressBarCharacterXp.progress.toString() + " / " + progressBarCharacterXp.max.toString()
 
+        listViewInventory.smoothScrollByOffset(2)
+
+        imageViewCharacterBag.setOnDragListener(runesDragListener)
+        imageViewRune0.setOnDragListener(runesDragListener)
+        imageViewRune1.setOnDragListener(runesDragListener)
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -143,7 +195,7 @@ class Activity_Character : AppCompatActivity() {
                 R.anim.animation_shop_text_up)
         animDownText = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_shop_text_down)
-        textViewInfoItem.startAnimation(animDownText)
+        textViewShopItemInfo.startAnimation(animDownText)
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
@@ -165,367 +217,10 @@ class Activity_Character : AppCompatActivity() {
 
         frameLayoutMenuCharacter.y = dm.heightPixels.toFloat()
 
-        val bagViewV = findViewById<View>(R.id.imageViewCharacterBag)
-
-        if(Data.player.backpackRunes[0]!=null){
-            buttonBag0.setImageResource(Data.player.backpackRunes[0]!!.drawable)
-            buttonBag0.setBackgroundResource(Data.player.backpackRunes[0]!!.getBackground())
-            buttonBag0.isEnabled = true
-            buttonBag0.isClickable = false
-        }else{
-            buttonBag0.setBackgroundResource(R.drawable.emptyslot)
-            buttonBag0.setImageResource(0)
-            buttonBag0.isEnabled = false
-            buttonBag0.isClickable = true
-        }
-        if(Data.player.backpackRunes[1]!=null){
-            buttonBag1.setBackgroundResource(Data.player.backpackRunes[1]!!.getBackground())
-            buttonBag1.setImageResource(Data.player.backpackRunes[1]!!.drawable)
-            buttonBag1.isEnabled = true
-            buttonBag1.isClickable = true
-        } else{
-            buttonBag1.setImageResource(0)
-            buttonBag1.setBackgroundResource(R.drawable.emptyslot)
-            buttonBag1.isEnabled = false
-            buttonBag1.isClickable = false
-        }
-
-
-        //DRAG LISTENER for player's equip
-        val equipDragListener = View.OnDragListener { v, event ->
-            when (event.action) {
-                DragEvent.ACTION_DRAG_STARTED -> {
-                    if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-
-                        v.invalidate()
-                        //fragmentCharacter.setBackgroundColor(Color.BLUE)
-                        true
-                    } else {
-                        false
-                    }
-                }
-                DragEvent.ACTION_DRAG_ENTERED -> {
-                    //fragmentCharacter.view!!.setBackgroundColor(Color.GREEN)
-                    v.invalidate()
-                    true
-                }
-                DragEvent.ACTION_DRAG_EXITED -> {
-                    v.invalidate()
-                    true
-                }
-                DragEvent.ACTION_DROP -> {
-                    v.invalidate()
-                    true
-                }
-
-                DragEvent.ACTION_DRAG_ENDED -> {
-
-                    v.invalidate()
-                    //fragmentCharacter.view!!.setBackgroundColor(Color.TRANSPARENT)
-
-                    val index = ClipDataIndex
-
-                    /*if(index!=null){
-
-                        val button: ImageView = when (Data.player.inventory[index]?.slot) {
-                            0 -> fragmentCharacterProfile.profile_EquipItem0
-                            1 -> fragmentCharacterProfile.profile_EquipItem1
-                            2 -> fragmentCharacterProfile.profile_EquipItem2
-                            3 -> fragmentCharacterProfile.profile_EquipItem3
-                            4 -> fragmentCharacterProfile.profile_EquipItem4
-                            5 -> fragmentCharacterProfile.profile_EquipItem5
-                            6 -> fragmentCharacterProfile.profile_EquipItem6
-                            7 -> fragmentCharacterProfile.profile_EquipItem7
-                            8 -> fragmentCharacterProfile.profile_EquipItem8
-                            9 -> fragmentCharacterProfile.profile_EquipItem9
-                            else -> fragmentCharacterProfile.profile_EquipItem0
-                        }
-                        when (event.result) {
-                            true -> {
-                                if(Data.player.inventory[index] is Wearable || Data.player.inventory[index] is Weapon) {
-                                    val Memory: Item?
-
-                                    if (Data.player.equip[Data.player.inventory[index]!!.slot] == null) {
-                                        Data.player.inventory[index]?.drawable?.let { button.setImageResource(it) }
-                                        button.isEnabled = true
-                                        Data.player.equip[Data.player.inventory[index]!!.slot] = Data.player.inventory[index]
-                                        Data.player.inventory[index] = null
-                                    } else {
-                                        Data.player.inventory[index]?.drawable?.let { button.setImageResource(it) }
-                                        button.isEnabled = true
-                                        val item1 = Data.player.inventory[index]
-                                        Memory = Data.player.equip[item1?.slot ?: 0]
-                                        val item2 = Data.player.inventory[index]
-                                        Data.player.equip[item2?.slot ?: 0] = Data.player.inventory[index]
-                                        Data.player.inventory[index] = Memory
-                                    }
-                                }
-                            }
-                            false -> null
-                        }}*/
-                    (inventoryListView.adapter as InventoryView).dragItemSync()
-
-
-                    true
-                }
-                else -> {
-                    false
-                }
-            }
-        }
-
-        val runesDragListener = View.OnDragListener { v, event ->
-            // Handles each of the expected events
-            when (event.action) {
-                DragEvent.ACTION_DRAG_STARTED -> {
-                    // Determines if this View can accept the dragged data
-                    if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                        // As an example of what your application might do,
-                        // applies a blue color tint to the View to indicate that it can accept
-                        // data.
-
-                        // Invalidate the view to force a redraw in the new tint
-                        v.invalidate()
-
-                        // returns true to indicate that the View can accept the dragged data.
-                        true
-                    } else {
-                        // Returns false. During the current drag and drop operation, this View will
-                        // not receive events again until ACTION_DRAG_ENDED is sent.
-                        false
-                    }
-                }
-                DragEvent.ACTION_DRAG_ENTERED -> {
-                    // Applies a green tint to the View. Return true; the return value is ignored.
-
-                    // Invalidate the view to force a redraw in the new tint
-                    v.invalidate()
-                    true
-                }
-                DragEvent.ACTION_DRAG_EXITED -> {
-                    // Re-sets the color tint to blue. Returns true; the return value is ignored.
-
-                    // Invalidate the view to force a redraw in the new tint
-                    v.invalidate()
-                    true
-                }
-                DragEvent.ACTION_DROP -> {
-                    // Invalidates the view to force a redraw
-                    v.invalidate()
-
-                    // Returns true. DragEvent.getResult() will return true.
-                    true
-                }
-
-                DragEvent.ACTION_DRAG_ENDED -> {
-                    // Turns off any color tinting
-                    // Invalidates the view to force a redraw
-                    v.invalidate()
-
-                    // Does a getResult(), and displays what happened.
-
-                    val index = ClipDataIndex
-
-                    if(index !=null&& Data.player.inventory[index] is Runes) {
-
-                        val button: ImageView = when (Data.player.inventory[index]!!.slot) {
-                            10 -> buttonBag0
-                            11 -> buttonBag1
-                            else -> buttonBag0
-                        }
-
-                        when (event.result) {
-                            true -> {
-                                val tempMemory: Item?
-
-                                if (Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] == null) {
-                                    button.setImageResource(Data.player.inventory[index]!!.drawable)
-                                    button.setBackgroundResource(Data.player.inventory[index]!!.getBackground())
-                                    button.isEnabled = true
-                                    Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] = (Data.player.inventory[index] as Runes)
-                                    Data.player.inventory[index] = null
-                                } else {
-                                    if(abs(Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]!!.inventorySlots - Data.player.inventory[index]!!.inventorySlots) > 0){
-                                        var tempEmptySpaces = 0
-                                        for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
-                                            if(Data.player.inventory[i] == null){
-                                                tempEmptySpaces++
-                                            }
-                                        }
-
-                                        if(tempEmptySpaces > abs(Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]!!.inventorySlots - Data.player.inventory[index]!!.inventorySlots)){
-                                            for(i in (Data.player.inventory.size-1-abs(Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]!!.inventorySlots - Data.player.inventory[index]!!.inventorySlots)) until Data.player.inventory.size){
-                                                if(Data.player.inventory[i]!=null){
-                                                    val tempItem = Data.player.inventory[i]
-                                                    Data.player.inventory[i] = null
-                                                    Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
-                                                }
-                                            }
-                                            button.setImageResource(Data.player.inventory[index]!!.drawable)
-                                            button.isEnabled = true
-                                            tempMemory = Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]
-                                            Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] = (Data.player.inventory[index] as Runes)
-                                            Data.player.inventory[index] = tempMemory
-                                        }
-                                    }else{
-                                        button.setImageResource(Data.player.inventory[index]!!.drawable)
-                                        button.isEnabled = true
-                                        tempMemory = Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10]
-                                        Data.player.backpackRunes[Data.player.inventory[index]!!.slot-10] = (Data.player.inventory[index] as Runes)
-                                        Data.player.inventory[index] = tempMemory
-                                    }
-                                }
-                            }
-                            else -> null
-                        }
-                        (inventoryListView.adapter as InventoryView).dragItemSync()
-                    }
-
-                    // returns true; the value is ignored.
-                    true
-                }
-                else -> {
-                    // An unknown action type was received.
-                    false
-                }
-            }
-        }
-
-        val inventoryDragListener = View.OnDragListener { v, event ->
-            // Handles each of the expected events
-            when (event.action) {
-                DragEvent.ACTION_DRAG_STARTED -> {
-                    // Determines if this View can accept the dragged data
-                    if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                        // As an example of what your application might do,
-                        // applies a blue color tint to the View to indicate that it can accept
-                        // data.
-
-
-                        // Invalidate the view to force a redraw in the new tint
-                        v.invalidate()
-
-                        // returns true to indicate that the View can accept the dragged data.
-                        true
-                    } else {
-                        // Returns false. During the current drag and drop operation, this View will
-                        // not receive events again until ACTION_DRAG_ENDED is sent.
-                        false
-                    }
-                }
-                DragEvent.ACTION_DRAG_ENTERED -> {
-                    // Applies a green tint to the View. Return true; the return value is ignored.
-
-                    // Invalidate the view to force a redraw in the new tint
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        frameLayoutCharacterProfile.cancelDragAndDrop()
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        bagViewV.cancelDragAndDrop()
-                    }
-                    v.invalidate()
-                    true
-                }
-                DragEvent.ACTION_DRAG_EXITED -> {
-                    // Re-sets the color tint to blue. Returns true; the return value is ignored.
-
-                    // Invalidate the view to force a redraw in the new tint
-                    v.invalidate()
-                    true
-                }
-                DragEvent.ACTION_DROP -> {
-                    // Invalidates the view to force a redraw
-                    v.invalidate()
-
-                    // Returns true. DragEvent.getResult() will return true.
-                    true
-                }
-
-                DragEvent.ACTION_DRAG_ENDED -> {
-                    // Turns off any color tinting
-                    // Invalidates the view to force a redraw
-                    v.invalidate()
-
-                    // Does a getResult(), and displays what happened.
-
-                    val index = ClipDataIndex
-
-                    when (event.result) {
-                        true -> {
-                            if(sourceOfDrag!="inventory") {
-                                when (draggedItem) {
-                                    is Weapon, is Wearable -> {
-
-                                    }
-                                    is Runes -> {
-                                        val buttonBag = when (index) {
-                                            0 -> buttonBag0
-                                            1 -> buttonBag1
-                                            else -> buttonBag0
-                                        }
-                                        if (Data.player.backpackRunes[index!!] != null) {
-                                            if(Data.player.backpackRunes[0]!!.inventorySlots > 0){
-                                                var tempEmptySpaces = 0
-                                                for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
-                                                    if(Data.player.inventory[i] == null){
-                                                        tempEmptySpaces++
-                                                    }
-                                                }
-                                                if(tempEmptySpaces > Data.player.backpackRunes[0]!!.inventorySlots){
-                                                    if(Data.player.inventory.contains(null)){
-                                                        for(i in (Data.player.inventory.size-1-Data.player.backpackRunes[0]!!.inventorySlots) until Data.player.inventory.size){
-                                                            if(Data.player.inventory[i]!=null){
-                                                                val tempItem = Data.player.inventory[i]
-                                                                Data.player.inventory[i] = null
-                                                                Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
-                                                            }
-                                                        }
-
-                                                        buttonBag0.setImageResource(R.drawable.emptyslot)
-                                                        Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
-                                                        Data.player.backpackRunes[0] = null
-                                                        buttonBag0.isEnabled = false
-                                                        (inventoryListView.adapter as InventoryView).dragItemSync()
-                                                    }
-                                                }
-                                            }else{
-                                                if(Data.player.inventory.contains(null)){
-                                                    buttonBag0.setImageResource(R.drawable.emptyslot)
-                                                    Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
-                                                    Data.player.backpackRunes[0] = null
-                                                    buttonBag0.isEnabled = false
-                                                    (inventoryListView.adapter as InventoryView).dragItemSync()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else -> null
-                    }
-                    // returns true; the value is ignored.
-                    true
-                }
-                else -> {
-                    // An unknown action type was received.
-                    Log.e("Runes dragDrop: ", "Unknown action type received by OnDragListener.")
-                    false
-                }
-            }
-        }
-
-        buttonBag0.setOnTouchListener(object : Class_OnSwipeTouchListener(this, buttonBag0) {
+        imageViewRune0.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune0) {
             override fun onClick() {
                 super.onClick()
-
-                /*buttonBag0.isPressed = true
-                Handler().postDelayed({
-                    buttonBag0.isPressed = false
-                }, 50)*/
-                //if(!hidden && lastClicked=="runes0"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-                lastClicked = "runes0"
-                textViewInfoItem.setHTMLText(Data.player.backpackRunes[0]?.getStats()!!)
+                textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[0]?.getStats() ?: "")
             }
 
             override fun onDoubleClick() {
@@ -547,64 +242,60 @@ class Activity_Character : AppCompatActivity() {
                                 }
                             }
 
-                            buttonBag0.setImageResource(0)
-                            buttonBag0.setBackgroundResource(R.drawable.emptyslot)
+                            imageViewRune0.setImageResource(0)
+                            imageViewRune0.setBackgroundResource(R.drawable.emptyslot)
                             Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
                             Data.player.backpackRunes[0] = null
-                            buttonBag0.isEnabled = false
-                            (inventoryListView.adapter as InventoryView).dragItemSync()
+                            imageViewRune0.isClickable = false
+                            (listViewInventory.adapter as InventoryView).dragItemSync()
                         }
                     }
                 }else{
                     if(Data.player.inventory.contains(null)){
-                        buttonBag0.setImageResource(0)
-                        buttonBag0.setBackgroundResource(R.drawable.emptyslot)
+                        imageViewRune0.setImageResource(0)
+                        imageViewRune0.setBackgroundResource(R.drawable.emptyslot)
                         Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
                         Data.player.backpackRunes[0] = null
-                        buttonBag0.isEnabled = false
-                        (inventoryListView.adapter as InventoryView).dragItemSync()
+                        imageViewRune0.isClickable = false
+                        (listViewInventory.adapter as InventoryView).dragItemSync()
                     }
                 }
                 updateCharStats()
             }
 
-            /*override fun onLongClick() {
+            override fun onLongClick() {
                 super.onLongClick()
-                buttonBag0.tag = "Runes0"
 
-                val item = ClipData.Item("Runes0")
-                ClipDataIndex = 0
-                draggedItem = Data.player.backpackRunes[0]
-                buttonBag0.setImageResource(0)
+                textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[0]?.getStats() ?: "")
+                if(Data.player.backpackRunes[0] != null){
+                    val item = ClipData.Item(Data.player.backpackRunes[0]?.slot.toString())
 
-                val dragData = ClipData(
-                        buttonBag0.tag as? CharSequence,
-                        arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN),
-                        item)
+                    // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                    // the already-created item. This will create a new ClipDescription object within the
+                    // ClipData, and set its MIME type entry to "text/plain"
+                    val dragData = ClipData(
+                            "runes",
+                            arrayOf(Data.player.backpackRunes[0]?.slot.toString()),
+                            item)
 
-                val myShadow = MyDragShadowBuilder(buttonBag0)
+                    // Instantiates the drag shadow builder.
+                    val myShadow = ItemDragListener(imageViewRune0)
 
-                // Starts the drag
-                buttonBag0.startDrag(
-                        dragData,   // the data to be dragged
-                        myShadow,   // the drag shadow builder
-                        null,       // no need to use local data
-                        0           // flags (not currently used, set to 0)
-                )
-            }*/
+                    // Starts the drag
+                    imageViewRune0.startDrag(
+                            dragData,   // the data to be dragged
+                            myShadow,   // the drag shadow builder
+                            null,       // no need to use local data
+                            0           // flags (not currently used, set to 0)
+                    )
+                }
+            }
         })
 
-        buttonBag1.setOnTouchListener(object : Class_OnSwipeTouchListener(this, buttonBag1) {
+        imageViewRune1.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune1) {
             override fun onClick() {
                 super.onClick()
-                /*buttonBag1.isPressed = true
-                Handler().postDelayed({
-                    buttonBag1.isPressed = false
-                }, 50)*/
-
-                //if(!hidden && lastClicked=="runes1"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-                lastClicked = "runes1"
-                textViewInfoItem.setHTMLText(Data.player.backpackRunes[1]?.getStats()!!)
+                textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[1]?.getStats() ?: "")
             }
 
             override fun onDoubleClick() {
@@ -626,60 +317,59 @@ class Activity_Character : AppCompatActivity() {
                                 }
                             }
 
-                            buttonBag1.setImageResource(0)
-                            buttonBag1.setBackgroundResource(R.drawable.emptyslot)
+                            imageViewRune1.setImageResource(0)
+                            imageViewRune1.setBackgroundResource(R.drawable.emptyslot)
                             Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[1]
                             Data.player.backpackRunes[1] = null
-                            buttonBag1.isEnabled = false
-                            (inventoryListView.adapter as InventoryView).dragItemSync()
+                            imageViewRune1.isClickable = true
+                            (listViewInventory.adapter as InventoryView).dragItemSync()
                         }
                     }
                 }else{
                     if(Data.player.inventory.contains(null)){
-                        buttonBag1.setImageResource(0)
-                        buttonBag1.setBackgroundResource(R.drawable.emptyslot)
+                        imageViewRune1.setImageResource(0)
+                        imageViewRune1.setBackgroundResource(R.drawable.emptyslot)
                         Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[1]
                         Data.player.backpackRunes[1] = null
-                        buttonBag1.isEnabled = false
-                        (inventoryListView.adapter as InventoryView).dragItemSync()
+                        imageViewRune1.isClickable = false
+                        (listViewInventory.adapter as InventoryView).dragItemSync()
                     }
                 }
                 updateCharStats()
             }
 
-            /*override fun onLongClick() {
+            override fun onLongClick() {
                 super.onLongClick()
-                buttonBag1.tag = "Runes1"
 
-                val item = ClipData.Item("Runes1")
-                ClipDataIndex = 1
-                draggedItem = Data.player.backpackRunes[1]
-                buttonBag1.setImageResource(0)
+                textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[1]?.getStats() ?: "")
+                if(Data.player.backpackRunes[1] != null){
+                    val item = ClipData.Item(Data.player.backpackRunes[1]?.slot.toString())
 
-                // Create a new ClipData using the tag as a label, the plain text MIME type, and
-                // the already-created item. This will create a new ClipDescription object within the
-                // ClipData, and set its MIME type entry to "text/plain"
-                val dragData = ClipData(
-                        buttonBag1.tag as? CharSequence,
-                        arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN),
-                        item)
+                    // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                    // the already-created item. This will create a new ClipDescription object within the
+                    // ClipData, and set its MIME type entry to "text/plain"
+                    val dragData = ClipData(
+                            "runes",
+                            arrayOf(Data.player.backpackRunes[1]?.slot.toString()),
+                            item)
 
-                // Instantiates the drag shadow builder.
-                val myShadow = MyDragShadowBuilder(buttonBag1)
+                    // Instantiates the drag shadow builder.
+                    val myShadow = ItemDragListener(imageViewRune1)
 
-                // Starts the drag
-                buttonBag1.startDrag(
-                        dragData,   // the data to be dragged
-                        myShadow,   // the drag shadow builder
-                        null,       // no need to use local data
-                        0           // flags (not currently used, set to 0)
-                )
-            }*/
+                    // Starts the drag
+                    imageViewRune1.startDrag(
+                            dragData,   // the data to be dragged
+                            myShadow,   // the drag shadow builder
+                            null,       // no need to use local data
+                            0           // flags (not currently used, set to 0)
+                    )
+                }
+            }
         })
-        inventoryListView.adapter = InventoryView(frameLayoutCharacterStats, hidden, animUpText!!, animDownText!!, Data.player, textViewInfoItem, buttonBag0, buttonBag1, lastClicked, supportFragmentManager, equipDragListener, runesDragListener, bagViewV,frameLayoutCharacterProfile, this)
+        listViewInventory.adapter = InventoryView(this, Data.player, textViewShopItemInfo, imageViewRune0, imageViewRune1, supportFragmentManager, imageViewCharacterBag, frameLayoutCharacterProfile, this)
     }
 
-    private class InventoryView(val frameLayoutCharacterStats: FrameLayout, var hidden:Boolean, val animUpText: Animation, val animDownText: Animation, var playerC:Player, val textViewInfoItem: CustomTextView, val buttonBag0:ImageView, val buttonBag1:ImageView, var lastClicked:String, val supportFragmentManager: FragmentManager, val equipDragListener:View.OnDragListener?, val runesDragListener:View.OnDragListener?, val bagView:View, val equipView: View,
+    private class InventoryView(val activity: Activity_Character, var playerC:Player, val textViewInfoItem: CustomTextView, val buttonBag0:ImageView, val buttonBag1:ImageView, val supportFragmentManager: FragmentManager, val bagView:View, val equipView: View,
                                 /*val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView,*/ private val context: Context) : BaseAdapter() {
 
         override fun getCount(): Int {
@@ -695,8 +385,6 @@ class Activity_Character : AppCompatActivity() {
         }
 
         fun dragItemSync() {
-            openedBagViewStats = true
-
             this.notifyDataSetChanged()
         }
 
@@ -704,19 +392,18 @@ class Activity_Character : AppCompatActivity() {
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
+            val indexAdapter:Int = if(position == 0) 0 else{
+                position*4
+            }
+
             if (convertView == null) {
                 val layoutInflater = LayoutInflater.from(viewGroup!!.context)
                 rowMain = layoutInflater.inflate(R.layout.row_character_inventory, viewGroup, false)
                 val viewHolder = ViewHolder(rowMain.itemInventory1, rowMain.itemInventory2, rowMain.itemInventory3, rowMain.itemInventory4)
                 rowMain.tag = viewHolder
+
             } else rowMain = convertView
             val viewHolder = rowMain.tag as ViewHolder
-
-            val indexAdapter:Int = if(position == 0) 0 else{
-                position*4
-            }
-
-            rowMain.isEnabled = false
 
             class Node(
                     val component:ImageView,
@@ -736,10 +423,10 @@ class Activity_Character : AppCompatActivity() {
                             component.apply {
                                 setImageResource(0)
                                 setBackgroundResource(R.drawable.emptyslot)
-                                isEnabled = false
                                 isClickable = false
                             }
                         }
+                        component.clearColorFilter()
                     }else{
                         component.apply {
                             isEnabled = false
@@ -749,15 +436,18 @@ class Activity_Character : AppCompatActivity() {
                         }
                     }
 
+                    component.setOnDragListener(activity.inventoryDragListener)
+                    component.tag = this.index.toString()
+
                     component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
                         override fun onClick() {
                             super.onClick()
-                            lastClicked="inventory${this@Node.index}$position"
-                            textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare()!!)
+                            textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare() ?: "")
                         }
 
                         override fun onDoubleClick() {
                             super.onDoubleClick()
+
                             getDoubleClick(this@Node.index, playerC, component)
                             if(playerC.inventory[this@Node.index] != null){
                                 textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare()!!)
@@ -766,46 +456,38 @@ class Activity_Character : AppCompatActivity() {
                             //handler.postDelayed({ dragItemSync()}, 500)
                         }
 
-                        /*override fun onLongClick() {
+                        override fun onLongClick() {
                             super.onLongClick()
-                            viewHolder.buttonInventory1.tag = "Inventory" + (index+1)
-                            draggedItem = playerC.inventory[index+1]
-                            when(playerC.inventory[index+1]){
-                                is Weapon, is Wearable -> {
-                                    equipView.setOnDragListener(equipDragListener)
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                        bagView.cancelDragAndDrop()
-                                    }
-                                }
-                                is Runes ->{
-                                    bagView.setOnDragListener(runesDragListener)
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                        equipView.cancelDragAndDrop()
-                                    }
-                                }
+
+                            textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare() ?: "")
+                            if(playerC.inventory[this@Node.index] != null){
+                                val item = ClipData.Item(this@Node.index.toString())
+
+                                // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                                // the already-created item. This will create a new ClipDescription object within the
+                                // ClipData, and set its MIME type entry to "text/plain"
+                                val dragData = ClipData(
+                                        "inventory",
+                                        arrayOf(this@Node.index.toString()),
+                                        item)
+
+                                // Instantiates the drag shadow builder.
+                                val myShadow = ItemDragListener(this@Node.component)
+
+                                // Starts the drag
+                                this@Node.component.startDrag(
+                                        dragData,   // the data to be dragged
+                                        myShadow,   // the drag shadow builder
+                                        null,       // no need to use local data
+                                        0           // flags (not currently used, set to 0)
+                                )
                             }
-                            viewHolder.buttonInventory2.setImageResource(0)
-                            sourceOfDrag = "inventory"
-
-                            val item = ClipData.Item((index+1).toString())
-                            val mimeTypes = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)
-
-                            val data = ClipData(item.toString(), mimeTypes, item)
-
-                            val myShadow = MyDragShadowBuilder(viewHolder.buttonInventory1)
-
-                            ClipDataIndex = index+1
-                            // Starts the drag
-                            viewHolder.buttonInventory2.startDrag(
-                                    data,   // the data to be dragged
-                                    myShadow,   // the drag shadow builder
-                                    null,       // no need to use local data
-                                    0           // flags (not currently used, set to 0)
-                            )
-                        }*/
+                        }
                     })
                 }
             }
+
+            rowMain.isEnabled = false
 
             Node(viewHolder.buttonInventory1, indexAdapter)
             Node(viewHolder.buttonInventory2, indexAdapter + 1)
@@ -817,19 +499,9 @@ class Activity_Character : AppCompatActivity() {
         private fun getDoubleClick(index: Int, playerC:Player, view:ImageView) {
             val tempMemory: Item?
 
-            lastClicked = ""
+            view.isEnabled = false
 
             val button:ImageView = when(playerC.inventory[index]!!.slot){
-                /*0->equipItem0
-                1->equipItem1
-                2->equipItem2
-                3->equipItem3
-                4->equipItem4
-                5->equipItem5
-                6->equipItem6
-                7->equipItem7
-                8->equipItem8
-                9->equipItem9*/
                 10->buttonBag0
                 11->buttonBag1
                 else -> buttonBag0
@@ -841,20 +513,17 @@ class Activity_Character : AppCompatActivity() {
                         if (playerC.backpackRunes[playerC.inventory[index]!!.slot-10] == null) {
                             button.setImageResource(playerC.inventory[index]!!.drawable)
                             button.setBackgroundResource(playerC.inventory[index]!!.getBackground())
-                            button.isEnabled = true
+                            button.isClickable = true
                             playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
                             playerC.inventory[index] = null
                         } else {
-                            if(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots > playerC.inventory[index]!!.inventorySlots){
-                                var tempEmptySpaces = 0
-                                for(i in 0 until Data.player.inventory.size){     //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
-                                    if(Data.player.inventory[i] == null){
-                                        tempEmptySpaces++
-                                    }
-                                }
+                            //pokud má odebíraný item atribut inventoryslots - zkontroluj, zda-li jeho sundání nesmaže itemy, které jsou pod indexem Data.player.inventoryslot - item.inventoryslots
 
-                                if(tempEmptySpaces > playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots){
-                                    for(i in (Data.player.inventory.size-1-abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)) until Data.player.inventory.size){
+                            if(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots > playerC.inventory[index]!!.inventorySlots){
+                                val tempEmptySpaces = Data.player.inventory.count { it == null }
+
+                                if(tempEmptySpaces >= playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots){
+                                    for(i in (Data.player.inventory.size - 1 - abs(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.inventorySlots - playerC.inventory[index]!!.inventorySlots)) until Data.player.inventory.size){
                                         if(Data.player.inventory[i]!=null){
                                             val tempItem = Data.player.inventory[i]
                                             Data.player.inventory[i] = null
@@ -863,15 +532,15 @@ class Activity_Character : AppCompatActivity() {
                                     }
                                     button.setImageResource(playerC.inventory[index]!!.drawable)
                                     button.setBackgroundResource(playerC.inventory[index]!!.getBackground())
-                                    button.isEnabled = true
+                                    button.isClickable = true
                                     tempMemory = playerC.backpackRunes[playerC.inventory[index]!!.slot-10]
                                     playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
                                     playerC.inventory[index] = tempMemory
-                                }
+                                }else return
                             }else{
                                 button.setImageResource(playerC.inventory[index]!!.drawable)
                                 button.setBackgroundResource(playerC.inventory[index]!!.getBackground())
-                                button.isEnabled = true
+                                button.isClickable = true
                                 tempMemory = playerC.backpackRunes[playerC.inventory[index]!!.slot-10]
                                 playerC.backpackRunes[playerC.inventory[index]!!.slot-10] = (playerC.inventory[index] as Runes)
                                 playerC.inventory[index] = tempMemory
@@ -895,6 +564,7 @@ class Activity_Character : AppCompatActivity() {
                         playerC.inventory[index] = tempMemory
                         view.setImageResource(playerC.inventory[index]!!.drawable)
                         view.setBackgroundResource(playerC.inventory[index]!!.getBackground())
+                        view.isClickable = false
                         dragItemSync()
                     }
                 }
@@ -907,36 +577,13 @@ class Activity_Character : AppCompatActivity() {
                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
             }else{
                 view.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short_small))
-                Toast.makeText(view.context, "Not compatible!", Toast.LENGTH_SHORT).show()
+                Snackbar.make(view, "Not compatible!", Snackbar.LENGTH_SHORT).show()
             }
         }
 
         private class ViewHolder(val buttonInventory1: ImageView, val buttonInventory2: ImageView, val buttonInventory3: ImageView, val buttonInventory4: ImageView)
     }
-    fun onUnEquip(view:View){
-        val index = view.tag.toString().toInt()
-        ++clicks
-        if (clicks == 2&&lastClicked=="equip$index"&& Data.player.inventory.contains(null)) {
 
-            Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.equip[index]
-            Data.player.equip[index] = null
-            view.isEnabled = false
-            (view as ImageView).setImageResource(0)
-            view.setBackgroundResource(R.drawable.emptyslot)
-            (inventoryListView.adapter as InventoryView).dragItemSync()
-            handler.removeCallbacksAndMessages(null)
-            updateCharStats()
-        } else if (clicks == 1) {                                            //SINGLE CLICK
-            //if(!hidden && lastClicked=="equip$index"){textViewInfoItem.startAnimation(animUpText);hidden = true}else if(hidden){textViewInfoItem.startAnimation(animDownText);hidden = false}
-            lastClicked="equip$index"
-            if(Data.player.equip[index]!=null){
-                textViewInfoItem.setHTMLText(Data.player.equip[index]?.getStats()!!)
-            }
-        }
-        handler.postDelayed({
-            clicks=0
-        },  300)
-    }
     fun onCharacterClicked(view: View){
 
         if(!statsLocked){
@@ -1001,22 +648,439 @@ class Activity_Character : AppCompatActivity() {
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
     }
+
+    val runesDragListener = View.OnDragListener { v, event ->               //used in Fragment_Board_Character_Profile
+        val itemIndex: Int
+        val item: Item?
+
+        when (event.action) {
+            DragEvent.ACTION_DRAG_STARTED -> {
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null && item.slot >= 10){
+                        if(item.slot - 10 == v?.tag?.toString()?.toIntOrNull()) {
+                            if((v as ImageView?)?.drawable == null){
+                                v.background?.setColorFilter(context.resources.getColor(R.color.loginColor_2), PorterDuff.Mode.SRC_ATOP)
+                            }else {
+                                v.setColorFilter(Color.BLACK)
+                            }
+                            v.invalidate()
+                        }
+                        true
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_ENTERED -> {
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null && item.slot >= 10){
+                        if(item.slot - 10 == v?.tag?.toString()?.toIntOrNull()) {
+                            if((v as ImageView?)?.drawable == null){
+                                v.background?.setColorFilter(Color.YELLOW, PorterDuff.Mode.SRC_ATOP)
+                            }else {
+                                v.setColorFilter(Color.YELLOW)
+                            }
+                            v.invalidate()
+                        }
+                        true
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_EXITED -> {
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null && item.slot >= 10){
+                        if(item.slot - 10 == v?.tag?.toString()?.toIntOrNull()) {
+                            if((v as ImageView?)?.drawable == null){
+                                v.background?.setColorFilter(context.resources.getColor(R.color.loginColor_2), PorterDuff.Mode.SRC_ATOP)
+                            }else {
+                                v.setColorFilter(Color.BLACK)
+                            }
+                            v.invalidate()
+                        }
+                        true
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DROP -> {
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+                    (v as ImageView?)?.clearColorFilter()
+                    v.invalidate()
+
+                    if(item != null && item.slot >= 10){
+                        if (Data.player.backpackRunes[item.slot - 10] == null) {
+
+                            Data.player.backpackRunes[item.slot - 10] = item.toRune()
+                            Data.player.inventory[itemIndex] = null
+                        } else {
+
+
+                            if(Data.player.backpackRunes[item.slot - 10]!!.inventorySlots > item.inventorySlots){
+                                val tempEmptySpaces = Data.player.inventory.count { it == null }
+
+                                if(tempEmptySpaces >= Data.player.backpackRunes[item.slot - 10]!!.inventorySlots - item.inventorySlots){
+                                    for(i in (Data.player.inventory.size - 1 - abs(Data.player.backpackRunes[item.slot - 10]!!.inventorySlots - item.inventorySlots)) until Data.player.inventory.size){
+                                        if(Data.player.inventory[i] != null){
+                                            val tempItem = Data.player.inventory[i]
+                                            Data.player.inventory[i] = null
+                                            Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
+                                        }
+                                    }
+                                    val tempItem = Data.player.backpackRunes[item.slot - 10]
+
+                                    Data.player.backpackRunes[item.slot - 10] = item.toRune()
+                                    Data.player.inventory[itemIndex] = tempItem
+
+                                }else return@OnDragListener false
+                            }else {
+                                val tempItem = Data.player.backpackRunes[item.slot - 10]
+
+                                Data.player.backpackRunes[item.slot - 10] = item.toRune()
+                                Data.player.inventory[itemIndex] = tempItem
+                            }
+                        }
+
+                        textViewInfoItemTemp.setHTMLText(if (Data.player.inventory[itemIndex] == null) "" else Data.player.inventory[itemIndex]!!.getStatsCompare(false))
+
+                        true
+                    } else false
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DRAG_ENDED -> {
+                v.post {
+                    this.refreshItemsLayout()
+                }
+
+                true
+            }
+            else -> {
+                false
+            }
+        }
+    }
+
+    val equipDragListener = View.OnDragListener { v, event ->               //used in Fragment_Board_Character_Profile
+        val itemIndex: Int
+        val item: Item?
+
+        when (event.action) {
+            DragEvent.ACTION_DRAG_STARTED -> {
+
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null && (item.type == "Weapon" || item.type == "Wearable") && item.slot < 10) {
+                        if(v.tag.toString().toIntOrNull() == item.slot){
+                            if((v as ImageView?)?.drawable == null){
+                                v.background?.setColorFilter(context.resources.getColor(R.color.loginColor_2), PorterDuff.Mode.SRC_ATOP)
+                            }else {
+                                v?.setColorFilter(Color.BLACK)
+                            }
+                            v.invalidate()
+                        }
+
+                        true
+                    }else false
+
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_ENTERED -> {
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null && (item.type == "Weapon" || item.type == "Wearable") && item.slot < 10) {
+                        if(v.tag.toString().toIntOrNull() == item.slot){
+                            if((v as ImageView?)?.drawable == null){
+                                v.background?.setColorFilter(Color.YELLOW, PorterDuff.Mode.SRC_ATOP)
+                            }else {
+                                v?.setColorFilter(Color.YELLOW)
+                            }
+                            v.invalidate()
+                        }
+
+                        true
+                    }else false
+
+                } else {
+                    false
+                }
+            }
+            DragEvent.ACTION_DRAG_EXITED -> {
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null && (item.type == "Weapon" || item.type == "Wearable") && item.slot < 10) {
+                        if(v.tag.toString().toIntOrNull() == item.slot){
+                            if((v as ImageView?)?.drawable == null){
+                                v.background?.setColorFilter(context.resources.getColor(R.color.loginColor_2), PorterDuff.Mode.SRC_ATOP)
+                            }else {
+                                v?.setColorFilter(Color.BLACK)
+                            }
+                            v.invalidate()
+                        }
+
+                        true
+                    }else false
+
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DROP -> {
+                if (event.clipDescription.label == "inventory") {
+                    itemIndex = event.clipDescription.getMimeType(0).toInt()
+                    item = Data.player.inventory[itemIndex]
+
+                    if(item != null && (item.type == "Weapon" || item.type == "Wearable") && item.slot < 10) {
+                        (v as ImageView?)?.clearColorFilter()
+                        v.invalidate()
+
+                        Log.d("equipDragListener", Data.player.equip[item.slot].toString())
+                        if (Data.player.equip[item.slot] == null) {
+
+                            Data.player.equip[item.slot] = item
+                            Data.player.inventory[itemIndex] = null
+                        } else {
+                            val tempItem = Data.player.equip[item.slot]
+
+                            Data.player.equip[item.slot] = item
+                            Data.player.inventory[itemIndex] = tempItem
+                        }
+
+                        textViewInfoItemTemp.setHTMLText(if (Data.player.inventory[itemIndex] == null) "" else Data.player.inventory[itemIndex]!!.getStatsCompare(false))
+
+                        true
+                    }else false
+
+                } else {
+                    false
+                }
+            }
+
+            DragEvent.ACTION_DRAG_ENDED -> {
+                v.post {
+                    this.refreshItemsLayout()
+                }
+
+                true
+            }
+            else -> {
+                false
+            }
+        }
+    }
+
+    val inventoryDragListener = View.OnDragListener { v, event ->
+        val itemIndex: Int
+        val item: Item?
+
+        when (event.action) {
+            DragEvent.ACTION_DRAG_STARTED -> {
+                itemIndex = event.clipDescription.getMimeType(0).toInt()
+                val viewIndex = v.tag.toString().toInt()
+
+                when {
+                    event.clipDescription.label == "equip" || event.clipDescription.label == "runes"  -> {
+                        if(itemIndex == Data.player.inventory[viewIndex]?.slot){
+                            (v as ImageView?)?.setColorFilter(Color.BLACK)
+                        }
+                        v.invalidate()
+
+                        //item comparison
+                        textViewInfoItemTemp.text = ""
+
+                        true
+                    }
+
+                    else -> event.clipDescription.label == "inventory"
+                }
+            }
+            DragEvent.ACTION_DRAG_ENTERED -> {
+                itemIndex = event.clipDescription.getMimeType(0).toInt()
+                val viewIndex = v.tag.toString().toInt()
+
+                when {
+                    event.clipDescription.label == "equip" || event.clipDescription.label == "runes"  -> {
+                        item = Data.player.inventory[viewIndex]
+                        if(itemIndex == item?.slot) {
+                            (v as ImageView?)?.setColorFilter(Color.YELLOW)
+                            v.invalidate()
+
+                            //item comparison
+                            textViewInfoItemTemp.setHTMLText(item.getStatsCompare())
+
+                            true
+                        }else false
+                    }
+
+                    else -> event.clipDescription.label == "inventory"
+                }
+            }
+            DragEvent.ACTION_DRAG_EXITED -> {
+                itemIndex = event.clipDescription.getMimeType(0).toInt()
+                val viewIndex = v.tag.toString().toInt()
+
+                when {
+                    event.clipDescription.label == "equip" || event.clipDescription.label == "runes"  -> {
+                        if(itemIndex == Data.player.inventory[viewIndex]?.slot) {
+                            (v as ImageView?)?.setColorFilter(Color.BLACK)
+                            v.invalidate()
+
+                            //item comparison
+                            textViewInfoItemTemp.text = ""
+
+                            true
+                        }else false
+                    }
+
+                    else -> event.clipDescription.label == "inventory"
+                }
+            }
+
+            DragEvent.ACTION_DROP -> {
+                (v as ImageView?)?.clearColorFilter()
+                v.invalidate()
+
+                when {
+                    event.clipDescription.label == "equip" -> {
+
+                        val viewIndex = v.tag.toString().toInt()
+                        itemIndex = event.clipDescription.getMimeType(0).toInt()
+                        item = Data.player.equip[itemIndex]
+
+                        if(item != null) {
+
+                            when {
+                                Data.player.inventory[viewIndex] == null -> {
+
+                                    Data.player.inventory[viewIndex] = item
+                                    Data.player.equip[itemIndex] = null
+                                }
+                                itemIndex == Data.player.inventory[viewIndex]?.slot -> {
+                                    val tempItem = Data.player.inventory[viewIndex]
+
+                                    Data.player.inventory[viewIndex] = item
+                                    Data.player.equip[itemIndex] = tempItem
+                                }
+                                else -> return@OnDragListener false
+                            }
+
+                            textViewInfoItemTemp.setHTMLText(if(Data.player.inventory[viewIndex] == null) "" else Data.player.inventory[viewIndex]!!.getStatsCompare(false))
+                        }
+
+                        true
+                    }
+                    event.clipDescription.label == "runes" -> {
+                        val viewIndex = v.tag.toString().toInt()
+                        itemIndex = event.clipDescription.getMimeType(0).toInt()
+                        item = Data.player.backpackRunes[itemIndex - 10]
+
+                        if(item != null){
+                            if(Data.player.inventory[viewIndex] != null){
+                                if(item.inventorySlots > Data.player.inventory[viewIndex]!!.inventorySlots){
+                                    val tempEmptySpaces = Data.player.inventory.count { it == null }
+
+                                    if(tempEmptySpaces >= item.inventorySlots - Data.player.inventory[viewIndex]!!.inventorySlots){
+                                        for(i in (Data.player.inventory.size - 1 - abs(item.inventorySlots - Data.player.inventory[viewIndex]!!.inventorySlots)) until Data.player.inventory.size){
+                                            if(Data.player.inventory[i]!=null){
+                                                val tempItem = Data.player.inventory[i]
+                                                Data.player.inventory[i] = null
+                                                Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
+                                            }
+                                        }
+                                        val tempItem = Data.player.inventory[viewIndex]
+
+                                        Data.player.inventory[viewIndex] = item
+                                        Data.player.backpackRunes[itemIndex - 10] = tempItem?.toRune()
+
+                                    }else return@OnDragListener false
+                                }
+
+                            }else {
+                                Data.player.inventory[viewIndex] = item
+                                Data.player.backpackRunes[itemIndex - 10] = null
+                            }
+                        }
+
+                        true
+                    }
+                    event.clipDescription.label == "inventory" -> {
+                        val viewIndex = v.tag.toString().toInt()
+                        itemIndex = event.clipDescription.getMimeType(0).toInt()
+                        item = Data.player.inventory[itemIndex]
+
+                        if(viewIndex == itemIndex) return@OnDragListener false
+
+                        if(Data.player.inventory[viewIndex] == null){
+                            Data.player.inventory[viewIndex] = item
+                            Data.player.inventory[itemIndex] = null
+                        }else {
+                            val tempItem = Data.player.inventory[viewIndex]
+                            Data.player.inventory[viewIndex] = item
+                            Data.player.inventory[itemIndex] = tempItem
+                        }
+
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            DragEvent.ACTION_DRAG_ENDED -> {
+                v.post {
+                    this.refreshItemsLayout()
+                }
+
+                true
+            }
+            else -> {
+                false
+            }
+        }
+    }
+
 }
 
+class ItemDragListener(v: View) : View.DragShadowBuilder(v) {
 
-
-private class MyDragShadowBuilder(v: View) : View.DragShadowBuilder(v) {
-
-    private val shadow = ColorDrawable(Color.LTGRAY)
+    //creates new instance of the drawable, so it doesn't pass the reference of the ImageView and messes it up
+    private val shadow = (view as ImageView).drawable.constantState!!.newDrawable()
 
     // Defines a callback that sends the drag shadow dimensions and touch point back to the
     // system.
     override fun onProvideShadowMetrics(size: Point, touch: Point) {
         // Sets the width of the shadow to half the width of the original View
-        val width: Int = view.width / 2
+        val width: Int = view.width
 
         // Sets the height of the shadow to half the height of the original View
-        val height: Int = view.height / 2
+        val height: Int = view.height
 
         // The drag shadow is a ColorDrawable. This sets its dimensions to be the same as the
         // Canvas that the system will provide. As a result, the drag shadow will fill the

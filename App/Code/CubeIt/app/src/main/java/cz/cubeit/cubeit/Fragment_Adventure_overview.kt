@@ -7,7 +7,9 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
@@ -88,9 +90,10 @@ class Fragment_Adventure_overview : Fragment() {
                 if(window.isShowing) window.dismiss()
 
                 (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility = View.GONE
+                val handler = Handler()
                 handler.removeCallbacksAndMessages(null)
                 handler.postDelayed({
-                    (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility = View.VISIBLE
+                    if(activity != null && (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility != View.VISIBLE) (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility = View.VISIBLE
                 }, 1000)
             }
         }
@@ -309,8 +312,9 @@ class AdventureQuestsOverview(
             else -> R.drawable.blue_window
         })
 
-
         val holdValid = sideQuestsAdventure[position].reward.item != null
+        rowMain.isClickable = true                  //to enable its usage in HoldTouchListener
+        rowMain.isEnabled = true
         viewHolder.imageViewAdventureOverviewClick.setOnTouchListener(object: Class_HoldTouchListener(rowMain, false, displayX, true){
 
             override fun onStartHold(x: Float, y: Float) {
@@ -320,6 +324,7 @@ class AdventureQuestsOverview(
                         viewP.textViewPopUpInfo.setHTMLText(sideQuestsAdventure[position].reward.item!!.getStatsCompare())
                         viewP.imageViewPopUpInfoItem.setBackgroundResource(sideQuestsAdventure[position].reward.item!!.getBackground())
                         viewP.imageViewPopUpInfoItem.setImageResource(sideQuestsAdventure[position].reward.item!!.drawable)
+
                         window.showAtLocation(viewP, Gravity.CENTER,0,0)
                     }
                 }
@@ -334,6 +339,8 @@ class AdventureQuestsOverview(
 
             override fun onClick() {
                 super.onClick()
+                Log.d("adventure_overview", "clicked one of the quest")
+
                 if(!Data.loadingActiveQuest){
                     if(window.isShowing) window.dismiss()
                     when(sideQuestsAdventure[position].surface){
@@ -352,7 +359,7 @@ class AdventureQuestsOverview(
                             break
                         }
                     }
-                    handler.postDelayed({Adventure().onClickQuestOverview(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview, viewP =  activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false))}, 100)
+                    Handler().postDelayed({Adventure().onClickQuestOverview(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview, viewP =  activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false), usedActivity = activity)}, 100)
                 }
             }
 

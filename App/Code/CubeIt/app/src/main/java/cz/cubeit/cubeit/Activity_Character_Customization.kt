@@ -2,6 +2,7 @@ package cz.cubeit.cubeit
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -40,7 +41,7 @@ class Activity_Character_Customization: AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
 

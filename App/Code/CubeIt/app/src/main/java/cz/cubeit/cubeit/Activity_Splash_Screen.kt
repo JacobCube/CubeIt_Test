@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
@@ -65,7 +66,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
             rocketTimer?.cancel()
             activeTimer.cancel()
             activeTimer.purge()
-            handler.removeCallbacksAndMessages(null)
+            Handler().removeCallbacksAndMessages(null)
             Data.loadingStatus = LoadingStatus.CLOSELOADING
             if(popWindow.isShowing) popWindow.dismiss()
         }
@@ -627,7 +628,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({hideSystemUI()},1000)
             }
         }
 
