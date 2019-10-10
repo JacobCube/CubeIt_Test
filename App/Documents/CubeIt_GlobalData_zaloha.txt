@@ -1,0 +1,365 @@
+var surfaces:List<Surface> = listOf(Surface(inBackground = "90000", boss = null, quests = hashMapOf(         //should be cloud saved
+        "1001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 0),
+        "1002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 0),
+        "1003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 0),
+        "1004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 0),
+        "1005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 0),
+        "1006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 0),
+        "1007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 0))),
+
+        Surface(inBackground = "90000", boss = null, quests = hashMapOf(
+                "2001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 1),
+                "2002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 1),
+                "2003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 1),
+                "2004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 1),
+                "2005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 1),
+                "2006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 1),
+                "2007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 1))),
+
+        Surface(inBackground = "90000", boss = null, quests = hashMapOf(
+                "3001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 2),
+                "3002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 2),
+                "3003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 2),
+                "3004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 2),
+                "3005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 2),
+                "3006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 2),
+                "3007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 2))),
+
+        Surface(inBackground = "90000", boss = null, quests = hashMapOf(
+                "4001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 3),
+                "4002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 3),
+                "4003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 3),
+                "4004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 3),
+                "4005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 3),
+                "4006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 3),
+                "4007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 3))),
+
+        Surface(inBackground = "90000", boss = null, quests = hashMapOf(
+                "5001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 4),
+                "5002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 4),
+                "5003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 4),
+                "5004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 4),
+                "5005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 4),
+                "5006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 4),
+                "5007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 4))),
+
+        Surface(inBackground = "90000", boss = null, quests = hashMapOf(
+                "6001" to Quest("0001","Run as fast as you can, boiiiii", "Hope you realise, that if you didn't smoke so much, it would be way easier", 1, 1*25, 1*10, 5),
+                "6002" to Quest("0002","Quest 2", "Description of quest 2", 1, 2*25, 2*10, 5),
+                "6003" to Quest("0003","Quest 3", "Description of quest 3", 2, 3*25, 3*10, 5),
+                "6004" to Quest("0004","Quest 4", "Description of quest 4", 3, 4*25, 4*10, 5),
+                "6005" to Quest("0005","Quest 5", "Description of quest 5", 4, 5*25, 5*10, 5),
+                "6006" to Quest("0006","Quest 6", "Description of quest 6", 5, 6*25, 6*10, 5),
+                "6007" to Quest("0007","Quest 7", "Description of quest 7", 6, 7*25, 7*10, 5))))
+
+var spellClasses:MutableList<LoadSpells> = mutableListOf(             //should be cloud saved
+        LoadSpells("0", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("1", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("2", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("3", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("4", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("5", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("6", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("7", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        )),
+        LoadSpells("8", mutableListOf(
+                Spell(inDrawable = "00000", name =  "Basic attack", power =  10, level =  1, description = "", ID = "0001")
+                ,Spell(inDrawable = "00001", name =  "Block", level = 1, description = "Blocks 80% of next enemy attack", ID = "0000", block = 0.8)
+                ,Spell(inDrawable = "00002", name = "Fire ball", energy = 50, power =  20, dmgOverTime =  DamageOverTime(2,10.0,0), level =  1, description = "", ID = "0002")
+                ,Spell(inDrawable = "00004", name = "Freezing touch", energy = 75, power =  30, level = 1, description = "", ID = "0003")
+                ,Spell(inDrawable = "00003", name = "Wind hug", energy = 125, power =  40, stun = 10, level = 1, description = "", ID = "0004")
+        ))
+)
+
+var itemClasses:MutableList<LoadItems> = mutableListOf(                   //should be cloud saved
+        LoadItems("0", mutableListOf(
+                Runes(name = "Backpack", type = "Runes", drawableIn =  "00303", levelRq =  1, quality =  0, charClass =  0, description =  "Why is all your stuff so heavy?!", slot = 10, price = 1)
+                ,Runes(name = "Zipper", type = "Runes", drawableIn =  "00300", levelRq =  1, quality =  0, charClass =  0, description =  "Helps you take enemy's loot faster", slot = 11, price = 1)
+                ,Wearable(name = "Universal item 1", type =  "Wearable", drawableIn = "00301", levelRq =  1, quality =  0, charClass = 0, description =  "For everyone", slot = 2, price = 1)
+                ,Wearable(name ="Universal item 2", type =  "Wearable", drawableIn =  "00302", levelRq =  1, quality = 0, charClass =  0, description =  "Not for everyone", slot =  3, price = 1)
+        )),
+        LoadItems("1", mutableListOf(
+                Weapon(name = "Minigun prototype", type = "Weapon", drawableIn =  "00506", levelRq = 1, quality = 0,charClass = 1, description = "RATATATATATATATA", slot = 0, price = 1)
+                ,Weapon(name = "Crossbow", type = "Weapon", drawableIn =  "00505", levelRq = 1, quality = 0,charClass = 1, description = "With your skill, it just whistles", slot = 0, price = 1)
+                ,Weapon(name = "Granpa's teeth", type = "Weapon", drawableIn = "00504", levelRq = 1, quality = 0,charClass = 1, description = "Heirloom", slot = 1, price = 1)
+                ,Wearable(name = "Metal mettalic boots", type ="Wearable", drawableIn = "00501", levelRq = 1, quality = 0,charClass = 1, description = "I'm not an emo, I just look like it", slot = 6, price = 1)
+                ,Wearable(name = "Bitten trousers", type ="Wearable", drawableIn = "00500", levelRq = 1, quality = 0,charClass = 1, description = "It's a heirloom from my grandpa and grandma", slot = 7, price = 1)
+                ,Wearable(name = "Cloak from the hood", type ="Wearable", drawableIn = "00502", levelRq = 1, quality = 0,charClass = 1, description = "That won't hide your face...unfortunately", slot = 8, price = 1)
+                ,Wearable(name = "Hood from the hood", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 1, description = "Nice to (not) see you", slot = 9, price = 1)
+        )),
+        LoadItems("2", mutableListOf(
+                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 2, description = "The most sold weapon on black market", slot = 0, price = 1)
+                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 2, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 2, description = "I can't breath", slot = 4, price = 1)
+                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 2, description = "What is that smell?", slot = 5, price = 1)
+                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 2, description = "Can't carry it anymore", slot = 6, price = 1)
+                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 2, description = "Tight not high", slot = 7, price = 1)
+                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 2, description = "Chestplate protects!", slot = 8, price = 1)
+                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 2, description = "This doesn't make you any more clever", slot = 9, price = 1)
+        )),
+        LoadItems("3", mutableListOf(
+                Weapon(name = "Long bow", type = "Weapon", drawableIn =  "02504", levelRq = 1, quality = 0,charClass = 3, description = "Shoot below the apple", slot = 0, price = 1)
+                ,Weapon(name = "Shadow bow", type = "Weapon", drawableIn =  "02505", levelRq = 1, quality = 0,charClass = 3, description = "Shoot below the apple and it will hit the apple", slot = 0, price = 1)
+                ,Wearable(name = "Light boots", type ="Wearable", drawableIn = "02500", levelRq = 1, quality = 0,charClass = 3, description = "Step by step.. tadatatatataaataaaa", slot = 6, price = 1)
+                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "02503", levelRq = 1, quality = 0,charClass = 3, description = "No idea how those bows fit in those", slot = 7, price = 1)
+                ,Wearable(name = "Light armor", type ="Wearable", drawableIn = "02501", levelRq = 1, quality = 0,charClass = 3, description = "It's all just a mind game", slot = 8, price = 1)
+                ,Wearable(name = "Light bycocket", type ="Wearable", drawableIn = "02502", levelRq = 1, quality = 0,charClass = 3, description = "Pointed in the front like a bird's beak", slot = 9, price = 1)
+        )),
+        LoadItems("4", mutableListOf(
+                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 4, description = "The most sold weapon on black market", slot = 0, price = 1)
+                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 4, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 4, description = "I can't breath", slot = 4, price = 1)
+                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 4, description = "What is that smell?", slot = 5, price = 1)
+                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 4, description = "Can't carry it anymore", slot = 6, price = 1)
+                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 4, description = "Tight not high", slot = 7, price = 1)
+                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 4, description = "Chestplate protects!", slot = 8, price = 1)
+                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 4, description = "This doesn't make you any more clever", slot = 9, price = 1)
+        )),
+        LoadItems("5", mutableListOf(
+                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 5, description = "The most sold weapon on black market", slot = 0, price = 1)
+                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 5, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 5, description = "I can't breath", slot = 4, price = 1)
+                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 5, description = "What is that smell?", slot = 5, price = 1)
+                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 5, description = "Can't carry it anymore", slot = 6, price = 1)
+                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 5, description = "Tight not high", slot = 7, price = 1)
+                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 5, description = "Chestplate protects!", slot = 8, price = 1)
+                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 5, description = "This doesn't make you any more clever", slot = 9, price = 1)
+        )),
+        LoadItems("6", mutableListOf(
+                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 6, description = "The most sold weapon on black market", slot = 0, price = 1)
+                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 6, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 6, description = "I can't breath", slot = 4, price = 1)
+                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 6, description = "What is that smell?", slot = 5, price = 1)
+                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 6, description = "Can't carry it anymore", slot = 6, price = 1)
+                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 6, description = "Tight not high", slot = 7, price = 1)
+                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 6, description = "Chestplate protects!", slot = 8, price = 1)
+                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 6, description = "This doesn't make you any more clever", slot = 9, price = 1)
+        )),
+        LoadItems("7", mutableListOf(
+                Weapon(name = "Sword", type = "Weapon", drawableIn =  "00407", levelRq = 1, quality = 0,charClass = 7, description = "The most sold weapon on black market", slot = 0, price = 1)
+                ,Weapon(name = "Shield", type = "Weapon", drawableIn = "00401", levelRq = 1, quality = 0,charClass = 7, description = "Blocks 80% of next enemy attack\nYou can't use it as a boat anymore after all this", slot = 1, price = 1)
+                ,Wearable(name = "Belt", type ="Wearable", drawableIn = "00406", levelRq = 1, quality = 0,charClass = 7, description = "I can't breath", slot = 4, price = 1)
+                ,Wearable(name = "Overall", type ="Wearable", drawableIn = "00402", levelRq = 1, quality = 0,charClass = 7, description = "What is that smell?", slot = 5, price = 1)
+                ,Wearable(name = "Boots", type ="Wearable", drawableIn = "00405", levelRq = 1, quality = 0,charClass = 7, description = "Can't carry it anymore", slot = 6, price = 1)
+                ,Wearable(name = "Trousers", type ="Wearable", drawableIn = "00400", levelRq = 1, quality = 0,charClass = 7, description = "Tight not high", slot = 7, price = 1)
+                ,Wearable(name = "Chestplate", type ="Wearable", drawableIn = "00404", levelRq = 1, quality = 0,charClass = 7, description = "Chestplate protects!", slot = 8, price = 1)
+                ,Wearable(name = "Helmet", type ="Wearable", drawableIn = "00403", levelRq = 1, quality = 0,charClass = 7, description = "This doesn't make you any more clever", slot = 9, price = 1)
+        )),
+        LoadItems("8", mutableListOf(
+                Weapon(name = "Cane pickaxe", type = "Weapon", drawableIn =  "07505", levelRq = 1, quality = 0,charClass = 8, description = "Even the smallest lick may kill you", slot = 0, price = 1)
+                ,Weapon(name = "Cane shield", type = "Weapon", drawableIn = "07504", levelRq = 1, quality = 0,charClass = 8, description = "If you won't stop licking it, you're doomed", slot = 1, price = 1)
+                ,Wearable(name = "Santa's boots", type ="Wearable", drawableIn = "07500", levelRq = 1, quality = 0,charClass = 8, description = "Can't carry it anymore", slot = 6, price = 1)
+                ,Wearable(name = "Santa's metal boots", type ="Wearable", drawableIn = "07501", levelRq = 1, quality = 0,charClass = 8, description = "Can't carry it anymore", slot = 6, price = 1)
+                ,Wearable(name = "Santa's trousers", type ="Wearable", drawableIn = "07506", levelRq = 1, quality = 0,charClass = 8, description = "Little bit outstratched after last Christmas", slot = 7, price = 1)
+                ,Wearable(name = "Santa's sweater", type ="Wearable", drawableIn = "07502", levelRq = 1, quality = 0,charClass = 8, description = "Ew! Milk everywhere", slot = 8, price = 1)
+                ,Wearable(name = "Santa's hat", type ="Wearable", drawableIn = "07503", levelRq = 1, quality = 0,charClass = 8, description = "HO HO HO!", slot = 9, price = 1)
+        ))
+)
+
+
+var charClasses: MutableList<CharClass>                       //should be cloud saved
+        = mutableListOf(
+        //global list of characters, that are currently in the game, all of them have their IDs, by whom they're recognized in code, in database is loaded only the ID,
+        // in order to have separated data and not having everything saved only in player's account, which may cause a weak points of code and cheating
+
+        CharClass(
+                ID = 0,
+                dmgRatio = 10.0,
+                armorRatio = 1.0,
+                blockRatio = 0.0,
+                hpRatio = 175.0,
+                lifeSteal = false,
+                staminaRatio = 100.0,
+                inDrawable = "00200",
+                itemListIndex = 0,
+                spellListIndex = 0,
+                name = "everyone",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),    //for counting stats - basically universal
+        CharClass(
+                ID = 1,
+                dmgRatio = 0.75,
+                armorRatio = 1.0,
+                blockRatio = 20.0,
+                hpRatio = 1.42,
+                lifeSteal = true,
+                staminaRatio = 2.0,
+                inDrawable = "00200",
+                itemListIndex = 1,
+                spellListIndex = 1,
+                name = "vampire",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),
+        CharClass(
+                ID = 2,
+                dmgRatio = 1.5,
+                armorRatio = 0.6,
+                blockRatio = 15.0,
+                hpRatio = 1.14,
+                lifeSteal = false,
+                staminaRatio = 1.0,
+                inDrawable = "00201",
+                itemListIndex = 2,
+                spellListIndex = 2,
+                name = "dwarf",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),
+        CharClass(
+                ID = 3,
+                dmgRatio = 1.0,
+                armorRatio = 1.0,
+                blockRatio = 20.0,
+                hpRatio = 1.71,
+                lifeSteal = false,
+                staminaRatio = 1.2,
+                inDrawable = "00202",
+                itemListIndex = 3,
+                spellListIndex = 3,
+                name = "archer",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),
+        CharClass(
+                ID = 4,
+                dmgRatio = 1.25,
+                armorRatio = 0.9,
+                blockRatio = 10.0,
+                hpRatio = 1.71,
+                lifeSteal = false,
+                staminaRatio = 1.0,
+                inDrawable = "00203",
+                itemListIndex = 4,
+                spellListIndex = 4,
+                name = "wizard",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),
+        CharClass(
+                ID = 5,
+                dmgRatio = 1.25,
+                armorRatio = 1.0,
+                blockRatio = 5.0,
+                hpRatio = 1.14,
+                lifeSteal = false,
+                staminaRatio = 1.5,
+                inDrawable = "00204",
+                itemListIndex = 5,
+                spellListIndex = 5,
+                name = "sniper",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),
+        CharClass(
+                ID = 6,
+                dmgRatio = 1.0,
+                armorRatio = 0.95,
+                blockRatio = 45.0,
+                hpRatio = 1.57,
+                lifeSteal = false,
+                staminaRatio = 1.5,
+                inDrawable = "00205",
+                itemListIndex = 6,
+                spellListIndex = 6,
+                name = "mermaid",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),
+        CharClass(
+                ID = 7,
+                dmgRatio = 0.75,
+                armorRatio = 0.9,
+                blockRatio = 25.0,
+                hpRatio = 1.0,
+                lifeSteal = false,
+                staminaRatio = 1.5,
+                inDrawable = "00206",
+                itemListIndex = 7,
+                spellListIndex = 7,
+                name = "elf",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        ),
+        CharClass(
+                ID = 8,
+                dmgRatio = 1.25,
+                armorRatio = 0.8,
+                blockRatio = 0.0,
+                hpRatio = 2.85,
+                lifeSteal = false,
+                staminaRatio = 0.6,
+                inDrawable = "00207",
+                itemListIndex = 8,
+                spellListIndex = 8,
+                name = "warrior",
+                description = "",
+                description2 = "",
+                itemlistUniversalIndex = 0,
+                spellListUniversalIndex = 0
+        )
+)
