@@ -138,21 +138,12 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/email_icon" />
 
-    <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewInboxError"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nothing to show"
-        android:textColor="@color/loginColor_2"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline109"
-        app:layout_constraintEnd_toStartOf="@+id/guideline106"
-        app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSearch" />
-
     <ListView
         android:id="@+id/listViewInboxMessages"
         android:layout_width="0dp"
+        android:background="@color/loginColor_2"
+        android:paddingTop="2dp"
+        android:paddingStart="2dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -160,6 +151,18 @@
         app:layout_constraintTop_toTopOf="@+id/guideline76">
 
     </ListView>
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nothing to show"
+        android:textColor="@color/loginColor_4"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline109"
+        app:layout_constraintEnd_toStartOf="@+id/guideline106"
+        app:layout_constraintStart_toStartOf="@+id/guideline77"
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxSearch" />
 
     <FrameLayout
         android:id="@+id/frameLayoutInbox"

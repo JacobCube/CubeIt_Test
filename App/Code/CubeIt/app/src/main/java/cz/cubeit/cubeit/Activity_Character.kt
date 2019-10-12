@@ -41,6 +41,7 @@ class Activity_Character : AppCompatActivity() {
     var animatorStatsDown = ValueAnimator()
     var statsShowed = false
     var statsLocked = false
+    var inAnimationStats = false
 
     fun refreshItemsLayout(updateStats: Boolean = false){
         if(inventoryListView != null){
@@ -217,9 +218,9 @@ class Activity_Character : AppCompatActivity() {
 
         frameLayoutMenuCharacter.y = dm.heightPixels.toFloat()
 
-        imageViewRune0.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune0) {
-            override fun onClick() {
-                super.onClick()
+        imageViewRune0.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune0, true) {
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[0]?.getStats() ?: "")
             }
 
@@ -292,9 +293,9 @@ class Activity_Character : AppCompatActivity() {
             }
         })
 
-        imageViewRune1.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune1) {
-            override fun onClick() {
-                super.onClick()
+        imageViewRune1.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune1, true) {
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[1]?.getStats() ?: "")
             }
 
@@ -439,9 +440,9 @@ class Activity_Character : AppCompatActivity() {
                     component.setOnDragListener(activity.inventoryDragListener)
                     component.tag = this.index.toString()
 
-                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
-                        override fun onClick() {
-                            super.onClick()
+                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
+                        override fun onClick(x: Float, y: Float) {
+                            super.onClick(x, y)
                             textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare() ?: "")
                         }
 
@@ -601,10 +602,12 @@ class Activity_Character : AppCompatActivity() {
                         }
 
                         override fun onAnimationStart(animation: Animator?) {
+                            inAnimationStats = true
                         }
 
                         override fun onAnimationEnd(animation: Animator?) {
                             statsShowed = true
+                            inAnimationStats = false
                         }
 
                     })
@@ -624,13 +627,15 @@ class Activity_Character : AppCompatActivity() {
                         }
 
                         override fun onAnimationStart(animation: Animator?) {
+                            if(statsLocked){
+                                statsLocked = false
+                            }
+                            inAnimationStats = true
                         }
 
                         override fun onAnimationEnd(animation: Animator?) {
                             statsShowed = false
-                            if(statsLocked){
-                                statsLocked = false
-                            }
+                            inAnimationStats = false
                         }
 
                     })
@@ -913,9 +918,6 @@ class Activity_Character : AppCompatActivity() {
                         }
                         v.invalidate()
 
-                        //item comparison
-                        textViewInfoItemTemp.text = ""
-
                         true
                     }
 
@@ -1071,7 +1073,7 @@ class Activity_Character : AppCompatActivity() {
 class ItemDragListener(v: View) : View.DragShadowBuilder(v) {
 
     //creates new instance of the drawable, so it doesn't pass the reference of the ImageView and messes it up
-    private val shadow = (view as ImageView).drawable.constantState!!.newDrawable()
+    private val shadow = (view as? ImageView)?.drawable?.constantState?.newDrawable()
 
     // Defines a callback that sends the drag shadow dimensions and touch point back to the
     // system.
@@ -1085,7 +1087,7 @@ class ItemDragListener(v: View) : View.DragShadowBuilder(v) {
         // The drag shadow is a ColorDrawable. This sets its dimensions to be the same as the
         // Canvas that the system will provide. As a result, the drag shadow will fill the
         // Canvas.
-        shadow.setBounds(0, 0, width, height)
+        shadow?.setBounds(0, 0, width, height)
 
         // Sets the size parameter's width and height values. These get back to the system
         // through the size parameter.
@@ -1099,6 +1101,6 @@ class ItemDragListener(v: View) : View.DragShadowBuilder(v) {
     // from the dimensions passed in onProvideShadowMetrics().
     override fun onDrawShadow(canvas: Canvas) {
         // Draws the ColorDrawable in the Canvas passed in from the system.
-        shadow.draw(canvas)
+        shadow?.draw(canvas)
     }
 }

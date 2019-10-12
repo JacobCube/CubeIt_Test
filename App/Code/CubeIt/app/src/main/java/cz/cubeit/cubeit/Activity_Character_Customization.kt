@@ -77,7 +77,7 @@ class Activity_Character_Customization: AppCompatActivity(){
             }
         })
 
-        viewPagerCharacterCustomization.setOnTouchListener(object : Class_OnSwipeTouchListener(this, viewPagerCharacterCustomization) {
+        viewPagerCharacterCustomization.setOnTouchListener(object : Class_OnSwipeTouchListener(this, viewPagerCharacterCustomization, false) {
             override fun onSwipeLeft() {
                 super.onSwipeLeft()
                 if(viewPagerPosition == 7){

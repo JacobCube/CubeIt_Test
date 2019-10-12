@@ -161,8 +161,8 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:clickable="false"
         android:background="@drawable/emptyslot"
+        android:clickable="false"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline187"
@@ -234,15 +234,14 @@
         android:id="@+id/textViewMarketRegisterLowerAfterText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="4dp"
         android:gravity="end"
         android:text="Lower price after expiration"
         android:textColor="@android:color/white"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/checkBoxMarketRegister"
         app:layout_constraintEnd_toStartOf="@+id/guideline188"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline186"
+        app:layout_constraintStart_toStartOf="@+id/editTextMarketRegisterCubeCoins"
         app:layout_constraintTop_toTopOf="@+id/checkBoxMarketRegister" />
 
     <androidx.constraintlayout.widget.Guideline

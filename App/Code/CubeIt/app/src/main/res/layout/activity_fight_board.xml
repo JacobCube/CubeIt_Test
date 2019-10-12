@@ -20,7 +20,7 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:src="@color/loginColor"
+        android:src="@color/loginColor_2_dark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -31,7 +31,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/listViewPlayers"
+        app:layout_constraintEnd_toStartOf="@+id/listViewBoardRecords"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -39,16 +39,17 @@
     </FrameLayout>
 
     <ListView
-        android:id="@+id/listViewPlayers"
+        android:paddingTop="1dp"
+        android:id="@+id/listViewBoardRecords"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="1dp"
-        android:divider="@color/loginColor"
-        android:headerDividersEnabled="true"
+        android:background="@color/loginColor_2_dark"
+        android:divider="@color/loginColor_2_darker"
+        android:dividerHeight="0.5dp"
         android:footerDividersEnabled="true"
-        android:dividerHeight="1dp"
-        android:scrollbars="none"
+        android:headerDividersEnabled="true"
         android:scrollbarSize="@null"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
@@ -80,7 +81,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
-        android:tint="@color/common_google_signin_btn_text_dark_default"
+        android:background="@color/loginColor_2_dark"
         android:tintMode="multiply"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintEnd_toEndOf="parent"
@@ -108,6 +109,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
+        android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
         app:layout_constraintDimensionRatio="H, 1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline85"
@@ -146,7 +148,7 @@
         android:id="@+id/textViewBoardNickname"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="2dp"
+        android:background="@color/loginColor_2_darker"
         android:gravity="center_horizontal"
         android:text="username"
         android:textColor="@color/colorSecondary"
@@ -160,6 +162,7 @@
         android:id="@+id/textViewBoardFaction"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/loginColor_2_darker"
         android:gravity="center_horizontal"
         android:text="faction"
         android:textColor="@color/colorSecondary"
@@ -173,6 +176,7 @@
         android:id="@+id/textViewBoardPosition"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/loginColor_2_darker"
         android:text="position"
         android:textColor="@color/colorSecondary"
         android:textStyle="bold"
@@ -185,6 +189,7 @@
         android:id="@+id/textViewFightBoardFame"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/loginColor_2_darker"
         android:gravity="center_horizontal"
         android:text="fame"
         android:textColor="@color/colorSecondary"
@@ -198,6 +203,7 @@
         android:id="@+id/textViewFightBoardLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/loginColor_2_darker"
         android:gravity="center_horizontal"
         android:text="lvl"
         android:textColor="@color/colorSecondary"
@@ -226,7 +232,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.32147744" />
+        app:layout_constraintGuide_percent="0.33" />
 
     <ImageView
         android:id="@+id/homeButtonBackBoard"
@@ -251,11 +257,13 @@
         android:src="@drawable/icon_app"
         android:tint="@color/colorGrey"
         android:tintMode="multiply"
+        android:visibility="visible"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.515"
         app:layout_constraintStart_toStartOf="@+id/guideline77"
-        app:layout_constraintTop_toTopOf="@+id/guideline175" />
+        app:layout_constraintTop_toTopOf="@+id/guideline175"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/changeFragmentProfile"
@@ -356,7 +364,7 @@
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/listViewPlayers"
+        app:layout_constraintBottom_toBottomOf="@+id/listViewBoardRecords"
         app:layout_constraintEnd_toEndOf="@+id/imageViewLoadingBoard"
         app:layout_constraintStart_toStartOf="@+id/imageViewLoadingBoard" />
 

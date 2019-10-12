@@ -22,30 +22,21 @@ import android.widget.*
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.popup_dialog_minigame.view.*
 import kotlinx.android.synthetic.main.row_minigame_score.view.*
+import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.random.Random.Default.nextInt
 
 
-var textViewLog: TextView? = null
+var textViewLog: WeakReference<TextView>? = null
 
 class Activity_Splash_Screen: AppCompatActivity(){
 
     var keepSplash: Boolean = false
     var rocketTimer: TimerTask? = null
     var activeTimer: Timer = Timer()
-    var rocketGameLoadedScores = false
     var resetSwitch: Switch? = null
     var popWindow: PopupWindow = PopupWindow()
     var requestingPermission: Boolean = false
-
-    fun setLogText(text: String){
-        if(textViewLog != null)textViewLog!!.text = text
-    }
-
-    fun closeLoading(){
-        Data.loadingStatus = LoadingStatus.CLOSELOADING
-        //this.finish()
-    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -105,7 +96,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_splash_screen)
-        textViewLog = textViewLoadingLog
+        textViewLog = WeakReference(textViewLoadingLog)
 
         if(Data.loadingScreenType == LoadingType.RocketGamePad){
             switchSplashScreenType.visibility = View.GONE

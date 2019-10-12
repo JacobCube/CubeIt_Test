@@ -264,13 +264,14 @@ class Fragment_Faction: Fragment(){
         viewTemp.frameLayoutFactionLog.layoutParams.width = (displayX * 0.34).toInt()
 
         viewTemp.imageViewFactionOpenLog.setOnClickListener {
+            viewTemp.isEnabled= false
             viewTemp.imageViewFactionLogNew.visibility = View.GONE
             Data.factionLogChanged = false
             viewTemp.imageViewFactionOpenLog.bringToFront()
 
             if(logClosed){
                 (activity as Activity_Faction_Base).imageViewMenuUpFaction.visibility = View.GONE
-                val logAnimationOut= ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x - frameLayoutFactionLog.width).apply {
+                ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x - frameLayoutFactionLog.width).apply {
                     duration = 800
                     addUpdateListener {
                         frameLayoutFactionLog.x = it.animatedValue as Float
@@ -289,6 +290,7 @@ class Fragment_Faction: Fragment(){
                         override fun onAnimationEnd(animation: Animator?) {
                             logClosed = false
                             viewTemp.imageViewFactionOpenLog.rotation = 270f
+                            viewTemp.isEnabled= true
                         }
 
                     })
@@ -296,7 +298,7 @@ class Fragment_Faction: Fragment(){
                 }
             }else {
                 (activity as Activity_Faction_Base).imageViewMenuUpFaction.visibility = View.VISIBLE
-                val logAnimationIn = ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x + frameLayoutFactionLog.width).apply {
+                ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x + frameLayoutFactionLog.width).apply {
                     duration = 800
                     addUpdateListener {
                         frameLayoutFactionLog.x = it.animatedValue as Float
@@ -315,6 +317,7 @@ class Fragment_Faction: Fragment(){
                         override fun onAnimationEnd(animation: Animator?) {
                             logClosed = true
                             viewTemp.imageViewFactionOpenLog.rotation = 90f
+                            viewTemp.isEnabled= true
                         }
                     })
                     start()

@@ -12,7 +12,7 @@ import android.widget.ImageView
 import kotlinx.android.synthetic.main.activity_login_register.*
 
 
-class ActivityLoginRegister: AppCompatActivity(){
+class ActivityLoginRegister: AppCompatActivity(R.layout.activity_login_register){
 
     fun onClickArrowLoginRegister(v:View){
         when(v.toString()[v.toString().lastIndex-1]){
@@ -41,15 +41,17 @@ class ActivityLoginRegister: AppCompatActivity(){
         hideSystemUI()
         setContentView(R.layout.activity_login_register)
 
-        val adapter = ViewPagerAdapterLoginRegister(supportFragmentManager)
-        viewPagerLoginRegister!!.adapter = adapter
-        viewPagerLoginRegister!!.offscreenPageLimit = 2
+        runOnUiThread {
+            val adapter = ViewPagerAdapterLoginRegister(supportFragmentManager)
+            viewPagerLoginRegister!!.adapter = adapter
+            viewPagerLoginRegister!!.offscreenPageLimit = 2
 
-        Data.loadingScreenType = LoadingType.Normal
+            Data.loadingScreenType = LoadingType.Normal
 
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
+            window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+                if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                    Handler().postDelayed({hideSystemUI()},1000)
+                }
             }
         }
     }

@@ -32,28 +32,22 @@
     <Button
         android:id="@+id/imageViewMarketRegister"
         style="@style/AppTheme.Button"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
         android:text="File an offer"
         app:layout_constraintBottom_toTopOf="@+id/imageViewMenuUpMarket"
-        app:layout_constraintEnd_toStartOf="@+id/guideline189"
-        app:layout_constraintStart_toStartOf="@+id/guideline85" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/imageViewMarketMyOffers"
         style="@style/AppTheme.Button"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:text="My offers"
         app:layout_constraintBottom_toTopOf="@+id/imageViewMarketRegister"
-        app:layout_constraintEnd_toStartOf="@+id/guideline189"
-        app:layout_constraintStart_toStartOf="@+id/guideline85" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline76"
@@ -62,18 +56,12 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline182"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.29" />
-
     <ImageView
         android:id="@+id/imageViewSearchIconMarket"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextMarketSearch"
+        app:layout_constraintDimensionRatio="H,1:0.5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline138"
         app:layout_constraintTop_toTopOf="@+id/editTextMarketSearch"
@@ -83,12 +71,12 @@
         android:id="@+id/imageViewMarketFilter"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:tint="@color/colorSecondary"
-        app:layout_constraintBottom_toTopOf="@+id/guideline182"
+        app:layout_constraintDimensionRatio="H,1:0.5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline138"
-        app:layout_constraintTop_toTopOf="@+id/guideline76"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewSearchIconMarket"
         app:srcCompat="@drawable/filter" />
 
     <cz.cubeit.cubeit.CustomEditText
@@ -101,10 +89,11 @@
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline76"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewMarketBarPrice"
         app:layout_constraintEnd_toStartOf="@+id/imageViewSearchIconMarket"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline85" />
+        app:layout_constraintStart_toStartOf="@+id/guideline85"
+        app:layout_constraintTop_toTopOf="@+id/textViewMarketBarPrice" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline138"
@@ -128,11 +117,12 @@
         app:layout_constraintGuide_percent="0.78" />
 
     <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewMarketBarSeller"
+        android:id="@+id/textViewMarketBarItemLvl"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="1dp"
-        android:text=" seller"
+        android:gravity="start"
+        android:text="level"
         android:textColor="@color/colorThird"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline76"
@@ -232,20 +222,6 @@
 
     </ListView>
 
-    <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewMarketItemInfo"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/stats_info"
-        android:gravity="center_horizontal"
-        android:text="test info"
-        android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@+id/guideline184"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline76" />
-
     <ImageView
         android:id="@+id/imageViewLoadingMarket"
         android:layout_width="70dp"
@@ -274,13 +250,6 @@
         app:layout_constraintGuide_percent="0.273" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline184"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.29" />
-
-    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline177"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -302,7 +271,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/listViewMarketItems"
         app:layout_constraintEnd_toStartOf="@+id/guideline85"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline76">
+        app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
 
@@ -339,17 +308,19 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketMoney"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:text="CC"
         android:textColor="@android:color/white"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline182"
         app:layout_constraintEnd_toStartOf="@+id/guideline138"
         app:layout_constraintStart_toStartOf="@+id/guideline85"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketSearch" />

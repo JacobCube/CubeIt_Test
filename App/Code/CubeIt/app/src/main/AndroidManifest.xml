@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:fullBackupContent="@xml/backup_descriptor"
@@ -70,6 +71,9 @@
             android:name=".Activity_FightUniversal_Offline"
             android:screenOrientation="sensorLandscape"/>
         <activity
+            android:name=".Activity_FightBoss_offline"
+            android:screenOrientation="sensorLandscape"/>
+        <activity
             android:name=".ActivityLoginRegister"
             android:screenOrientation="sensorLandscape">
             <intent-filter>
@@ -80,7 +84,7 @@
 
 
         <service
-            android:name=".BackgroundSoundService"
+            android:name=".SystemFlow$BackgroundSoundService"
             android:enabled="true" />
         <service
             android:name=".ClassCubeItHeadService"

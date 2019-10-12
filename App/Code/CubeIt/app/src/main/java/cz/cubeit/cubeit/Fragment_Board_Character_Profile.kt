@@ -30,7 +30,7 @@ class Fragment_Board_Character_Profile : Fragment() {
     fun View.getListenerPlayer() {
         val index = this.tag.toString().toInt()
 
-        this.setOnTouchListener(object: Class_OnSwipeTouchListener(this.context, this){
+        this.setOnTouchListener(object: Class_OnSwipeTouchListener(this.context, this, true){
             override fun onLongClick() {
                 super.onLongClick()
 
@@ -58,8 +58,8 @@ class Fragment_Board_Character_Profile : Fragment() {
                 }
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(Data.player.equip[index] != null){
                     (activity!! as Activity_Character).textViewInfoItemTemp.setHTMLText(Data.player.equip[index]?.getStats()!!)
                 }
@@ -82,6 +82,8 @@ class Fragment_Board_Character_Profile : Fragment() {
             val index = this.tag.toString().toInt()
             val holdValid = chosenPlayer.equip[index] != null
 
+            val tempActivity = activity!!
+
             val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
             val windowPop = PopupWindow(context)
             windowPop.contentView = viewP
@@ -91,7 +93,6 @@ class Fragment_Board_Character_Profile : Fragment() {
             var dy = 0
             var x = 0
             var y = 0
-            val activityTemp = activity
 
             viewP.imageViewPopUpInfoPin.visibility = View.VISIBLE
             viewP.imageViewPopUpInfoPin.setOnClickListener {
@@ -100,7 +101,7 @@ class Fragment_Board_Character_Profile : Fragment() {
                     viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
                     false
                 }else {
-                    val drawable = view.context.resources.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
+                    val drawable = tempActivity.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
                     drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
                     viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
                     true
@@ -120,7 +121,17 @@ class Fragment_Board_Character_Profile : Fragment() {
                     }
                     MotionEvent.ACTION_UP -> {
                         windowPop.dismiss()
-                        if(activityTemp != null) windowPop.showAsDropDown(activityTemp.window.decorView.rootView, x - dx, y - dy)
+                        val xOff = if(x - dx <= 0){
+                            5
+                        } else {
+                            x -dx
+                        }
+                        val yOff = if(y - dy <= 0){
+                            5
+                        } else {
+                            y -dy
+                        }
+                        windowPop.showAsDropDown(tempActivity.window.decorView.rootView, xOff, yOff)
                     }
                 }
                 true
@@ -133,14 +144,14 @@ class Fragment_Board_Character_Profile : Fragment() {
                     if(holdValid){
                         viewP.textViewPopUpInfo.setHTMLText(chosenPlayer.equip[index]!!.getStats())
                         viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                        val coordinates = SystemFlow.resolveLayoutLocation(activity!!, x, y, viewP.measuredWidth, viewP.measuredHeight)
+                        val coordinates = SystemFlow.resolveLayoutLocation(tempActivity, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                         if(!Data.loadingActiveQuest && !windowPop.isShowing){
                             viewP.textViewPopUpInfo.setHTMLText(chosenPlayer.equip[index]!!.getStats())
                             viewP.imageViewPopUpInfoItem.setBackgroundResource(chosenPlayer.equip[index]!!.getBackground())
                             viewP.imageViewPopUpInfoItem.setImageResource(chosenPlayer.equip[index]!!.drawable)
 
-                            windowPop.showAsDropDown(activity!!.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
+                            windowPop.showAsDropDown(tempActivity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                         }
                     }
                 }

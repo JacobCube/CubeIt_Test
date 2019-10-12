@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingBottom="1dp"
+    android:paddingTop="1dp"
     android:screenOrientation="sensorLandscape">
 
     <cz.cubeit.cubeit.CustomTextView
@@ -88,9 +89,9 @@
         android:id="@+id/textViewBoardLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:gravity="center_horizontal"
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
-        android:gravity="center_horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline74"
         app:layout_constraintStart_toStartOf="@+id/guideline156"
@@ -111,11 +112,12 @@
 
     <ImageView
         android:id="@+id/rowFightBoard"
+        android:src="@drawable/board_record_bg"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:alpha="0.5"
         android:clickable="true"
         android:focusable="true"
-        android:alpha="0.5"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"

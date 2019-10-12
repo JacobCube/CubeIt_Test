@@ -34,9 +34,11 @@ class Fragment_Register : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_register, container, false)
 
-        val opts = BitmapFactory.Options()
-        opts.inScaled = false
-        view.layoutRegister.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.register_bg, opts))
+        view.post {
+            val opts = BitmapFactory.Options()
+            opts.inScaled = false
+            view.layoutRegister.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.register_bg, opts))
+        }
 
         val auth = FirebaseAuth.getInstance()                                       // Initialize Firebase
         var userPassword: String
@@ -77,14 +79,15 @@ class Fragment_Register : Fragment() {
 
                                         Data.loadGlobalData(view.context).addOnSuccessListener {
                                             if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE){
-                                                Activity_Splash_Screen().closeLoading()
+                                                Data.loadingStatus = LoadingStatus.CLOSELOADING
                                                 Handler().postDelayed({showNotification("Error", "Your version is too old, download more recent one. (Alpha, versioned ${GenericDB.AppInfo.appVersion})")},100)
                                             }
 
+                                            val textView = textViewLog?.get()
                                             if (view.inputEmailReg.text!!.isNotEmpty() && view.inputUsernameReg.text!!.isNotEmpty() && view.inputPassReg.text!!.isNotEmpty() && view.inputRePassReg.text!!.isNotEmpty() && view.inputPassReg.text.toString() == view.inputRePassReg.text.toString() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE && isConnected) {
                                                 userPassword = view.inputPassReg.text.toString()
 
-                                                Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
+                                                textView?.text = resources.getString(R.string.loading_log, "Your profile information")
 
                                                 auth.createUserWithEmailAndPassword(view.inputEmailReg.text.toString(), userPassword).addOnCompleteListener{ task: Task<AuthResult> ->
                                                     if (task.isSuccessful) {
@@ -109,12 +112,12 @@ class Fragment_Register : Fragment() {
                                                         catch (e:Exception){
                                                             showNotification("Oops", "An account with this email already exists!")
                                                         }
-                                                        Activity_Splash_Screen().closeLoading()
+                                                        Data.loadingStatus = LoadingStatus.CLOSELOADING
                                                     }
                                                 }
 
                                             } else {
-                                                Activity_Splash_Screen().closeLoading()
+                                                Data.loadingStatus = LoadingStatus.CLOSELOADING
                                             }
                                         }
                                     }else {

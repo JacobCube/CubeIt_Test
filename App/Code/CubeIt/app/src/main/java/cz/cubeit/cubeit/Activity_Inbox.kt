@@ -3,7 +3,6 @@ package cz.cubeit.cubeit
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
-import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.appcompat.app.AppCompatActivity
@@ -16,8 +15,7 @@ import kotlinx.android.synthetic.main.row_inbox_messages.view.*
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
-import android.os.Handler
+import android.os.*
 import android.util.Log
 import com.google.android.material.shape.CutCornerTreatment
 import com.google.android.material.snackbar.Snackbar
@@ -34,7 +32,7 @@ import java.time.ZoneId
 import java.util.*
 
 
-class Activity_Inbox : AppCompatActivity(){
+class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
 
     lateinit var messagesAdapter: Adapter
     lateinit var categories: Adapter
@@ -43,6 +41,7 @@ class Activity_Inbox : AppCompatActivity(){
     var onTop: Boolean = false
         set(value){
             field = value
+            Log.d("onTop_setter", value.toString())
         }
     var editMode: Boolean = false
         set(value){
@@ -75,16 +74,31 @@ class Activity_Inbox : AppCompatActivity(){
     override fun onPause() {
         super.onPause()
         onTop = false
+        Log.d("activity_state", "onPause")
+    }
+
+    override fun setVisible(visible: Boolean) {
+        super.setVisible(visible)
+        onTop = visible
+        Log.d("activity_state", "visibility change to $visible")
     }
 
     override fun onResume() {
         super.onResume()
         onTop = true
+        Log.d("activity_state", "onResume")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        onTop = false
+        Log.d("activity_state", "onStop")
     }
 
     override fun onStart() {
         super.onStart()
         onTop = true
+        Log.d("activity_state", "onStart")
     }
 
     fun makeMeASnack(text: String, length: Int){          //use snackback from inner fragment, which was not possible after testing it, due to closure of its instance
@@ -107,7 +121,6 @@ class Activity_Inbox : AppCompatActivity(){
         (categories as AdapterInboxCategories).notifyDataSetChanged()
         (messagesAdapter as AdapterInboxMessages).refreshMessages(forceCategory)
 
-        Log.d("inboxCategory size", currentCategory.messages.size.toString())
     }
 
     @SuppressLint("SetTextI18n")
@@ -379,14 +392,9 @@ class Activity_Inbox : AppCompatActivity(){
             val docRef = db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
             Data.inboxSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                 if (e != null) {
-                    Log.w("Inbox listener", "Listen failed.", e)
+                    Log.d("Inbox listener", "Listen failed.", e)
                     return@addSnapshotListener
                 }
-
-                val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
-                    "Local"
-                else
-                    "Server"
 
                 if (snapshot != null && !snapshot.isEmpty) {
                     val inboxSnap: MutableList<InboxMessage> = mutableListOf()
@@ -395,12 +403,21 @@ class Activity_Inbox : AppCompatActivity(){
                     }
 
                     inboxSnap.sortByDescending { it.id }
+                    Log.d("inbox_bln_ontop", onTop.toString())
+                    Log.d("inbox_bln_others", (snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox).toString())
+
                     if(onTop && snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         for(i in inboxSnap){
                             if(!Data.inbox.any { it.id == i.id } && i.status != MessageStatus.Read){
                                 Data.inbox.add(i)
                                 if(i.status != MessageStatus.Sent){
                                     Snackbar.make(imageViewActivityInbox, "New message has arrived.", Snackbar.LENGTH_SHORT).show()
+                                    val v = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
+                                    } else {
+                                        v!!.vibrate(20)
+                                    }
                                 }
                             }
                         }
@@ -408,6 +425,7 @@ class Activity_Inbox : AppCompatActivity(){
                         init()
                         (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
                         (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
+                        Log.d("inbox_listener", "My inbox should be refreshed now, because I'm being in the activity")
                         Data.inboxChanged = false
                     }else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         for(i in inboxSnap){
@@ -415,6 +433,12 @@ class Activity_Inbox : AppCompatActivity(){
                                  Data.inbox.add(i)
                                  if(i.status != MessageStatus.Sent){
                                      Snackbar.make(imageViewActivityInbox, "New message has arrived.", Snackbar.LENGTH_SHORT).show()
+                                     val v = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                         v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
+                                     } else {
+                                         v!!.vibrate(20)
+                                     }
                                      Data.inboxChanged = true
                                  }
                              }
@@ -422,8 +446,6 @@ class Activity_Inbox : AppCompatActivity(){
                         }
                         SystemFlow.writeFileText(this, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
                     }
-                } else {
-                    Log.d("Inbox listener", "$source data: null n error")
                 }
             }
         }else {
@@ -534,8 +556,8 @@ class Activity_Inbox : AppCompatActivity(){
             if(!forceCategory){
                 activity.currentCategory = Data.inboxCategories[activity.currentCategory.status]!!
             }
+            activity.currentCategory.messages.sortByDescending { it.sentTime }
             super.notifyDataSetChanged()
-            Log.d("inboxCategory size", activity.currentCategory.messages.size.toString())
         }
 
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
@@ -553,11 +575,12 @@ class Activity_Inbox : AppCompatActivity(){
             viewHolder.textViewInboxMessages.text = activity.currentCategory.messages[position].subject
             //viewHolder.textViewInboxSentTime.text = currentCategory.messages[position].sentTime.toString()
 
-            viewHolder.textViewInboxSentTime.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                activity.currentCategory.messages[position].sentTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
+            viewHolder.textViewInboxSentTime.text = activity.currentCategory.messages[position].sentTime.formatToString()
+            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                .toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
             } else {
                 activity.currentCategory.messages[position].sentTime.toString()
-            }
+            }*/
 
             viewHolder.checkBoxInboxMessagesAction.setOnCheckedChangeListener { _, isChecked ->
                 if(isChecked){
@@ -575,7 +598,7 @@ class Activity_Inbox : AppCompatActivity(){
             } else View.GONE
 
             viewHolder.textViewInboxSender.text = activity.currentCategory.messages[position].sender
-            viewHolder.textViewInboxMessagesReceiver.text = activity.currentCategory.messages[position].receiver
+            viewHolder.textViewInboxMessagesReceiver.text = "to: " + if(activity.currentCategory.messages[position].receiver != Data.player.username) activity.currentCategory.messages[position].receiver else "me"
             if(activity.currentCategory.messages[position].status == MessageStatus.New){
                 viewHolder.imageViewInboxMessagesBg.setBackgroundColor(Color.GRAY)
             }else{

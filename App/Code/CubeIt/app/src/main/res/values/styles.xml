@@ -27,17 +27,18 @@
     </style>
 
     <style name="AppTheme.Button" parent="Widget.AppCompat.Button.Colored">
-        <item name="colorButtonNormal">@android:color/holo_red_dark</item>
+        <item name="android:background">@drawable/bg_button_secondary</item>
         <item name="android:textColor">@android:color/black</item>
+        <item name="android:minWidth">75dp</item>
+        <item name="android:minHeight">10dp</item>
     </style>
 
     <style name="AppTheme.Button.Dark" parent="Widget.AppCompat.Button.Colored">
-        <item name="android:colorControlHighlight">@android:color/white</item>
-        <item name="android:colorFocusedHighlight">@android:color/white</item>
         <item name="android:background">@drawable/bg_button_logincolor</item>
         <item name="android:textColor">@color/colorSecondary</item>
-        <item name="android:gestureColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:minWidth">75dp</item>
+        <item name="android:minHeight">10dp</item>
         <item name="android:fontFamily">@font/average_sans</item>
     </style>
 

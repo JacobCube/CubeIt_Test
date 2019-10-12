@@ -42,18 +42,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <cz.cubeit.cubeit.CustomTextView
-        android:id="@+id/textViewMarketRowSeller"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:gravity="center_horizontal"
-        android:text="TextView"
-        android:textColor="@color/loginColor_2"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline172"
-        app:layout_constraintStart_toStartOf="@+id/guideline178"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowPrice"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -95,18 +83,32 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.84" />
 
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewMarketRowSeller"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_horizontal"
+        android:text="TextView"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline172"
+        app:layout_constraintStart_toStartOf="@+id/guideline178"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/imageViewMarketRowItem"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline120"
         app:layout_constraintStart_toStartOf="@+id/guideline172"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_delete" />
+        app:srcCompat="@android:drawable/ic_delete"
+        android:focusable="true" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline172"

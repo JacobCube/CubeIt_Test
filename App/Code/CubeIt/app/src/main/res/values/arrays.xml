@@ -59,5 +59,7 @@
         <item>Trousers</item>
         <item>Chestplate</item>
         <item>Hat</item>
+        <item>Backpack</item>
+        <item>Zipper</item>
     </string-array>
 </resources>

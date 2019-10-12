@@ -87,7 +87,7 @@ class FragmentDefense : Fragment(){
         return view
     }
 
-    private class LearnedSpellsView(var textViewInfoSpells: TextView, val imageViewSpellDescription: ImageView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int, private val context:Context) : BaseAdapter() { //listview of player's learned menu_spells_icon
+    private class LearnedSpellsView(var textViewInfoSpells: TextView, val imageViewSpellDescription: ImageView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int, private val context:Context) : BaseAdapter() { //listview of player's learned spells
 
         override fun getCount(): Int {
             return (Data.player.learnedSpells.size/2+1)
@@ -153,9 +153,9 @@ class FragmentDefense : Fragment(){
                         countText.visibility = View.GONE
                     }
 
-                    countText.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
-                        override fun onClick() {
-                            super.onClick()
+                    countText.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
+                        override fun onClick(x: Float, y: Float) {
+                            super.onClick(x, y)
                             textViewInfoSpells.text = Data.player.learnedSpells[this@Node.index]?.getStats()
                             imageViewSpellDescription.setImageResource(Data.player.learnedSpells[this@Node.index]?.drawable ?: 0)
                         }

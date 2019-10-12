@@ -286,7 +286,7 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
                         val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                         if(!windowPop.isShowing){
-                            viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]!!.getStatsCompare())
+                            viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]!!.getStats())
                             viewP.imageViewPopUpInfoItem.setImageResource(Data.player.inventory[this@Node.index]!!.drawable)
                             viewP.imageViewPopUpInfoItem.setBackgroundResource(Data.player.inventory[this@Node.index]!!.getBackground())
 

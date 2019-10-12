@@ -85,12 +85,12 @@ class Fragment_Adventure_overview : Fragment() {
                 dm.widthPixels.toFloat()
         )
 
+        val handler = Handler()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             view.listViewAdventureOverview.setOnScrollChangeListener { _, _, _, _, _ ->
                 if(window.isShowing) window.dismiss()
 
                 (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility = View.GONE
-                val handler = Handler()
                 handler.removeCallbacksAndMessages(null)
                 handler.postDelayed({
                     if(activity != null && (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility != View.VISIBLE) (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility = View.VISIBLE

@@ -100,9 +100,9 @@ class FragmentAttack : Fragment(){      //TODO change the way spell bar generate
                         component.setBackgroundResource(0)
                     }
 
-                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
-                        override fun onClick() {
-                            super.onClick()
+                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
+                        override fun onClick(x: Float, y: Float) {
+                            super.onClick(x, y)
                             textViewInfoSpell.text = Data.player.learnedSpells[this@Node.index]?.getStats()
                             imageViewIcon.setImageResource(Data.player.learnedSpells[this@Node.index]!!.drawable)
                         }

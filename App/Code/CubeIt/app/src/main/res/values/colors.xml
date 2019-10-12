@@ -12,6 +12,9 @@
     <color name="progress_energy">#FFBE07</color>
     <color name="loginColor">#1E1C27</color>
     <color name="loginColor_2">#383849</color>
+    <color name="loginColor_2_dark">#484553</color>
+    <color name="loginColor_2_dark_light">#34323C</color>
+    <color name="loginColor_2_darker">#292736</color>
     <color name="loginColor_4">#737386</color>
     <color name="loginColor_3">#DBDBDE</color>
     <color name="black">#000000</color>

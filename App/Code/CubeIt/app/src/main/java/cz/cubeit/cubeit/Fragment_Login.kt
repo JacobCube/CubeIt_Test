@@ -53,6 +53,7 @@ class FragmentLogin : Fragment() {
     lateinit var viewTemp: View
     var popWindow: PopupWindow? = null
     lateinit var popView: View
+    lateinit var auth: FirebaseAuth
 
     private var mGoogleSignInClient: GoogleSignInClient? = null
 
@@ -87,67 +88,71 @@ class FragmentLogin : Fragment() {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         viewTemp = inflater.inflate(R.layout.fragment_login, container, false)
 
-        viewTemp.loginVersionInfo.text = "Alpha \tv${BuildConfig.VERSION_NAME}"
-        viewTemp.loginPopUpBackground.foreground.alpha = 0
+        viewTemp.post {             //slow start up speed
+            viewTemp.loginVersionInfo.text = "Alpha \tv${BuildConfig.VERSION_NAME}"
+            viewTemp.loginPopUpBackground.foreground.alpha = 0
 
-        val opts = BitmapFactory.Options()
-        opts.inScaled = false
-        viewTemp.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
+            val opts = BitmapFactory.Options()
+            opts.inScaled = false
+            viewTemp.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
 
-        if (SystemFlow.readFileText(viewTemp.context, "rememberMe.data") == "1") {
-            viewTemp.checkBoxStayLogged.isChecked = true
-            if (SystemFlow.readFileText(viewTemp.context, "emailLogin.data") != "0") viewTemp.inputEmailLogin.setText(SystemFlow.readFileText(viewTemp.context, "emailLogin.data"))
-            if (SystemFlow.readFileText(viewTemp.context, "emailLogin.data") != "0") viewTemp.inputPassLogin.setText(SystemFlow.readFileText(viewTemp.context, "passwordLogin.data"))
-        }
-
-        val auth = FirebaseAuth.getInstance()
-
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build()
-
-        mGoogleSignInClient = GoogleSignIn.getClient(viewTemp.context, gso)
-        mAuth = FirebaseAuth.getInstance()
-
-        viewTemp.buttonLoginDiffAcc.visibility = if(mAuth!!.currentUser != null){
-            View.VISIBLE
-        }else View.GONE
-
-        viewTemp.buttonLoginDiffAcc.setOnClickListener {
-            signOut()
-            viewTemp.buttonLoginDiffAcc.visibility = View.GONE
-        }
-
-        //val opr = Auth.GoogleSignInApi.silentSignIn(mGoogleSignInClient!!.asGoogleApiClient())
-
-        loadingAnimation = AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_loading_rotate)
-
-        loadingAnimation!!.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationRepeat(animation: Animation?) {
+            if (SystemFlow.readFileText(viewTemp.context, "rememberMe.data") == "1") {
+                viewTemp.checkBoxStayLogged.isChecked = true
+                if (SystemFlow.readFileText(viewTemp.context, "emailLogin.data") != "0") viewTemp.inputEmailLogin.setText(SystemFlow.readFileText(viewTemp.context, "emailLogin.data"))
+                if (SystemFlow.readFileText(viewTemp.context, "emailLogin.data") != "0") viewTemp.inputPassLogin.setText(SystemFlow.readFileText(viewTemp.context, "passwordLogin.data"))
             }
 
-            override fun onAnimationEnd(animation: Animation?) {
-                viewTemp.buttonLoginDiffAcc.visibility = View.VISIBLE
-                viewTemp.imageViewLoginLoading.visibility = View.GONE
-                viewTemp.loginPopUpBackground.foreground.alpha = 0
-            }
+            auth = FirebaseAuth.getInstance()
 
-            override fun onAnimationStart(animation: Animation?) {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build()
+
+            mGoogleSignInClient = GoogleSignIn.getClient(viewTemp.context, gso)
+            mAuth = FirebaseAuth.getInstance()
+
+            viewTemp.buttonLoginDiffAcc.visibility = if(mAuth!!.currentUser != null){
+                View.VISIBLE
+            }else View.GONE
+
+            viewTemp.buttonLoginDiffAcc.setOnClickListener {
+                signOut()
                 viewTemp.buttonLoginDiffAcc.visibility = View.GONE
-                viewTemp.loginPopUpBackground.bringToFront()
-                viewTemp.imageViewLoginLoading.bringToFront()
-                viewTemp.imageViewLoginLoading.visibility = View.VISIBLE
-                viewTemp.loginPopUpBackground.foreground.alpha = 150
             }
-        })
 
-        mGoogleSignInClient!!.silentSignIn().addOnSuccessListener {
-            firebaseAuthWithGoogle(it)
-            Snackbar.make(viewTemp, "Welcome back!", Snackbar.LENGTH_SHORT).show()
-        }.addOnFailureListener {
-            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            if(cm.activeNetworkInfo?.isConnected == false) Snackbar.make(viewTemp, "Connection problem occurred.", Snackbar.LENGTH_SHORT).show()
+            //val opr = Auth.GoogleSignInApi.silentSignIn(mGoogleSignInClient!!.asGoogleApiClient())
+
+            loadingAnimation = AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_loading_rotate)
+
+            loadingAnimation!!.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationRepeat(animation: Animation?) {
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    viewTemp.buttonLoginDiffAcc.visibility = View.VISIBLE
+                    viewTemp.imageViewLoginLoading.visibility = View.GONE
+                    viewTemp.loginPopUpBackground.foreground.alpha = 0
+                }
+
+                override fun onAnimationStart(animation: Animation?) {
+                    viewTemp.buttonLoginDiffAcc.visibility = View.GONE
+                    viewTemp.loginPopUpBackground.bringToFront()
+                    viewTemp.imageViewLoginLoading.bringToFront()
+                    viewTemp.imageViewLoginLoading.visibility = View.VISIBLE
+                    viewTemp.loginPopUpBackground.foreground.alpha = 150
+                }
+            })
+
+            mGoogleSignInClient!!.silentSignIn().addOnSuccessListener {
+                firebaseAuthWithGoogle(it)
+                Snackbar.make(viewTemp, "Welcome back!", Snackbar.LENGTH_SHORT).show()
+            }.addOnFailureListener {
+                if(context != null) {
+                    val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    if (cm.activeNetworkInfo?.isConnected == false) Snackbar.make(viewTemp, "Connection problem occurred.", Snackbar.LENGTH_SHORT).show()
+                }
+            }
         }
 
         viewTemp.imageViewLoginGoogleSignIn.setOnClickListener {
@@ -177,12 +182,14 @@ class FragmentLogin : Fragment() {
                                     Data.loadGlobalData(viewTemp.context).addOnSuccessListener {
 
                                         if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE) {
-                                            Activity_Splash_Screen().closeLoading()
+                                            Data.loadingStatus = LoadingStatus.CLOSELOADING
                                             Handler().postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", viewTemp.context) }, 100)
                                         }
 
+                                        val textView = textViewLog?.get()
+
                                         if (userEmail.isNotEmpty() && userPassword.isNotEmpty() && GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE) {
-                                            Activity_Splash_Screen().setLogText(resources.getString(R.string.loading_log, "Your profile information"))
+                                            textView?.text = resources.getString(R.string.loading_log, "Your profile information")
 
                                             auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener { task ->
                                                 if (task.isSuccessful) {
@@ -204,15 +211,18 @@ class FragmentLogin : Fragment() {
                                                     }
 
                                                 } else {
-                                                    Activity_Splash_Screen().closeLoading()
+                                                    Data.loadingStatus = LoadingStatus.CLOSELOADING
                                                     showNotification("Oops", SystemFlow.exceptionFormatter(task.exception.toString()), viewTemp.context)
                                                     Log.d("Debug", task.exception.toString())
                                                 }
                                             }
-                                        } else Activity_Splash_Screen().closeLoading()
+                                        } else Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                    }.addOnFailureListener {
+                                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                        Log.d("login failure", it.message.toString())
                                     }
                                 } else {
-                                    Activity_Splash_Screen().closeLoading()
+                                    Data.loadingStatus = LoadingStatus.CLOSELOADING
 
                                     val builder = AlertDialog.Builder(viewTemp.context)
                                     builder.setTitle("Server not available")
@@ -226,6 +236,8 @@ class FragmentLogin : Fragment() {
                                     }
                                     if (!dialog!!.isShowing) dialog!!.show()
                                 }
+                            }.addOnFailureListener {
+                                Data.loadingStatus = LoadingStatus.CLOSELOADING
                             }
                         } else {
                             viewTemp.inputPassLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
@@ -279,7 +291,10 @@ class FragmentLogin : Fragment() {
                         Data.player.username = document.getString("username")!!
 
                         Data.player.loadPlayerInstance(context).addOnSuccessListener {
+
+                            Log.d("logged in user", "new player? ${Data.player.newPlayer} - username ${Data.player.username}")
                             if (Data.player.newPlayer) {
+                                Log.d("Logged-in", "new user")
                                 Data.loadingStatus = LoadingStatus.REGISTERED
                             } else {
                                 Data.player.init(context)
@@ -287,22 +302,22 @@ class FragmentLogin : Fragment() {
                                 Data.player.uploadSingleItem("online").addOnSuccessListener {
                                     Data.loadingStatus = LoadingStatus.LOGGED
                                 }.addOnFailureListener {
-                                    Activity_Splash_Screen().closeLoading()
+                                    Data.loadingStatus = LoadingStatus.CLOSELOADING
                                     Snackbar.make(viewTemp, "Oops. Request timed out", Snackbar.LENGTH_SHORT).show()
                                 }
                             }
                         }.addOnFailureListener {
-                            Activity_Splash_Screen().closeLoading()
+                            Data.loadingStatus = LoadingStatus.CLOSELOADING
                             Snackbar.make(viewTemp, "Oops. Request timed out", Snackbar.LENGTH_SHORT).show()
                         }
 
                     } catch (e: IndexOutOfBoundsException) {
-                        Activity_Splash_Screen().closeLoading()
+                        Data.loadingStatus = LoadingStatus.CLOSELOADING
                         signOut()
                         showNotification("Oops", "We're unable to find you in our database. Are you sure you have an account?", context)
                     }
                 }.addOnFailureListener {
-                    Activity_Splash_Screen().closeLoading()
+                    Data.loadingStatus = LoadingStatus.CLOSELOADING
                     Snackbar.make(viewTemp, "Oops. Request timed out", Snackbar.LENGTH_SHORT).show()
                 }
     }
@@ -339,15 +354,9 @@ class FragmentLogin : Fragment() {
                 .addOnSuccessListener { result ->
 
                     val signInMethods = result.signInMethods
-                    Log.d("testuju", result.signInMethods.toString())
 
                     when {
-                        signInMethods!!.contains(EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD) -> {
-                            signOut()
-                            if(loadingAnimation != null) loadingAnimation!!.cancel()
-                            Snackbar.make(viewTemp, "User has password, thus is required in this case.", Snackbar.LENGTH_SHORT).show()
-                        }
-                        signInMethods.contains("google.com") -> {
+                        signInMethods!!.contains("google.com") -> {
                             val intentSplash = Intent(activity!!, Activity_Splash_Screen::class.java)
                             Data.loadingStatus = LoadingStatus.LOGGING
 
@@ -366,7 +375,7 @@ class FragmentLogin : Fragment() {
                                                     if (documentSnapshot.getString("Status") == "on") {
                                                         Data.loadGlobalData(activity!!).addOnSuccessListener {
                                                             if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE) {
-                                                                Activity_Splash_Screen().closeLoading()
+                                                                Data.loadingStatus = LoadingStatus.CLOSELOADING
                                                                 Handler().postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", activity!!) }, 100)
                                                             } else {
                                                                 signInToUser(user, activity!!)
@@ -386,6 +395,11 @@ class FragmentLogin : Fragment() {
                                         }else Snackbar.make(viewTemp, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
                                     }
                         }
+                        signInMethods.contains(EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD) -> {
+                            signOut()
+                            if(loadingAnimation != null) loadingAnimation!!.cancel()
+                            Snackbar.make(viewTemp, "User has password, thus is required in this case.", Snackbar.LENGTH_SHORT).show()
+                        }
                         signInMethods.isEmpty() -> {
                             if(loadingAnimation != null) loadingAnimation!!.cancel()
 
@@ -404,6 +418,8 @@ class FragmentLogin : Fragment() {
 
                             val db = FirebaseFirestore.getInstance()
                             val docRef = db.collection("users")
+
+                            viewP.editTextPopRegisterName.setText(acct.displayName ?: "")
 
                             viewP.editTextPopRegisterName.setOnFocusChangeListener { v, hasFocus ->
                                 if (!hasFocus) {
@@ -459,12 +475,21 @@ class FragmentLogin : Fragment() {
                                                 tempPlayer.createPlayer(user!!.uid, viewP.editTextPopRegisterName.text.toString()).addOnSuccessListener {
                                                     Data.player.username = viewP.editTextPopRegisterName.text.toString()
 
-                                                    Data.loadGlobalData(activity!!).addOnCompleteListener {
-                                                        if(it.isSuccessful){
-                                                            Data.loadingStatus = LoadingStatus.REGISTERED
-                                                        }else {
-                                                            showNotification("Oops", "Timed out during loading content. The process of loading is saved.", activity!!)
-                                                            Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                                    db.collection("GenericDB").document("AppInfo").get().addOnSuccessListener { itGeneric ->
+
+                                                        if(itGeneric.toObject(GenericDB.AppInfo::class.java) != null){
+                                                            GenericDB.AppInfo.updateData(itGeneric.toObject(GenericDB.AppInfo::class.java)!!)
+
+                                                            if(GenericDB.AppInfo.appVersion <= BuildConfig.VERSION_CODE){
+                                                                Data.loadGlobalData(activity!!).addOnCompleteListener {
+                                                                    if(it.isSuccessful){
+                                                                        Data.loadingStatus = LoadingStatus.REGISTERED
+                                                                    }else {
+                                                                        showNotification("Oops", "Timed out during loading content. The process of loading is saved.", activity!!)
+                                                                        Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
 
@@ -496,35 +521,6 @@ class FragmentLogin : Fragment() {
                     if(loadingAnimation != null) loadingAnimation!!.cancel()
                 }
     }
-
-    /*private fun silentLogin() {
-        val pendingResult = Auth.GoogleSignInApi.silentSignIn(mGoogleSignInClient!!.asGoogleApiClient())
-        if (pendingResult != null) {
-            handleGooglePendingResult(pendingResult)
-        }
-    }
-
-    private fun handleGooglePendingResult(pendingResult: OptionalPendingResult<GoogleSignInResult>) {
-        if (pendingResult.isDone) {
-
-            // There's immediate result available.
-            val signInResult = pendingResult.get()
-            onSilentSignInCompleted(signInResult)
-        } else {
-            loadingAnimation.start()
-            pendingResult.setResultCallback { signInResult ->
-                loadingAnimation.cancel()
-                onSilentSignInCompleted(signInResult)
-            }
-        }
-    }
-
-    private fun onSilentSignInCompleted(signInResult: GoogleSignInResult) {
-        val signInAccount = signInResult.signInAccount
-        if (signInAccount != null) {
-
-        }
-    }*/
 }
 
 

@@ -9,6 +9,13 @@
     android:screenOrientation="sensorLandscape">
 
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline239"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.71" />
+
     <ImageView
         android:id="@+id/imageViewActivitySettings"
         android:layout_width="0dp"
@@ -16,10 +23,10 @@
         android:src="@color/loginColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <Switch
         android:id="@+id/switchNotificationsFaction"
@@ -51,27 +58,24 @@
         android:id="@+id/seekBarSettingsTextSize"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:max="14"
         android:progress="0"
         app:layout_constraintEnd_toStartOf="@+id/guideline199"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/switchSounds"
         app:layout_constraintTop_toBottomOf="@+id/textViewSettingsSeekBar" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingsTextFont"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
         android:gravity="center_horizontal"
         android:textColor="@color/colorSecondary"
         app:layout_constraintEnd_toStartOf="@+id/imageViewSettingFontRight"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/switchSounds"
         app:layout_constraintTop_toBottomOf="@+id/seekBarSettingsTextSize"
-        tools:text="@android:string/dialog_alert_title" />
+        tools:text="attention, all gamers" />
 
     <Switch
         android:id="@+id/switchNotificationsInbox"
@@ -90,14 +94,13 @@
         android:id="@+id/switchAppearOnTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
         android:checked="true"
         android:fontFamily="sans-serif-medium"
         android:text="Bubble after minimization"
         android:textColor="@color/colorSecondary"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switchSounds"
+        app:layout_constraintStart_toStartOf="@+id/switchSounds"
+        app:layout_constraintTop_toBottomOf="@+id/switchVibrateEffects"
         tools:checked="true" />
 
     <Switch
@@ -112,6 +115,19 @@
         android:textColor="@color/colorSecondary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        tools:checked="true" />
+
+    <Switch
+        android:id="@+id/switchVibrateEffects"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:checked="true"
+        android:fontFamily="sans-serif-medium"
+        android:text="Vibrate effects"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintStart_toStartOf="@+id/switchSounds"
+        app:layout_constraintTop_toBottomOf="@+id/switchSounds"
         tools:checked="true" />
 
     <ImageView
@@ -206,8 +222,18 @@
         android:text="Text size matters"
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="@+id/switchAppearOnTop"
+        app:layout_constraintStart_toStartOf="@+id/switchSounds"
         app:layout_constraintTop_toBottomOf="@+id/switchAppearOnTop" />
+
+    <ImageView
+        android:id="@+id/imageViewSettingsGoogleSignIn"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="H,1:0.25"
+        app:layout_constraintEnd_toStartOf="@+id/guideline139"
+        app:layout_constraintStart_toStartOf="@+id/guideline239"
+        app:layout_constraintTop_toTopOf="@+id/guideline192"
+        app:srcCompat="@drawable/google_sign_in" />
 
     <ImageView
         android:id="@+id/imageViewSettingFontRight"
@@ -218,6 +244,113 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline199"
         app:layout_constraintTop_toTopOf="@+id/textViewSettingsTextFont"
         app:srcCompat="@drawable/right_arrow" />
+
+    <Button
+        android:id="@+id/buttonSettingChangePassword"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="set password"
+        app:layout_constraintEnd_toStartOf="@+id/guideline139"
+        app:layout_constraintStart_toStartOf="@+id/guideline239"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewSettingsGoogleSignIn" />
+
+    <Button
+        android:id="@+id/buttonSettingChangePasswordOk"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@android:string/ok"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/editTextSettingNewPassword"
+        app:layout_constraintStart_toStartOf="@+id/editTextSettingNewPassword"
+        app:layout_constraintTop_toBottomOf="@+id/editTextSettingNewPassword"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline192"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.22" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextSettingNewPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_basic_logincolor_dark"
+        android:hint="New password"
+        android:inputType="textPassword"
+        android:lines="1"
+        android:paddingStart="6dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="5dp"
+        android:textColor="@color/bg_basic_white"
+        android:textColorHint="@color/loginColor_4"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/buttonSettingChangePassword"
+        app:layout_constraintStart_toStartOf="@+id/buttonSettingChangePassword"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSettingChangePassword"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewSettingNewPasswordReq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="6dp"
+        android:text="7+ characters,\nat least 1 number"
+        android:textColor="@color/loginColor_2"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextSettingNewPassword"
+        app:layout_constraintEnd_toStartOf="@+id/editTextSettingNewPassword"
+        app:layout_constraintTop_toTopOf="@+id/editTextSettingNewPassword"
+        tools:visibility="visible" />
+
+    <Button
+        android:id="@+id/buttonSettingsVibrate"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="vibrate"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewMenuUpSettings"
+        app:layout_constraintEnd_toEndOf="@+id/editTextSettingsVibrate"
+        app:layout_constraintStart_toStartOf="@+id/editTextSettingsVibrate"
+        app:layout_constraintTop_toBottomOf="@+id/switchNotificationsEvent"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextSettingsVibrate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_basic_logincolor_dark"
+        android:lines="1"
+        android:paddingStart="6dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="5dp"
+        android:text="Cube it is so fun!"
+        android:textColor="@color/bg_basic_white"
+        android:textColorHint="@color/loginColor_4"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/guideline82"
+        app:layout_constraintStart_toStartOf="@+id/guideline199"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSettingsVibrate"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewSettingsVibrateLog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/loginColor_3"
+        app:layout_constraintEnd_toEndOf="@+id/editTextSettingsVibrate"
+        app:layout_constraintStart_toStartOf="@+id/editTextSettingsVibrate"
+        app:layout_constraintTop_toBottomOf="@+id/editTextSettingsVibrate" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

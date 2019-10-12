@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:state_pressed="true" android:drawable="@drawable/bg_button_logincolor_pressed" />
+    <item android:state_pressed="true" android:drawable="@drawable/bg_button_secondary_pressed" />
     <item>
             <shape android:shape="rectangle">
 
                 <padding android:left="15dp" android:right="15dp" android:top="10dp" android:bottom="10dp"/>
 
-                <solid android:color="@color/loginColor" />
+                <solid android:color="@color/colorSecondary" />
 
                 <stroke android:width="4dp" android:color="@android:color/transparent"/>
 

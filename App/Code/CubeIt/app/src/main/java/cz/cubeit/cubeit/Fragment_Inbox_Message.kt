@@ -315,7 +315,7 @@ class FragmentInboxMessage : Fragment() {
 
                             if (view.editTextInboxReciever.text.toString().isNotEmpty()) {
 
-                                if (view.editTextInboxContent.text.toString().length < 500) {
+                                if (view.editTextInboxContent.text.toString().length < 500 && view.editTextInboxContent.text.toString().isNotEmpty()) {
 
                                     val activityTemp = activity!!
 

@@ -3,22 +3,51 @@ package cz.cubeit.cubeit
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Rect
-import android.os.Bundle
-import android.os.Handler
+import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.view.*
+import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import androidx.core.content.res.ResourcesCompat
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.*
 import kotlinx.android.synthetic.main.activity_settings.*
+import android.os.VibrationEffect
+import android.widget.Toast
 
 
 class ActivitySettings : AppCompatActivity(){
 
     var displayY = 0.0
     private lateinit var frameLayoutMenu: FrameLayout
+    private val RC_SIGN_IN = 9001
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                val account = task.getResult(ApiException::class.java)
+                firebaseAuthWithGoogle(account!!)
+            } catch (e: ApiException) {
+                // Google Sign In failed, update UI appropriately
+                // [START_EXCLUDE]
+                //updateUI(null)
+                // [END_EXCLUDE]
+            }
+        }
+    }
 
     override fun onBackPressed() {
         val intent = Intent(this, Home::class.java)
@@ -68,6 +97,7 @@ class ActivitySettings : AppCompatActivity(){
         switchNotificationsInbox.isChecked = Data.player.notificationsInbox
         switchNotificationsEvent.isChecked = Data.player.notificationsEvent
         switchNotificationsFaction.isChecked = Data.player.notificationsFaction
+        switchVibrateEffects.isChecked = Data.player.vibrateEffects
         switchSounds.isChecked = Data.player.music
         switchAppearOnTop.isChecked = Data.player.appearOnTop
 
@@ -131,6 +161,102 @@ class ActivitySettings : AppCompatActivity(){
             Data.player.music = isChecked
         }
 
+        var easterEggCounter = 0
+        switchVibrateEffects.setOnCheckedChangeListener { _, isChecked ->
+            Data.player.vibrateEffects = isChecked
+            SystemFlow.writeFileText(this, "vibrateEffect${Data.player.username}.data", isChecked.toString())
+
+            if(isChecked){
+                if(easterEggCounter >= 5){
+                    buttonSettingsVibrate.visibility = View.VISIBLE
+                    editTextSettingsVibrate.visibility = View.VISIBLE
+                    Snackbar.make(switchVibrateEffects, "Morse vibrations easter egg unlocked!", Snackbar.LENGTH_SHORT).show()
+                }else {
+                    easterEggCounter++
+                }
+
+                val v = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    v!!.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    v!!.vibrate(50)
+                }
+            }
+        }
+
+        imageViewSettingsGoogleSignIn.setOnClickListener{
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build()
+
+            val mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+            val signInIntent = mGoogleSignInClient!!.signInIntent
+            startActivityForResult(signInIntent, RC_SIGN_IN)
+        }
+
+        val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+        var morseVibration = SystemFlow.translateIntoMorse("")
+
+        buttonSettingsVibrate.setOnTouchListener(object: Class_HoldTouchListener(buttonSettingsVibrate, false, 0f, false){
+
+            override fun onStartHold(x: Float, y: Float) {
+                super.onStartHold(x, y)
+                morseVibration = SystemFlow.translateIntoMorse(editTextSettingsVibrate.text.toString(), textViewSettingsVibrateLog)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    v!!.vibrate(VibrationEffect.createWaveform(morseVibration.timing.toLongArray(), morseVibration.amplitudes.toIntArray(), -1))
+                }
+            }
+
+            override fun onCancelHold() {
+                super.onCancelHold()
+                morseVibration.detachHandlers()
+                textViewSettingsVibrateLog.text = ""
+                if(v!!.hasVibrator()) v.cancel()
+            }
+        })
+
+        buttonSettingChangePassword.setOnClickListener{
+            if(editTextSettingNewPassword.visibility != View.VISIBLE) editTextSettingNewPassword.visibility = View.VISIBLE
+            if(buttonSettingChangePasswordOk.visibility != View.VISIBLE) buttonSettingChangePasswordOk.visibility = View.VISIBLE
+            if(textViewSettingNewPasswordReq.visibility != View.VISIBLE) textViewSettingNewPasswordReq.visibility = View.VISIBLE
+
+            buttonSettingChangePasswordOk.setOnClickListener {
+                buttonSettingChangePasswordOk.isEnabled = false
+
+                if(!editTextSettingNewPassword.text.isNullOrEmpty()){
+
+                    val pass = editTextSettingNewPassword.text.toString()
+                    if(pass.length > 7 && pass.contains("\\d+".toRegex()) /*&& pass.contains("[A-Z ]+".toRegex())*/){
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            textViewSettingNewPasswordReq.setTextColor(getColor(R.color.loginColor_2))
+                        }else {
+                            textViewSettingNewPasswordReq.setTextColor(resources.getColor(R.color.loginColor_2))
+                        }
+
+                        Data.player.userSession.updatePassword(editTextSettingNewPassword.text.toString()).addOnCompleteListener {
+                            buttonSettingChangePasswordOk.isEnabled = true
+                            if(it.isSuccessful){
+                                Snackbar.make(editTextSettingNewPassword, "Password successfully changed!", Snackbar.LENGTH_SHORT).show()
+                            }else {
+                                editTextSettingNewPassword.setText("")
+                                Snackbar.make(editTextSettingNewPassword, it.exception.toString(), Snackbar.LENGTH_SHORT).show()
+                            }
+                        }
+                    }else {
+                        buttonSettingChangePasswordOk.isEnabled = true
+                        textViewSettingNewPasswordReq.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_shaky_short_vertical))
+                        Snackbar.make(editTextSettingNewPassword, "Not allowed!", Snackbar.LENGTH_SHORT).show()
+                        textViewSettingNewPasswordReq.setTextColor(Color.WHITE)
+                    }
+                }else {
+                    buttonSettingChangePasswordOk.isEnabled = true
+                    editTextSettingNewPassword.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_shaky_short))
+                    Snackbar.make(editTextSettingNewPassword, "Enter new password.", Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         switchAppearOnTop.setOnCheckedChangeListener { _, isChecked ->
             Data.player.appearOnTop = isChecked
         }
@@ -173,6 +299,18 @@ class ActivitySettings : AppCompatActivity(){
                     start()
                 }
             }
+        }
+    }
+
+    fun firebaseAuthWithGoogle(acct: GoogleSignInAccount){
+        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+
+        Data.player.userSession.linkWithCredential(credential).addOnCompleteListener {
+            Snackbar.make(editTextSettingNewPassword, if (it.isSuccessful) {
+                "Account successfully linked!"
+            } else {
+                it.exception!!.message.toString()
+            }, Snackbar.LENGTH_SHORT).show()
         }
     }
 }

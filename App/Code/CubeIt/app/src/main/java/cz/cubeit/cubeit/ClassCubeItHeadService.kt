@@ -76,7 +76,7 @@ class ClassCubeItHeadService : Service() {
 
         //Drag and move chat head using user's touch action.
         val cubeItHeadImage = mCubeItHeadView!!.findViewById<View>(R.id.cubeit_head) as ImageView
-        cubeItHeadImage.setOnTouchListener(object : Class_OnSwipeTouchListener(this, cubeItHeadImage) {
+        cubeItHeadImage.setOnTouchListener(object : Class_OnSwipeTouchListener(this, cubeItHeadImage, false) {
             private var lastAction: Int = 0
             private var initialX: Int = 0
             private var initialY: Int = 0
@@ -88,8 +88,8 @@ class ClassCubeItHeadService : Service() {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);*/
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 val intent = Intent(this@ClassCubeItHeadService, Home::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)

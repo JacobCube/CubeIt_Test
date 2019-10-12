@@ -31,8 +31,8 @@ class Home : AppCompatActivity() {
 
     var dialog: AlertDialog? = null
 
-    private val lifecycleListener: LifecycleListener by lazy{
-        LifecycleListener(this)
+    private val lifecycleListener: SystemFlow.LifecycleListener by lazy{
+        SystemFlow.LifecycleListener(this)
     }
 
     private fun setupLifecycleListener() {
@@ -63,6 +63,35 @@ class Home : AppCompatActivity() {
         hideSystemUI()
         setContentView(R.layout.activity_home)
 
+        Log.w("test_home", Data.spellClasses.size.toString())
+
+        Data.uploadGlobalData()
+
+        /*for(i in Data.player.currentSurfaces){
+            if(i.boss == null){
+                i.boss = Boss(surface = Data.player.currentSurfaces.indexOf(i))
+                i.boss!!.initialize().addOnSuccessListener {
+                    Log.d("boss generated", "successfully")
+                }.addOnFailureListener {
+                    Log.d("boss generated", it.message.toString())
+                }
+            }
+        }*/
+
+        /*Data.npcs.clear()
+        for(i in 1..7){
+            Data.npcs[i.toString()] = NPC()
+        }
+        for(i in Data.npcs){
+            i.setValue(NPC().generate(playerX = Data.player))
+        }
+
+        Handler().postDelayed({
+            Data.uploadGlobalData()
+        }, 20000)*/
+
+
+
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         layoutHome.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.homebackground, opts))
@@ -74,7 +103,7 @@ class Home : AppCompatActivity() {
         }
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& Data.player.appearOnTop) {
-                //If the draw over permission is not available open the menu_settings_icon screen to grant the permission.
+                //If the draw over permission is not available open the settings screen to grant the permission.
 
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:$packageName"))
@@ -177,7 +206,7 @@ class Home : AppCompatActivity() {
         var initialTouchExitX = 0f
         var clickableExit = false
 
-        imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewExit) {            //disconnect swipe / open menu
+        imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewExit, false) {            //disconnect swipe / open menu
             override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {

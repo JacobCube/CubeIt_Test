@@ -48,8 +48,8 @@ open class Class_HoldTouchListener(val externalView: View, val isActivity: Boole
 
             }
             MotionEvent.ACTION_UP -> {
-                onCancelHold()
                 onCancelMove()
+                onCancelHold()
                 externalView.isPressed = false
                 if(clickableTemp) onClick()
             }
@@ -59,8 +59,8 @@ open class Class_HoldTouchListener(val externalView: View, val isActivity: Boole
             }
             MotionEvent.ACTION_CANCEL -> {
                 externalView.isPressed = false
-                onCancelHold()
                 onCancelMove()
+                onCancelHold()
             }
             MotionEvent.ACTION_MOVE -> {
                 if(motionEvent.rawX > originalX && (motionEvent.rawX - initialTouchX) > 50 && allowSwipe){

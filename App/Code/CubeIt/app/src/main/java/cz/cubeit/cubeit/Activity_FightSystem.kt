@@ -285,70 +285,70 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
     private fun disableSpellsFor(millis: Long){
         Spell0.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
         Spell1.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
         Spell2.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
         Spell3.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
         Spell4.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
         Spell5.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
         Spell6.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
         Spell7.apply {
-            isEnabled = false
+            isClickable = false
             alpha = 0.5f
         }
 
         Handler().postDelayed(
                 {
                     Spell0.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                     Spell1.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                     Spell2.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                     Spell3.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                     Spell4.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                     Spell5.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                     Spell6.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                     Spell7.apply {
-                        isEnabled = true
+                        isClickable = true
                         alpha = 1f
                     }
                 }, millis
@@ -486,7 +486,11 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {                //parameters: enemy: Player, reward: Reward
+    /*
+        parameters: enemy: Player, reward: Reward
+        TODO newer version of figthsystem - onLowMemory, onStop: clear bitmap
+     */
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val enemyPlayer = intent.extras!!.getSerializable("enemy")!! as Player
         //reward = if(intent.extras?.getSerializable("reward") != null) intent.extras!!.getSerializable("reward")!! as Reward else null
@@ -546,149 +550,54 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             Log.d("player energy", playerFight.playerFight.energy.toString())
         }
 
-        Spell0.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell0) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.learnedSpells[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
-            }
+        @SuppressLint("ClickableViewAccessibility")
+        class Node(
+                val index: Int = 0,
+                val component: ImageView
+        ){
+            init {
+                this.component.setOnTouchListener(object : Class_OnSwipeTouchListener(this@FightSystem, Spell0, false) {
+                    override fun onSwipeUp() {
+                        component.isClickable = false
+                        if(this@Node.index < 2){
+                            playerFight.useSpell(playerFight.playerFight.learnedSpells[index]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, component)
+                        }else {
+                            playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[index - 2]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, component)
+                        }
+                    }
 
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell0
-                textViewSpellSpecs.text = playerFight.playerFight.learnedSpells[0]!!.getStats()
-            }
+                    override fun onClick(x: Float, y: Float) {
+                        super.onClick(x, y)
+                        if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
+                        lastClicked = component
+                        if(this@Node.index < 2){
+                            textViewSpellSpecs.text = playerFight.playerFight.learnedSpells[index]!!.getStats()
+                        }else {
+                            textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[index - 2]?.getStats()
+                        }
+                    }
 
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.learnedSpells[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell0)
+                    override fun onDoubleClick() {
+                        super.onDoubleClick()
+                        component.isClickable = false
+                        if(this@Node.index < 2){
+                            playerFight.useSpell(playerFight.playerFight.learnedSpells[index]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, component)
+                        }else {
+                            playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[index - 2]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, component)
+                        }
+                    }
+                })
             }
-        })
+        }
 
-        Spell1.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell1) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.learnedSpells[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
-
-            }
-
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell1
-                textViewSpellSpecs.text = playerFight.playerFight.learnedSpells[1]!!.getStats()
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.learnedSpells[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell1)
-            }
-        })
-
-        Spell2.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell2) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
-            }
-
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell2
-                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[0]?.getStats()
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[0]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell2)
-            }
-        })
-
-        Spell3.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell3) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
-            }
-
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell3
-                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[1]?.getStats()
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[1]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell3)
-            }
-        })
-
-        Spell4.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell4) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[2]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
-            }
-
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell4
-                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[2]?.getStats()
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[2]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell4)
-            }
-        })
-
-        Spell5.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell5) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[3]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
-            }
-
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell5
-                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[3]?.getStats()
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[3]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell5)
-            }
-        })
-
-        Spell6.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell6) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[4]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
-            }
-
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell6
-                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[4]?.getStats()
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[4]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell6)
-            }
-        })
-        Spell7.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell7) {
-            override fun onSwipeUp() {
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[5]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
-            }
-
-            override fun onClick() {
-                super.onClick()
-                if(textViewSpellSpecs.visibility != View.VISIBLE)textViewSpellSpecs.visibility = View.VISIBLE
-                lastClicked = Spell7
-                textViewSpellSpecs.text = playerFight.playerFight.chosenSpellsAttack[5]?.getStats()
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[5]!!, enemy.enemy.chosenSpellsDefense[roundCounter]!!, Spell7)
-            }
-        })
+        val node0 = Node(0, Spell0)
+        val node1 = Node(1, Spell1)
+        val node2 = Node(2, Spell2)
+        val node3 = Node(3, Spell3)
+        val node4 = Node(4, Spell4)
+        val node5 = Node(5, Spell5)
+        val node6 = Node(6, Spell6)
+        val node7 = Node(7, Spell7)
 
         imageViewFightBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
         imageViewFightBars.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
@@ -727,7 +636,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         }
         enemy = FightEnemy(enemyPlayer)
         init()
-        Activity_Splash_Screen().closeLoading()
+        Data.loadingStatus = LoadingStatus.CLOSELOADING
     }
     private fun attackCalc(player:Player, enemySpell:Spell, playerSpell:Spell, enemy:Player):Double{
         var returnValue = ((playerSpell.power.toDouble() * Data.player.power.toDouble() * enemySpell.block)/4)
@@ -890,7 +799,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             if (winner.username == playerName) {
 
-                fameGained *= enemy.enemy.fame / playerFight.playerFight.fame
+                fameGained *= enemy.enemy.fame.safeDivider(playerFight.playerFight.fame)
                 fameGained = kotlin.math.min(fameGained, 75)
 
                 if (enemy.enemy.fame <= fameGained) fameGained = enemy.enemy.fame
@@ -907,7 +816,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                         content = "$playerName fought you and you lost!\nYou lost $fameGained fame.\nNow it's your turn to decide who's gonna win the war."
                 ))
             } else {
-                fameGained *= playerFight.playerFight.fame / enemy.enemy.fame
+                fameGained *= playerFight.playerFight.fame.safeDivider(enemy.enemy.fame)
                 fameGained = kotlin.math.min(fameGained, 75)
 
                 if (playerFight.playerFight.fame <= fameGained) fameGained = playerFight.playerFight.fame
@@ -937,7 +846,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             )
             log.init()
 
-            if(surrender)finish()
+            if(surrender) finish()
 
             textViewQuest.text = "${winner.username} won" +
                     "\n and earned:" +
@@ -966,6 +875,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 imageItem.setImageResource(reward.item!!.drawable)
                 imageItem.visibility = View.VISIBLE
                 imageItem.isEnabled = true
+                imageItem.isClickable = true
 
                 val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
                 val windowPop = PopupWindow(view.context)

@@ -20,21 +20,31 @@
  android:src="@color/colorSecondary" />
 
     <ImageView
-        android:onClick="onClickQuest"
         android:id="@+id/s1quest1"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@null"
+        android:onClick="onClickQuest"
         android:scaleType="fitXY"
-        app:layout_constraintDimensionRatio="H,1:1"
+        android:src="@drawable/vykricnik"
 
- android:src="@drawable/vykricnik"
-        app:layout_constraintBottom_toTopOf="@+id/LRguideline4"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline3"
         app:layout_constraintRight_toLeftOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="@+id/LRguideline3"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/LRguideline3" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewS1Boss1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textColor="@color/bg_basic_white"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/s1boss1"
+        app:layout_constraintStart_toStartOf="@+id/s1boss1"
+        app:layout_constraintTop_toTopOf="@+id/LRguideline2"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline3"
@@ -57,29 +67,19 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.25" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/LRguideline4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.32" />
-
     <ImageView
-        android:onClick="onClickQuest"
         android:id="@+id/s1quest2"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@null"
+        android:onClick="onClickQuest"
         android:scaleType="fitXY"
+        android:src="@drawable/vykricnik"
         app:layout_constraintDimensionRatio="H,1:1"
-
- android:src="@drawable/vykricnik"
-        app:layout_constraintBottom_toTopOf="@+id/LRguideline6"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline5"
         app:layout_constraintRight_toLeftOf="@+id/guideline6"
-        app:layout_constraintTop_toTopOf="@+id/LRguideline5"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/LRguideline5" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline5"
@@ -102,29 +102,20 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.46" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/LRguideline6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.54" />
-
     <ImageView
-        android:onClick="onClickQuest"
         android:id="@+id/s1quest3"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@null"
+        android:onClick="onClickQuest"
         android:scaleType="fitXY"
-        app:layout_constraintDimensionRatio="H,1:1"
+        android:src="@drawable/vykricnik"
 
- android:src="@drawable/vykricnik"
-        app:layout_constraintBottom_toTopOf="@+id/LRguideline8"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline7"
         app:layout_constraintRight_toLeftOf="@+id/guideline8"
-        app:layout_constraintTop_toTopOf="@+id/LRguideline7"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/LRguideline7" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline7"
@@ -132,6 +123,29 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.48" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline182"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.45" />
+
+    <ImageView
+        android:id="@+id/s1boss1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        android:src="@drawable/vykricnik"
+        android:tint="@color/leaderboard_first"
+        android:tintMode="multiply"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/LRguideline2"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline8"
+        app:layout_constraintStart_toStartOf="@+id/guideline182"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline8"
@@ -147,29 +161,20 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.37" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/LRguideline8"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.45" />
-
     <ImageView
-        android:onClick="onClickQuest"
         android:id="@+id/s1quest4"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@null"
+        android:onClick="onClickQuest"
         android:scaleType="fitXY"
-        app:layout_constraintDimensionRatio="H,1:1"
+        android:src="@drawable/vykricnik"
 
- android:src="@drawable/vykricnik"
-        app:layout_constraintBottom_toTopOf="@+id/LRguideline10"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline9"
         app:layout_constraintRight_toLeftOf="@+id/guideline10"
-        app:layout_constraintTop_toTopOf="@+id/LRguideline9"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/LRguideline9" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline9"
@@ -192,29 +197,20 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.77" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/LRguideline10"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.84" />
-
     <ImageView
-        android:onClick="onClickQuest"
         android:id="@+id/s1quest5"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@null"
+        android:onClick="onClickQuest"
         android:scaleType="fitXY"
-        app:layout_constraintDimensionRatio="H,1:1"
+        android:src="@drawable/vykricnik"
 
- android:src="@drawable/vykricnik"
-        app:layout_constraintBottom_toTopOf="@+id/LRguideline12"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline11"
         app:layout_constraintRight_toLeftOf="@+id/guideline12"
-        app:layout_constraintTop_toTopOf="@+id/LRguideline11"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/LRguideline11" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline11"
@@ -237,29 +233,20 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.11" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/LRguideline12"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.18" />
-
     <ImageView
-        android:onClick="onClickQuest"
         android:id="@+id/s1quest6"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@null"
+        android:onClick="onClickQuest"
         android:scaleType="fitXY"
-        app:layout_constraintDimensionRatio="H,1:1"
+        android:src="@drawable/vykricnik"
 
- android:src="@drawable/vykricnik"
         app:layout_constraintBottom_toTopOf="@+id/LRguideline2"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline1"
-        app:layout_constraintRight_toLeftOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/LRguideline1"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintRight_toLeftOf="@+id/guideline2" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline1"
@@ -276,13 +263,6 @@
         app:layout_constraintGuide_percent="0.82" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/LRguideline1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.7" />
-
-    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/LRguideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -290,21 +270,19 @@
         app:layout_constraintGuide_percent="0.77" />
 
     <ImageView
-        android:onClick="onClickQuest"
         android:id="@+id/s1quest7"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@null"
+        android:onClick="onClickQuest"
         android:scaleType="fitXY"
-        app:layout_constraintDimensionRatio="H,1:1"
+        android:src="@drawable/vykricnik"
 
- android:src="@drawable/vykricnik"
-        app:layout_constraintBottom_toTopOf="@+id/LRguideline14"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline13"
         app:layout_constraintRight_toLeftOf="@+id/guideline14"
-        app:layout_constraintTop_toTopOf="@+id/LRguideline13"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/LRguideline13" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline13"
@@ -326,13 +304,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.22" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/LRguideline14"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.28" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

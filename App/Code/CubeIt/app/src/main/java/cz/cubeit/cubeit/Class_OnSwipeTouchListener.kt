@@ -1,12 +1,19 @@
 package cz.cubeit.cubeit
 
 import android.content.Context
+import android.content.Context.VIBRATOR_SERVICE
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.abs
+import android.os.VibrationEffect
+import android.os.Build
+import androidx.core.content.ContextCompat.getSystemService
+import android.os.Vibrator
 
-open class Class_OnSwipeTouchListener(c: Context, val view: View) : View.OnTouchListener {
+
+
+open class Class_OnSwipeTouchListener(c: Context, val view: View, val longPressable: Boolean) : View.OnTouchListener {
 
     private val SWIPE_THRESHOLD = 100
     private val SWIPE_VELOCITY_THRESHOLD = 100
@@ -36,7 +43,7 @@ open class Class_OnSwipeTouchListener(c: Context, val view: View) : View.OnTouch
         }
 
         override fun onSingleTapUp(e: MotionEvent): Boolean {
-            onClick()
+            onClick(e.rawX, e.rawY)
             return super.onSingleTapUp(e)
         }
 
@@ -99,7 +106,7 @@ open class Class_OnSwipeTouchListener(c: Context, val view: View) : View.OnTouch
         view.isPressed = false
     }
 
-    open fun onClick() {
+    open fun onClick(x: Float, y: Float) {
         view.isPressed = false
     }
 
@@ -109,5 +116,13 @@ open class Class_OnSwipeTouchListener(c: Context, val view: View) : View.OnTouch
 
     open fun onLongClick() {
         view.isPressed = false
+        if(Data.player.vibrateEffects && longPressable){
+            val v = view.context.getSystemService(VIBRATOR_SERVICE) as Vibrator?
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v!!.vibrate(VibrationEffect.createOneShot(10, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                v!!.vibrate(10)
+            }
+        }
     }
 }

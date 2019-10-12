@@ -56,7 +56,7 @@ class Fragment_Story_Quest_Template_0 : Fragment() {
         viewTemplate0.imageView0Template0.setImageBitmap(BitmapFactory.decodeResource(resources, slide.images[0].drawable, opts))
         viewTemplate0.imageView1Template0.setImageBitmap(BitmapFactory.decodeResource(resources, slide.images[1].drawable, opts))
 
-        viewTemplate0.layoutFragmentStoryTemplate0.setOnTouchListener(object : Class_OnSwipeTouchListener(viewTemplate0.context, viewTemplate0) {
+        viewTemplate0.layoutFragmentStoryTemplate0.setOnTouchListener(object : Class_OnSwipeTouchListener(viewTemplate0.context, viewTemplate0, false) {
             override fun onDoubleClick() {
                 super.onDoubleClick()
                 (this@Fragment_Story_Quest_Template_0.parentFragment as Fragment_Story).skipSlide()

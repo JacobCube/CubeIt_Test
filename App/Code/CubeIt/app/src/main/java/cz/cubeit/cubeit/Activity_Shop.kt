@@ -226,9 +226,9 @@ class Activity_Shop : AppCompatActivity(){
                     component.tag = this.index.toString()
                     component.setOnDragListener(parent.inventoryShopDragListener)
 
-                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
-                        override fun onClick() {
-                            super.onClick()
+                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
+                        override fun onClick(x: Float, y: Float) {
+                            super.onClick(x, y)
                             textViewInfoItem.setHTMLText(playerS.inventory[this@Node.index]?.getStatsCompare() ?: "")
                         }
 
@@ -335,9 +335,9 @@ class Activity_Shop : AppCompatActivity(){
 
                     component.tag = this.index.toString()
 
-                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component) {
-                        override fun onClick() {
-                            super.onClick()
+                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
+                        override fun onClick(x: Float, y: Float) {
+                            super.onClick(x, y)
                             textViewInfoItem.setHTMLText(Data.player.shopOffer[this@Node.index]?.getStatsCompare(true)!!)
                         }
 

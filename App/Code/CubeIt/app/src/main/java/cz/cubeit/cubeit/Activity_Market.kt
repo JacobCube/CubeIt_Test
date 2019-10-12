@@ -37,11 +37,11 @@ import androidx.core.content.ContextCompat.getDrawable
 class Activity_Market:AppCompatActivity(){
 
     var displayY = 0.0
-    lateinit var textViewMarketItem: CustomTextView
     private lateinit var frameLayoutMarket: FrameLayout
     private var filterPrice: Int = 0
     private var filterDate: Boolean = true
     private var filterItem: Boolean = true
+    private var filterLevel: Boolean = true
 
     fun closeRegister(){
         frameLayoutMarket.visibility = View.GONE
@@ -66,7 +66,6 @@ class Activity_Market:AppCompatActivity(){
         val viewRectRegister = Rect()
         frameLayoutMarket.getGlobalVisibleRect(viewRectRegister)
         frameLayoutMenuMarket.getGlobalVisibleRect(viewRect)
-        textViewMarketItem.getGlobalVisibleRect(viewRectCompare)
 
         if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuMarket.y <= (displayY * 0.83).toFloat()) {
 
@@ -77,10 +76,6 @@ class Activity_Market:AppCompatActivity(){
                 }
                 start()
             }
-        }
-
-        if(!viewRectCompare.contains(ev.rawX.toInt(), ev.rawY.toInt())){
-            textViewMarketItem.visibility = View.GONE
         }
 
         if(!viewRectRegister.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMarket.visibility != View.GONE){
@@ -101,7 +96,6 @@ class Activity_Market:AppCompatActivity(){
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(dm)
         displayY = dm.heightPixels.toDouble()
-        textViewMarketItem = textViewMarketItemInfo
         textViewMarketMoney.text = "${Data.player.cubeCoins} CC\n${Data.player.cubix} cubix"
 
         val rotateAnimation = RotateAnimation(
@@ -115,7 +109,7 @@ class Activity_Market:AppCompatActivity(){
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
+                Handler().postDelayed({ hideSystemUI() }, 1000)
             }
         }
         frameLayoutMarket = frameLayoutMarketRegisterOffer
@@ -142,7 +136,7 @@ class Activity_Market:AppCompatActivity(){
         })
 
         docRef.whereEqualTo("itemClass", Data.player.charClassIndex).orderBy("creationTime", Query.Direction.DESCENDING).limit(25).get().addOnCompleteListener {
-            if(it.isSuccessful){
+            if (it.isSuccessful) {
                 itemsList = it.result!!.toObjects(MarketOffer::class.java)
             }
             listViewMarketItems.adapter = MarketItemsList(itemsList, this, textViewMarketMoney)
@@ -154,7 +148,7 @@ class Activity_Market:AppCompatActivity(){
             frameLayoutMarketRegisterOffer.visibility = View.GONE
             imageViewLoadingMarket.startAnimation(rotateAnimation)
             db.collection("market").whereEqualTo("seller", Data.player.username).limit(50).get().addOnCompleteListener {
-                if(it.isSuccessful){
+                if (it.isSuccessful) {
                     itemsList = it.result!!.toObjects(MarketOffer::class.java)
                     (listViewMarketItems.adapter as MarketItemsList).updateList(itemsList)
                 }
@@ -169,40 +163,44 @@ class Activity_Market:AppCompatActivity(){
 
 
         textViewMarketBarPrice.setOnClickListener {
-            if(textViewMarketBarDate.text.toString() != "exp. date"){
+            if (textViewMarketBarDate.text.toString() != "exp. date") {
                 textViewMarketBarDate.text = "exp. date"
                 filterDate = true
             }
-            if(textViewMarketBarItem.text.toString() != "item"){
+            if (textViewMarketBarItem.text.toString() != "item") {
                 textViewMarketBarItem.text = "item"
                 filterItem = true
             }
+            if (textViewMarketBarItemLvl.text.toString() != "level") {
+                textViewMarketBarItemLvl.text = "level"
+                filterLevel = true
+            }
             //list.sortedWith(compareBy({ it.age }, { it.name }))
 
-            filterPrice = when(filterPrice){            //sorting by cubix asc/desc first 2 clicks, continues sorting by cubecoins - resets
+            filterPrice = when (filterPrice) {            //sorting by cubix asc/desc first 2 clicks, continues sorting by cubecoins - resets
                 0 -> {
                     textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25BC))
-                    itemsList.sortByDescending{ it.priceCoins }
+                    itemsList.sortByDescending { it.priceCoins }
                     1
                 }
                 1 -> {
                     textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25B2))
-                    itemsList.sortBy{ it.priceCoins }
+                    itemsList.sortBy { it.priceCoins }
                     2
                 }
                 2 -> {
                     textViewMarketBarPrice.text = "Cubix " + String(Character.toChars(0x25BC)) + String(Character.toChars(0x25BC))
-                    itemsList.sortByDescending{ it.priceCubeCoins }
+                    itemsList.sortByDescending { it.priceCubeCoins }
                     3
                 }
                 3 -> {
                     textViewMarketBarPrice.text = "Cubix " + String(Character.toChars(0x25B2)) + String(Character.toChars(0x25B2))
-                    itemsList.sortBy{ it.priceCubeCoins }
+                    itemsList.sortBy { it.priceCubeCoins }
                     0
                 }
                 else -> {
                     textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25BC))
-                    itemsList.sortByDescending{ it.priceCoins }
+                    itemsList.sortByDescending { it.priceCoins }
                     1
                 }
             }
@@ -210,22 +208,52 @@ class Activity_Market:AppCompatActivity(){
         }
 
         textViewMarketBarDate.setOnClickListener {
-            if(textViewMarketBarPrice.text.toString() != "CC"){
+            if (textViewMarketBarPrice.text.toString() != "CC") {
                 textViewMarketBarPrice.text = "CC"
                 filterPrice = 0
             }
-            if(textViewMarketBarItem.text.toString() != "item"){
+            if (textViewMarketBarItem.text.toString() != "item") {
+                textViewMarketBarItem.text = "item"
+                filterItem = true
+            }
+            if (textViewMarketBarItemLvl.text.toString() != "level") {
+                textViewMarketBarItemLvl.text = "level"
+                filterLevel = true
+            }
+
+            filterDate = if (filterDate) {
+                textViewMarketBarDate.text = "exp. date " + String(Character.toChars(0x25B2))
+                itemsList.sortBy { it.expiryDate }
+                false
+            } else {
+                textViewMarketBarDate.text = "exp. date " + String(Character.toChars(0x25BC))
+                itemsList.sortByDescending { it.expiryDate }
+                true
+            }
+            (listViewMarketItems.adapter as MarketItemsList).updateList(itemsList)
+        }
+
+        textViewMarketBarItemLvl.setOnClickListener {
+            if (textViewMarketBarPrice.text.toString() != "CC") {
+                textViewMarketBarPrice.text = "CC"
+                filterPrice = 0
+            }
+            if (textViewMarketBarDate.text.toString() != "exp. date") {
+                textViewMarketBarDate.text = "exp. date"
+                filterDate = true
+            }
+            if (textViewMarketBarItem.text.toString() != "item") {
                 textViewMarketBarItem.text = "item"
                 filterItem = true
             }
 
-            filterDate = if(filterDate){
-                textViewMarketBarDate.text = "exp. date " + String(Character.toChars(0x25B2))
-                itemsList.sortBy{ it.expiryDate }
+            filterLevel = if (filterLevel) {
+                textViewMarketBarItemLvl.text = "level " + String(Character.toChars(0x25BC))
+                itemsList.sortByDescending { it.item?.levelRq ?: 0 }
                 false
-            }else{
-                textViewMarketBarDate.text = "exp. date " + String(Character.toChars(0x25BC))
-                itemsList.sortByDescending{ it.expiryDate }
+            } else {
+                textViewMarketBarItemLvl.text = "level " + String(Character.toChars(0x25B2))
+                itemsList.sortBy { it.item?.levelRq ?: 0 }
                 true
             }
             (listViewMarketItems.adapter as MarketItemsList).updateList(itemsList)
@@ -239,6 +267,10 @@ class Activity_Market:AppCompatActivity(){
             if(textViewMarketBarDate.text.toString() != "exp. date"){
                 textViewMarketBarDate.text = "exp. date"
                 filterDate = true
+            }
+            if (textViewMarketBarItemLvl.text.toString() != "level") {
+                textViewMarketBarItemLvl.text = "level"
+                filterLevel = true
             }
 
             filterItem = if(filterItem){
@@ -311,23 +343,30 @@ class Activity_Market:AppCompatActivity(){
                 if(!viewPop.editTextMarketSeller.text.toString().isBlank()){
                     docRef = docRef.whereEqualTo("seller", viewPop.editTextMarketSeller.text.toString())
                 }
-                if(!viewPop.editTextMarketLvlFrom.text.isNullOrBlank()){
-                    docRef = docRef.whereGreaterThanOrEqualTo("itemLvl", viewPop.editTextMarketLvlFrom.text.toString())
-                }else if(!viewPop.editTextMarketLvlTo.text.isNullOrBlank()){
-                    docRef = docRef.whereLessThanOrEqualTo("itemLvl", viewPop.editTextMarketLvlTo.text.toString())
-                }else if(!viewPop.editTextMarketPriceFrom.text.isNullOrBlank()){
-                    docRef = docRef.whereGreaterThanOrEqualTo("priceCoins", viewPop.editTextMarketPriceFrom.text.toString().toInt())
-                }else if(!viewPop.editTextMarketPriceTo.text.isNullOrBlank()){
-                    docRef = docRef.whereLessThanOrEqualTo("priceCoins", viewPop.editTextMarketPriceTo.text.toString().toInt())
+                if(viewPop.editTextMarketPriceTo.text.isNullOrBlank() && viewPop.editTextMarketPriceFrom.text.isNullOrBlank()){
+                    if(!viewPop.editTextMarketLvlTo.text.isNullOrBlank()){
+                        docRef = docRef.whereLessThanOrEqualTo("itemLvl", viewPop.editTextMarketLvlTo.text.toString().toIntOrNull() ?: 0)
+                    }
+                    if(!viewPop.editTextMarketLvlFrom.text.isNullOrBlank()){
+                        docRef = docRef.whereGreaterThanOrEqualTo("itemLvl", viewPop.editTextMarketLvlFrom.text.toString().toIntOrNull() ?: 0)
+                    }
+                }else if (viewPop.editTextMarketLvlFrom.text.isNullOrBlank() && viewPop.editTextMarketLvlTo.text.isNullOrBlank()){
+                    if(!viewPop.editTextMarketPriceTo.text.isNullOrBlank()){
+                        docRef = docRef.whereLessThanOrEqualTo("priceCoins", viewPop.editTextMarketPriceTo.text.toString().toIntOrNull() ?: 0)
+                    }
+                    if(!viewPop.editTextMarketPriceFrom.text.isNullOrBlank()){
+                        docRef = docRef.whereGreaterThanOrEqualTo("priceCoins", viewPop.editTextMarketPriceFrom.text.toString().toIntOrNull() ?: 0)
+                    }
                 }
+
                 if(viewPop.spinnerMarketClass.selectedItemPosition != 0){
                     docRef = docRef.whereEqualTo("itemClass", viewPop.spinnerMarketClass.selectedItemPosition)
                 }
                 if(viewPop.spinnerMarketQuality.selectedItemPosition != 0){
-                    docRef = docRef.whereEqualTo("itemQuality", viewPop.spinnerMarketQuality.selectedItemPosition)
+                    docRef = docRef.whereEqualTo("itemQuality", GenericDB.balance.itemQualityGenImpact[viewPop.spinnerMarketQuality.selectedItemPosition.toString()])
                 }
                 if(viewPop.spinnerMarketType.selectedItemPosition != 0){
-                    docRef = docRef.whereEqualTo("itemType", viewPop.spinnerMarketType.selectedItemPosition -1)
+                    docRef = docRef.whereEqualTo("itemType", if(viewPop.spinnerMarketType.selectedItemPosition -1 < 10) viewPop.spinnerMarketType.selectedItemPosition -1 else viewPop.spinnerMarketType.selectedItemPosition)
                 }
 
                 docRef.limit(50).get().addOnSuccessListener {
@@ -497,7 +536,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
         viewHolder.imageViewMarketItem.setImageResource(itemsListAdapter[position].item!!.drawable)
         viewHolder.imageViewMarketItem.setBackgroundResource(itemsListAdapter[position].item!!.getBackground())
         viewHolder.textViewMarketUntilDate.text = SimpleDateFormat("yyyy/MM/dd").format(itemsListAdapter[position].expiryDate).toString()
-        viewHolder.textViewMarketSeller.text = itemsListAdapter[position].seller
+        viewHolder.textViewMarketSeller.text = itemsListAdapter[position].itemLvl.toString()
 
         val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
         val windowPop = PopupWindow(activity)
@@ -573,12 +612,6 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                 if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
             }
         })
-        viewHolder.imageViewMarketItem.setOnClickListener {
-            activity.textViewMarketItem.setHTMLText(itemsListAdapter[position].item!!.getStatsCompare())
-            if(activity.textViewMarketItem.visibility == View.GONE){
-                activity.textViewMarketItem.visibility = View.VISIBLE
-            }
-        }
 
         return rowMain
     }

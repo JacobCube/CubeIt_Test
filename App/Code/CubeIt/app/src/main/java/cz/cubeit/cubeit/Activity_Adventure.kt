@@ -290,6 +290,7 @@ class Adventure : AppCompatActivity() {
             imageViewAdventure.setImageResource(quest.reward.item!!.drawable)
             imageViewAdventure.visibility = View.VISIBLE
             imageViewAdventure.isEnabled = true
+            imageViewAdventure.isClickable = true
 
             quest.reward.item = when(quest.reward.item!!.type){
                 "Wearable" -> quest.reward.item!!.toWearable()
@@ -300,13 +301,15 @@ class Adventure : AppCompatActivity() {
         } else {
             imageViewAdventure.visibility = View.GONE
             imageViewAdventure.isEnabled = false
+            imageViewAdventure.isClickable = false
             imageViewAdventure.setImageResource(0)
         }
         textViewStats.visibility = View.GONE
         textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
 
+        imageViewAdventure.setUpOnold(this, quest.reward.item ?: Item())
 
-        val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+        /*val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
         val windowPop = PopupWindow(view.context)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -336,6 +339,7 @@ class Adventure : AppCompatActivity() {
                     dx = motionEvent.x.toInt()
                     dy = motionEvent.y.toInt()
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     x = motionEvent.rawX.toInt()
                     y = motionEvent.rawY.toInt()
@@ -359,33 +363,28 @@ class Adventure : AppCompatActivity() {
             true
         }
 
-        val holdValid =  quest.reward.item != null
         imageViewAdventure.setOnTouchListener(object: Class_HoldTouchListener(imageViewAdventure, false, 0f, false){
 
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
-                if(holdValid){
+                viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
+                viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+                val coordinates = SystemFlow.resolveLayoutLocation(this@Adventure, x, y, viewP.measuredWidth, viewP.measuredHeight)
+
+                if(!Data.loadingActiveQuest && !windowPop.isShowing){
                     viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
-                    viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                    val coordinates = SystemFlow.resolveLayoutLocation(this@Adventure, x, y, viewP.measuredWidth, viewP.measuredHeight)
+                    viewP.imageViewPopUpInfoItem.setBackgroundResource(quest.reward.item!!.getBackground())
+                    viewP.imageViewPopUpInfoItem.setImageResource(quest.reward.item!!.drawable)
 
-                    if(!Data.loadingActiveQuest && !windowPop.isShowing){
-                        viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
-                        viewP.imageViewPopUpInfoItem.setBackgroundResource(quest.reward.item!!.getBackground())
-                        viewP.imageViewPopUpInfoItem.setImageResource(quest.reward.item!!.drawable)
-
-                        windowPop.showAsDropDown(this@Adventure.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
-                    }
+                    windowPop.showAsDropDown(this@Adventure.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                 }
             }
 
             override fun onCancelHold() {
                 super.onCancelHold()
-                if(holdValid){
-                    if(windowPop.isShowing) windowPop.dismiss()
-                }
+                if(windowPop.isShowing) windowPop.dismiss()
             }
-        })
+        })*/
 
         window.setOnDismissListener {
             window.dismiss()
@@ -506,7 +505,9 @@ class Adventure : AppCompatActivity() {
 
         textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
 
-        val windowPop = PopupWindow(usedActivity)
+        imageViewAdventure.setUpOnold(usedActivity, quest.reward.item ?: Item())
+
+        /*val windowPop = PopupWindow(usedActivity)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         var viewPinned = false
@@ -584,7 +585,7 @@ class Adventure : AppCompatActivity() {
                     if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
                 }
             }
-        })
+        })*/
 
         window.setOnDismissListener {
             (fragmentOverview as Fragment_Adventure_overview).resetAdapter()

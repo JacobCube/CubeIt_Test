@@ -14,7 +14,6 @@ import android.os.Handler
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import android.text.method.ScrollingMovementMethod
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
@@ -29,9 +28,113 @@ import kotlinx.android.synthetic.main.activity_fight_board.*
 import kotlinx.android.synthetic.main.pop_up_board_filter.view.*
 import kotlinx.android.synthetic.main.pop_up_board_filter.view.editTextBoardUsername
 import kotlinx.android.synthetic.main.row_fight_board.view.*
-import kotlin.math.min
+import android.os.AsyncTask
+import java.lang.ref.WeakReference
 
 class ActivityFightBoard: AppCompatActivity(){
+
+    companion object {
+        class LoadRecords (context: ActivityFightBoard) :AsyncTask<Int, String, String?>(){
+
+            private val innerContext: WeakReference<Context> = WeakReference(context)
+
+            override fun doInBackground(vararg params: Int?): String? {
+
+                val context = innerContext.get() as ActivityFightBoard?         //because of the
+
+                return if(context != null){
+
+                    val dm = DisplayMetrics()
+                    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                    windowManager.defaultDisplay.getMetrics(dm)
+                    context.displayY = dm.heightPixels.toDouble()
+
+                    context.rotateAnimation = RotateAnimation(
+                            0f, 360f,
+                            Animation.RELATIVE_TO_SELF, 0.5f,
+                            Animation.RELATIVE_TO_SELF, 0.5f
+                    )
+
+                    context.rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
+
+                        override fun onAnimationStart(animation: Animation?) {
+                            context.imageViewLoadingBoard.visibility = View.VISIBLE
+                        }
+
+                        override fun onAnimationRepeat(animation: Animation?) {
+                        }
+
+                        override fun onAnimationEnd(animation: Animation?) {
+                            context.imageViewLoadingBoard.visibility = View.GONE
+                        }
+                    })
+
+                    context.rotateAnimation.duration = 500
+                    context.rotateAnimation.repeatCount = Animation.INFINITE
+
+
+                    if(Data.playerBoard.isLoadable(context)){
+                        CustomBoard.getPlayerList(context.currentPage).addOnSuccessListener {
+                            context.runOnUiThread {
+                                context.listViewBoardRecords.adapter = FightBoardPlayerList(CustomBoard.playerListReturn, context.currentPage, context.supportFragmentManager, context)
+                            }
+                            context.rotateAnimation.cancel()
+                            Data.playerBoard.setUpNew(CustomBoard.playerListReturn, context)
+                        }.addOnFailureListener {
+                            Toast.makeText(context, "Failed to load data. Please, check your internet connection", Toast.LENGTH_LONG).show()
+                            context.rotateAnimation.cancel()
+                        }
+                    }else {
+                        context.innerHandler.postDelayed({
+                            context.rotateAnimation.cancel()
+                            Log.d("animation_visibility", context.imageViewLoadingBoard.visibility.toString())
+                            context.runOnUiThread {
+                                context.listViewBoardRecords.adapter = FightBoardPlayerList(Data.playerBoard.list as MutableList<Player>, context.currentPage, context.supportFragmentManager, context)
+                            }
+                        }, 250)
+                    }
+
+
+                    val opts = BitmapFactory.Options()
+                    opts.inScaled = false
+
+                    context.runOnUiThread {
+                        context.imageViewActivityFightBoard.setImageBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.fightboard_bg, opts))
+
+                        context.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
+                        context.frameLayoutMenuBoard.y = dm.heightPixels.toFloat()
+
+                        context.window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+                            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                                context.innerHandler.postDelayed({context.hideSystemUI()},1000)
+                            }
+                        }
+
+                        context.imageViewLoadingBoard.startAnimation(context.rotateAnimation)
+                    }
+
+                    /*imageViewFightBoardPageDec.setOnClickListener {                           //too high data flow
+                        currentPage--
+                        (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
+                    }
+
+                    imageViewFightBoardPageInc.setOnClickListener {
+                        currentPage++
+                        (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
+                    }*/
+
+                    "true"
+                }else "false"
+            }
+
+            override fun onPostExecute(result: String?) {
+                super.onPostExecute(result)
+                if (result != null && result.toBoolean()){
+                    //do something, my result is successful
+                }
+            }
+        }
+    }
 
     lateinit var textViewBoardCompare: CustomTextView
     private var currentPage:Int = 0
@@ -42,7 +145,9 @@ class ActivityFightBoard: AppCompatActivity(){
     lateinit var frameLayoutFightProfileTemp: FrameLayout
     lateinit var animSwitchType1: Animation
     lateinit var animSwitchType2: Animation
+    lateinit var rotateAnimation: RotateAnimation
     var isFaction = false
+    var innerHandler = Handler()
 
     var localFactions: MutableList<Faction> = mutableListOf()
     var localPlayers: MutableList<Player> = mutableListOf()
@@ -102,17 +207,123 @@ class ActivityFightBoard: AppCompatActivity(){
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_fight_board)
+
         val extraUsername = intent.getStringExtra("username")
 
-        frameLayoutFightProfileTemp = frameLayoutFightProfile
-        textViewFightBoardPage.text = currentPage.toString()
+        this.window.decorView.rootView.post {
+            LoadRecords(this).execute()
 
-        val opts = BitmapFactory.Options()
-        opts.inScaled = false
-        imageViewActivityFightBoard.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fightboard_bg, opts))
+            val handler = Handler()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                listViewBoardRecords.setOnScrollChangeListener { _, _, _, _, _ ->
+                    imageViewMenuUpBoard.visibility = View.GONE
+                    handler.removeCallbacksAndMessages(null)
+                    handler.postDelayed({
+                        if(imageViewMenuUpBoard.visibility != View.VISIBLE) imageViewMenuUpBoard.visibility = View.VISIBLE
+                    }, 1000)
+                }
+            }
+
+            animSwitchType1 = AnimationUtils.loadAnimation(this, R.anim.animation_flip_to_middle)
+            animSwitchType2 = AnimationUtils.loadAnimation(this, R.anim.animation_flip_from_middle)
+
+            animSwitchType2.setAnimationListener(object : Animation.AnimationListener {
+
+                override fun onAnimationStart(animation: Animation?) {
+                }
+
+                override fun onAnimationRepeat(animation: Animation?) {
+                }
+
+                @SuppressLint("SetTextI18n")
+                override fun onAnimationEnd(animation: Animation?) {
+                    isFaction = !isFaction
+                    imageViewFightBoardFaction.isEnabled = true
+                    supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Leaderboard()).commit()
+
+                    if(isFaction){
+                        textViewBoardFaction.setHTMLText("leader")
+                        textViewBoardNickname.setHTMLText("name")
+                        imageViewFightBoardFilter.isEnabled = false
+                        changeFragmentProfile.visibility = View.GONE
+
+                        if(localFactions.size < 1){
+
+                            if(Data.factionBoard.isLoadable(this@ActivityFightBoard)){
+                                CustomBoard.getFactionList(currentPage).addOnSuccessListener {
+                                    listViewBoardRecords.adapter = FightBoardFactionList(CustomBoard.factionListReturn, currentPage, supportFragmentManager)
+                                    (listViewBoardRecords.adapter as FightBoardFactionList).notifyDataSetChanged()
+                                    Data.factionBoard.setUpNew(CustomBoard.factionListReturn, this@ActivityFightBoard)
+                                    localFactions = CustomBoard.factionListReturn
+                                    rotateAnimation.cancel()
+                                }.addOnFailureListener {
+                                    Toast.makeText(this@ActivityFightBoard, "Failed to load data. Please, check your internet connection", Toast.LENGTH_LONG).show()
+                                    rotateAnimation.cancel()
+                                    imageViewLoadingBoard.visibility = View.GONE
+                                }
+                                Log.d("fightboard", "loaded from database")
+                            }else {
+                                Log.d("fightboard", "loaded from local files")
+                                Handler().postDelayed({
+                                    rotateAnimation.cancel()
+                                    listViewBoardRecords.adapter = FightBoardFactionList(Data.factionBoard.list as MutableList<Faction>, currentPage, supportFragmentManager)
+                                    (listViewBoardRecords.adapter as FightBoardFactionList).notifyDataSetChanged()
+                                }, 250)
+                            }
+                        } else {
+                            rotateAnimation.cancel()
+                            listViewBoardRecords.adapter = FightBoardFactionList(localFactions, currentPage, supportFragmentManager)
+                            (listViewBoardRecords.adapter as FightBoardFactionList).notifyDataSetChanged()
+                        }
+                    }else {
+                        if(Data.playerBoard.isLoadable(this@ActivityFightBoard)){
+                            CustomBoard.getPlayerList(currentPage).addOnSuccessListener {
+                                listViewBoardRecords.adapter = FightBoardPlayerList(CustomBoard.playerListReturn, currentPage, supportFragmentManager, this@ActivityFightBoard)
+                                (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
+                                rotateAnimation.cancel()
+                                Data.playerBoard.setUpNew(CustomBoard.playerListReturn, this@ActivityFightBoard)
+                            }.addOnFailureListener {
+                                Toast.makeText(this@ActivityFightBoard, "Failed to load data. Please, check your internet connection", Toast.LENGTH_LONG).show()
+                                rotateAnimation.cancel()
+                            }
+                        }else {
+                            Handler().postDelayed({
+                                rotateAnimation.cancel()
+                                Log.d("animation_visibility", imageViewLoadingBoard.visibility.toString())
+                                listViewBoardRecords.adapter = FightBoardPlayerList(Data.playerBoard.list as MutableList<Player>, currentPage, supportFragmentManager, this@ActivityFightBoard)
+                                (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
+                            }, 250)
+                        }
+
+                        imageViewFightBoardFilter.isEnabled = true
+                        //listViewBoardRecords.adapter = FightBoardPlayerList(CustomBoard.playerListReturn, currentPage, supportFragmentManager, this@ActivityFightBoard)
+
+                        changeFragmentProfile.visibility = View.VISIBLE
+                        textViewBoardFaction.setHTMLText("faction")
+                        textViewBoardNickname.setHTMLText("username")
+                    }
+                }
+            })
+            animSwitchType1.setAnimationListener(object : Animation.AnimationListener {
+
+                override fun onAnimationStart(animation: Animation?) {
+                }
+
+                override fun onAnimationRepeat(animation: Animation?) {
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    if(isFaction){
+                        imageViewFightBoardFaction.setImageResource(R.drawable.person_icon)
+                    }else {
+                        imageViewFightBoardFaction.setImageResource(R.drawable.faction_icon)
+                    }
+                    imageViewFightBoardFaction.startAnimation(animSwitchType2)
+                }
+            })
+        }
+
         textViewBoardCompare = textViewFightBoardCompare
-        textViewFightBoardCompare.movementMethod = ScrollingMovementMethod()
-
         if(extraUsername != null){
             val temp = Player(username = extraUsername)
             temp.loadPlayer(this).addOnSuccessListener {
@@ -123,142 +334,12 @@ class ActivityFightBoard: AppCompatActivity(){
             pickedPlayer = Data.player
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Leaderboard()).commit()
         }
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
 
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
-        displayY = dm.heightPixels.toDouble()
-
-        frameLayoutMenuBoard.y = dm.heightPixels.toFloat()
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
-        }
-
-        val rotateAnimation = RotateAnimation(
-                0f, 360f,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f
-        )
-
-        rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
-
-            override fun onAnimationStart(animation: Animation?) {
-                imageViewLoadingBoard.visibility = View.VISIBLE
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                imageViewLoadingBoard.visibility = View.GONE
-            }
-        })
-
-        rotateAnimation.duration = 500
-        rotateAnimation.repeatCount = Animation.INFINITE
-        imageViewLoadingBoard.startAnimation(rotateAnimation)
-
-        FightBoard.getPlayerList(currentPage).addOnSuccessListener {
-            listViewPlayers.adapter = FightBoardPlayerList(FightBoard.playerListReturn, currentPage, supportFragmentManager, this)
-            rotateAnimation.cancel()
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failed to load data. Please, check your internet connection", Toast.LENGTH_LONG).show()
-            rotateAnimation.cancel()
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            listViewPlayers.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-                imageViewMenuUpBoard.visibility = View.GONE
-                val handler = Handler()
-                handler.removeCallbacksAndMessages(null)
-                handler.postDelayed({
-                    if(imageViewMenuUpBoard.visibility != View.VISIBLE) imageViewMenuUpBoard.visibility = View.VISIBLE
-                }, 1000)
-            }
-        }
-
-        /*imageViewFightBoardPageDec.setOnClickListener {                           //too high data flow
-            currentPage--
-            (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
-        }
-
-        imageViewFightBoardPageInc.setOnClickListener {
-            currentPage++
-            (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
-        }*/
-
-        animSwitchType1 = AnimationUtils.loadAnimation(this, R.anim.animation_flip_to_middle)
-        animSwitchType2 = AnimationUtils.loadAnimation(this, R.anim.animation_flip_from_middle)
-
-        animSwitchType2.setAnimationListener(object : Animation.AnimationListener {
-
-            override fun onAnimationStart(animation: Animation?) {
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            @SuppressLint("SetTextI18n")
-            override fun onAnimationEnd(animation: Animation?) {
-                isFaction = !isFaction
-                imageViewFightBoardFaction.isEnabled = true
-                supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Leaderboard()).commit()
-
-                if(isFaction){
-                    textViewBoardFaction.text = "leader"
-                    textViewBoardNickname.text = "name"
-                    imageViewFightBoardFilter.isEnabled = false
-                    changeFragmentProfile.visibility = View.GONE
-
-                    if(localFactions.size < 1){
-                        imageViewLoadingBoard.startAnimation(rotateAnimation)
-                        FightBoard.getFactionList(currentPage).addOnSuccessListener {
-                            listViewPlayers.adapter = FightBoardFactionList(FightBoard.factionListReturn, currentPage, supportFragmentManager)
-                            (listViewPlayers.adapter as FightBoardFactionList).notifyDataSetChanged()
-                            localFactions = FightBoard.factionListReturn
-                            rotateAnimation.cancel()
-                        }.addOnFailureListener {
-                            Toast.makeText(this@ActivityFightBoard, "Failed to load data. Please, check your internet connection", Toast.LENGTH_LONG).show()
-                            rotateAnimation.cancel()
-                        }
-                    } else {
-                        listViewPlayers.adapter = FightBoardFactionList(localFactions, currentPage, supportFragmentManager)
-                        (listViewPlayers.adapter as FightBoardFactionList).notifyDataSetChanged()
-                    }
-                }else {
-                    imageViewFightBoardFilter.isEnabled = true
-                    listViewPlayers.adapter = FightBoardPlayerList(FightBoard.playerListReturn, currentPage, supportFragmentManager, this@ActivityFightBoard)
-                    (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
-
-                    changeFragmentProfile.visibility = View.VISIBLE
-                    textViewBoardFaction.text = "faction"
-                    textViewBoardNickname.text = "username"
-                }
-            }
-        })
-        animSwitchType1.setAnimationListener(object : Animation.AnimationListener {
-
-            override fun onAnimationStart(animation: Animation?) {
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                if(isFaction){
-                    imageViewFightBoardFaction.setImageResource(R.drawable.person_icon)
-                }else {
-                    imageViewFightBoardFaction.setImageResource(R.drawable.faction_icon)
-                }
-                imageViewFightBoardFaction.startAnimation(animSwitchType2)
-            }
-        })
+        frameLayoutFightProfileTemp = frameLayoutFightProfile
+        textViewFightBoardPage.text = currentPage.toString()
 
         imageViewFightBoardFaction.setOnClickListener {
+            imageViewLoadingBoard.startAnimation(rotateAnimation)
             it.isEnabled = false
             it.clearAnimation()
             it.startAnimation(animSwitchType1)
@@ -273,7 +354,7 @@ class ActivityFightBoard: AppCompatActivity(){
                 val index = editTextBoardSearch.text.toString().toIntOrNull()
 
                 if(index != null){
-                    FightBoard.playerListReturn.clear()
+                    /*CustomBoard.playerListReturn.clear()          TODO doesn't work currently, ClickUp task pro Maxe
 
                     val docRef = db.collection("users").orderBy("position")
                             .startAt((index.minus(24)).toString())
@@ -284,9 +365,9 @@ class ActivityFightBoard: AppCompatActivity(){
 
                         for (loadedPlayer in tempList)
                         {
-                            FightBoard.playerListReturn.add(loadedPlayer)
+                            CustomBoard.playerListReturn.add(loadedPlayer)
                         }
-                        FightBoard.playerListReturn.sortBy { it.fame }
+                        CustomBoard.playerListReturn.sortBy { it.fame }
                         rotateAnimation.cancel()
                         (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
                     }.addOnFailureListener {
@@ -297,11 +378,11 @@ class ActivityFightBoard: AppCompatActivity(){
                         val dialog: AlertDialog = builder.create()
                         rotateAnimation.cancel()
                         dialog.show()
-                    }
+                    }*/
                 }
             }else{
                 if(!editTextBoardSearch.text.isNullOrBlank()) {
-                    FightBoard.playerListReturn.clear()
+                    CustomBoard.playerListReturn.clear()
 
                     val docRef = db.collection("users")
                             .whereGreaterThanOrEqualTo("username", editTextBoardSearch.text.toString())
@@ -311,11 +392,11 @@ class ActivityFightBoard: AppCompatActivity(){
 
                         for (loadedPlayer in tempList)
                         {
-                            FightBoard.playerListReturn.add(loadedPlayer)
+                            CustomBoard.playerListReturn.add(loadedPlayer)
                         }
-                        FightBoard.playerListReturn.sortBy { it.fame }
+                        CustomBoard.playerListReturn.sortBy { it.fame }
                         rotateAnimation.cancel()
-                        (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
+                        (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
                     }.addOnFailureListener {
 
                         val builder = AlertDialog.Builder(this)
@@ -328,8 +409,8 @@ class ActivityFightBoard: AppCompatActivity(){
                 }
             }
 
-            //FightBoard.playerListReturn =
-            (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
+            //CustomBoard.playerListReturn =
+            (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
         }
 
         imageViewFightBoardFilter.setOnClickListener { filterView ->
@@ -362,17 +443,17 @@ class ActivityFightBoard: AppCompatActivity(){
             }
 
             if(filter != null){
-                if(filter!!.username != null)username.setText(filter!!.username.orEmpty())
-                if(filter!!.position != null)position.setText(filter!!.position.toString())
-                if(filter!!.lvlFrom != null)lvlFrom.setText(filter!!.lvlFrom.toString())
-                if(filter!!.lvlTo != null)lvlTo.setText(filter!!.lvlTo.toString())
+                if(filter?.username != null)username.setText(filter!!.username.orEmpty())
+                if(filter?.position != null)position.setText(filter!!.position.toString())
+                if(filter?.lvlFrom != null)lvlFrom.setText(filter!!.lvlFrom.toString())
+                if(filter?.lvlTo != null)lvlTo.setText(filter!!.lvlTo.toString())
                 if(filter?.active != null)active.isChecked = filter?.active ?: false
                 if(filter?.chosenCharacter != null)spinner.setSelection(filter?.chosenCharacter ?: 0)
             }
 
             buttonApply.setOnClickListener {
-                FightBoard.playerListReturn.clear()
-                (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
+                CustomBoard.playerListReturn.clear()
+                (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
                 imageViewLoadingBoard.startAnimation(rotateAnimation)
 
                 var docRef: Query =  if(spinner.selectedItemPosition == 0){
@@ -387,7 +468,7 @@ class ActivityFightBoard: AppCompatActivity(){
                 }
 
                 if(!position.text.isNullOrBlank()){
-                    docRef = docRef.whereEqualTo("position", position.text.toString().toInt())
+                    docRef = docRef.whereEqualTo("position", position.text.toString().toIntOrNull() ?: 0)
                 }
 
                 if(!username.text.isNullOrBlank()){
@@ -395,39 +476,22 @@ class ActivityFightBoard: AppCompatActivity(){
                 }
 
                 if(!lvlFrom.text.isNullOrBlank()){
-                    docRef = docRef.whereGreaterThan("level", lvlFrom.text.toString().toInt())
-                }else if(!lvlTo.text.isNullOrBlank()){
-                    docRef = docRef.whereLessThanOrEqualTo("level", lvlTo.text.toString().toInt())
+                    docRef = docRef.whereGreaterThan("level", lvlFrom.text.toString().toIntOrNull() ?: 0)
+                }
+                if(!lvlTo.text.isNullOrBlank()){
+                    docRef = docRef.whereLessThanOrEqualTo("level", lvlTo.text.toString().toIntOrNull() ?: 0)
                 }
 
-                docRef.limit(100).get().addOnSuccessListener { querySnapshot ->
-                    var tempList = querySnapshot.toObjects(Player()::class.java)
-
-                    if(!lvlFrom.text.isNullOrBlank()){
-                        tempList = tempList.filter { it.level >= lvlFrom.text.toString().toInt() }.toMutableList()
-                    }
-                    if(!lvlTo.text.isNullOrBlank()){
-                        tempList = tempList.filter { it.level <= lvlTo.text.toString().toInt() }.toMutableList()
-                    }
-
-                    tempList.sortBy { it.fame }
-                    if(!tempList.isNullOrEmpty()){
-                        for (i in 0 until min(tempList.size, 50))
-                        {
-                            FightBoard.playerListReturn.add(tempList[i])
-                        }
-                    }
+                docRef.limit(25).get().addOnSuccessListener { querySnapshot ->
+                    val tempList = querySnapshot.toObjects(Player()::class.java)
+                    tempList.sortByDescending { it.fame }
+                    CustomBoard.playerListReturn.addAll(tempList)
 
                     rotateAnimation.cancel()
-                    (listViewPlayers.adapter as FightBoardPlayerList).notifyDataSetChanged()
-                }.addOnFailureListener {
+                    (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
+                }.addOnFailureListener { e: Exception ->
 
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Filter")
-                    builder.setMessage("No results to be shown")
-                    val dialog: AlertDialog = builder.create()
-                    rotateAnimation.cancel()
-                    dialog.show()
+                    Snackbar.make(it, "No results to be shown.", Snackbar.LENGTH_SHORT).show()
                 }
                 filter = FightBoardFilter(
                         username = username.text.toString(),
@@ -511,8 +575,8 @@ class ActivityFightBoard: AppCompatActivity(){
             viewHolder.textViewBoardRowFaction.text = players[position].factionName
 
             if(players[position].username == Data.player.username){
-                viewHolder.rowFightBoard.setColorFilter(R.color.colorSecondary, PorterDuff.Mode.MULTIPLY)
-            } else viewHolder.rowFightBoard.clearColorFilter()
+                rowMain.setBackgroundResource(R.color.loginColor_2_dark_light)
+            } else rowMain.setBackgroundResource(0)
 
             viewHolder.rowFightBoard.setOnClickListener {
                 (parentActivity as ActivityFightBoard).pickedPlayer = players[position]
@@ -563,8 +627,8 @@ class ActivityFightBoard: AppCompatActivity(){
             viewHolder.textViewBoardRowFaction.text = factionList[position].leader
 
             if(factionList[position].id == Data.player.factionID){
-                viewHolder.rowFightBoard.setColorFilter(R.color.colorSecondary, PorterDuff.Mode.MULTIPLY)
-            } else viewHolder.rowFightBoard.clearColorFilter()
+                rowMain.setBackgroundResource(R.color.loginColor_2_dark_light)
+            } else rowMain.setBackgroundResource(0)
 
             viewHolder.rowFightBoard.setOnClickListener {
                 supportFragmentManager.beginTransaction().replace(R.id.frameLayoutFightProfile, Fragment_Board_Faction.newInstance(factionList[position])).commit()

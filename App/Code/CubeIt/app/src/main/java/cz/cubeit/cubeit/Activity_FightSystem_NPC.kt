@@ -410,7 +410,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
     @SuppressLint("ClickableViewAccessibility")
     fun ImageView.setUpListener(index: Int, context: Context){
-        this.setOnTouchListener(object : Class_OnSwipeTouchListener(context, Spell1NPC) {
+        this.setOnTouchListener(object : Class_OnSwipeTouchListener(context, Spell1NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.learnedSpells[1]!!, Spell1NPC)
 
@@ -426,8 +426,8 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 window.isFocusable = false
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell1NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -509,13 +509,13 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             roundCounter = 0
         }
 
-        Spell0NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell0NPC) {
+        Spell0NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell0NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.learnedSpells[0]!!, Spell0NPC)
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell0NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -532,7 +532,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
-        Spell1NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell1NPC) {
+        Spell1NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell1NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.learnedSpells[1]!!, Spell1NPC)
 
@@ -543,8 +543,8 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
 
             }
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell1NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -561,13 +561,13 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
-        Spell2NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell2NPC) {
+        Spell2NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell2NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[0]!!, Spell2NPC)
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell2NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -584,13 +584,13 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
-        Spell3NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell3NPC) {
+        Spell3NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell3NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[1]!!, Spell3NPC)
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell3NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -607,13 +607,13 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
-        Spell4NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell4NPC) {
+        Spell4NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell4NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[2]!!, Spell4NPC)
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell4NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -630,13 +630,13 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
-        Spell5NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell5NPC) {
+        Spell5NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell5NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[3]!!, Spell5NPC)
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell5NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -653,13 +653,13 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
-        Spell6NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell6NPC) {
+        Spell6NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell6NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[4]!!, Spell6NPC)
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell6NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -675,13 +675,13 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[4]!!, Spell6NPC)
             }
         })
-        Spell7NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell7NPC) {
+        Spell7NPC.setOnTouchListener(object : Class_OnSwipeTouchListener(this, Spell7NPC, false) {
             override fun onSwipeUp() {
                 playerFight.useSpell(playerFight.playerFight.chosenSpellsAttack[5]!!, Spell7NPC)
             }
 
-            override fun onClick() {
-                super.onClick()
+            override fun onClick(x: Float, y: Float) {
+                super.onClick(x, y)
                 if(lastClicked == Spell7NPC){
                     textViewSpellSpecsNPC.visibility = View.INVISIBLE
                     lastClicked = null
@@ -721,6 +721,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
             window.showAtLocation(viewS, Gravity.CENTER,0,0)
         }
+
         val npc = if(intent.extras?.getInt("npcID") != null){
             if(Data.npcs[intent.extras?.getString("npcID")] == null) NPC().generate(playerX = playerFight.playerFight) else Data.npcs[intent.extras?.getString("npcID")]!!
         }else {
@@ -909,7 +910,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             imageItem.visibility = View.VISIBLE
             imageItem.isEnabled = true
 
-            val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)//layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+            val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
             val windowPop = PopupWindow(view.context)
             windowPop.contentView = viewP
             windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -933,7 +934,6 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                         }
                     }
                 }
-
                 override fun onCancelHold() {
                     super.onCancelHold()
                     if(holdValid){

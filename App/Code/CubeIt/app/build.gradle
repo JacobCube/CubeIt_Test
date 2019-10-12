@@ -11,11 +11,16 @@ android {
         applicationId "cz.cubeit.cubeit"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 57
-        versionName "0.5.0.0"
+        versionCode 58
+        versionName "0.5.0.1"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    /*compileKotlin {
+        kotlinOptions {
+            freeCompilerArgs += ["-Xsanitize-parentheses"]
+        }
+    }*/
     buildTypes {
         release {
             minifyEnabled false
