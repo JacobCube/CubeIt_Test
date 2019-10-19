@@ -1,6 +1,8 @@
 package cz.cubeit.cubeit
 
+import android.util.Log
 import androidx.fragment.app.Fragment
+import java.lang.Math.abs
 import kotlin.random.Random
 
 object GameFlow{
@@ -69,15 +71,15 @@ object GameFlow{
         }
         itemTemp!!.levelRq = itemLevel ?: Random.nextInt(playerG.level - 2, playerG.level + 1)
         if (inQuality == null) {
-            itemTemp.quality = when (Random.nextInt(0, GenericDB.balance.itemQualityPerc["7"]!! + 1)) {                   //quality of an item by percentage
-                in 0 until GenericDB.balance.itemQualityPerc["0"]!! -> GenericDB.balance.itemQualityGenImpact["0"]!!        //39,03%
-                in GenericDB.balance.itemQualityPerc["0"]!!+1 until GenericDB.balance.itemQualityPerc["1"]!! -> GenericDB.balance.itemQualityGenImpact["1"]!!     //27%
-                in GenericDB.balance.itemQualityPerc["1"]!!+1 until GenericDB.balance.itemQualityPerc["2"]!! -> GenericDB.balance.itemQualityGenImpact["2"]!!     //20%
-                in GenericDB.balance.itemQualityPerc["2"]!!+1 until GenericDB.balance.itemQualityPerc["3"]!! -> GenericDB.balance.itemQualityGenImpact["3"]!!     //8,41%
-                in GenericDB.balance.itemQualityPerc["3"]!!+1 until GenericDB.balance.itemQualityPerc["4"]!! -> GenericDB.balance.itemQualityGenImpact["4"]!!     //5%
-                in GenericDB.balance.itemQualityPerc["4"]!!+1 until GenericDB.balance.itemQualityPerc["5"]!! -> GenericDB.balance.itemQualityGenImpact["5"]!!     //0,5%
-                in GenericDB.balance.itemQualityPerc["5"]!!+1 until GenericDB.balance.itemQualityPerc["6"]!! -> GenericDB.balance.itemQualityGenImpact["6"]!!     //0,08%
-                in GenericDB.balance.itemQualityPerc["6"]!!+1 until GenericDB.balance.itemQualityPerc["7"]!! -> GenericDB.balance.itemQualityGenImpact["7"]!!    //0,01%
+            itemTemp.quality = when (Random.nextInt(0, (GenericDB.balance.itemQualityPerc["7"] ?: error("")) + 1)) {                   //quality of an item by percentage
+                in 0 until (GenericDB.balance.itemQualityPerc["0"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["0"] ?: error("")        //39,03%
+                in (GenericDB.balance.itemQualityPerc["0"] ?: error("")) +1 until (GenericDB.balance.itemQualityPerc["1"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["1"] ?: error("")     //27%
+                in (GenericDB.balance.itemQualityPerc["1"] ?: error("")) +1 until (GenericDB.balance.itemQualityPerc["2"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["2"] ?: error("")     //20%
+                in (GenericDB.balance.itemQualityPerc["2"] ?: error("")) +1 until (GenericDB.balance.itemQualityPerc["3"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["3"] ?: error("")     //8,41%
+                in (GenericDB.balance.itemQualityPerc["3"] ?: error("")) +1 until (GenericDB.balance.itemQualityPerc["4"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["4"] ?: error("")     //5%
+                in (GenericDB.balance.itemQualityPerc["4"] ?: error("")) +1 until (GenericDB.balance.itemQualityPerc["5"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["5"] ?: error("")     //0,5%
+                in (GenericDB.balance.itemQualityPerc["5"] ?: error("")) +1 until (GenericDB.balance.itemQualityPerc["6"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["6"] ?: error("")     //0,08%
+                in (GenericDB.balance.itemQualityPerc["6"] ?: error("")) +1 until (GenericDB.balance.itemQualityPerc["7"] ?: error("")) -> GenericDB.balance.itemQualityGenImpact["7"] ?: error("")    //0,01%
                 else -> 0
             }
         } else {
@@ -95,48 +97,53 @@ object GameFlow{
                 is Weapon -> {
                     when (Random.nextInt(0, if (playerG.charClass.lifeSteal) 4 else 3)) {
                         0 -> {
-                            itemTemp.power += (pointsTemp * GenericDB.balance.itemGenPowerRatio).toInt()
+                            itemTemp.power += (pointsTemp * (GenericDB.balance.itemGenRatio["Power"] ?: 1.0)).toInt()
                         }
                         1 -> {
-                            itemTemp.block += (pointsTemp * GenericDB.balance.itemGenBlockRatio).toInt()
+                            itemTemp.block += (pointsTemp * (GenericDB.balance.itemGenRatio["Block"] ?: 1.0)).toInt()
                         }
                         2 -> {
-                            itemTemp.dmgOverTime += (pointsTemp * GenericDB.balance.itemGenDOTRatio).toInt()
+                            itemTemp.dmgOverTime += (pointsTemp * (GenericDB.balance.itemGenRatio["DamageOverTime"] ?: 1.0)).toInt()
                         }
                         3 -> {
-                            itemTemp.lifeSteal += (pointsTemp * GenericDB.balance.itemGenLSRatio).toInt()
+                            itemTemp.lifeSteal += (pointsTemp * (GenericDB.balance.itemGenRatio["LifeSteal"] ?: 1.0)).toInt()
                         }
                     }
                 }
                 is Wearable -> {
                     when (Random.nextInt(0, 4)) {
                         0 -> {
-                            itemTemp.armor += (pointsTemp * GenericDB.balance.itemGenArmorRatio).toInt()
+                            itemTemp.armor += (pointsTemp * (GenericDB.balance.itemGenRatio["Armor"] ?: 1.0)).toInt()
                         }
                         1 -> {
-                            itemTemp.block += (pointsTemp * GenericDB.balance.itemGenBlockRatio).toInt()
+                            itemTemp.block += (pointsTemp * (GenericDB.balance.itemGenRatio["Block"] ?: 1.0)).toInt()
                         }
                         2 -> {
-                            itemTemp.health += (pointsTemp * GenericDB.balance.itemGenHealthRatio).toInt()
+                            itemTemp.health += (pointsTemp * (GenericDB.balance.itemGenRatio["Health"] ?: 1.0)).toInt()
                         }
                         3 -> {
-                            itemTemp.energy += (pointsTemp * GenericDB.balance.itemGenEnergyRatio).toInt()
+                            itemTemp.energy += (pointsTemp * (GenericDB.balance.itemGenRatio["Energy"] ?: 1.0)).toInt()
                         }
                     }
                 }
                 is Runes -> {
                     when (Random.nextInt(0, 4)) {
                         0 -> {
-                            itemTemp.armor += (pointsTemp * GenericDB.balance.itemGenArmorRatio).toInt()
+                            itemTemp.armor += (pointsTemp * (GenericDB.balance.itemGenRatio["Armor"] ?: 1.0)).toInt()
                         }
                         1 -> {
-                            itemTemp.health += (pointsTemp * GenericDB.balance.itemGenHealthRatio).toInt()
+                            itemTemp.health += (pointsTemp * (GenericDB.balance.itemGenRatio["Health"] ?: 1.0)).toInt()
                         }
                         2 -> {
-                            itemTemp.adventureSpeed += (pointsTemp * GenericDB.balance.itemGenASRatio).toInt()
+                            itemTemp.adventureSpeed += (pointsTemp * (GenericDB.balance.itemGenRatio["AdventureSpeed"] ?: 1.0)).toInt()
                         }
                         3 -> {
-                            itemTemp.inventorySlots += (pointsTemp * GenericDB.balance.itemGenISRatio).toInt()
+                            if((itemTemp.inventorySlots + (pointsTemp * (GenericDB.balance.itemGenRatio["InventorySlots"] ?: 1.0)).toInt()) > playerG.level / 2){        //limit the inventory slots by player's level
+                                points += pointsTemp - kotlin.math.abs(((itemTemp.inventorySlots - (playerG.level / 2)) / (GenericDB.balance.itemGenRatio["InventorySlots"] ?: 1.0)).toInt())
+                                itemTemp.inventorySlots += kotlin.math.abs(itemTemp.inventorySlots - (playerG.level / 2))
+                            }else {
+                                itemTemp.inventorySlots += (pointsTemp * (GenericDB.balance.itemGenRatio["InventorySlots"] ?: 1.0)).toInt()
+                            }
                         }
                     }
                 }

@@ -188,12 +188,19 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.93" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline252"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.86" />
+
     <ImageView
         android:id="@+id/imageViewCharacterBag"
         android:layout_width="0dp"
-        android:tag="bagBg"
         android:layout_height="0dp"
         android:src="@drawable/character_bag"
+        android:tag="bagBg"
         app:layout_constraintBottom_toTopOf="@+id/guideline59"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline6"
@@ -231,7 +238,7 @@
         app:layout_constraintGuide_percent="0.28" />
 
     <ImageView
-        android:id="@+id/imageViewProfileInfo"
+        android:id="@+id/imageViewCharacterProfileInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
@@ -244,6 +251,18 @@
         app:layout_constraintStart_toStartOf="@+id/guideline137"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:drawable/ic_dialog_info" />
+
+    <ImageView
+        android:id="@+id/imageViewCharacterProfileAllies"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:tint="@color/black"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline137"
+        app:layout_constraintStart_toStartOf="@+id/guideline252"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/menu_character_icon" />
 
     <FrameLayout
         android:id="@+id/frameLayoutCharacterProfile"

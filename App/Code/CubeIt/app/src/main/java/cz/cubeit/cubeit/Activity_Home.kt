@@ -4,15 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_home.*
 import androidx.lifecycle.ProcessLifecycleOwner
 import android.provider.Settings
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
-import android.os.Handler
+import android.os.*
 import android.util.DisplayMetrics
 import androidx.appcompat.app.AlertDialog
 import android.util.Log
@@ -22,12 +20,129 @@ import com.google.firebase.firestore.MetadataChanges
 import android.view.ContextThemeWrapper
 import android.view.MotionEvent
 import android.view.WindowManager
+import android.view.animation.Animation
+import android.view.animation.RotateAnimation
 import android.widget.PopupMenu
+import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.Query
+import java.lang.ref.WeakReference
 
 
 var playedSong = R.raw.playedsong
 
 class Home : AppCompatActivity() {
+
+    companion object {
+        class HomeInitialization (context: Home): AsyncTask<Int, String, String?>(){
+            private val innerContext: WeakReference<Context> = WeakReference(context)
+
+            override fun doInBackground(vararg params: Int?): String? {
+                val context = innerContext.get() as Home?
+                //context leakage solution
+
+                return if(context != null){
+
+                    if(Data.inboxSnapshotHome == null){                     //inbox messages realtime listener
+                        val db = FirebaseFirestore.getInstance()
+                        Data.inbox.sortByDescending { it.id }
+                        val docRef = db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
+                        Data.inboxSnapshotHome = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                            if (e != null) {
+                                return@addSnapshotListener
+                            }
+
+                            if (snapshot != null && !snapshot.isEmpty) {
+                                val inboxSnap: MutableList<InboxMessage> = mutableListOf()
+                                for(i in snapshot.documentChanges){
+                                    if(i.type == DocumentChange.Type.ADDED)inboxSnap.add(i.document.toObject(InboxMessage::class.java))
+                                }
+
+                                inboxSnap.sortByDescending { it.id }
+
+                                if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
+                                    for(i in inboxSnap){
+                                        if(!Data.inbox.any { it.id == i.id }  && i.status != MessageStatus.Read){
+                                            Data.inbox.add(i)
+                                            if(i.status != MessageStatus.Sent){
+                                                Toast.makeText(context, "New message has arrived.", Toast.LENGTH_SHORT).show()
+                                                val v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                    v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
+                                                } else {
+                                                    v!!.vibrate(20)
+                                                }
+                                                Data.inboxChanged = true
+                                                Data.inboxChangedMessages++
+                                                context.runOnUiThread {
+                                                    context.textViewHomeMailNew.visibility = View.VISIBLE
+                                                }
+                                            }
+                                        }
+                                    }
+                                    SystemFlow.writeFileText(context, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
+                                }
+                            }
+                        }
+                    }
+
+                    val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
+                    val docRef = db.collection("Server").document("Generic")
+                    docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                        if (e != null) {
+                            Log.w("Server listener", "Listen failed.", e)
+                            return@addSnapshotListener
+                        }
+
+                        val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
+                            "Local"
+                        else
+                            "Server"
+
+                        if (snapshot != null && snapshot.exists()) {
+                            Log.d("Server listener", "data accepted")
+
+                            if(snapshot.getString("Status") != "on"){
+                                val builder = AlertDialog.Builder(context)
+                                builder.setTitle("Server not available")
+                                builder.setMessage("Server is currently ${snapshot.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(snapshot.getBoolean("ShowDsc")!!)snapshot.getString("ExternalDsc") else "")
+                                if(context.dialog == null) context.dialog = builder.create()
+                                context.dialog!!.setCanceledOnTouchOutside(false)
+                                context.dialog!!.setCancelable(false)
+
+                                context.dialog!!.setButton(Dialog.BUTTON_POSITIVE, "OK") { dialogX, _ ->
+                                    dialogX.dismiss()
+                                }
+                                context.dialog!!.setOnDismissListener {
+                                    if(!context.dialog!!.isShowing) Data.logOut(context) else context.dialog!!.dismiss()
+                                }
+                                if(context.dialog?.isShowing == false) context.dialog?.show()
+                            }
+
+                        } else {
+                            Log.d("Server listener", "$source data: null n error")
+                        }
+                    }
+
+                    context.setupLifecycleListener()
+
+                    "true"
+                }else "false"
+            }
+
+            override fun onPostExecute(result: String?) {
+                super.onPostExecute(result)
+                val context = innerContext.get() as Home?
+
+                if (result != null && result.toBoolean()){
+                    //do something, my result is successful
+                }else {
+                    Toast.makeText(context, "Something went wrong! Try restarting your application", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
 
     var dialog: AlertDialog? = null
 
@@ -63,40 +178,25 @@ class Home : AppCompatActivity() {
         hideSystemUI()
         setContentView(R.layout.activity_home)
 
-        Log.w("test_home", Data.spellClasses.size.toString())
+        val tempActivity = this
+        this.window.decorView.rootView.post {
+            HomeInitialization(tempActivity).execute()
+        }
 
-        Data.uploadGlobalData()
-
-        /*for(i in Data.player.currentSurfaces){
-            if(i.boss == null){
-                i.boss = Boss(surface = Data.player.currentSurfaces.indexOf(i))
-                i.boss!!.initialize().addOnSuccessListener {
-                    Log.d("boss generated", "successfully")
-                }.addOnFailureListener {
-                    Log.d("boss generated", it.message.toString())
-                }
+        /*for(i in 0 until Data.player.currentSurfaces.size){
+            val boss = Boss(surface = i)
+            boss.initialize().addOnSuccessListener {
+                Data.player.currentSurfaces[i].boss = boss
             }
         }*/
 
-        /*Data.npcs.clear()
-        for(i in 1..7){
-            Data.npcs[i.toString()] = NPC()
-        }
-        for(i in Data.npcs){
-            i.setValue(NPC().generate(playerX = Data.player))
-        }
-
-        Handler().postDelayed({
-            Data.uploadGlobalData()
-        }, 20000)*/
-
-
+        Log.w("test_home", Data.spellClasses.size.toString())
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         layoutHome.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.homebackground, opts))
 
-        if(Data.player.username == "player"){
+        if(Data.player.username == "Anonymous"){
             SystemFlow.showNotification("Oops", "There's a problem with your game, we're really sorry.", this).setOnDismissListener {
                 Data.logOut(this)
             }
@@ -110,13 +210,12 @@ class Home : AppCompatActivity() {
                 startActivityForResult(intent, 2084)
         }
 
-        setupLifecycleListener()
-
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                 Handler().postDelayed({hideSystemUI()},1000)
             }
         }
+
         textViewHomeStatsCoins.text = Data.player.cubeCoins.toString()
         textViewHomeStats.text = "\ncubix ${Data.player.cubix}\ngold ${Data.player.gold}"
         textViewHomeStats.setPadding(15, 10, 15, 10)
@@ -136,44 +235,6 @@ class Home : AppCompatActivity() {
             View.VISIBLE
         }else View.GONE
 
-        val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
-        val docRef = db.collection("Server").document("Generic")
-        docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
-            if (e != null) {
-                Log.w("Server listener", "Listen failed.", e)
-                return@addSnapshotListener
-            }
-
-            val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
-                "Local"
-            else
-                "Server"
-
-            if (snapshot != null && snapshot.exists()) {
-                Log.d("Server listener", "data accepted")
-
-                if(snapshot.getString("Status") != "on"){
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Server not available")
-                    builder.setMessage("Server is currently ${snapshot.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(snapshot.getBoolean("ShowDsc")!!)snapshot.getString("ExternalDsc") else "")
-                    if(dialog == null)dialog = builder.create()
-                    dialog!!.setCanceledOnTouchOutside(false)
-                    dialog!!.setCancelable(false)
-
-                    dialog!!.setButton(Dialog.BUTTON_POSITIVE, "OK") { dialogX, which ->
-                        dialogX.dismiss()
-                    }
-                    dialog!!.setOnDismissListener {
-                        if(!dialog!!.isShowing)Data.logOut(this) else dialog!!.dismiss()
-                    }
-                    if(!dialog!!.isShowing)dialog!!.show()
-                }
-
-            } else {
-                Log.d("Server listener", "$source data: null n error")
-            }
-        }
-
         buttonHomeFaction.setOnClickListener {
             val intent = Intent(this, Activity_Faction_Base()::class.java)
             startActivity(intent)
@@ -189,10 +250,10 @@ class Home : AppCompatActivity() {
         if(Data.inboxChanged && Data.inboxChangedMessages >= 1){
             textViewHomeMailNew.visibility = View.VISIBLE
             textViewHomeMailNew.text = Data.inboxChangedMessages.toString()
-            imageViewHomeMailNew.visibility = View.VISIBLE
+            textViewHomeMailNew.visibility = View.VISIBLE
         }else {
             textViewHomeMailNew.visibility = View.GONE
-            imageViewHomeMailNew.visibility = View.GONE
+            textViewHomeMailNew.visibility = View.GONE
         }
 
         imageViewHomeInbox.setOnClickListener {

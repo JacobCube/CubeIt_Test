@@ -723,8 +723,8 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         }
 
         val npc = if(intent.extras?.getInt("npcID") != null){
-            if(Data.npcs[intent.extras?.getString("npcID")] == null) NPC().generate(playerX = playerFight.playerFight) else Data.npcs[intent.extras?.getString("npcID")]!!
-        }else {
+            Data.npcs[intent.extras?.getString("npcID")] ?: NPC().generate(playerX = playerFight.playerFight)
+        } else {
             if(intent.extras?.getInt("difficulty") != null){
                 NPC().generate(intent.extras?.getInt("difficulty"), playerFight.playerFight)
             }else {
@@ -859,7 +859,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
     private fun endOfFight(completed: Boolean, view: View) {
         fightEnded = true
 
-        val endFight = Intent(this, Activity_Character::class.java)
+        val endFight = Intent(this, Adventure::class.java)
         endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
         val window = PopupWindow(this)
@@ -869,11 +869,12 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         val textViewQuest: CustomTextView = viewPop.textViewQuest
         val buttonAccept: Button = viewPop.buttonAccept
         val buttonClose: ImageView = viewPop.buttonCloseDialog
-        val imageItem: ImageView = viewPop.imageViewAdventure
+        val imageItem: ImageView = viewPop.imageViewAdventure2
         val textViewStats: CustomTextView = viewPop.textViewItemStats
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
 
+        viewPop.imageViewAdventure.setImageResource(enemy.enemy.charClass.drawable)
         if(completed) {
             viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${reward?.experience}")
             viewPop.textViewPopAdventureCC.text = reward?.cubeCoins.toString()

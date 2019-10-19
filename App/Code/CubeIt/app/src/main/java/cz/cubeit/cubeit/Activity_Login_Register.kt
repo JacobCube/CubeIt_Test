@@ -46,6 +46,8 @@ class ActivityLoginRegister: AppCompatActivity(R.layout.activity_login_register)
             viewPagerLoginRegister!!.adapter = adapter
             viewPagerLoginRegister!!.offscreenPageLimit = 2
 
+
+            Data.initialize(this)
             Data.loadingScreenType = LoadingType.Normal
 
             window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->

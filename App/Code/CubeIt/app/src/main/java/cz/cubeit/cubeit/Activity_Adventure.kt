@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -29,7 +28,6 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
 import kotlin.math.max
 
 
@@ -278,13 +276,14 @@ class Adventure : AppCompatActivity() {
         val textViewQuest: CustomTextView = viewPop.textViewQuest
         val buttonAccept: Button = viewPop.buttonAccept
         val buttonClose: ImageView = viewPop.buttonCloseDialog
-        val imageViewAdventure: ImageView = viewPop.imageViewAdventure
+        val imageViewAdventure: ImageView = viewPop.imageViewAdventure2
         val textViewStats: CustomTextView = viewPop.textViewItemStats
         viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${quest.reward.experience}")
         viewPop.textViewPopAdventureCC.text = quest.reward.cubeCoins.toString()
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
+        viewPop.imageViewAdventure.setImageResource(R.drawable.question_mark)       //enemy image
         if (quest.reward.item != null) {
             imageViewAdventure.setBackgroundResource(quest.reward.item!!.getBackground())
             imageViewAdventure.setImageResource(quest.reward.item!!.drawable)
@@ -307,7 +306,7 @@ class Adventure : AppCompatActivity() {
         textViewStats.visibility = View.GONE
         textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
 
-        imageViewAdventure.setUpOnold(this, quest.reward.item ?: Item())
+        imageViewAdventure.setUpOnHold(this, quest.reward.item ?: Item())
 
         /*val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
         val windowPop = PopupWindow(view.context)
@@ -475,7 +474,7 @@ class Adventure : AppCompatActivity() {
         val textViewQuest: CustomTextView = viewPopQuest.textViewQuest
         val buttonAccept: Button = viewPopQuest.buttonAccept
         val buttonClose: ImageView = viewPopQuest.buttonCloseDialog
-        val imageViewAdventure: ImageView = viewPopQuest.imageViewAdventure
+        val imageViewAdventure: ImageView = viewPopQuest.imageViewAdventure2
         val textViewStats: CustomTextView = viewPopQuest.textViewItemStats
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -483,6 +482,7 @@ class Adventure : AppCompatActivity() {
         viewPopQuest.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${quest.reward.experience}")
         viewPopQuest.textViewPopAdventureCC.text = quest.reward.cubeCoins.toString()
 
+        viewPopQuest.imageViewAdventure.setImageResource(R.drawable.question_mark)
         if (quest.reward.item != null) {
             imageViewAdventure.setImageResource(quest.reward.item!!.drawable)
             imageViewAdventure.setBackgroundResource(quest.reward.item!!.getBackground())
@@ -505,7 +505,7 @@ class Adventure : AppCompatActivity() {
 
         textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
 
-        imageViewAdventure.setUpOnold(usedActivity, quest.reward.item ?: Item())
+        imageViewAdventure.setUpOnHold(usedActivity, quest.reward.item ?: Item())
 
         /*val windowPop = PopupWindow(usedActivity)
         windowPop.contentView = viewP
@@ -672,7 +672,7 @@ class Adventure : AppCompatActivity() {
     }
 }
 
-class ViewPagerAdapterAdventure internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
+class ViewPagerAdapterAdventure internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT){
 
     override fun getItem(position: Int): Fragment {
         return when(position) {

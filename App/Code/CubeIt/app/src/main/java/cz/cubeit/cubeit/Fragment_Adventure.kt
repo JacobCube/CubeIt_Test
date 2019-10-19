@@ -11,8 +11,10 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.util.Log
+import android.view.Gravity
 import android.widget.ImageView
 import android.widget.PopupWindow
+import android.widget.Toast
 import android.widget.VideoView
 import kotlinx.android.synthetic.main.fragment_adventure_1.view.*
 import kotlinx.android.synthetic.main.fragment_adventure_2.view.*
@@ -21,14 +23,17 @@ import kotlinx.android.synthetic.main.fragment_adventure_4.view.*
 import kotlinx.android.synthetic.main.fragment_adventure_5.view.*
 import kotlinx.android.synthetic.main.fragment_adventure_6.view.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
+import java.util.*
 
 
 class Fragment_Adventure : Fragment() {         //TODO automatické generování komponentů na mapu
 
+    var bossTimer: TimerTask? = null
     lateinit var viewTemp: View
     lateinit var imageViewSurfaceBg: ImageView
     lateinit var imageViewSurfaceBoss: ImageView
     lateinit var textViewSurfacesBoss: CustomTextView
+    var index = 0
 
     companion object{
         fun newInstance(layout: Int = R.layout.fragment_adventure_1, drawable: Int = R.drawable.map0, index: Int): Fragment_Adventure{
@@ -52,11 +57,35 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
         imageViewSurfaceBg.setImageDrawable(null)
     }
 
+    override fun onStop() {
+        super.onStop()
+        bossTimer?.cancel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(Data.player.currentSurfaces[index].boss != null){
+            bossTimer = object : TimerTask() {
+                override fun run() {
+                    if(Data.player.currentSurfaces[index].boss?.isActive() == false){
+                        this.cancel()
+                        Data.player.currentSurfaces[index].boss?.detach()
+                    }
+
+                    activity?.runOnUiThread {
+                        textViewSurfacesBoss.setHTMLText(Data.player.currentSurfaces[index].boss?.getTimeLeft() ?: "0:00:00")
+                    }
+                }
+            }
+            Timer().scheduleAtFixedRate(bossTimer, 0, 1000)
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         viewTemp = inflater.inflate(arguments!!.getInt("layout"), container, false)
-        var index = arguments!!.getInt("index")
+        index = arguments!!.getInt("index")
 
         val opts = BitmapFactory.Options()
         opts.inScaled = false
@@ -99,7 +128,26 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
             }
         }
 
+        Log.d("surface index", index.toString())
+        Log.d("currentSurface boss", Data.player.currentSurfaces[index].boss.toString())
+
         if(Data.player.currentSurfaces[index].boss != null && Data.player.currentSurfaces[index].boss!!.isActive()){
+            Log.d("boss", "successfully addressed $index")
+
+            bossTimer = object : TimerTask() {
+                override fun run() {
+                    if(Data.player.currentSurfaces[index].boss?.isActive() == false){
+                        this.cancel()
+                        Data.player.currentSurfaces[index].boss?.detach()
+                    }
+
+                    activity?.runOnUiThread {
+                        textViewSurfacesBoss.setHTMLText(Data.player.currentSurfaces[index].boss?.getTimeLeft() ?: "0:00:00")
+                    }
+                }
+            }
+            Timer().scheduleAtFixedRate(bossTimer, 0, 1000)
+
             imageViewSurfaceBoss.visibility = View.VISIBLE
             textViewSurfacesBoss.visibility = View.VISIBLE
 
@@ -110,6 +158,7 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             val activityTemp = activity!!
             window.isOutsideTouchable = false
+            window.isFocusable = true
 
             viewPop.imageViewAdventure.visibility = View.VISIBLE
             viewPop.textViewQuest.setHTMLText(Data.player.currentSurfaces[index].boss!!.description)
@@ -121,19 +170,23 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
                 viewPop.imageViewAdventure2.visibility = View.VISIBLE
                 viewPop.imageViewAdventure2.setImageResource(Data.player.currentSurfaces[index].boss!!.reward.item?.drawable ?: 0)
                 viewPop.imageViewAdventure2.setBackgroundResource(Data.player.currentSurfaces[index].boss!!.reward.item?.getBackground() ?: 0)
+
+                val tempActivity = activity!!
+                viewPop.imageViewAdventure2.setUpOnHold(tempActivity, Data.player.currentSurfaces[index].boss!!.reward.item!!)
             }else {
                 viewPop.imageViewAdventure2.visibility = View.GONE
             }
             viewPop.textViewPopAdventureCC.text = Data.player.currentSurfaces[index].boss?.reward?.cubeCoins.toString()
-            viewPop.textViewPopAdventureExperience.text = Data.player.currentSurfaces[index].boss?.reward?.experience.toString()
-            viewPop.textViewPopAdventureGold.text = Data.player.currentSurfaces[index].boss?.reward?.gold.toString()
+            viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${Data.player.currentSurfaces[index].boss?.reward?.experience}")
+            viewPop.textViewPopAdventureGold.setHTMLText("<font color='#FFDF00'><b>g</b></font> ${Data.player.currentSurfaces[index].boss?.reward?.gold}")
 
             viewPop.buttonAccept.setOnClickListener {
-                window.dismiss()
-                val intent = Intent(activityTemp, FightSystemNPC::class.java)
+                /*window.dismiss()
+                val intent = Intent(activityTemp, FightSystemNPC::class.java)       //TODO boss fight
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
-                activityTemp.overridePendingTransition(0, 0)
+                activityTemp.overridePendingTransition(0, 0)*/
+                Toast.makeText(viewTemp.context, "Vše už funguje, jen je potřeba udělat special prostředí pro boss fight, bude v přístí verzi", Toast.LENGTH_LONG).show()
             }
 
             viewPop.buttonCloseDialog.setOnClickListener {
@@ -142,17 +195,9 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
 
             textViewSurfacesBoss.setHTMLText(Data.player.currentSurfaces[index].boss!!.getTimeLeft())
 
-            imageViewSurfaceBoss.setOnTouchListener(object : Class_OnSwipeTouchListener(activityTemp, imageViewSurfaceBoss, false) {
-
-                override fun onClick(x: Float, y: Float) {
-                    super.onClick(x, y)
-                    viewPop.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-
-                    val coordinates = SystemFlow.resolveLayoutLocation(activityTemp, x, y, viewPop.measuredWidth, viewPop.measuredHeight)
-
-                    window.showAsDropDown(activityTemp.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
-                }
-            })
+            imageViewSurfaceBoss.setOnClickListener {
+                window.showAtLocation(view, Gravity.CENTER,0,0)
+            }
 
             textViewSurfacesBoss.setOnClickListener {
                 imageViewSurfaceBoss.performClick()

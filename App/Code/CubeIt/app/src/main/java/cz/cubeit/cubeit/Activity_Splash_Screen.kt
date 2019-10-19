@@ -9,10 +9,12 @@ import android.view.animation.RotateAnimation
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Handler
 import android.util.DisplayMetrics
@@ -38,10 +40,12 @@ class Activity_Splash_Screen: AppCompatActivity(){
     var popWindow: PopupWindow = PopupWindow()
     var requestingPermission: Boolean = false
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
+    fun isConnected(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
     }
+
     private fun hideSystemUI() {
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -49,6 +53,11 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideSystemUI()
     }
 
     override fun onStop() {
@@ -322,7 +331,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                 popWindow.contentView = viewP
 
                                 val score = (imageViewSplashRocket.ticks) / 100
-                                var scores: MutableList<RocketGameScore> = mutableListOf()
                                 viewP.textViewDialogMGGenericInfo.text = "\t~" + (rewardBottom + ((rewardTop - rewardBottom) / 2)) / 40 + " cube coins /s"
                                 viewP.textViewDialogMGInfo.setHTMLText("You lost.<br/>" + if (newHigh) "<font color='green'>Wow! New high score!</font>" else {
                                     "<font color='red'>" + Data.rocketGameNotHigh[nextInt(0, Data.rocketGameNotHigh.size)] + "</font>"
@@ -406,11 +414,76 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
                                 popWindow.showAtLocation(viewP, Gravity.CENTER, 0, 0)
 
-                                val myScore = RocketGameScore(((imageViewSplashRocket.ticks) / 100), Data.player.username)
-                                val db = FirebaseFirestore.getInstance()
+                                val myScore = MiniGameScore(((imageViewSplashRocket.ticks) / 100), Data.player.username)
+                                myScore.capture(this@Activity_Splash_Screen)
+
+                                viewP.listViewDialogMG.adapter = RocketGameScores(Data.rocketGameBoard.list as MutableList<MiniGameScore>)
+
+                                if(isConnected(this@Activity_Splash_Screen) && MiniGameScore(type = MinigameType.RocketGame).findMyBoard().isLoadable(this@Activity_Splash_Screen)){
+                                    Log.d("if-statement", "I'm loading from database")
+                                    MiniGameScore(type = MinigameType.RocketGame).findMyBoard().loadPackage(10, this@Activity_Splash_Screen).addOnSuccessListener {
+                                        Log.d("if-statement", "loaded from database, size - ${Data.rocketGameBoard.list?.size}")
+                                        (Data.rocketGameBoard.list as MutableList<MiniGameScore>).sortByDescending { it.length }
+
+                                        for(i in 0 until 10){
+                                            if((Data.rocketGameBoard.list as MutableList<MiniGameScore>).size < i + 1){
+                                                (Data.rocketGameBoard.list as MutableList<MiniGameScore>).add(myScore)
+                                                myScore.init()
+                                                break
+                                            }else if(myScore.length > (Data.rocketGameBoard.list as MutableList<MiniGameScore>)[i].length){
+                                                myScore.init()
+                                                (Data.rocketGameBoard.list as MutableList<MiniGameScore>)[i] = myScore
+                                                break
+                                            }
+                                        }
+                                        (Data.rocketGameBoard.list as MutableList<MiniGameScore>).sortByDescending { it.length }
+
+
+                                        runOnUiThread {
+                                            (viewP.listViewDialogMG.adapter as RocketGameScores).updateScores(Data.rocketGameBoard.list as MutableList<MiniGameScore>)
+                                        }
+                                        Log.d("if-statement", "after loaded from database, size - ${Data.rocketGameBoard.list?.size}")
+                                    }.addOnFailureListener {
+                                        Log.d("failure RG", it.localizedMessage)
+                                    }
+                                }else if(!isConnected(this@Activity_Splash_Screen)){
+                                    if(!MiniGameScore(type = MinigameType.RocketGame).checkAvailability(this@Activity_Splash_Screen)) {
+                                        MiniGameScore(type = MinigameType.RocketGame).findMyBoard().setUpNew(Data.miniGameScores, this@Activity_Splash_Screen)
+                                        Log.d("if-statement", "I'm using local storage - minigamesscores, the data size is ${MiniGameScore(type = MinigameType.RocketGame).findMyBoard().list.size}")
+                                    }
+                                    runOnUiThread {
+                                        (viewP.listViewDialogMG.adapter as RocketGameScores).updateScores(Data.rocketGameBoard.list as MutableList<MiniGameScore>)
+                                    }
+                                }else if(isConnected(this@Activity_Splash_Screen)){
+                                    Log.d("if-statement", "I'm online, and I'm using local storage")
+                                    if(!MiniGameScore(type = MinigameType.RocketGame).findMyBoard().findLocal(this@Activity_Splash_Screen)){
+                                        MiniGameScore(type = MinigameType.RocketGame).findMyBoard().setUpNew(mutableListOf<MiniGameScore>(), this@Activity_Splash_Screen)
+                                    }
+
+                                    (Data.rocketGameBoard.list as MutableList<MiniGameScore>).sortByDescending { it.length }
+                                    for(i in 0 until 10){
+                                        if((Data.rocketGameBoard.list as MutableList<MiniGameScore>).size < i + 1){
+                                            (Data.rocketGameBoard.list as MutableList<MiniGameScore>).add(myScore)
+                                            myScore.init()
+                                            break
+                                        }else if(myScore.length > (Data.rocketGameBoard.list as MutableList<MiniGameScore>)[i].length){
+                                            myScore.init()
+                                            (Data.rocketGameBoard.list as MutableList<MiniGameScore>)[i] = myScore
+                                            break
+                                        }
+                                    }
+                                    (Data.rocketGameBoard.list as MutableList<MiniGameScore>).sortByDescending { it.length }
+
+                                    runOnUiThread {
+                                        (viewP.listViewDialogMG.adapter as RocketGameScores).updateScores(Data.rocketGameBoard.list as MutableList<MiniGameScore>)
+                                    }
+                                }
+
+
+                                /*val db = FirebaseFirestore.getInstance()
                                 val scoresLimit = 10
                                 db.collection("RocketGame").orderBy("length").limit(scoresLimit.toLong()).get().addOnSuccessListener { querySnapshot ->
-                                    scores = querySnapshot.toObjects(RocketGameScore::class.java)
+                                    scores = querySnapshot.toObjects(MiniGameScore::class.java)
                                     scores.sortByDescending { it.length }
 
                                     for(i in 0 until scoresLimit){
@@ -419,7 +492,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                             myScore.init()
                                             break
                                         }else if(myScore.length > scores[i].length){
-                                            myScore.uploadAsScore(scores[i].id)
+                                            myScore.init()
                                             scores[i] = myScore
                                             break
                                         }
@@ -427,7 +500,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
                                     scores.sortByDescending { it.length }
 
                                     viewP.listViewDialogMG.adapter = RocketGameScores(scores)
-                                }
+                                }*/
                             }
 
                             if ((imageViewSplashRocket.ticks - endCount * 200) > 200) {
@@ -624,7 +697,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
         }
 
     }
-    private class RocketGameScores(val scores: List<RocketGameScore>) : BaseAdapter() {
+    private class RocketGameScores(val scores: MutableList<MiniGameScore>) : BaseAdapter() {
 
         override fun getCount(): Int {
             return scores.size
@@ -636,6 +709,12 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
         override fun getItem(position: Int): Any {
             return "TEST STRING"
+        }
+
+        fun updateScores(newlist: MutableList<MiniGameScore>) {
+            scores.clear()
+            scores.addAll(newlist)
+            this.notifyDataSetChanged()
         }
 
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {

@@ -4,16 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="0.5dp"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
         android:id="@+id/imageViewRowMGBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/loginColor_2_darker"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:alpha="0.75"
-        android:src="@android:color/transparent"
         app:layout_constraintStart_toStartOf="@+id/textViewRowMGPosition"
         app:layout_constraintTop_toTopOf="parent" />
 

@@ -8,7 +8,6 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import androidx.core.content.ContextCompat.startActivity
@@ -28,10 +27,7 @@ import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.popup_info_dialog.view.*
 import kotlinx.android.synthetic.main.row_market_items.view.*
 import java.text.SimpleDateFormat
-import android.provider.SyncStateContract.Helpers.update
 import android.view.MotionEvent
-import android.view.View.OnTouchListener
-import androidx.core.content.ContextCompat.getDrawable
 
 
 class Activity_Market:AppCompatActivity(){
@@ -180,27 +176,27 @@ class Activity_Market:AppCompatActivity(){
             filterPrice = when (filterPrice) {            //sorting by cubix asc/desc first 2 clicks, continues sorting by cubecoins - resets
                 0 -> {
                     textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25BC))
-                    itemsList.sortByDescending { it.priceCoins }
+                    itemsList.sortByDescending { it.priceCubeCoins }
                     1
                 }
                 1 -> {
                     textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25B2))
-                    itemsList.sortBy { it.priceCoins }
+                    itemsList.sortBy { it.priceCubeCoins }
                     2
                 }
                 2 -> {
                     textViewMarketBarPrice.text = "Cubix " + String(Character.toChars(0x25BC)) + String(Character.toChars(0x25BC))
-                    itemsList.sortByDescending { it.priceCubeCoins }
+                    itemsList.sortByDescending { it.priceCubix }
                     3
                 }
                 3 -> {
                     textViewMarketBarPrice.text = "Cubix " + String(Character.toChars(0x25B2)) + String(Character.toChars(0x25B2))
-                    itemsList.sortBy { it.priceCubeCoins }
+                    itemsList.sortBy { it.priceCubix }
                     0
                 }
                 else -> {
                     textViewMarketBarPrice.text = "CC " + String(Character.toChars(0x25BC))
-                    itemsList.sortByDescending { it.priceCoins }
+                    itemsList.sortByDescending { it.priceCubeCoins }
                     1
                 }
             }
@@ -352,10 +348,10 @@ class Activity_Market:AppCompatActivity(){
                     }
                 }else if (viewPop.editTextMarketLvlFrom.text.isNullOrBlank() && viewPop.editTextMarketLvlTo.text.isNullOrBlank()){
                     if(!viewPop.editTextMarketPriceTo.text.isNullOrBlank()){
-                        docRef = docRef.whereLessThanOrEqualTo("priceCoins", viewPop.editTextMarketPriceTo.text.toString().toIntOrNull() ?: 0)
+                        docRef = docRef.whereLessThanOrEqualTo("priceCubeCoins", viewPop.editTextMarketPriceTo.text.toString().toIntOrNull() ?: 0)
                     }
                     if(!viewPop.editTextMarketPriceFrom.text.isNullOrBlank()){
-                        docRef = docRef.whereGreaterThanOrEqualTo("priceCoins", viewPop.editTextMarketPriceFrom.text.toString().toIntOrNull() ?: 0)
+                        docRef = docRef.whereGreaterThanOrEqualTo("priceCubeCoins", viewPop.editTextMarketPriceFrom.text.toString().toIntOrNull() ?: 0)
                     }
                 }
 
@@ -505,7 +501,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                         windowBuy.dismiss()
                     }
 
-                    viewPopBuy.buttonYes.isEnabled = Data.player.cubeCoins >= itemsListAdapter[position].priceCoins && Data.player.cubix >= itemsListAdapter[position].priceCubeCoins
+                    viewPopBuy.buttonYes.isEnabled = Data.player.cubeCoins >= itemsListAdapter[position].priceCubeCoins && Data.player.cubix >= itemsListAdapter[position].priceCubix
 
                     viewPopBuy.buttonYes.setOnClickListener {
                         windowBuy.dismiss()

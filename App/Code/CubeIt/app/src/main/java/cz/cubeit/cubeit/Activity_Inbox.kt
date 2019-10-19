@@ -39,10 +39,6 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
     var currentCategory:InboxCategory = InboxCategory()
     lateinit var chosenMail: InboxMessage
     var onTop: Boolean = false
-        set(value){
-            field = value
-            Log.d("onTop_setter", value.toString())
-        }
     var editMode: Boolean = false
         set(value){
             field = value
@@ -74,31 +70,26 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
     override fun onPause() {
         super.onPause()
         onTop = false
-        Log.d("activity_state", "onPause")
     }
 
     override fun setVisible(visible: Boolean) {
         super.setVisible(visible)
         onTop = visible
-        Log.d("activity_state", "visibility change to $visible")
     }
 
     override fun onResume() {
         super.onResume()
         onTop = true
-        Log.d("activity_state", "onResume")
     }
 
     override fun onStop() {
         super.onStop()
         onTop = false
-        Log.d("activity_state", "onStop")
     }
 
     override fun onStart() {
         super.onStart()
         onTop = true
-        Log.d("activity_state", "onStart")
     }
 
     fun makeMeASnack(text: String, length: Int){          //use snackback from inner fragment, which was not possible after testing it, due to closure of its instance
@@ -357,7 +348,6 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                     }
 
                     currentCategory = InboxCategory(messages = newList)
-                    Log.d("inboxCategory size", currentCategory.messages.size.toString())
                     refreshCategory(true)
                     window.dismiss()
                 }
@@ -392,7 +382,6 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
             val docRef = db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
             Data.inboxSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                 if (e != null) {
-                    Log.d("Inbox listener", "Listen failed.", e)
                     return@addSnapshotListener
                 }
 
@@ -403,15 +392,13 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                     }
 
                     inboxSnap.sortByDescending { it.id }
-                    Log.d("inbox_bln_ontop", onTop.toString())
-                    Log.d("inbox_bln_others", (snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox).toString())
 
                     if(onTop && snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         for(i in inboxSnap){
                             if(!Data.inbox.any { it.id == i.id } && i.status != MessageStatus.Read){
                                 Data.inbox.add(i)
                                 if(i.status != MessageStatus.Sent){
-                                    Snackbar.make(imageViewActivityInbox, "New message has arrived.", Snackbar.LENGTH_SHORT).show()
+                                    Snackbar.make(imageViewActivityInbox, "New message has arrived.", Snackbar.LENGTH_LONG).show()
                                     val v = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                         v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -425,14 +412,13 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                         init()
                         (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
                         (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
-                        Log.d("inbox_listener", "My inbox should be refreshed now, because I'm being in the activity")
                         Data.inboxChanged = false
-                    }else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
+                    }/*else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         for(i in inboxSnap){
                              if(!Data.inbox.any { it.id == i.id }  && i.status != MessageStatus.Read){
                                  Data.inbox.add(i)
                                  if(i.status != MessageStatus.Sent){
-                                     Snackbar.make(imageViewActivityInbox, "New message has arrived.", Snackbar.LENGTH_SHORT).show()
+                                     Toast.makeText(this, "New message has arrived.", Toast.LENGTH_SHORT).show()
                                      val v = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
                                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                          v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -440,12 +426,12 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                                          v!!.vibrate(20)
                                      }
                                      Data.inboxChanged = true
+                                     Data.inboxChangedMessages++
                                  }
                              }
-                            Data.inboxChangedMessages++
                         }
                         SystemFlow.writeFileText(this, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
-                    }
+                    }*/
                 }
             }
         }else {
@@ -560,6 +546,7 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
             super.notifyDataSetChanged()
         }
 
+        @SuppressLint("ClickableViewAccessibility")
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
@@ -572,7 +559,16 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
             } else rowMain = convertView
             val viewHolder = rowMain.tag as ViewHolder
 
-            viewHolder.textViewInboxMessages.text = activity.currentCategory.messages[position].subject
+            Log.d("fightresult", activity.currentCategory.messages[position].fightResult.toString())
+            viewHolder.textViewInboxMessages.setHTMLText(if(activity.currentCategory.messages[position].fightResult != null){
+                if(activity.currentCategory.messages[position].fightResult!!){
+                    "<font color='green'> ${activity.currentCategory.messages[position].subject}</font>"
+                }else {
+                    "<font color='red'> ${activity.currentCategory.messages[position].subject}</font>"
+                }
+            }else {
+                activity.currentCategory.messages[position].subject
+            })
             //viewHolder.textViewInboxSentTime.text = currentCategory.messages[position].sentTime.toString()
 
             viewHolder.textViewInboxSentTime.text = activity.currentCategory.messages[position].sentTime.formatToString()
@@ -605,33 +601,37 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                 viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
             }
 
-            viewHolder.imageViewInboxMessagesBg.setOnClickListener {
-                if(activity.editMode){
-                    viewHolder.checkBoxInboxMessagesAction.isChecked = !viewHolder.checkBoxInboxMessagesAction.isChecked
-                }else {
-                    activity.chosenMail = activity.currentCategory.messages[position]
-                    supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = activity.currentCategory.messages[position].priority, messageObject = activity.currentCategory.messages[position].subject, messageContent = activity.currentCategory.messages[position].content, messageSender = activity.currentCategory.messages[position].sender)).commit()
+            viewHolder.imageViewInboxMessagesBg.isClickable = true
+            viewHolder.imageViewInboxMessagesBg.setOnTouchListener(object : Class_OnSwipeTouchListener(activity, viewHolder.imageViewInboxMessagesBg, true) {
+                override fun onClick(x: Float, y: Float) {
+                    super.onClick(x, y)
+                    if(activity.editMode){
+                        viewHolder.checkBoxInboxMessagesAction.isChecked = !viewHolder.checkBoxInboxMessagesAction.isChecked
+                    }else {
+                        activity.chosenMail = activity.currentCategory.messages[position]
+                        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = activity.currentCategory.messages[position].priority, messageObject = activity.currentCategory.messages[position].subject, messageContent = activity.currentCategory.messages[position].content, messageSender = activity.currentCategory.messages[position].sender)).commit()
 
-                    if(activity.currentCategory.messages[position].status == MessageStatus.New){
-                        activity.currentCategory.messages[position].changeStatus(MessageStatus.Read, activity)
-                        Data.refreshInbox(activity, true)
-                        viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
-                        (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
+                        if(activity.currentCategory.messages[position].status == MessageStatus.New){
+                            activity.currentCategory.messages[position].changeStatus(MessageStatus.Read, activity)
+                            Data.refreshInbox(activity, true)
+                            viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
+                            (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
+                        }
+                        notifyDataSetChanged()
                     }
-                    notifyDataSetChanged()
                 }
-            }
 
-            viewHolder.imageViewInboxMessagesBg.setOnLongClickListener {
-                activity.editMode = !activity.editMode
-                if(activity.editMode) viewHolder.checkBoxInboxMessagesAction.isChecked = true
-                this.notifyDataSetChanged()
-                true
-            }
+                override fun onLongClick() {
+                    super.onLongClick()
+                    activity.editMode = !activity.editMode
+                    if(activity.editMode) viewHolder.checkBoxInboxMessagesAction.isChecked = true
+                    this@AdapterInboxMessages.notifyDataSetChanged()
+                }
+            })
 
             return rowMain
         }
 
-        private class ViewHolder(var textViewInboxSender:TextView, var textViewInboxSentTime:TextView, var textViewInboxMessages: TextView, var imageViewInboxMessagesBg: ImageView, val textViewInboxMessagesReceiver:TextView, val checkBoxInboxMessagesAction: CheckBox)
+        private class ViewHolder(var textViewInboxSender:TextView, var textViewInboxSentTime:TextView, var textViewInboxMessages: CustomTextView, var imageViewInboxMessagesBg: ImageView, val textViewInboxMessagesReceiver:TextView, val checkBoxInboxMessagesAction: CheckBox)
     }
 }

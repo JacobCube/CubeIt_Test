@@ -40,10 +40,10 @@ class ActivityFightBoard: AppCompatActivity(){
 
             override fun doInBackground(vararg params: Int?): String? {
 
-                val context = innerContext.get() as ActivityFightBoard?         //because of the
+                val context = innerContext.get() as ActivityFightBoard?
+                //context leakage solution
 
                 return if(context != null){
-
                     val dm = DisplayMetrics()
                     val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
                     windowManager.defaultDisplay.getMetrics(dm)
@@ -100,9 +100,6 @@ class ActivityFightBoard: AppCompatActivity(){
 
                     context.runOnUiThread {
                         context.imageViewActivityFightBoard.setImageBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.fightboard_bg, opts))
-
-                        context.supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
-                        context.frameLayoutMenuBoard.y = dm.heightPixels.toFloat()
 
                         context.window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
                             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
@@ -210,8 +207,16 @@ class ActivityFightBoard: AppCompatActivity(){
 
         val extraUsername = intent.getStringExtra("username")
 
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
+        frameLayoutMenuBoard.y = displayY.toFloat()
+
         this.window.decorView.rootView.post {
             LoadRecords(this).execute()
+
+            val dm = DisplayMetrics()
+            val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            windowManager.defaultDisplay.getMetrics(dm)
+            frameLayoutMenuBoard.y = dm.heightPixels.toFloat()
 
             val handler = Handler()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -314,9 +319,11 @@ class ActivityFightBoard: AppCompatActivity(){
 
                 override fun onAnimationEnd(animation: Animation?) {
                     if(isFaction){
-                        imageViewFightBoardFaction.setImageResource(R.drawable.person_icon)
+                        imageViewFightBoardFaction.setImageResource(R.drawable.menu_character_icon)
+                        imageViewFightBoardFaction.setColorFilter(R.color.colorSecondary)
                     }else {
                         imageViewFightBoardFaction.setImageResource(R.drawable.faction_icon)
+                        imageViewFightBoardFaction.clearColorFilter()
                     }
                     imageViewFightBoardFaction.startAnimation(animSwitchType2)
                 }

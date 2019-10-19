@@ -15,7 +15,7 @@ object GenericDB{
     var balance = Balance()
 
     class Balance: Serializable {
-        var bossHoursByDifficulty = hashMapOf(
+        var bossHoursByDifficulty = mapOf(
                 "0" to 0
                 ,"1" to 1
                 ,"2" to 3
@@ -25,18 +25,21 @@ object GenericDB{
                 ,"6" to 11
                 ,"7" to 16
         )
-        var itemGenASRatio: Double = 0.13
-        var itemGenArmorRatio: Double = 0.5
-        var itemGenBlockRatio: Double = 0.1
-        var itemGenDOTRatio: Double = 1.0
-        var itemGenEnergyRatio: Double = 0.5
-        var itemGenHealthRatio: Double = 10.0
-        var itemGenISRatio: Double = 0.1
-        var itemGenLSRatio: Double = 1.0
-        var itemGenPowerRatio: Double = 1.0
+        var itemGenRatio = mapOf(
+                "AdventureSpeed" to 0.0,
+                "Armor" to 0.0,
+                "Block" to 0.0,
+                "DamageOverTime" to 0.0,
+                "Energy" to 0.0,
+                "Health" to 0.0,
+                "InventorySlots" to 0.0,
+                "LifeSteal" to 0.0,
+                "Power" to 0.0
+        )
+
         var itemLvlGenBottom = 101
         var itemLvlGenTop = 101
-        var itemQualityGenImpact = hashMapOf(
+        var itemQualityGenImpact = mapOf(
                 "0" to 0
                 ,"1" to 1
                 ,"2" to 3
@@ -46,7 +49,7 @@ object GenericDB{
                 ,"6" to 11
                 ,"7" to 16
         )
-        var itemQualityPerc = hashMapOf(
+        var itemQualityPerc = mapOf(
                 "0" to 3903
                 ,"1" to 6604
                 ,"2" to 8605
@@ -56,7 +59,7 @@ object GenericDB{
                 ,"6" to 9998
                 ,"7" to 10000
         )
-        var npcrate = hashMapOf(
+        var npcrate = mapOf(
                 "0" to 0.3
                 ,"1" to 0.35
                 ,"2" to 0.4
@@ -75,5 +78,44 @@ object GenericDB{
         var rewardXpTop = 8
 
         var loadBoardMinuteDelay: Int = 5
+
+
+        override fun hashCode(): Int {
+            var result = bossHoursByDifficulty.hashCode()
+            result = 31 * result + itemGenRatio.hashCode()
+            result = 31 * result + itemLvlGenBottom
+            result = 31 * result + itemLvlGenTop
+            result = 31 * result + itemQualityGenImpact.hashCode()
+            result = 31 * result + itemQualityPerc.hashCode()
+            result = 31 * result + npcrate.hashCode()
+            result = 31 * result + rewardCoinsBottom
+            result = 31 * result + rewardCoinsTop
+            result = 31 * result + rewardXpBottom
+            result = 31 * result + rewardXpTop
+            result = 31 * result + loadBoardMinuteDelay
+            return result
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Balance
+
+            if (bossHoursByDifficulty != other.bossHoursByDifficulty) return false
+            if (itemGenRatio != other.itemGenRatio) return false
+            if (itemLvlGenBottom != other.itemLvlGenBottom) return false
+            if (itemLvlGenTop != other.itemLvlGenTop) return false
+            if (itemQualityGenImpact != other.itemQualityGenImpact) return false
+            if (itemQualityPerc != other.itemQualityPerc) return false
+            if (npcrate != other.npcrate) return false
+            if (rewardCoinsBottom != other.rewardCoinsBottom) return false
+            if (rewardCoinsTop != other.rewardCoinsTop) return false
+            if (rewardXpBottom != other.rewardXpBottom) return false
+            if (rewardXpTop != other.rewardXpTop) return false
+            if (loadBoardMinuteDelay != other.loadBoardMinuteDelay) return false
+
+            return true
+        }
     }
 }

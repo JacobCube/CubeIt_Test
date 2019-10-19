@@ -154,16 +154,18 @@ class FragmentInboxMessage : Fragment() {
                 view.buttonInboxMessageGet.visibility = View.VISIBLE
                 view.buttonInboxMessageGet.isEnabled = true
                 view.textViewInboxMessageCoins.visibility = View.VISIBLE
-                view.textViewInboxMessageCoins.text = "CC: ${chosenMail.reward!!.cubeCoins}" +
-                        "\ncubix: ${chosenMail.reward!!.cubix}" +
-                        "\n<font color='#4d6dc9'><b>xp</b></font>${chosenMail.reward!!.experience}"
+                view.textViewInboxMessageCoins.setHTMLText("CC: ${chosenMail.reward!!.cubeCoins}" +
+                        "</br>cubix: ${chosenMail.reward!!.cubix}" +
+                        "</br><font color='#003366'><b>xp </b></font>${chosenMail.reward!!.experience}")
 
                 if(chosenMail.reward!!.item != null){
                     view.imageViewInboxMessageItem.visibility = View.VISIBLE
                     view.imageViewInboxMessageItem.setImageResource(chosenMail.reward!!.item!!.drawable)
                     view.imageViewInboxMessageItem.setBackgroundResource(chosenMail.reward!!.item!!.getBackground())
 
-                    val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+                    val tempActivity = activity!!
+                    view.imageViewInboxMessageItem.setUpOnHold(tempActivity, chosenMail.reward!!.item!!)
+                    /*val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
                     val windowPop = PopupWindow(view.context)
                     windowPop.contentView = viewP
                     windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -189,7 +191,7 @@ class FragmentInboxMessage : Fragment() {
                             super.onCancelHold()
                             if(windowPop.isShowing) windowPop.dismiss()
                         }
-                    })
+                    })*/
                 }
 
                 view.buttonInboxMessageGet.setOnClickListener {

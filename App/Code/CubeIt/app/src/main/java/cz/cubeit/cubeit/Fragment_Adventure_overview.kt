@@ -213,7 +213,7 @@ class Fragment_Adventure_overview : Fragment() {
 
             filterItem = if(filterItem){
                 view.textViewAdventureOverviewItem.text = "item " + String(Character.toChars(0x25BC))
-                overviewList.sortByDescending{ /*if(it.reward.item == null) 0 else it.reward.item!!.priceCubeCoins*/it.reward.item?.priceCubeCoins }
+                overviewList.sortByDescending{ /*if(it.reward.item == null) 0 else it.reward.item!!.priceCubix*/it.reward.item?.priceCubeCoins }
                 false
             }else{
                 view.textViewAdventureOverviewItem.text = "item " + String(Character.toChars(0x25B2))

@@ -16,15 +16,17 @@
         android:src="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/Story"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="fitXY"
         android:background="@null"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toTopOf="@+id/guideline114"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="@+id/guideline111"
@@ -141,7 +143,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.12" />
+        app:layout_constraintGuide_percent="0.121751025" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline227"
@@ -389,9 +391,9 @@
 
     <Button
         android:id="@+id/buttonHomeMarket"
+        style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/AppTheme.Button.Dark"
         android:layout_marginTop="8dp"
         android:text="market"
         app:layout_constraintEnd_toStartOf="@+id/guideline1110"
@@ -400,35 +402,23 @@
 
     <Button
         android:id="@+id/buttonHomeFaction"
-        android:layout_width="wrap_content"
-        android:stateListAnimator="@null"
-        android:layout_height="wrap_content"
         style="@style/AppTheme.Button.Dark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:stateListAnimator="@null"
         android:text="faction"
         app:layout_constraintBottom_toTopOf="@+id/guideline113"
         app:layout_constraintEnd_toStartOf="@+id/guideline112"
         app:layout_constraintStart_toStartOf="@+id/guideline111" />
 
     <ImageView
-        android:id="@+id/imageViewHomeMailNew"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="4dp"
-        android:adjustViewBounds="true"
-        app:layout_constraintDimensionRatio="H, 1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline1110"
-        app:layout_constraintStart_toStartOf="@+id/guideline227"
-        app:layout_constraintTop_toTopOf="@+id/imageViewHomeInbox"
-        app:srcCompat="@drawable/new_message_bg" />
-
-    <ImageView
         android:id="@+id/imageViewHomeFactionNew"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="2dp"
-        android:visibility="gone"
         android:adjustViewBounds="true"
+        android:visibility="gone"
         app:layout_constraintDimensionRatio="H, 1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline194"
         app:layout_constraintStart_toStartOf="@+id/guideline193"
@@ -436,18 +426,33 @@
         app:srcCompat="@drawable/new_message_bg"
         tools:visibility="visible" />
 
+    <ImageView
+        android:id="@+id/imageViewHomeMailNew"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewHomeMailNew"
+        app:layout_constraintDimensionRatio="H,"
+        app:layout_constraintEnd_toEndOf="@+id/textViewHomeMailNew"
+        app:layout_constraintStart_toStartOf="@+id/textViewHomeMailNew"
+        app:layout_constraintTop_toTopOf="@+id/textViewHomeMailNew"
+        app:srcCompat="@drawable/new_message_bg" />
+
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewHomeMailNew"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:gravity="center"
-        android:textSize="12sp"
-        android:textColor="@color/bg_basic_white"
         android:text="1"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewHomeMailNew"
+        android:textColor="@color/bg_basic_white"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline1110"
-        app:layout_constraintStart_toStartOf="@+id/imageViewHomeMailNew"
-        app:layout_constraintTop_toTopOf="@+id/imageViewHomeMailNew" />
+        app:layout_constraintStart_toStartOf="@+id/guideline227"
+        app:layout_constraintTop_toTopOf="@+id/imageViewHomeInbox"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/imageViewHomeStatsCoin"

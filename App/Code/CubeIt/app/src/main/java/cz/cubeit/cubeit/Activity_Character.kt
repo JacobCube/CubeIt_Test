@@ -17,9 +17,13 @@ import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_character.*
+import kotlinx.android.synthetic.main.popup_dialog_recyclerview.view.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
+import java.util.zip.Inflater
 import kotlin.math.abs
 
 
@@ -218,6 +222,21 @@ class Activity_Character : AppCompatActivity() {
 
         frameLayoutMenuCharacter.y = dm.heightPixels.toFloat()
 
+        imageViewCharacterProfileAllies.setOnClickListener {
+            /*val dialogView = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false)
+
+            dialogView.recyclerViewDialogRecycler.apply {
+                layoutManager = LinearLayoutManager(this@Activity_Character)
+                adapter = OfflineMgCategories(
+                        Data.miniGames,
+                        frameLayoutOfflineMG,
+                        this@ActivityOfflineMG
+                )
+            }*/
+
+            //TODO allies
+        }
+
         imageViewRune0.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune0, true) {
             override fun onClick(x: Float, y: Float) {
                 super.onClick(x, y)
@@ -370,6 +389,46 @@ class Activity_Character : AppCompatActivity() {
         listViewInventory.adapter = InventoryView(this, Data.player, textViewShopItemInfo, imageViewRune0, imageViewRune1, supportFragmentManager, imageViewCharacterBag, frameLayoutCharacterProfile, this)
     }
 
+    /*private class OfflineMgCategories(private val playerC: Player, private val parent: Activity_Character) :
+            RecyclerView.Adapter<OfflineMgCategories.CategoryViewHolder>() {
+
+        var inflater: View? = null
+
+        class CategoryViewHolder(val textViewName: CustomTextView, val textViewNew: TextView, val imageViewBg: ImageView, inflater: View, val viewGroup: ViewGroup): RecyclerView.ViewHolder(inflater)
+
+        override fun getItemCount() = miniGames.size
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
+            inflater = LayoutInflater.from(parent.context).inflate(R.layout.row_offline_mg_category, parent, false)
+            return CategoryViewHolder(
+                    inflater!!.textViewRowOfflineMgName,
+                    inflater!!.textViewRowOfflineMgNew,
+                    inflater!!.imageViewRowOfflineMgBg,
+                    inflater ?: LayoutInflater.from(parent.context).inflate(R.layout.row_offline_mg_category, parent, false),
+                    parent
+            )
+        }
+
+        override fun onBindViewHolder(viewHolder: CategoryViewHolder, position: Int) {
+            viewHolder.textViewName.text = miniGames[position].title
+            viewHolder.textViewNew.visibility = if(miniGames[position].isNew){
+                View.VISIBLE
+            }else View.GONE
+
+            viewHolder.viewGroup.setPadding(3, 6 ,if(!pinned) 42 else 0, 6)
+
+            viewHolder.imageViewBg.setOnClickListener {
+                if(viewHolder.textViewNew.visibility != View.GONE){
+                    viewHolder.textViewNew.visibility = View.GONE
+                }
+                pinned = true
+                this.notifyDataSetChanged()
+                viewHolder.viewGroup.setPadding(6, 6 ,0, 6)
+                parent.supportFragmentManager.beginTransaction().replace(infoFrameLayout.id, miniGames[position].getFragmentInstance()).commitAllowingStateLoss()
+            }
+        }
+    }*/
+
     private class InventoryView(val activity: Activity_Character, var playerC:Player, val textViewInfoItem: CustomTextView, val buttonBag0:ImageView, val buttonBag1:ImageView, val supportFragmentManager: FragmentManager, val bagView:View, val equipView: View,
                                 /*val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView,*/ private val context: Context) : BaseAdapter() {
 
@@ -500,7 +559,6 @@ class Activity_Character : AppCompatActivity() {
         private fun getDoubleClick(index: Int, playerC:Player, view:ImageView) {
             val tempMemory: Item?
 
-            view.isEnabled = false
 
             val button:ImageView = when(playerC.inventory[index]!!.slot){
                 10->buttonBag0
@@ -891,7 +949,7 @@ class Activity_Character : AppCompatActivity() {
 
             DragEvent.ACTION_DRAG_ENDED -> {
                 v.post {
-                    this.refreshItemsLayout()
+                    this.refreshItemsLayout(true)
                 }
 
                 true
@@ -931,6 +989,7 @@ class Activity_Character : AppCompatActivity() {
                 when {
                     event.clipDescription.label == "equip" || event.clipDescription.label == "runes"  -> {
                         item = Data.player.inventory[viewIndex]
+
                         if(itemIndex == item?.slot) {
                             (v as ImageView?)?.setColorFilter(Color.YELLOW)
                             v.invalidate()
@@ -938,8 +997,8 @@ class Activity_Character : AppCompatActivity() {
                             //item comparison
                             textViewInfoItemTemp.setHTMLText(item.getStatsCompare())
 
-                            true
-                        }else false
+                        }
+                        true
                     }
 
                     else -> event.clipDescription.label == "inventory"
@@ -958,8 +1017,8 @@ class Activity_Character : AppCompatActivity() {
                             //item comparison
                             textViewInfoItemTemp.text = ""
 
-                            true
-                        }else false
+                        }
+                        true
                     }
 
                     else -> event.clipDescription.label == "inventory"
@@ -970,6 +1029,10 @@ class Activity_Character : AppCompatActivity() {
                 (v as ImageView?)?.clearColorFilter()
                 v.invalidate()
 
+                Log.d("clipDescription", event.clipDescription.label.toString())
+                Log.d("mimeType", event.clipDescription.getMimeType(0).toString())
+                Log.d("viewindex", v.tag.toString())
+
                 when {
                     event.clipDescription.label == "equip" -> {
 
@@ -977,8 +1040,9 @@ class Activity_Character : AppCompatActivity() {
                         itemIndex = event.clipDescription.getMimeType(0).toInt()
                         item = Data.player.equip[itemIndex]
 
-                        if(item != null) {
+                        Log.d("viewIndex", Data.player.inventory[viewIndex].toString() + " index: " + viewIndex.toString())
 
+                        if(item != null) {
                             when {
                                 Data.player.inventory[viewIndex] == null -> {
 
@@ -1005,13 +1069,14 @@ class Activity_Character : AppCompatActivity() {
                         item = Data.player.backpackRunes[itemIndex - 10]
 
                         if(item != null){
-                            if(Data.player.inventory[viewIndex] != null){
+                            if(Data.player.inventory[viewIndex] != null && Data.player.inventory[viewIndex]?.slot == Data.player.backpackRunes[itemIndex - 10]?.slot ){
                                 if(item.inventorySlots > Data.player.inventory[viewIndex]!!.inventorySlots){
                                     val tempEmptySpaces = Data.player.inventory.count { it == null }
 
+                                    Log.d("tempemptyspaces", "tempEmptySpaces: $tempEmptySpaces >=" + (item.inventorySlots - Data.player.inventory[viewIndex]!!.inventorySlots).toString())
                                     if(tempEmptySpaces >= item.inventorySlots - Data.player.inventory[viewIndex]!!.inventorySlots){
                                         for(i in (Data.player.inventory.size - 1 - abs(item.inventorySlots - Data.player.inventory[viewIndex]!!.inventorySlots)) until Data.player.inventory.size){
-                                            if(Data.player.inventory[i]!=null){
+                                            if(Data.player.inventory[i] != null){
                                                 val tempItem = Data.player.inventory[i]
                                                 Data.player.inventory[i] = null
                                                 Data.player.inventory[Data.player.inventory.indexOf(null)] = tempItem
@@ -1025,7 +1090,7 @@ class Activity_Character : AppCompatActivity() {
                                     }else return@OnDragListener false
                                 }
 
-                            }else {
+                            }else if(Data.player.inventory[viewIndex] == null){
                                 Data.player.inventory[viewIndex] = item
                                 Data.player.backpackRunes[itemIndex - 10] = null
                             }

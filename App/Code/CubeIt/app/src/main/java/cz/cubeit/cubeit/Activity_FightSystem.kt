@@ -639,7 +639,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         Data.loadingStatus = LoadingStatus.CLOSELOADING
     }
     private fun attackCalc(player:Player, enemySpell:Spell, playerSpell:Spell, enemy:Player):Double{
-        var returnValue = ((playerSpell.power.toDouble() * Data.player.power.toDouble() * enemySpell.block)/4)
+        var returnValue = ((playerSpell.power.toDouble() * player.power.toDouble() * enemySpell.block)/4)
         returnValue -= returnValue/100 * enemy.armor
         return if(returnValue<0)0.0 else returnValue
     }
@@ -782,7 +782,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         val textViewQuest: CustomTextView = viewPop.textViewQuest
         val buttonAccept: Button = viewPop.buttonAccept
         val buttonClose: ImageView = viewPop.buttonCloseDialog
-        val imageItem: ImageView = viewPop.imageViewAdventure
+        val imageItem: ImageView = viewPop.imageViewAdventure2
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
         var reward: Reward? = Reward().generate(winner).decreaseBy(10.0, true)
@@ -790,6 +790,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         val enemyName = enemy.enemy.username
         var fameGained = nextInt(0, 51)
 
+        viewPop.imageViewAdventure.setImageResource(enemy.enemy.charClass.drawable)
         if (playerName == enemyName) {
             startActivity(endFight)
             this.overridePendingTransition(0, 0)
@@ -797,7 +798,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             val looserName: String
 
-            if (winner.username == playerName) {
+            val message = if (winner.username == playerName) {
 
                 fameGained *= enemy.enemy.fame.safeDivider(playerFight.playerFight.fame)
                 fameGained = kotlin.math.min(fameGained, 75)
@@ -808,13 +809,14 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 }
                 looserName = enemyName
 
-                playerFight.playerFight.writeInbox(enemyName, InboxMessage(
+                InboxMessage(
                         status = MessageStatus.Fight,
                         receiver = enemyName,
                         sender = playerName,
                         subject = "$playerName fought you!",
-                        content = "$playerName fought you and you lost!\nYou lost $fameGained fame.\nNow it's your turn to decide who's gonna win the war."
-                ))
+                        content = "$playerName fought you and you lost!\nYou lost $fameGained fame.\nNow it's your turn to decide who's gonna win the war.",
+                        fightResult = false
+                )
             } else {
                 fameGained *= playerFight.playerFight.fame.safeDivider(enemy.enemy.fame)
                 fameGained = kotlin.math.min(fameGained, 75)
@@ -825,14 +827,15 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 }
                 looserName = playerName
 
-                playerFight.playerFight.writeInbox(enemyName, InboxMessage(
+                InboxMessage(
                         status = MessageStatus.Fight,
                         receiver = enemyName,
                         sender = playerName,
                         reward = reward,
                         subject = "$playerName fought you!",
-                        content = "$playerName fought you and you won!\nYou won $fameGained fame.\nNow it's your turn to decide who's gonna win the war."
-                ))
+                        content = "$playerName fought you and you won!\nYou won $fameGained fame.\nNow it's your turn to decide who's gonna win the war.",
+                        fightResult = true
+                )
             }
 
 
@@ -844,7 +847,10 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                     fame = fameGained,
                     surrenderRound = if(surrender)roundCounter else null
             )
-            log.init()
+            log.init().addOnCompleteListener {
+                message.fightID = log.id.toString()
+                playerFight.playerFight.writeInbox(enemyName, message)
+            }
 
             if(surrender) finish()
 

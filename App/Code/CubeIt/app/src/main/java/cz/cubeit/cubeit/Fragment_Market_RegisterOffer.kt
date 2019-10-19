@@ -159,15 +159,15 @@ class Fragment_Market_RegisterOffer : Fragment() {
                                 }
                                 with(createdOffer) {
                                     if (!closeAfterExpiry) {
-                                        afterExpiryCoins = view.editTextMarketRegisterLowerCoins.text.toString().toInt()
-                                        afterExpiryCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
+                                        afterExpiryCubeCoins = view.editTextMarketRegisterLowerCoins.text.toString().toInt()
+                                        afterExpiryCubix = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
                                     }
                                     expiryDate = SimpleDateFormat("yyyy/MM/dd").parse(view.editTextMarketRegisterUntilDate.text.toString())
                                     seller = Data.player.username
-                                    priceCoins = view.editTextMarketRegisterCoins.text.toString().toInt()
-                                    if(priceCoins < createdOffer.item!!.priceCubeCoins) priceCoins = createdOffer.item!!.priceCubeCoins
-                                    priceCubeCoins = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
-                                    if(priceCubeCoins < createdOffer.item!!.priceCubix) priceCubeCoins = createdOffer.item!!.priceCubix
+                                    priceCubeCoins = view.editTextMarketRegisterCoins.text.toString().toInt()
+                                    if(priceCubeCoins < createdOffer.item!!.priceCubeCoins) priceCubeCoins = createdOffer.item!!.priceCubeCoins
+                                    priceCubix = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
+                                    if(priceCubix < createdOffer.item!!.priceCubix) priceCubix = createdOffer.item!!.priceCubix
                                 }
                                 val tempIndex = Data.player.inventory.indexOf(createdOffer.item)
                                 val tempActivity = activity!!

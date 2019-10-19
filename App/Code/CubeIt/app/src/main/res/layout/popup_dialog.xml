@@ -27,7 +27,7 @@
         android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
         android:text="YES"
-        android:textColor="@color/bg_basic_white"
+        android:textColor="@color/colorSecondary"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -2,14 +2,14 @@ package cz.cubeit.cubeit
 
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.ColorFilter
-import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
 import android.net.ConnectivityManager
 import android.os.Bundle
@@ -21,11 +21,7 @@ import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.view.animation.RotateAnimation
-import android.widget.ImageView
 import android.widget.PopupWindow
-import android.widget.Toast
-import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -33,14 +29,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_login.view.*
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.OptionalPendingResult
-import com.google.android.gms.common.api.ResultCallback
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.android.synthetic.main.activity_fight_board.*
 import kotlinx.android.synthetic.main.popup_dialog_register.view.*
+import java.util.*
 
 
 class FragmentLogin : Fragment() {
@@ -54,31 +48,63 @@ class FragmentLogin : Fragment() {
     var popWindow: PopupWindow? = null
     lateinit var popView: View
     lateinit var auth: FirebaseAuth
+    var connectedTimer: TimerTask? = null
+    var playAnimation = true
+    var wasRunning = false
+    val pumpInOfflineIcon = ValueAnimator.ofFloat(0.95f, 1f)
+    val pumpOutOfflineIcon = ValueAnimator.ofFloat(1f, 0.95f)
 
     private var mGoogleSignInClient: GoogleSignInClient? = null
 
     var loadingAnimation: Animation? = null
 
+    fun isConnected(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
+
     override fun onStop() {
         super.onStop()
-        if(loadingAnimation != null) loadingAnimation!!.cancel()
+        loadingAnimation?.cancel()
+        connectedTimer?.cancel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(viewTemp.textViewLoginOfflineInfo.visibility == View.VISIBLE){
+            connectedTimer = object : TimerTask() {
+                override fun run() {
+                    activity?.runOnUiThread {
+                        if(!isConnected(viewTemp.context)) {
+                            viewTemp.textViewLoginOfflineInfo.text = "Offline mode"
+                            viewTemp.textViewLoginOfflineInfo.setTextColor(Color.RED)
+                            playAnimation = true
+                            pumpInOfflineIcon.start()
+                        }else {
+                            viewTemp.textViewLoginOfflineInfo.text = "Online mode"
+                            viewTemp.textViewLoginOfflineInfo.setTextColor(Color.GREEN)
+                            playAnimation = false
+                            pumpInOfflineIcon.cancel()
+                            pumpOutOfflineIcon.cancel()
+                        }
+                    }
+                }
+            }
+            Timer().scheduleAtFixedRate(connectedTimer, 0, 5000)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
-                // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account!!)
             } catch (e: ApiException) {
-                // Google Sign In failed, update UI appropriately
-                // [START_EXCLUDE]
-                //updateUI(null)
-                // [END_EXCLUDE]
+                if(loadingAnimation != null) loadingAnimation!!.cancel()
             }
         }
     }
@@ -87,14 +113,76 @@ class FragmentLogin : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         viewTemp = inflater.inflate(R.layout.fragment_login, container, false)
+        viewTemp.loginVersionInfo.text = "Alpha \tv${BuildConfig.VERSION_NAME}"
+        viewTemp.loginPopUpBackground.foreground.alpha = 0
 
-        viewTemp.post {             //slow start up speed
-            viewTemp.loginVersionInfo.text = "Alpha \tv${BuildConfig.VERSION_NAME}"
-            viewTemp.loginPopUpBackground.foreground.alpha = 0
+        val opts = BitmapFactory.Options()
+        opts.inScaled = false
+        viewTemp.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
 
-            val opts = BitmapFactory.Options()
-            opts.inScaled = false
-            viewTemp.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
+        viewTemp.imageViewLoginOfflineMG.setOnClickListener {
+            val intent = Intent(viewTemp.context, ActivityOfflineMG()::class.java)
+            startActivity(intent)
+        }
+
+        activity?.runOnUiThread {             //faster start up
+
+            pumpInOfflineIcon.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if(playAnimation) pumpOutOfflineIcon.start()
+                }
+            })
+            pumpOutOfflineIcon.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if(playAnimation) pumpInOfflineIcon.start()
+                }
+            })
+
+            pumpInOfflineIcon.addUpdateListener {
+                val value = it.animatedValue as Float
+                viewTemp.imageViewLoginOfflineMG.scaleY = value
+                viewTemp.imageViewLoginOfflineMG.scaleX = value
+                viewTemp.imageViewLoginOfflineEncyclopedia.scaleX = value
+                viewTemp.imageViewLoginOfflineEncyclopedia.scaleY = value
+            }
+
+            pumpOutOfflineIcon.addUpdateListener {
+                val value = it.animatedValue as Float
+                viewTemp.imageViewLoginOfflineMG.scaleY = value
+                viewTemp.imageViewLoginOfflineMG.scaleX = value
+                viewTemp.imageViewLoginOfflineEncyclopedia.scaleX = value
+                viewTemp.imageViewLoginOfflineEncyclopedia.scaleY = value
+            }
+
+
+            if(!isConnected(viewTemp.context)){         //check if user is offline, if not, update UI accordingly and check his connectivity every 5 seconds
+                viewTemp.textViewLoginOfflineInfo.visibility = View.VISIBLE
+
+                connectedTimer = object : TimerTask() {
+                    override fun run() {
+                        activity?.runOnUiThread {
+                            if(!isConnected(viewTemp.context)) {
+                                viewTemp.textViewLoginOfflineInfo.text = "Offline mode"
+                                viewTemp.textViewLoginOfflineInfo.setTextColor(Color.RED)
+                                playAnimation = true
+                                pumpInOfflineIcon.start()
+                            }else {
+                                viewTemp.textViewLoginOfflineInfo.text = "Online mode"
+                                viewTemp.textViewLoginOfflineInfo.setTextColor(Color.GREEN)
+                                playAnimation = false
+                                pumpInOfflineIcon.cancel()
+                                pumpOutOfflineIcon.cancel()
+                            }
+                        }
+                    }
+                }
+                pumpInOfflineIcon.start()
+                Timer().scheduleAtFixedRate(connectedTimer, 0, 5000)
+            }else {
+                pumpInOfflineIcon.cancel()
+                viewTemp.textViewLoginOfflineInfo.visibility = View.GONE
+                connectedTimer?.cancel()
+            }
 
             if (SystemFlow.readFileText(viewTemp.context, "rememberMe.data") == "1") {
                 viewTemp.checkBoxStayLogged.isChecked = true
@@ -254,6 +342,29 @@ class FragmentLogin : Fragment() {
             } else {
                 viewTemp.buttonLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                 Handler().postDelayed({ Snackbar.make(viewTemp, "Your device is not connected to the internet. Please check your connection and try again.", Snackbar.LENGTH_SHORT).show() }, 50)
+                connectedTimer?.cancel()
+
+                if(!pumpInOfflineIcon.isRunning && !pumpOutOfflineIcon.isRunning) pumpInOfflineIcon.start()
+                viewTemp.textViewLoginOfflineInfo.visibility = View.VISIBLE
+                connectedTimer = object : TimerTask() {
+                    override fun run() {
+                        activity?.runOnUiThread {
+                            if(!isConnected(viewTemp.context)) {
+                                viewTemp.textViewLoginOfflineInfo.text = "Offline mode"
+                                viewTemp.textViewLoginOfflineInfo.setTextColor(Color.RED)
+                                playAnimation = true
+                                if(!pumpInOfflineIcon.isRunning && !pumpOutOfflineIcon.isRunning) pumpInOfflineIcon.start()
+                            }else {
+                                viewTemp.textViewLoginOfflineInfo.text = "Online mode"
+                                viewTemp.textViewLoginOfflineInfo.setTextColor(Color.GREEN)
+                                playAnimation = false
+                                pumpInOfflineIcon.cancel()
+                                pumpOutOfflineIcon.cancel()
+                            }
+                        }
+                    }
+                }
+                Timer().scheduleAtFixedRate(connectedTimer, 0, 5000)
             }
         }
 
@@ -380,19 +491,37 @@ class FragmentLogin : Fragment() {
                                                             } else {
                                                                 signInToUser(user, activity!!)
                                                             }
+                                                        }.addOnFailureListener {
+                                                            Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                                            Snackbar.make(viewTemp, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
                                                         }
+                                                    }else {
+                                                        val mySnackbar = Snackbar.make(viewTemp, "Server is not available. ${if(documentSnapshot.getBoolean("ShowDsc")!!)documentSnapshot.getString("ExternalDsc") else ""}. You can check our social medias for more information and updates.", Snackbar.LENGTH_INDEFINITE)
+
+                                                        class MyUndoListener : View.OnClickListener {
+                                                            override fun onClick(v: View?) {
+                                                                mySnackbar.dismiss()
+                                                            }
+                                                        }
+                                                        mySnackbar.setAction("ok", MyUndoListener())
+                                                        mySnackbar.show()
+
+                                                        Data.loadingStatus = LoadingStatus.CLOSELOADING
                                                     }
                                                 }
                                             } else {
                                                 // If sign in fails, display a message to the user.
                                                 Snackbar.make(viewTemp, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
                                                 //updateUI(null)
+                                                Data.loadingStatus = LoadingStatus.CLOSELOADING
                                             }
-
                                             // [START_EXCLUDE]
                                             //hideProgressDialog()
                                             // [END_EXCLUDE]
-                                        }else Snackbar.make(viewTemp, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
+                                        }else {
+                                            Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                            Snackbar.make(viewTemp, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
+                                        }
                                     }
                         }
                         signInMethods.contains(EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD) -> {

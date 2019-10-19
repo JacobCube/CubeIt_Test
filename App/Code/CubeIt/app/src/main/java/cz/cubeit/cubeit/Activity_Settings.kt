@@ -21,7 +21,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.*
 import kotlinx.android.synthetic.main.activity_settings.*
 import android.os.VibrationEffect
-import android.widget.Toast
 
 
 class ActivitySettings : AppCompatActivity(){
@@ -91,8 +90,6 @@ class ActivitySettings : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         hideSystemUI()
         setContentView(R.layout.activity_settings)
-
-        supportFragmentManager.beginTransaction().add(R.id.frameLayoutBugReport, Fragment_Bug_report()).commitNow()
 
         switchNotificationsInbox.isChecked = Data.player.notificationsInbox
         switchNotificationsEvent.isChecked = Data.player.notificationsEvent
@@ -170,7 +167,7 @@ class ActivitySettings : AppCompatActivity(){
                 if(easterEggCounter >= 5){
                     buttonSettingsVibrate.visibility = View.VISIBLE
                     editTextSettingsVibrate.visibility = View.VISIBLE
-                    Snackbar.make(switchVibrateEffects, "Morse vibrations easter egg unlocked!", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(switchVibrateEffects, "Morse vibrations easter egg unlocked!", Snackbar.LENGTH_LONG).show()
                 }else {
                     easterEggCounter++
                 }
@@ -273,27 +270,29 @@ class ActivitySettings : AppCompatActivity(){
             Data.player.notificationsEvent = isChecked
         }
 
-        imageViewBugIcon.layoutParams.height = (displayY/10 * 1.8).toInt()
-        imageViewBugIcon.layoutParams.width = (displayY/10 * 1.8).toInt()
-        imageViewBugIcon.y = 0f
-        frameLayoutBugReport.layoutParams.height = (displayY*0.82 - imageViewBugIcon.layoutParams.height).toInt()
+        imageViewSettingsBugIcon.layoutParams.height = (displayY/10 * 1.8).toInt()
+        imageViewSettingsBugIcon.layoutParams.width = (displayY/10 * 1.8).toInt()
+        imageViewSettingsBugIcon.y = 0f
+        frameLayoutBugReport.layoutParams.height = (displayY*0.82 - imageViewSettingsBugIcon.layoutParams.height).toInt()
         frameLayoutBugReport.y =  0f - frameLayoutBugReport.layoutParams.height
 
-        imageViewBugIcon.setOnClickListener {
-            if(imageViewBugIcon.y == (displayY*0.82 - imageViewBugIcon.layoutParams.height).toFloat()){
-                ValueAnimator.ofFloat(imageViewBugIcon.y, 0f    /*imageViewBugIcon.layoutParams.width.toFloat()*/).apply{
+        imageViewSettingsBugIcon.setOnClickListener {
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutBugReport, Fragment_Bug_report()).commitNow()
+
+            if(imageViewSettingsBugIcon.y == (displayY*0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat()){
+                ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, 0f    /*imageViewBugIcon.layoutParams.width.toFloat()*/).apply{
                     duration = 800
                     addUpdateListener {
-                        imageViewBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width
+                        imageViewSettingsBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width
                         frameLayoutBugReport.y = it.animatedValue as Float - frameLayoutBugReport.layoutParams.height
                     }
                     start()
                 }
             }else{
-                ValueAnimator.ofFloat(imageViewBugIcon.y, (displayY*0.82 - imageViewBugIcon.layoutParams.height).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
+                ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, (displayY*0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
                     duration = 800
                     addUpdateListener {
-                        imageViewBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width
+                        imageViewSettingsBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width
                         frameLayoutBugReport.y = it.animatedValue as Float - frameLayoutBugReport.layoutParams.height
                     }
                     start()

@@ -11,7 +11,8 @@ import android.graphics.drawable.ColorDrawable
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
-import android.provider.Settings
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.core.content.res.ResourcesCompat
 import androidx.viewpager.widget.ViewPager
 import android.text.Html
@@ -24,6 +25,7 @@ import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.Fragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
@@ -36,10 +38,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.random.Random.Default.nextInt
 import com.google.firebase.firestore.*
 import com.google.gson.GsonBuilder
-import cz.cubeit.cubeit.GlobalDataType.story
 import kotlinx.android.synthetic.main.popup_info_dialog.view.*
 import java.io.*
-import java.lang.Math.*
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.ZoneId
@@ -47,7 +47,6 @@ import java.util.*
 import kotlin.collections.HashMap
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern.compile
-import cz.cubeit.cubeit.GlobalDataType.balance as balance1
 
 /*
 TODO simulace jízdy metrem - uživatel zadá příkaz v době, kdy je připojený k internetu, z něco se však postupně odpojuje, toto by bylo aplikované u callů s vyšší priritou v rámci uživatelské přátelskosti,
@@ -86,7 +85,7 @@ fun View.isTouchable(isTouchable: Boolean){
 }
 
 fun Any.toJSON(): String{
-    return GsonBuilder().disableHtmlEscaping().create().toJson(this).replace(".0,",",").replace("null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null", "")
+    return GsonBuilder().disableHtmlEscaping().create().toJson(this).replace(".0,",",").replace(".0}", "}").replace("null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null", "")
 }
 
 @Throws(IllegalAccessException::class, ClassCastException::class)
@@ -119,7 +118,10 @@ fun Any.toSHA256(): String{            //algoritmus pro porovnání s daty ze se
         else -> this
     }
 
-    val jsonString = GsonBuilder().disableHtmlEscaping().create().toJson(input).replace(".0,",",").replace(".0}", "}").replace("null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null", "")
+    var jsonString = input.toJSON()
+    if(jsonString.isNotEmpty() && jsonString[0] != '['){
+        jsonString = "[$jsonString]"
+    }
 
     var result = ""
     val bytes = jsonString.toByteArray()
@@ -223,9 +225,17 @@ var drawableStorage = hashMapOf(
         , "90205" to R.drawable.character_5
         , "90206" to R.drawable.character_6
         , "90207" to R.drawable.character_7
+
+        //NPC + BOSS
+        , "95000" to R.drawable.bg_basic_logincolor_light
+        , "95001" to R.drawable.bg_basic_white
+
+        //minigames
+        , "100000" to R.drawable.rocket_game_info_0
+        , "100001" to R.drawable.rocket_game_info_1
 )
 
-fun View.setUpOnold(activity: Activity, item: Item){
+fun View.setUpOnHold(activity: Activity, item: Item){
     val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
     val windowPop = PopupWindow(activity)
     windowPop.contentView = viewP
@@ -290,7 +300,7 @@ fun View.setUpOnold(activity: Activity, item: Item){
             viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
             val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
-            if(!Data.loadingActiveQuest && !windowPop.isShowing){
+            if(!Data.loadingActiveQuest && !windowPop.isShowing && !viewPinned){
                 viewP.textViewPopUpInfo.setHTMLText(item.getStatsCompare())
                 viewP.imageViewPopUpInfoItem.setBackgroundResource(item.getBackground())
                 viewP.imageViewPopUpInfoItem.setImageResource(item.drawable)
@@ -302,8 +312,7 @@ fun View.setUpOnold(activity: Activity, item: Item){
         override fun onCancelHold() {
             super.onCancelHold()
             Log.d(activity.localClassName, "Hold canceled")
-
-            if(windowPop.isShowing) windowPop.dismiss()
+            if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
         }
     })
 }
@@ -312,11 +321,11 @@ object Data {
 
     var player: Player = Player()
 
-    var globalDataChecksums: EnumMap<GlobalDataType, FirebaseChecksum> = EnumMap(cz.cubeit.cubeit.GlobalDataType::class.java)
-    var globalDataTasks: MutableList<Task<QuerySnapshot>> = mutableListOf()
+    var globalDataChecksums: EnumMap<GlobalDataType, FirebaseChecksum> = EnumMap(GlobalDataType::class.java)
 
     var playerBoard: CustomBoard.BoardList = CustomBoard.BoardList(type = CustomBoard.BoardType.Players, list = mutableListOf(player))
     var factionBoard: CustomBoard.BoardList = CustomBoard.BoardList(type = CustomBoard.BoardType.Factions, list = mutableListOf<Faction>())
+    var rocketGameBoard: CustomBoard.BoardList = CustomBoard.BoardList(type = CustomBoard.BoardType.RocketGame, list = mutableListOf<MiniGameScore>())
 
     var spellClasses: MutableList<LoadSpells> = mutableListOf()
 
@@ -339,6 +348,9 @@ object Data {
     var mediaPlayer: MediaPlayer? = null
 
     var loadingActiveQuest: Boolean = false
+
+    var miniGames: List<Minigame> = listOf(Minigame(MinigameType.RocketGame, "Your goal is to miss all the flying meteors and survive as long as possible. You can collect coins by flying closer to the meteors. So: risk big, win big!\nYou can also activate few types of boost ups by colliding into them during the playtime, but not all of them may help you.",
+            "Rocket game", listOf("100000", "100001"), true))
 
     var inbox: MutableList<InboxMessage> = mutableListOf()
 
@@ -394,6 +406,9 @@ object Data {
             "minecraftpe_rayb" to R.font.minecraftpe_rayb
     )
 
+    var miniGameScores: MutableList<MiniGameScore> = mutableListOf()
+
+
     var inboxCategories: HashMap<MessageStatus, InboxCategory> = hashMapOf(
             MessageStatus.New to InboxCategory(name = "New", id = 0, status = MessageStatus.New),
             MessageStatus.Faction to InboxCategory(name = "Faction", color = R.color.factionInbox, id = 1, status = MessageStatus.Faction),
@@ -405,6 +420,10 @@ object Data {
             MessageStatus.Spam to InboxCategory(name = "Spam", id = 7, status = MessageStatus.Spam))
 
     fun initialize(context: Context){
+        if(SystemFlow.readObject(context, "miniGameScores.data") != 0){
+            miniGameScores = SystemFlow.readObject(context, "miniGameScores.data") as MutableList<MiniGameScore>
+        }
+
         /*if(SystemFlow.readFileText(context, "inboxNew${player.username}") != "0"){
             val inboxChangedString = SystemFlow.readFileText(context, "inboxNew${player.username}")
             inboxChanged = inboxChangedString.subSequence(0, inboxChangedString.indexOf(',')).toString().toBoolean()
@@ -413,7 +432,6 @@ object Data {
     }
 
     fun refreshInbox(context: Context, toDb: Boolean = false){
-        Log.d("inbox.local", "uploaded ${inbox.size} items")
         SystemFlow.writeObject(context, "inbox${player.username}.data", inbox)
         inboxCategories = hashMapOf(
                 MessageStatus.New to InboxCategory(name = "New", id = 0, status = MessageStatus.New),
@@ -440,13 +458,10 @@ object Data {
     var newLevel = false
 
     var factionLogChanged: Boolean = false
-        set(value){
-            Log.d("factionLogChanged", value.toString())
-            field = value
-        }
     var inboxChanged: Boolean = false
     var inboxChangedMessages: Int = 0
 
+    var inboxSnapshotHome: ListenerRegistration? = null
     var inboxSnapshot: ListenerRegistration? = null
     var factionSnapshot: ListenerRegistration? = null
 
@@ -494,11 +509,13 @@ object Data {
         inboxChanged = false
         factionSnapshot?.remove()
         inboxSnapshot?.remove()
+        inboxSnapshotHome?.remove()
+        inboxSnapshotHome = null
         inboxSnapshot = null
         factionSnapshot = null
     }
 
-    fun loadGlobalChecksums(): Task<QuerySnapshot> {
+    private fun loadGlobalChecksums(): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
 
         return db.collection("globalDataChecksum").get().addOnSuccessListener {
@@ -507,11 +524,10 @@ object Data {
             for(i in tempList){
                 globalDataChecksums[i.dataType] = i
             }
-            Log.d("balance SHA256", tempList.toJSON())
         }
     }
 
-    fun processGlobalDataPack(context: Context): Task<QuerySnapshot> {
+    private fun processGlobalDataPack(context: Context): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
 
         return loadGlobalChecksums().addOnSuccessListener {
@@ -523,23 +539,28 @@ object Data {
             charClasses = if (SystemFlow.readObject(context, "charclasses.data") != 0) SystemFlow.readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
             npcs = if (SystemFlow.readObject(context, "npcs.data") != 0) SystemFlow.readObject(context, "npcs.data") as HashMap<String, NPC> else hashMapOf()
             storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
-
             surfaces = if (SystemFlow.readObject(context, "surfaces.data") != 0) SystemFlow.readObject(context, "surfaces.data") as List<Surface> else listOf()
-            surfaces = surfaces.sortedBy { it.id.toInt() }
+
+            surfaces = surfaces.sortedBy { it.id.toIntOrNull() ?: 9999 }
             for(i in surfaces.indices){
-                surfaces[i].quests = surfaces[i].quests.toList().sortedBy { it.second.id.toInt() }.toMap()
+                surfaces[i].quests = surfaces[i].quests.toList().sortedBy { it.second.id.toIntOrNull() ?: 9999 }.toMap()
             }
+
+            GenericDB.balance.bossHoursByDifficulty = GenericDB.balance.bossHoursByDifficulty.toList().sortedBy { it.first.toIntOrNull() ?: 9999999 }.toMap()
+            GenericDB.balance.itemQualityGenImpact = GenericDB.balance.itemQualityGenImpact.toList().sortedBy { it.first.toIntOrNull() ?: 9999999 }.toMap()
+            GenericDB.balance.itemQualityPerc = GenericDB.balance.itemQualityPerc.toList().sortedBy { it.first.toIntOrNull() ?: 9999999 }.toMap()
+            GenericDB.balance.npcrate = GenericDB.balance.npcrate.toList().sortedBy { it.first.toIntOrNull() ?: 9999999 }.toMap()
+            GenericDB.balance.itemGenRatio = GenericDB.balance.itemGenRatio.toList().sortedBy { it.first }.toMap()
 
             if(globalDataChecksums[GlobalDataType.balance]?.equals(GenericDB.balance) == false){         //balance
                 Log.d("old_balance", GenericDB.balance.toJSON())
                 textView?.text = context.resources.getString(R.string.loading_log, "Balance rates")
                 globalDataChecksums[GlobalDataType.balance]?.task = db.collection("GenericDB").document("Balance").get().addOnSuccessListener {
 
+                    val balance = (it.toObject(GenericDB.Balance::class.java)!!)
                     textView?.text = context.resources.getString(R.string.loading_log, "Characters")
-                    GenericDB.balance = (it.toObject(GenericDB.Balance::class.java)!!)
-                    SystemFlow.writeObject(context, "balance.data", GenericDB.balance)
-
-                    Log.d("new_balance", GenericDB.balance.toJSON())
+                    GenericDB.balance = balance//(it.toObject(GenericDB.Balance::class.java)!!)
+                    SystemFlow.writeObject(context, "balance.data", balance)
                 }
             }else {
                 globalDataChecksums[GlobalDataType.balance]?.task = null
@@ -548,6 +569,7 @@ object Data {
             if(globalDataChecksums[GlobalDataType.charclasses]?.equals(charClasses) == false){       //charclasses
                 globalDataChecksums[GlobalDataType.charclasses]?.task = db.collection("charclasses").get().addOnSuccessListener {
                     textView?.text = context.resources.getString(R.string.loading_log, "Items")
+                    //Log.d("charclasses", "_old_data ${charClasses.toJSON()}")
                     charClasses = it.toObjects(CharClass::class.java)
                     SystemFlow.writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
                     Log.d("charclasses", "loaded from firebase, rewritten")
@@ -635,245 +657,10 @@ object Data {
 
         return processGlobalDataPack(context).continueWithTask {
 
-
             Tasks.whenAll(globalDataTasks).addOnSuccessListener {
                 Log.d("All tasks", "are completed succssesfully")
             }
         }
-
-        /*db.collection("globalDataChecksum").document("balance").get().addOnSuccessListener { snapshot ->
-            GenericDB.balance = (if (SystemFlow.readObject(context, "balance.data") != 0) SystemFlow.readObject(context, "balance.data") as GenericDB.Balance else GenericDB.balance)
-            val dbChecksum = (snapshot.get("checksum") as String)
-
-            if (dbChecksum != GenericDB.balance.toSHA256()) {      //is local stored data equal to current state of database?
-
-                if (snapshot.toObject(GenericDB.balance::class.java) != null) {
-                    db.collection("GenericDB").document("Balance").get().addOnSuccessListener {itBalance: DocumentSnapshot ->
-                        GenericDB.balance = (itBalance.toObject(GenericDB.Balance::class.java)!!)
-                        SystemFlow.writeObject(context, "balance.data", GenericDB.balance)            //write updated data to local storage
-                    }
-                }
-            } else {
-                try {
-                    GenericDB.balance = (if (SystemFlow.readObject(context, "balance.data") != 0){
-                        SystemFlow.readObject(context, "balance.data") as GenericDB.Balance
-                    } else GenericDB.balance)
-                } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                    db.collection("GenericDB").document("balance").get().addOnSuccessListener {
-                        GenericDB.balance = (it.toObject(GenericDB.Balance::class.java)!!)
-                        SystemFlow.writeObject(context, "balance.data", GenericDB.balance)            //write updated data to local storage
-                    }
-                }
-            }
-        }.continueWithTask {
-
-
-            db.collection("globalDataChecksum").document("items").get().addOnSuccessListener {
-                itemClasses = if (SystemFlow.readObject(context, "items.data") != 0) SystemFlow.readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
-                val dbChecksum = (it.get("checksum") as String)
-
-                if (dbChecksum != itemClasses.toSHA256()) {      //is local stored data equal to current state of database?
-
-                    db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
-                        val loadItemClasses = itItems.toObjects(LoadItems::class.java)
-
-                        itemClasses = loadItemClasses
-
-                        for (i in 0 until itemClasses.size) {
-                            for (j in 0 until itemClasses[i].items.size) {
-                                itemClasses[i].items[j] = when (itemClasses[i].items[j].type) {
-                                    "Wearable" -> (itemClasses[i].items[j]).toWearable()
-                                    "Weapon" -> (itemClasses[i].items[j]).toWeapon()
-                                    "Runes" -> (itemClasses[i].items[j]).toRune()
-                                    "Item" -> itemClasses[i].items[j]
-                                    else -> Item(inName = "Error item, report this please")
-                                }
-                            }
-                        }
-                        SystemFlow.writeObject(context, "items.data", itemClasses)            //write updated data to local storage
-                        Log.d("items", "loaded from firebase, rewritten")
-                        //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
-                    }
-                } else {
-                    try {
-                        itemClasses = if (SystemFlow.readObject(context, "items.data") != 0) SystemFlow.readObject(context, "items.data") as MutableList<LoadItems> else mutableListOf()
-                    } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                        db.collection("items").get().addOnSuccessListener { itItems: QuerySnapshot ->
-                            val loadItemClasses = itItems.toObjects(LoadItems::class.java)
-
-                            itemClasses = mutableListOf()
-                            for (i in 0 until loadItemClasses.size) {
-                                itemClasses.add(LoadItems())
-                            }
-
-                            for (i in 0 until loadItemClasses.size) {
-                                for (j in 0 until loadItemClasses[i].items.size) {
-                                    itemClasses[i].items.add(when (loadItemClasses[i].items[j].type) {
-                                        "Wearable" -> (loadItemClasses[i].items[j]).toWearable()
-                                        "Weapon" -> (loadItemClasses[i].items[j]).toWeapon()
-                                        "Runes" -> (loadItemClasses[i].items[j]).toRune()
-                                        "Item" -> loadItemClasses[i].items[j]
-                                        else -> Item(inName = "Error item, report this please")
-                                    })
-                                }
-                            }
-                            SystemFlow.writeObject(context, "items.data", itemClasses)            //write updated data to local storage
-                            //writeFileText(context, "itemsCheckSum.data", dbChecksum.toString())
-                        }
-                    }
-                }
-            }
-        }.continueWithTask {
-
-
-            db.collection("globalDataChecksum").document("spells").get().addOnSuccessListener {
-                spellClasses = if (SystemFlow.readObject(context, "spells.data") != 0) SystemFlow.readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
-                val dbChecksum = (it.get("checksum") as String)
-
-                if (dbChecksum != spellClasses.toSHA256()) {      //is local stored data equal to current state of database?
-
-                    db.collection("spells").get().addOnSuccessListener { itSpells ->
-                        spellClasses = itSpells.toObjects(LoadSpells::class.java)
-                        SystemFlow.writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
-                        Log.d("spells", "loaded from firebase, rewritten")
-                        //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
-                    }
-                } else {
-                    try {
-                        spellClasses = if (SystemFlow.readObject(context, "spells.data") != 0) SystemFlow.readObject(context, "spells.data") as MutableList<LoadSpells> else mutableListOf()
-                    } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                        db.collection("spells").get().addOnSuccessListener { itSpells ->
-                            spellClasses = itSpells.toObjects(LoadSpells::class.java)
-                            SystemFlow.writeObject(context, "spells.data", spellClasses)            //write updated data to local storage
-                            //writeFileText(context, "spellsCheckSum.data", dbChecksum.toString())
-                        }
-                    }
-                }
-            }
-        }.continueWithTask {
-
-
-            db.collection("globalDataChecksum").document("charclasses").get().addOnSuccessListener {
-                charClasses = if (SystemFlow.readObject(context, "charclasses.data") != 0) SystemFlow.readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
-                val dbChecksum = (it.get("checksum") as String)
-
-                if (dbChecksum != charClasses.toSHA256()) {      //is local stored data equal to current state of database?
-
-                    db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
-                        charClasses = itCharclasses.toObjects(CharClass::class.java)
-                        SystemFlow.writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
-                        Log.d("charclasses", "loaded from firebase, rewritten")
-                        //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
-                    }
-                } else {
-                    try {
-                        charClasses = if (SystemFlow.readObject(context, "charclasses.data") != 0) SystemFlow.readObject(context, "charclasses.data") as MutableList<CharClass> else mutableListOf()
-                    } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                        db.collection("charclasses").get().addOnSuccessListener { itCharclasses ->
-                            charClasses = itCharclasses.toObjects(CharClass::class.java)
-                            SystemFlow.writeObject(context, "charclasses.data", charClasses)            //write updated data to local storage
-                            //writeFileText(context, "charclassesCheckSum.data", dbChecksum.toString())
-                        }
-                    }
-                }
-            }
-        }.continueWithTask {
-
-
-            db.collection("globalDataChecksum").document("npcs").get().addOnSuccessListener { snapshot ->
-                npcs = if (SystemFlow.readObject(context, "npcs.data") != 0) SystemFlow.readObject(context, "npcs.data") as HashMap<String, NPC> else hashMapOf()
-                val dbChecksum = (snapshot.get("checksum") as String)
-
-                if (dbChecksum != npcs.values.sortedBy { it.id }.toSHA256()) {      //is local stored data equal to current state of database?
-
-                    db.collection("npcs").get().addOnSuccessListener { itNpcs ->
-                        val tempNpcs = itNpcs.toObjects(NPC::class.java)
-                        for(npcItem in tempNpcs){
-                            npcs[npcItem.id] = npcItem
-                        }
-                        SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
-                        Log.d("npcs", "loaded from firebase, rewritten")
-                        //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
-                    }
-                } else {
-                    try {
-                        npcs = if (SystemFlow.readObject(context, "npcs.data") != 0) SystemFlow.readObject(context, "npcs.data") as HashMap<String, NPC> else hashMapOf()
-                    } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                        db.collection("npcs").get().addOnSuccessListener { itNpcs ->
-                            val tempNpcs = itNpcs.toObjects(NPC::class.java)
-                            for(npcItem in tempNpcs){
-                                npcs[npcItem.id] = npcItem
-                            }
-                            SystemFlow.writeObject(context, "npcs.data", npcs)            //write updated data to local storage
-                            //writeFileText(context, "npcsCheckSum.data", dbChecksum.toString())
-                        }
-                    }
-                }
-            }
-        }.continueWithTask {
-
-
-            db.collection("globalDataChecksum").document("surfaces").get().addOnSuccessListener { documentSnapshot ->
-                surfaces = if (SystemFlow.readObject(context, "surfaces.data") != 0) SystemFlow.readObject(context, "surfaces.data") as List<Surface> else listOf()
-                val dbChecksum = (documentSnapshot.get("checksum") as String)
-
-                surfaces = surfaces.sortedBy { it.id.toInt() }
-                for(i in surfaces.indices){
-                    surfaces[i].quests = surfaces[i].quests.toList().sortedBy { it.second.id.toInt() }.toMap()
-                }
-
-                if (dbChecksum != surfaces.toSHA256()) {      //is local stored data equal to current state of database?
-
-                    db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
-                        surfaces = itSurfaces.toObjects(Surface::class.java)
-                        SystemFlow.writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
-                        Log.d("surfaces", "loaded from firebase, rewritten")
-                        //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
-                    }
-                } else {
-                    try {
-                        surfaces = if (SystemFlow.readObject(context, "surfaces.data") != 0) SystemFlow.readObject(context, "surfaces.data") as List<Surface> else listOf()
-                    } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                        db.collection("surfaces").get().addOnSuccessListener { itSurfaces ->
-                            surfaces = itSurfaces.toObjects(Surface::class.java)
-                            SystemFlow.writeObject(context, "surfaces.data", surfaces)            //write updated data to local storage
-                            //writeFileText(context, "surfacesCheckSum.data", dbChecksum.toString())
-                        }
-                    }
-                }
-            }
-        }.continueWithTask {
-
-
-            db.collection("globalDataChecksum").document("story").get().addOnSuccessListener {
-                storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
-                val dbChecksum = (it.get("checksum") as String)
-
-                Log.d("storyQuests", storyQuests.toSHA256())
-                Log.d("storyQuests", storyQuests.toJSON())
-                if (dbChecksum != storyQuests.toSHA256()) {      //is local stored data equal to current state of database?
-
-                    db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
-                        storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
-                        SystemFlow.writeObject(context, "story.data", storyQuests)         //write updated data to local storage
-                        Log.d("story", "loaded from Firebase, rewritten")
-                        //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
-                    }
-                } else {
-                    try {
-                        storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
-                    } catch (e: InvalidClassException) {                                        //if class serial UID is different to the saved one, rewrite data
-                        db.collection("story").get().addOnSuccessListener { itStory: QuerySnapshot ->
-                            storyQuests = itStory.toObjects(StoryQuest::class.java)          //rewrite local data with database
-                            SystemFlow.writeObject(context, "story.data", storyQuests)         //write updated data to local storage
-                            //writeFileText(context, "storyCheckSum.data", dbChecksum.toString())
-                        }
-                    }
-                }
-            }
-        }.addOnFailureListener {
-            Data.loadingStatus = LoadingStatus.CLOSELOADING
-        }*/
     }
 
     fun loadGlobalDataCloud(): Task<DocumentSnapshot> {         //just for testing - loading all the global data without any statements just from database
@@ -1099,7 +886,8 @@ class CharacterQuest {
 
 data class CurrentSurface(
         var quests: MutableList<Quest> = mutableListOf(),
-        var boss: Boss? = null
+        var boss: Boss? = null,
+        var lastBossAt: Date = java.util.Calendar.getInstance().time
 ):Serializable
 
 class LoadSpells(
@@ -1457,7 +1245,7 @@ enum class LoadingType : Serializable{
 
 open class Player(
         var charClassIndex: Int = 1,
-        var username: String = "player",
+        var username: String = "Anonymous",
         var level: Int = 1
 ): Serializable {
     @Exclude @Transient var charClass: CharClass = CharClass()
@@ -1540,20 +1328,39 @@ open class Player(
     var gold: Int = 0
     var rocketGameScoreSeconds: Double = 0.0
 
-    @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - problem with Serializabling
+    @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - do not serialize!
     @Transient @Exclude var textSize: Float = 16f
     @Transient @Exclude var textFont: String = "average_sans"
     @Transient @Exclude var vibrateEffects: Boolean = true
+    @Transient @Exclude var allyList: MutableList<SocialItem> = mutableListOf()
 
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
         if(SystemFlow.readFileText(context, "textFont${Data.player.username}.data") != "0") textFont = SystemFlow.readFileText(context, "textFont${Data.player.username}.data")
         if(SystemFlow.readFileText(context, "vibrateEffect${Data.player.username}.data") != "0") vibrateEffects = SystemFlow.readFileText(context, "vibrateEffect${Data.player.username}.data").toBoolean()
+
+        var changed = false
+        for(i in currentSurfaces){                              //generate Bosses if last time seeing the last boss in the surface was longer than 8 hours ago
+            if(i.boss == null && i.lastBossAt.time + 28800000 <= java.util.Calendar.getInstance().time.time){
+                if(nextInt(0, 2) == 1){
+                    changed = true
+                    val boss = Boss(surface = i.quests.first().surface)
+                    boss.initialize().addOnSuccessListener {
+                        i.boss = boss
+                    }
+                }else {
+                    i.lastBossAt = java.util.Calendar.getInstance().time
+                }
+            }
+        }
+        if(changed){
+            this.uploadPlayer()
+        }
     }
 
     private fun changeFactionStatus(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("factions").document(this.factionID.toString())
+        val docRef = db.collection("factions").document(this.factionID?.toString() ?: "")
         return docRef.update(mapOf("members.${this.username}" to this.faction?.members?.get(this.username)?.refresh()))
     }
 
@@ -1814,7 +1621,14 @@ open class Player(
         }
     }
 
-    fun loadInbox(context: Context): Task<QuerySnapshot> {
+    private fun loadAllies(): Task<QuerySnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("users").document(this.username).collection("Allies").orderBy("capturedAt", Query.Direction.DESCENDING).get().addOnSuccessListener {
+            this.allyList = it.toObjects(SocialItem::class.java)
+        }
+    }
+
+    private fun loadInbox(context: Context): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
         var docRef: Query
         var currentAmount = 0
@@ -1898,11 +1712,10 @@ open class Player(
         }
     }
 
-    fun writeInbox(receiver: String, message: InboxMessage = InboxMessage(sender = this.username, receiver = "MexxFM"), fightResult: Boolean? = null): Task<Task<Void>> {
+    fun writeInbox(receiver: String, message: InboxMessage = InboxMessage(sender = this.username, receiver = "MexxFM")): Task<Task<Void>> {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("users").document(receiver).collection("Inbox")
 
-        message.fightResult = fightResult
         var temp: MutableList<InboxMessage>
         return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
             temp = it.toObjects(InboxMessage::class.java)
@@ -1944,7 +1757,7 @@ open class Player(
     fun loadFaction(context: Context): Task<DocumentSnapshot>{
         val db = FirebaseFirestore.getInstance()
 
-        return db.collection("factions").document(this.factionID.toString()).get().addOnSuccessListener { documentSnapshot ->
+        return db.collection("factions").document(this.factionID?.toString() ?: "").get().addOnSuccessListener { documentSnapshot ->
             val temp = documentSnapshot.toObject(Faction::class.java)
             if(temp != null && temp.contains(this.username)){
                 this.faction = temp
@@ -1959,6 +1772,10 @@ open class Player(
 
                 Data.factionLogChanged = faction!!.actionLog.first() != lastLog
                 SystemFlow.writeObject(context, "factionLog${Data.player.factionID}.data", faction!!.actionLog.first())
+
+                if(this.factionID != null){
+                    changeFactionStatus()                   //upload last online in field in faction
+                }
 
             }else {
                 this.faction = null
@@ -2085,18 +1902,14 @@ open class Player(
             //Data.initialize(context)
             textView?.text = context.resources.getString(R.string.loading_log, "Your faction")
 
-            Log.d("loadPlayerInstance", "first section done")
             checkForQuest()
         }.continueWithTask {
             textView?.text = context.resources.getString(R.string.loading_log, "Your inbox")
-            Log.d("loadPlayerInstance", "second section done")
             loadFaction(context)
         }.continueWithTask {
-            Log.d("loadPlayerInstance", "third section done")
-            changeFactionStatus()
-        }.continueWithTask {
-            Log.d("loadPlayerInstance", "fourth section done")
             loadInbox(context)
+        }.continueWithTask {
+            loadAllies()
         }
     }
 
@@ -2138,13 +1951,21 @@ open class Player(
             }
         }
 
+        /*for(i in this.chosenSpellsDefense){
+            i!!
+        }
+
+        for(i in this.chosenSpellsAttack){
+
+        }*/
+
         this.health = (health * this.charClass.hpRatio).toInt().toDouble()
-        this.armor = min(((armor * this.charClass.armorRatio).safeDivider(this.level.toDouble() * 2)).toInt(), this.charClass.armorLimit)
-        this.block = min(((block * this.charClass.blockRatio).safeDivider(this.level.toDouble() * 2)).toInt().toDouble(), this.charClass.blockLimit)
+        this.armor = kotlin.math.min(((armor * this.charClass.armorRatio).safeDivider(this.level.toDouble() * 2)).toInt(), this.charClass.armorLimit)
+        this.block = kotlin.math.min(((block * this.charClass.blockRatio).safeDivider(this.level.toDouble() * 2)).toInt().toDouble(), this.charClass.blockLimit)
         this.power = (power * this.charClass.dmgRatio).toInt()
         this.energy = (energy * this.charClass.staminaRatio).toInt()
         this.dmgOverTime = (dmgOverTime * this.charClass.dmgRatio).toInt()
-        this.lifeSteal = min(lifeSteal.safeDivider(this.level * 2), this.charClass.lifeStealLimit)
+        this.lifeSteal = kotlin.math.min(lifeSteal.safeDivider(this.level * 2), this.charClass.lifeStealLimit)
         this.adventureSpeed = adventureSpeed.safeDivider(this.level / 2)
         this.inventorySlots = inventorySlots
 
@@ -2307,6 +2128,31 @@ class ActiveQuest(
             this.secondsLeft.toDouble()%60 <= 9 -> "${this.secondsLeft/60}:0${this.secondsLeft%60}"
             else -> "${this.secondsLeft/60}:${this.secondsLeft%60}"
         }
+    }
+}
+
+enum class SocialItemType{
+    Sent,
+    Received,
+    Ally,
+    BlackListed
+}
+
+data class SocialItem(
+        var type: SocialItemType = SocialItemType.Received,
+        var username: String
+){
+    var captureAt = FieldValue.serverTimestamp()
+
+
+    fun initialize(ofUser: String){
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users").document(ofUser).collection("Allies").document(username).set(
+                mapOf(
+                        this.type to "type",
+                        this.username to "username"
+                )
+        )
     }
 }
 
@@ -2765,8 +2611,6 @@ data class FirebaseChecksum(
 
     override fun equals(other: Any?): Boolean {
         return if(other != null){
-            Log.d("equal method", this.dataType.toString() + " cloud: " + this.checksum + " other: " + other.toSHA256() + " rewritting - ${other.toSHA256() == this.checksum}")
-
             other.toSHA256() == this.checksum
         } else false
     }
@@ -2840,7 +2684,8 @@ data class Reward(
         experience = nextInt((GenericDB.balance.rewardXpBottom * (inPlayer.level * 0.8) * (this.type!! + 1) * 0.75).toInt(), (GenericDB.balance.rewardXpTop * (inPlayer.level * 0.8) * (this.type!! + 1) * 1.25).toInt())
         if(this.boss) gold = nextInt(10 * this.type!!)
 
-        if(item != null) this.decreaseBy(1.5, false)
+
+        if(item != null) this.decreaseBy(1.75, false)
 
         return this
     }
@@ -3183,13 +3028,13 @@ class MarketOffer(
         var seller: String = "MexxFM",
         var buyer: String? = null
 ) {
-    var priceCoins: Int = 0
     var priceCubeCoins: Int = 0
+    var priceCubix: Int = 0
     var closeAfterExpiry: Boolean = true
     var expiryDate: Date = Calendar.getInstance().time
     var afterExpiryDate: Date = Calendar.getInstance().time
-    var afterExpiryCoins: Int = 0
     var afterExpiryCubeCoins: Int = 0
+    var afterExpiryCubix: Int = 0
     var id: Int = 0
         set(value){
             this.item =  when (this.item?.type) {
@@ -3247,17 +3092,17 @@ class MarketOffer(
         val db = FirebaseFirestore.getInstance()
         val rewardBuyer = Reward()
         val rewardSeller = Reward()
-        Data.player.cubix -= this.priceCoins
+        Data.player.cubix -= this.priceCubeCoins
         Data.player.cubix -= this.priceCubix
         Data.player.inventory[Data.player.inventory.indexOf(null)] = this.item
 
         rewardBuyer.item = this.item
 
-        rewardSeller.cubix = this.priceCoins
+        rewardSeller.cubix = this.priceCubeCoins
         rewardSeller.cubix = this.priceCubix
 
-        Data.player.writeInbox(this.seller, InboxMessage(status = MessageStatus.Market, receiver = this.seller, sender = this.buyer!!, subject = "Your item ${this.item!!.name} has been bought", content = "${this.buyer} bought your market offer ${this.item!!.name} for ${this.priceCoins} ${if(priceCubix != 0) " and " + this.priceCubix.toString() else ""}.", reward = rewardSeller))
-        //Data.player.writeInbox(this.buyer!!, InboxMessage(status = MessageStatus.Market, receiver = this.buyer!!, sender = this.seller, subject = "You bought an item!", content = "You bought ${this.seller}'s item for ${this.priceCoins} ${if(priceCubix != 0) " and " + this.priceCubix.toString() else ""}.", reward = rewardBuyer))
+        Data.player.writeInbox(this.seller, InboxMessage(status = MessageStatus.Market, receiver = this.seller, sender = this.buyer!!, subject = "Your item ${this.item!!.name} has been bought", content = "${this.buyer} bought your market offer ${this.item!!.name} for ${this.priceCubeCoins} ${if(priceCubix != 0) " and " + this.priceCubix.toString() else ""}.", reward = rewardSeller))
+        //Data.player.writeInbox(this.buyer!!, InboxMessage(status = MessageStatus.Market, receiver = this.buyer!!, sender = this.seller, subject = "You bought an item!", content = "You bought ${this.seller}'s item for ${this.priceCubeCoins} ${if(priceCubix != 0) " and " + this.priceCubix.toString() else ""}.", reward = rewardBuyer))
 
         return db.collection("market").document(this.id.toString()).delete()
     }*/
@@ -3290,7 +3135,7 @@ class MarketOffer(
                 } + "<font color=#383849><br/>seller: </font>"
     }
     @Exclude fun getSpecStatsOffer(): String{
-        return "CC: ${this.priceCoins}<br/>Cubix: ${this.priceCubeCoins}"
+        return "CC: ${this.priceCubeCoins}<br/>Cubix: ${this.priceCubix}"
     }
 }
 
@@ -3312,12 +3157,12 @@ class FightLog(
     var id: Int = 0
     var captured = java.util.Calendar.getInstance().time
 
-    fun init(){
+    fun init(): Task<Void> {
         capturedBy = Data.player.username
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("FightLog")
         var temp: MutableList<FightLog>
-        docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+        return docRef.orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
             temp = it.toObjects(FightLog::class.java)
             this.id = if (!temp.isNullOrEmpty()) {
                 temp[0].id + 1
@@ -3331,7 +3176,7 @@ class FightLog(
 open class NPC(
         open var id: String = "1",
         open var inDrawable: String = "00000",
-        open var inBgDrawable: String = "00000",
+        open var inBgDrawable: String = "95000",
         open var name: String = "",
         open var description: String = "",
         open var levelAppearance: Int = 0,
@@ -3356,7 +3201,7 @@ open class NPC(
     @Exclude @Transient var allowedSpells = listOf<Spell>()
         @Exclude get() = field
     @Exclude @Transient var bgDrawable: Int = 0
-        @Exclude get() = drawableStorage[inBgDrawable] ?: 0
+        @Exclude get() = drawableStorage[inBgDrawable] ?: R.drawable.question_mark
 
     object Memory {
         var defCounter = 0
@@ -3601,9 +3446,9 @@ open class NPC(
 class Boss(
         override var id: String = "",
         override var inDrawable: String = nextInt(50000, 50008).toString(),
-        override var inBgDrawable: String = "00000",
+        override var inBgDrawable: String = "95000",
         override var name: String = "",
-        override var description: String = "",
+        override var description: String = "This is a description",
         override var levelAppearance: Int = 0,
         override var charClassIndex: Int = 1,
         override var difficulty: Int? = nextInt(100, 103),      //TODO zvýšit limit přes DB
@@ -3614,40 +3459,55 @@ class Boss(
     var decayTime: Date = java.util.Calendar.getInstance().time
     var reward: Reward = Reward(this.difficulty, true).generate(Data.player)
 
+    init {
+        id = surface.toString()
+    }
+
     @Exclude @Transient private var df: Calendar = Calendar.getInstance()
 
     @Exclude fun getTimeLeft(): String {
         val seconds = (decayTime.time - java.util.Calendar.getInstance().time.time) / 1000
+        val minutes = seconds / 60
         val hoursLeft = seconds / 60 / 60
 
-        return (when(hoursLeft){
-            in 0..(GenericDB.balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!.toDouble() / 4).toInt() -> {
+        return (when(hoursLeft) {               //change color of text based on the hours left
+            in 0..(GenericDB.balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!.toDouble() / 5).toInt() -> {
                 "<font color='red'><b>"
             }
-            in 0..(GenericDB.balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!.toDouble() / 2).toInt() -> {
+            in 0..(GenericDB.balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!.toDouble() / 3).toInt() -> {
                 "<font color='#FF8C00'><b>"
             }
             else -> {
                 "<font color='green'><b>"
             }
         }
-
+        + hoursLeft.toString()
         + when{
-            seconds <= 0 -> "00:00"
-            seconds.toDouble()%60 <= 9 -> "${seconds/60}:0${seconds%60}"
-            else -> "${seconds/60}:${seconds%60}"
+            minutes%60 <= 0 -> ":00"
+            minutes%60 <= 9 -> ":0${minutes%60}"
+            else -> ":${minutes%60}"
+        }
+        + when{
+            seconds%60 <= 0 -> ":00"
+            seconds%60 <= 9 -> ":0${seconds%60}"
+            else -> ":${seconds%60}"
         } + "</b></font>")
     }
 
     @Exclude fun isActive(): Boolean{
-        return decayTime.time - java.util.Calendar.getInstance().time.time >= 0
+        return if(decayTime.time - java.util.Calendar.getInstance().time.time >= 0){
+            true
+        }else {
+            this.detach()
+            false
+        }
     }
 
     fun initialize(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
-        val npc = this.generate(difficultyX = 7, playerX = Data.player, multiplier = nextInt(12, 20).toDouble() / 10)
+        val npc = this.generate(difficultyX = 7, playerX = Data.player, multiplier = nextInt(12 * (this.difficulty!! - 99), 20 * (this.difficulty!! - 99)).toDouble() / 10)
         Log.d("power of boss", this.power.toString())
         this.applyStats(npc.toPlayer())
         Log.d("power of boss", this.power.toString())
@@ -3656,14 +3516,19 @@ class Boss(
             db.collection("users").document(Data.player.username).collection("Timestamp").document("timeStamp").get().addOnSuccessListener {
                 captured = it.getTimestamp("timeStamp", behaviour)!!.toDate()
                 df.time = captured
-                df.add(Calendar.HOUR, GenericDB.balance.bossHoursByDifficulty[this.difficulty!!.toString()]!!)
+                Log.d("BOSS difficulty", this.difficulty?.toString())
+                df.add(Calendar.HOUR, GenericDB.balance.bossHoursByDifficulty[this.difficulty?.toString()]!!)
                 decayTime = df.time
 
                 Data.player.currentSurfaces[this.surface].boss = this
-            }.continueWithTask {
-                Data.player.uploadPlayer()
             }
         }
+    }
+
+    fun detach(){
+        Data.player.currentSurfaces[this.surface].boss = null
+        Data.player.currentSurfaces[this.surface].lastBossAt = java.util.Calendar.getInstance().time
+        Data.player.uploadPlayer()
     }
 }
 
@@ -3715,8 +3580,8 @@ class Quest(
                     this.secondsLength <= 0 -> "0:00"
                     this.secondsLength.toDouble() % 60 <= 10 -> "${this.secondsLength / 60}:0${this.secondsLength % 60}"
                     else -> "${this.secondsLength / 60}:${this.secondsLength % 60}"
-                } + " m" +
-                "<br/>experience: ${resources.getString(R.string.quest_number, this.experience)}<br/>cube coins: ${resources.getString(R.string.quest_number, this.money)}"
+                } + " m"
+                // + "<br/>experience: ${resources.getString(R.string.quest_number, this.experience)}<br/>cube coins: ${resources.getString(R.string.quest_number, this.money)}"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -3918,7 +3783,7 @@ class InboxCategory(
 
 class InboxMessage(
         var priority: Int = 1,
-        var sender: String = "Newsletter",
+        var sender: String = "Admin team",
         var receiver: String = "Receiver",
         var content: String = "Content",
         var subject: String = "object",
@@ -3927,21 +3792,15 @@ class InboxMessage(
         var reward: Reward? = null,
         var status: MessageStatus = MessageStatus.New,
         var isInvitation1: Boolean = false,
-        var invitation: Invitation = Invitation("","","",InvitationType.factionAlly)
+        var invitation: Invitation = Invitation("","","",InvitationType.factionAlly),
+        var fightResult: Boolean? = null
 ): Serializable {
     var sentTime: Date = java.util.Calendar.getInstance().time
     @Transient var deleteTime: FieldValue? = null
-    var fightResult: Boolean? = null
-        set(value){
-            if(status == MessageStatus.Fight){
-                field = value
-            }
-        }
     var fightID: String = ""
 
     @Exclude fun initialize(): Task<Void> {
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("users").document(Data.player.username).collection("ActiveQuest")
         val behaviour = DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
 
         return db.collection("users").document(Data.player.username).collection("Timestamp").document("timeStamp").set(hashMapOf("timeStamp" to FieldValue.serverTimestamp())).addOnSuccessListener {      //TODO offline loading
@@ -4019,9 +3878,9 @@ enum class MessageStatus: Serializable {
 
 class Surface(
         var inBackground: String = "90000",
-        var boss: NPC? = null,
         var id: String = "0",
-        var quests: Map<String, Quest> = hashMapOf()
+        var quests: Map<String, Quest> = hashMapOf(),
+        var lvlRequirement: Int = 0                 //TODO temporary - will be based on story quests
         /*
         var questPositions: MutableList<Coordinates> = mutableListOf()
         var bossPositions: MutableList<Coordinates> = mutableListOf()
@@ -4031,24 +3890,13 @@ class Surface(
     @Exclude @Transient  var background: Int = 0
         @Exclude get() = drawableStorage[inBackground] ?: 0
 
+
     override fun hashCode(): Int {
         var result = inBackground.hashCode()
-        result = 31 * result + (boss?.hashCode() ?: 0)
+        result = 31 * result + id.hashCode()
         result = 31 * result + quests.hashCode()
+        result = 31 * result + lvlRequirement
         return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Surface
-
-        if (inBackground != other.inBackground) return false
-        if (boss != other.boss) return false
-        if (quests != other.quests) return false
-
-        return true
     }
 }
 
@@ -4546,35 +4394,69 @@ enum class ServerStatus{
     restarting
 }
 
-class RocketGameScore(
+class MiniGameScore(
         var length: Double = 0.0,     //in seconds
-        var user: String = "MexxFM"
-){
+        var user: String = "MexxFM",
+        var type: MinigameType = MinigameType.RocketGame
+): Serializable{
     var captured = java.util.Calendar.getInstance().time
     var id: Int = 0
+    @Exclude @Transient var collectionPath = "RocketGame"
+        @Exclude get(){
+            return when(this.type){
+                MinigameType.RocketGame -> {
+                    "RocketGame"
+                }
+                else -> {
+                    "Other"
+                }
+            }
+        }
+
+    fun capture(context: Context){
+        Data.miniGameScores.add(this)
+        Log.d("minigamesscores", Data.miniGameScores.toJSON())
+        SystemFlow.writeObject(context, "miniGameScores.data", Data.miniGameScores)
+    }
+
+    /*
+    Is the board locally stored already? Use the local data. Primarily used for offline usage, online usage should use boardList.isLoadable instead
+     */
+    @Exclude fun checkAvailability(context: Context/*, connected: Boolean*/): Boolean {
+        val boardList = when(this.type){
+            MinigameType.RocketGame -> {
+                Data.rocketGameBoard
+            }
+            else -> {
+                Data.rocketGameBoard
+            }
+        }
+
+        return /*if(connected) boardList.isLoadable(context) else */boardList.findLocal(context)
+    }
+
+    @Exclude fun findMyBoard(): CustomBoard.BoardList {
+        return when(this.type){
+            MinigameType.RocketGame -> {
+                Data.rocketGameBoard
+            }
+            else -> {
+                Data.rocketGameBoard
+            }
+        }
+    }
 
     fun init(): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
-        return db.collection("RocketGame").orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
-            val temp = it.toObjects(RocketGameScore::class.java)
+        return db.collection(collectionPath).orderBy("id", Query.Direction.DESCENDING).limit(1).get().addOnSuccessListener {
+            val temp = it.toObjects(MiniGameScore::class.java)
             if(temp.isNotEmpty()){
                 this.id = temp.first().id + 1
             }else {
                 this.id = 1
             }
-            db.collection("RocketGame").document(this.id.toString()).set(this).addOnSuccessListener {  }
+            db.collection(collectionPath).document(this.id.toString()).set(this).addOnSuccessListener {  }
         }
-    }
-
-    fun uploadAsScore(idIn: Int): Task<Void> {
-        val db = FirebaseFirestore.getInstance()
-        return db.collection("RocketGame").document(idIn.toString()).update(
-                mapOf(
-                        "length" to this.length,
-                        "user" to this.user,
-                        "captured" to this.captured
-                )
-        )
     }
 }
 
@@ -4638,9 +4520,11 @@ class RocketGame constructor(
         for(i in meteors){
             i.detach()
         }
+        meteors.clear()
         for(i in effects){
             i.detach()
         }
+        effects.clear()
         this.layoutParams.width = originalWidth
         this.layoutParams.height = originalHeight
         level = 1
@@ -4655,8 +4539,10 @@ class RocketGame constructor(
         this.meteorMaxMultiplier = level.toDouble() / 30
         this.speed = 7 + 2 * rocketMultiplier
 
-        for(i in meteors.size - 1 until level){
-            meteors.add(addMeteor())
+        if(meteors.size != level){
+            for(i in meteors.size - 1 until level){
+                meteors.add(addMeteor())
+            }
         }
     }
 
@@ -4688,6 +4574,12 @@ class RocketGame constructor(
 
             if(activeEffect != null) activeEffect!!.durationMillis += 1000
             extraCoins++
+            val v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                v!!.vibrate(20)
+            }
             imageViewReward = ImageView(context)
             imageViewReward?.setImageResource(R.drawable.coin_basic)
             imageViewReward?.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
@@ -4758,7 +4650,7 @@ class RocketGame constructor(
                     val effect = effects[i]
 
                     if(activeEffect != null){
-                        activeEffect = null
+                        activeEffect!!.durationMillis = -1
 
                         Handler().postDelayed({
                             activeEffect = effect
@@ -4895,25 +4787,25 @@ class RocketGame constructor(
         if(speedX.isNaN() || speedX.isInfinite()) speedX = 0.0
         if(speedY.isNaN() || speedY.isInfinite()) speedY = 0.0
 
-        if(coordinatesRocket.rocketTargetX == 0f){
+        if(coordinatesRocket.coordinatesTargetX == 0f){
             if(this.x > 0){
                 this.x -= 1
             }
         }else {
-            if(kotlin.math.abs(coordinatesRocket.rocketTargetX - this.x) < speedX){
-                this.x = coordinatesRocket.rocketTargetX
+            if(kotlin.math.abs(coordinatesRocket.coordinatesTargetX - this.x) < speedX){
+                this.x = coordinatesRocket.coordinatesTargetX
             }else {
-                if(coordinatesRocket.rocketTargetX <= this.x){
+                if(coordinatesRocket.coordinatesTargetX <= this.x){
                     this.x -= speedX.toFloat()
                 }else{
                     this.x += speedX.toFloat()
                 }
             }
 
-            if(kotlin.math.abs(coordinatesRocket.rocketTargetY - this.y) < speedY){
-                this.y = coordinatesRocket.rocketTargetY
+            if(kotlin.math.abs(coordinatesRocket.coordinatesTargetY - this.y) < speedY){
+                this.y = coordinatesRocket.coordinatesTargetY
             }else {
-                if(coordinatesRocket.rocketTargetY <= this.y){
+                if(coordinatesRocket.coordinatesTargetY <= this.y){
                     this.y -= speedY.toFloat()
                 }else {
                     this.y += speedY.toFloat()
@@ -4973,6 +4865,7 @@ class RocketGame constructor(
             imageView!!.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
             imageView?.layoutParams?.width = (width * 0.05).toInt()
             imageView?.layoutParams?.height = (width * 0.05).toInt()
+            imageView?.tag = (100 * index + 1).toString()
             imageView?.x = nextInt(width + (width * 0.05).toInt(), (width + width * 0.05).toInt() * 2).toFloat()
             imageView?.y = nextInt(- imageView!!.height/2 , height + imageView!!.height/2).toFloat()
 
@@ -4988,30 +4881,79 @@ class ComponentCoordinates(
         var widthBound: Int = 0,
         var heightBound: Int = 0
 ){
-    var rocketTargetX: Float = 0f
-    var rocketTargetY: Float = 0f
+    var coordinatesTargetX: Float = 0f
+    var coordinatesTargetY: Float = 0f
 
-    fun update(xIn: Float, yIn: Float, rocketGame: RocketGame){
+    fun update(xIn: Float, yIn: Float, imageView: ImageView?){
         this.x = xIn
         this.y = yIn
-        rocketGame.startPointX = rocketGame.x.toDouble()
-        rocketGame.startPointY = rocketGame.y.toDouble()
-        //rocketGame?.onTick(this)
 
-        rocketTargetX = if(xIn + rocketGame.width < widthBound && xIn - rocketGame.width / 2 > 0){
-            xIn - rocketGame.width / 2
-        }else if(xIn + rocketGame.width < widthBound){
-            1f
-        }else {
-            (widthBound -rocketGame.width / 2).toFloat()
+        if(imageView != null){
+            if(imageView is RocketGame){
+                imageView.startPointX = imageView.x.toDouble()
+                imageView.startPointY = imageView.y.toDouble()
+            }
+
+            coordinatesTargetX = if(xIn + imageView.width < widthBound && xIn - imageView.width / 2 > 0){
+                xIn - imageView.width / 2
+            }else if(xIn + imageView.width < widthBound){
+                1f
+            }else {
+                (widthBound -imageView.width / 2).toFloat()
+            }
+
+            coordinatesTargetY = if(yIn - imageView.height / 2 < heightBound && yIn > 0){
+                yIn - imageView.height / 2
+            }else if(yIn - imageView.height < 0){
+                (imageView.height / 2).toFloat()
+            }else {
+                (heightBound - imageView.height / 2).toFloat()
+            }
+        }
+    }
+}
+
+enum class MinigameType{
+    RocketGame,
+    Other
+}
+
+class Minigame(
+        var type: MinigameType = MinigameType.RocketGame,
+        var description: String = "",
+        var title: String = "",
+        var imagesIn: List<String> = listOf(),
+        var hasScoreBoard: Boolean = false
+): Serializable{
+    private val published: Date = java.util.Calendar.getInstance().time
+    var isNew = published.time <= java.util.Calendar.getInstance().time.time + 604800000
+
+    @Exclude @Transient val imagesResolved: MutableList<Int> = mutableListOf()
+        @Exclude get(){
+            for(i in imagesIn){
+                field.add(drawableStorage[i] ?: 0)
+            }
+            return field
         }
 
-        rocketTargetY = if(yIn - rocketGame.height / 2 < heightBound && yIn > 0){
-            yIn - rocketGame.height / 2
-        }else if(yIn - rocketGame.height < 0){
-            (rocketGame.height / 2).toFloat()
-        }else {
-            (heightBound - rocketGame.height / 2).toFloat()
+    fun getFragmentInstance(): Fragment{
+        return when(this.type){
+            MinigameType.RocketGame -> {
+                Fragment_Minigame_Info.newInstance(this)
+            }
+            else -> {
+                Fragment_Minigame_Info.newInstance(this)
+
+            }
         }
+    }
+
+    fun startMG(context: Context){
+        val intentSplash = Intent(context, Activity_Splash_Screen::class.java)
+        Data.loadingScreenType = LoadingType.RocketGamePad
+        SystemFlow.writeObject(context, "loadingScreenType${Data.player.username}.data", Data.loadingScreenType)
+        Data.loadingStatus = LoadingStatus.CLOSELOADING
+        intentSplash.putExtra("keepLoading", true)
+        context.startActivity(intentSplash)
     }
 }

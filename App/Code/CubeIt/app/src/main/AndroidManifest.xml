@@ -21,6 +21,16 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         android:allowBackup="true">
+
+        <activity
+            android:name="com.google.firebase.auth.internal.FederatedSignInActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:permission="com.google.firebase.auth.api.gms.permission.LAUNCH_FEDERATED_SIGN_IN"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            tools:replace="android:launchMode" />
+
         <activity
             android:name=".Home"
             android:screenOrientation="sensorLandscape"/>
@@ -74,6 +84,9 @@
             android:name=".Activity_FightBoss_offline"
             android:screenOrientation="sensorLandscape"/>
         <activity
+            android:name=".ActivityOfflineMG"
+            android:screenOrientation="sensorLandscape"/>
+        <activity
             android:name=".ActivityLoginRegister"
             android:screenOrientation="sensorLandscape">
             <intent-filter>
@@ -82,6 +95,16 @@
             </intent-filter>
         </activity>
 
+        <service android:name="com.google.firebase.components.ComponentDiscoveryService" />
+        <meta-data
+            android:name="com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar"
+            android:value="com.google.firebase.components.ComponentRegistrar" />
+        <meta-data
+            android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
+            android:value="com.google.firebase.components.ComponentRegistrar" />
+        <meta-data
+            android:name="com.google.firebase.components:com.google.firebase.iid.Registrar"
+            android:value="com.google.firebase.components.ComponentRegistrar" />
 
         <service
             android:name=".SystemFlow$BackgroundSoundService"

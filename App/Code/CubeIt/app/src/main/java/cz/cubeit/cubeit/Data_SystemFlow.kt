@@ -212,7 +212,7 @@ object SystemFlow{
         loadingImage.tag = "customLoadingImage"
         loadingImage.setImageResource(R.drawable.icon_web)
         loadingImage.visibility = View.VISIBLE
-        loadingImage.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)       //TODO pivot doesn't work. Again...
+        loadingImage.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)
         loadingImage.layoutParams.width = (activityWidth * 0.1).toInt()
         loadingImage.layoutParams.height = (activityWidth * 0.1).toInt()
         loadingImage.x = ((activityWidth / 2 - (activityWidth * 0.1 / 2).toInt()).toFloat())

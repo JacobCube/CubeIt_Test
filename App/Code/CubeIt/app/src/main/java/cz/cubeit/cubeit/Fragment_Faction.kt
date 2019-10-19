@@ -188,7 +188,8 @@ class Fragment_Faction: Fragment(){
 
         viewTemp.textViewFactionInfoDesc.setHTMLText(currentInstanceOfFaction!!.getInfoDesc())
         viewTemp.textViewFactionDescription.setHTMLText(currentInstanceOfFaction!!.description)
-        viewTemp.textViewFactionTitle.text = currentInstanceOfFaction!!.name
+        viewTemp.textViewFactionTitle.setHTMLText(currentInstanceOfFaction!!.name)
+        viewTemp.textViewFactionTitle.fontSizeType = CustomTextView.SizeType.title
 
         if(myFaction){
             Log.d("factionLogChanged", Data.factionLogChanged.toString())
@@ -264,10 +265,11 @@ class Fragment_Faction: Fragment(){
         viewTemp.frameLayoutFactionLog.layoutParams.width = (displayX * 0.34).toInt()
 
         viewTemp.imageViewFactionOpenLog.setOnClickListener {
-            viewTemp.isEnabled= false
+            it.isEnabled = false
+            it.isClickable = false
             viewTemp.imageViewFactionLogNew.visibility = View.GONE
             Data.factionLogChanged = false
-            viewTemp.imageViewFactionOpenLog.bringToFront()
+            //viewTemp.imageViewFactionOpenLog.bringToFront()
 
             if(logClosed){
                 (activity as Activity_Faction_Base).imageViewMenuUpFaction.visibility = View.GONE
@@ -290,7 +292,8 @@ class Fragment_Faction: Fragment(){
                         override fun onAnimationEnd(animation: Animator?) {
                             logClosed = false
                             viewTemp.imageViewFactionOpenLog.rotation = 270f
-                            viewTemp.isEnabled= true
+                            it.isEnabled = true
+                            it.isClickable = true
                         }
 
                     })
@@ -317,7 +320,8 @@ class Fragment_Faction: Fragment(){
                         override fun onAnimationEnd(animation: Animator?) {
                             logClosed = true
                             viewTemp.imageViewFactionOpenLog.rotation = 90f
-                            viewTemp.isEnabled= true
+                            it.isEnabled = true
+                            it.isClickable = true
                         }
                     })
                     start()

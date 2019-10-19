@@ -257,7 +257,7 @@
         android:src="@drawable/icon_app"
         android:tint="@color/colorGrey"
         android:tintMode="multiply"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.515"
@@ -379,6 +379,7 @@
         app:layout_constraintEnd_toEndOf="@+id/imageViewActionBar"
         app:layout_constraintStart_toEndOf="@+id/imageViewFightBoardFilter"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/person_icon" />
+        app:srcCompat="@drawable/menu_character_icon"
+        android:tint="@color/colorSecondary"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
