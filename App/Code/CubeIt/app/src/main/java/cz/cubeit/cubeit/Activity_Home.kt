@@ -20,19 +20,15 @@ import com.google.firebase.firestore.MetadataChanges
 import android.view.ContextThemeWrapper
 import android.view.MotionEvent
 import android.view.WindowManager
-import android.view.animation.Animation
-import android.view.animation.RotateAnimation
 import android.widget.PopupMenu
 import android.widget.Toast
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.Query
 import java.lang.ref.WeakReference
 
-
-var playedSong = R.raw.playedsong
-
 class Home : AppCompatActivity() {
+
+    lateinit var genericContext: Context
 
     companion object {
         class HomeInitialization (context: Home): AsyncTask<Int, String, String?>(){
@@ -67,16 +63,12 @@ class Home : AppCompatActivity() {
                                             Data.inbox.add(i)
                                             if(i.status != MessageStatus.Sent){
                                                 Toast.makeText(context, "New message has arrived.", Toast.LENGTH_SHORT).show()
-                                                val v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                    v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
-                                                } else {
-                                                    v!!.vibrate(20)
-                                                }
+                                                SystemFlow.vibrateAsError(context, 20)
                                                 Data.inboxChanged = true
                                                 Data.inboxChangedMessages++
                                                 context.runOnUiThread {
                                                     context.textViewHomeMailNew.visibility = View.VISIBLE
+                                                    context.window.decorView.rootView.invalidate()
                                                 }
                                             }
                                         }
@@ -90,18 +82,7 @@ class Home : AppCompatActivity() {
                     val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
                     val docRef = db.collection("Server").document("Generic")
                     docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
-                        if (e != null) {
-                            Log.w("Server listener", "Listen failed.", e)
-                            return@addSnapshotListener
-                        }
-
-                        val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
-                            "Local"
-                        else
-                            "Server"
-
                         if (snapshot != null && snapshot.exists()) {
-                            Log.d("Server listener", "data accepted")
 
                             if(snapshot.getString("Status") != "on"){
                                 val builder = AlertDialog.Builder(context)
@@ -115,14 +96,25 @@ class Home : AppCompatActivity() {
                                     dialogX.dismiss()
                                 }
                                 context.dialog!!.setOnDismissListener {
-                                    if(!context.dialog!!.isShowing) Data.logOut(context) else context.dialog!!.dismiss()
+                                    if(!context.dialog!!.isShowing) Data.signOut(context) else context.dialog!!.dismiss()
                                 }
                                 if(context.dialog?.isShowing == false) context.dialog?.show()
                             }
-
-                        } else {
-                            Log.d("Server listener", "$source data: null n error")
                         }
+                    }
+
+                    if(Data.player.username == "Anonymous"){
+                        SystemFlow.showNotification("Oops", "There's a problem with your game, we're really sorry.", context).setOnDismissListener {
+                            Data.signOut(context)
+                        }
+                    }
+
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)&& Data.player.appearOnTop) {
+                        //If the draw over permission is not available open the settings screen to grant the permission.
+
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${context.packageName}"))
+                        context.startActivityForResult(intent, 2084)
                     }
 
                     context.setupLifecycleListener()
@@ -145,6 +137,7 @@ class Home : AppCompatActivity() {
     }
 
     var dialog: AlertDialog? = null
+    var signOut: Boolean = false
 
     private val lifecycleListener: SystemFlow.LifecycleListener by lazy{
         SystemFlow.LifecycleListener(this)
@@ -169,6 +162,12 @@ class Home : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if(signOut) Data.signOut(genericContext, true)
+        else {
+            Toast.makeText(genericContext, "Press back again to exit.", Toast.LENGTH_SHORT).show()
+            signOut = true
+            Handler().postDelayed({ signOut = false }, 2000)
+        }
     }
 
     @ExperimentalStdlibApi
@@ -179,236 +178,209 @@ class Home : AppCompatActivity() {
         setContentView(R.layout.activity_home)
 
         val tempActivity = this
+        genericContext = this
+
         this.window.decorView.rootView.post {
             HomeInitialization(tempActivity).execute()
-        }
 
-        /*for(i in 0 until Data.player.currentSurfaces.size){
-            val boss = Boss(surface = i)
-            boss.initialize().addOnSuccessListener {
-                Data.player.currentSurfaces[i].boss = boss
+            window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+                if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                    Handler().postDelayed({hideSystemUI()},1000)
+                }
             }
-        }*/
+
+            imageViewHomeFactionNew.visibility = if(Data.factionLogChanged){
+                View.VISIBLE
+            }else View.GONE
+
+            SystemFlow.GamePropertiesBar(this, null).attach()
+
+            buttonHomeFaction.setOnClickListener {
+                val intent = Intent(this, Activity_Faction_Base()::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+
+            buttonHomeMarket.setOnClickListener {
+                val intent = Intent(this, Activity_Market()::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+
+            if(Data.inboxChanged && Data.inboxChangedMessages >= 1){
+                textViewHomeMailNew.visibility = View.VISIBLE
+                textViewHomeMailNew.text = Data.inboxChangedMessages.toString()
+                textViewHomeMailNew.visibility = View.VISIBLE
+            }else {
+                textViewHomeMailNew.visibility = View.GONE
+                textViewHomeMailNew.visibility = View.GONE
+            }
+
+            imageViewHomeInbox.setOnClickListener {
+                val intent = Intent(this, Activity_Inbox()::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+                if(Data.inboxChanged) Data.inboxChanged = false
+            }
+
+            var originalXExit = 0f
+            var initialTouchExitX = 0f
+            var clickableExit = false
+
+            imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewExit, false) {            //disconnect swipe / open menu
+                override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+                    when (motionEvent.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            originalXExit = imageViewExit.x
+                            initialTouchExitX = motionEvent.rawX
+                            clickableExit = true
+                            Handler().postDelayed({clickableExit = false}, 100)
+                            return true
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            imageViewExit.x = originalXExit
+                            imageViewExitLeave.x = originalXExit + imageViewExitLeave.width
+
+                            if(clickableExit){
+                                Handler().removeCallbacksAndMessages(null)
+
+                                val wrapper = ContextThemeWrapper(this@Home, R.style.FactionPopupMenu)
+                                val popup = PopupMenu(wrapper, imageViewExit)
+                                val popupMenu = popup.menu
+
+                                popupMenu.add("Exit")
+                                popupMenu.add("Play rocket game")
+
+                                popup.setOnMenuItemClickListener {
+                                    when(it.title){
+                                        "Exit" -> {
+                                            Data.signOut(this@Home)
+                                            true
+                                        }
+                                        "Play rocket game" -> {
+                                            val intentSplash = Intent(this@Home, Activity_Splash_Screen::class.java)
+                                            Data.loadingScreenType = LoadingType.RocketGamePad
+                                            SystemFlow.writeObject(this@Home, "loadingScreenType${Data.player.username}.data", Data.loadingScreenType)
+                                            Data.loadingStatus = LoadingStatus.CLOSELOADING
+                                            intentSplash.putExtra("keepLoading", true)
+                                            this@Home.startActivity(intentSplash)
+                                            true
+                                        }
+                                        else -> {
+                                            true
+                                        }
+                                    }
+                                }
+                                popup.show()
+                            }else {
+                                if(motionEvent.rawX <= originalXExit - imageViewExit.width){
+                                    if(!imageViewExit.isEnabled) return true
+                                    imageViewExit.isEnabled = false
+                                    Data.signOut(this@Home)
+                                    return true
+                                }
+                            }
+
+                            return true
+                        }
+                        MotionEvent.ACTION_MOVE -> {
+                            imageViewExit.x = ((originalXExit + (motionEvent.rawX - initialTouchExitX)/3))
+                            imageViewExitLeave.x = ((originalXExit + imageViewExitLeave.width + ((motionEvent.rawX - initialTouchExitX))/3))
+
+                            if(motionEvent.rawX <= originalXExit - imageViewExit.width){
+
+                            }else
+                            return true
+                        }
+                    }
+
+                    return super.onTouch(view, motionEvent)
+                }
+            })
+
+            Story.setOnClickListener {
+                Story.isEnabled = false
+                Handler().postDelayed({
+                    Story.isEnabled = true
+                }, 150)
+
+                val intent = Intent(this, Activity_Story()::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+
+            Hatch.setOnClickListener{
+                Hatch.isEnabled = false
+                Handler().postDelayed({
+                    Hatch.isEnabled = true
+                }, 150)
+
+                val intent = Intent(this, cz.cubeit.cubeit.ActivityFightBoard::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+            Skills.setOnClickListener{
+                Skills.isEnabled = false
+                Handler().postDelayed({
+                    Skills.isEnabled = true
+                }, 150)
+
+                val intent = Intent(this, Spells()::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+            Character.setOnClickListener{
+                Character.isEnabled = false
+                Handler().postDelayed({
+                    Character.isEnabled = true
+                }, 150)
+
+                val intent = Intent(this, cz.cubeit.cubeit.Activity_Character::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+            SettingsHome.setOnClickListener{
+                SettingsHome.isEnabled = false
+                Handler().postDelayed({
+                    SettingsHome.isEnabled = true
+                }, 150)
+
+                val intent = Intent(this, cz.cubeit.cubeit.ActivitySettings::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+            Shop.setOnClickListener {
+                Shop.isEnabled = false
+                Handler().postDelayed({
+                    Shop.isEnabled = true
+                }, 150)
+
+                val intent = Intent(this, cz.cubeit.cubeit.Activity_Shop::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+            Adventure.setOnClickListener{
+                Adventure.isEnabled = false
+                Handler().postDelayed({
+                    Adventure.isEnabled = true
+                }, 150)
+
+                val intent = Intent(this, cz.cubeit.cubeit.ActivityAdventure::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+        }
 
         Log.w("test_home", Data.spellClasses.size.toString())
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         layoutHome.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.homebackground, opts))
-
-        if(Data.player.username == "Anonymous"){
-            SystemFlow.showNotification("Oops", "There's a problem with your game, we're really sorry.", this).setOnDismissListener {
-                Data.logOut(this)
-            }
-        }
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)&& Data.player.appearOnTop) {
-                //If the draw over permission is not available open the settings screen to grant the permission.
-
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName"))
-                startActivityForResult(intent, 2084)
-        }
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
-        }
-
-        textViewHomeStatsCoins.text = Data.player.cubeCoins.toString()
-        textViewHomeStats.text = "\ncubix ${Data.player.cubix}\ngold ${Data.player.gold}"
-        textViewHomeStats.setPadding(15, 10, 15, 10)
-
-        val dm = DisplayMetrics()
-        val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-
-        textViewHomeStats.setOnClickListener {
-            val animation = SystemFlow.createLoading(this, dm.widthPixels)
-            Handler().postDelayed({
-                animation.cancel()
-            }, 5000)
-        }
-
-        imageViewHomeFactionNew.visibility = if(Data.factionLogChanged){
-            View.VISIBLE
-        }else View.GONE
-
-        buttonHomeFaction.setOnClickListener {
-            val intent = Intent(this, Activity_Faction_Base()::class.java)
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-
-        buttonHomeMarket.setOnClickListener {
-            val intent = Intent(this, Activity_Market()::class.java)
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-
-        if(Data.inboxChanged && Data.inboxChangedMessages >= 1){
-            textViewHomeMailNew.visibility = View.VISIBLE
-            textViewHomeMailNew.text = Data.inboxChangedMessages.toString()
-            textViewHomeMailNew.visibility = View.VISIBLE
-        }else {
-            textViewHomeMailNew.visibility = View.GONE
-            textViewHomeMailNew.visibility = View.GONE
-        }
-
-        imageViewHomeInbox.setOnClickListener {
-            val intent = Intent(this, Activity_Inbox()::class.java)
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-            if(Data.inboxChanged) Data.inboxChanged = false
-        }
-
-        var originalXExit = 0f
-        var initialTouchExitX = 0f
-        var clickableExit = false
-
-        imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewExit, false) {            //disconnect swipe / open menu
-            override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        originalXExit = imageViewExit.x
-                        initialTouchExitX = motionEvent.rawX
-                        clickableExit = true
-                        Handler().postDelayed({clickableExit = false}, 100)
-                        return true
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        imageViewExit.x = originalXExit
-                        imageViewExitLeave.x = originalXExit + imageViewExitLeave.width
-
-                        if(clickableExit){
-                            Handler().removeCallbacksAndMessages(null)
-
-                            val wrapper = ContextThemeWrapper(this@Home, R.style.FactionPopupMenu)
-                            val popup = PopupMenu(wrapper, imageViewExit)
-                            val popupMenu = popup.menu
-
-                            popupMenu.add("Exit")
-                            popupMenu.add("Play rocket game")
-
-                            popup.setOnMenuItemClickListener {
-                                when(it.title){
-                                    "Exit" -> {
-                                        Data.logOut(this@Home)
-                                        true
-                                    }
-                                    "Play rocket game" -> {
-                                        val intentSplash = Intent(this@Home, Activity_Splash_Screen::class.java)
-                                        Data.loadingScreenType = LoadingType.RocketGamePad
-                                        SystemFlow.writeObject(this@Home, "loadingScreenType${Data.player.username}.data", Data.loadingScreenType)
-                                        Data.loadingStatus = LoadingStatus.CLOSELOADING
-                                        intentSplash.putExtra("keepLoading", true)
-                                        this@Home.startActivity(intentSplash)
-                                        true
-                                    }
-                                    else -> {
-                                        true
-                                    }
-                                }
-                            }
-                            popup.show()
-                        }else {
-                            if(motionEvent.rawX <= originalXExit - imageViewExit.width){
-                                if(!imageViewExit.isEnabled) return true
-                                imageViewExit.isEnabled = false
-                                Data.logOut(this@Home)
-                                return true
-                            }
-                        }
-
-                        return true
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        imageViewExit.x = ((originalXExit + (motionEvent.rawX - initialTouchExitX)/3))
-                        imageViewExitLeave.x = ((originalXExit + imageViewExitLeave.width + ((motionEvent.rawX - initialTouchExitX))/3))
-                        return true
-                    }
-                }
-
-                return super.onTouch(view, motionEvent)
-            }
-        })
-
-        Story.setOnClickListener {
-            Story.isEnabled = false
-            Handler().postDelayed({
-                Story.isEnabled = true
-            }, 150)
-
-            val intent = Intent(this, Activity_Story()::class.java)
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-
-        Hatch.setOnClickListener{
-            Hatch.isEnabled = false
-            Handler().postDelayed({
-                Hatch.isEnabled = true
-            }, 150)
-
-            val intent = Intent(this, cz.cubeit.cubeit.ActivityFightBoard::class.java)
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        Skills.setOnClickListener{
-            Skills.isEnabled = false
-            Handler().postDelayed({
-                Skills.isEnabled = true
-            }, 150)
-
-            val intent = Intent(this, Spells()::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        Character.setOnClickListener{
-            Character.isEnabled = false
-            Handler().postDelayed({
-                Character.isEnabled = true
-            }, 150)
-
-            val intent = Intent(this, cz.cubeit.cubeit.Activity_Character::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        SettingsHome.setOnClickListener{
-            SettingsHome.isEnabled = false
-            Handler().postDelayed({
-                SettingsHome.isEnabled = true
-            }, 150)
-
-            val intent = Intent(this, cz.cubeit.cubeit.ActivitySettings::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        Shop.setOnClickListener {
-            Shop.isEnabled = false
-            Handler().postDelayed({
-                Shop.isEnabled = true
-            }, 150)
-
-            val intent = Intent(this, cz.cubeit.cubeit.Activity_Shop::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
-        Adventure.setOnClickListener{
-            Adventure.isEnabled = false
-            Handler().postDelayed({
-                Adventure.isEnabled = true
-            }, 150)
-
-            val intent = Intent(this, cz.cubeit.cubeit.Adventure::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            this.overridePendingTransition(0,0)
-        }
     }
 }

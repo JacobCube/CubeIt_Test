@@ -62,12 +62,13 @@ class FragmentDefense : Fragment(){
         val view = inflater.inflate(R.layout.fragment_defense, container, false)
         viewTemp = view
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.imageViewBarDefense.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbardefense, opts))
 
         view.buttonSet.setOnClickListener {
-            val intent = Intent(view.context, FightSystem()::class.java)        //enemy: String
+            val intent = Intent(view.context, ActivityFightSystem()::class.java)        //enemy: String
             intent.putExtra("enemy", Data.player)
             startActivity(intent)
             //Activity().overridePendingTransition(0,0)

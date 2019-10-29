@@ -8,7 +8,7 @@
     android:animateLayoutChanges="true"
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape"
-    tools:context=".FightSystem">
+    tools:context=".ActivityFightSystem">
 
     <ImageView
         android:id="@+id/imageViewFightBgNPC"

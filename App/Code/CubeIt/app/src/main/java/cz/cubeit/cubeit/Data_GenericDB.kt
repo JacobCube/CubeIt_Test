@@ -72,13 +72,15 @@ object GenericDB{
                 ,"101" to 1.25
                 ,"102" to 1.5
         )
+
+        var playerXpRequiredLvlUpRate = 19.2
         var rewardCoinsBottom = 5
         var rewardCoinsTop = 5
         var rewardXpBottom = 8
         var rewardXpTop = 8
-
         var loadBoardMinuteDelay: Int = 5
 
+        var npcAlgorithmDecision0 = 4
 
         override fun hashCode(): Int {
             var result = bossHoursByDifficulty.hashCode()

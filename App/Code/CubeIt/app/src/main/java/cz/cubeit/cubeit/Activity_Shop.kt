@@ -3,6 +3,7 @@ package cz.cubeit.cubeit
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -78,16 +79,15 @@ class Activity_Shop : AppCompatActivity(){
         hideSystemUI()
         Data.player.syncStats()
         setContentView(R.layout.activity_shop)
-        textViewShopMoney.text = Data.player.cubeCoins.toString()
+        textViewShopMoney.text = GameFlow.numberFormatString(Data.player.cubeCoins)
         textViewShopMoney.fontSizeType = CustomTextView.SizeType.title
         textViewShopMoney.setPadding(10, 10, 10, 10)
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         imageViewActivityShop.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.shop_bg, opts))
 
-        val animUpText: Animation = AnimationUtils.loadAnimation(applicationContext,
-                R.anim.animation_shop_text_up)
         val animDownText: Animation = AnimationUtils.loadAnimation(applicationContext,
                 R.anim.animation_shop_text_down)
 
@@ -96,7 +96,7 @@ class Activity_Shop : AppCompatActivity(){
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels.toDouble()
 
         supportFragmentManager.beginTransaction().add(R.id.frameLayoutMenuShop, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityShop, R.id.frameLayoutMenuShop, R.id.homeButtonBackShop, R.id.imageViewMenuUpShop)).commitNow()
@@ -129,8 +129,8 @@ class Activity_Shop : AppCompatActivity(){
                     }
                     lastClicked = ""
 
-                    textViewShopMoney.text = Data.player.cubeCoins.toString()
-                    textViewShopCoin.text = (moneyReq*-1).toString()
+                    textViewShopMoney.text = GameFlow.numberFormatString(Data.player.cubeCoins)
+                    textViewShopCoin.text = GameFlow.numberFormatString(moneyReq * -1)
 
                     animationRefresh = ValueAnimator.ofFloat(originalCoinY, refresh.y).apply {
                         duration = 400
@@ -166,7 +166,7 @@ class Activity_Shop : AppCompatActivity(){
             val playerS:Player,
             val textViewInfoItem: CustomTextView,
             val viewInflater:View,
-            val context:Context,
+            val context: Activity,
             val listView:ListView,
             val textViewMoney:TextView
     ) : BaseAdapter() {
@@ -234,7 +234,7 @@ class Activity_Shop : AppCompatActivity(){
 
                         override fun onDoubleClick() {
                             super.onDoubleClick()
-                            getDoubleClick(this@Node.index, context, viewInflater, listView, textViewMoney, textViewInfoItem)
+                            getDoubleClick(this@Node.index, context, viewInflater, listView, textViewMoney, textViewInfoItem, component)
                         }
 
                         override fun onLongClick() {
@@ -384,7 +384,7 @@ class Activity_Shop : AppCompatActivity(){
     }
 
     companion object {
-        private fun getDoubleClick(index:Int, context:Context, view:View, listViewInventoryShop:ListView, textViewMoney:TextView, textViewInfoItem:TextView){
+        private fun getDoubleClick(index:Int, context: Activity, view:View, listViewInventoryShop:ListView, textViewMoney:TextView, textViewInfoItem:TextView, button: View){
             val window = PopupWindow(context)
             window.contentView = view
             val buttonYes:Button = view.buttonYes
@@ -395,10 +395,18 @@ class Activity_Shop : AppCompatActivity(){
             window.isFocusable = true
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             buttonYes.setOnClickListener {
-                Data.player.cubeCoins+=Data.player.inventory[index]!!.priceCubeCoins
+                Data.player.cubeCoins += Data.player.inventory[index]!!.priceCubeCoins
+
+                val coords = intArrayOf(0, 0)
+                button.getLocationOnScreen(coords)
+                val reward = Reward()
+                reward.cubeCoins = Data.player.inventory[index]!!.priceCubeCoins
+                reward.experience = 0
+                SystemFlow.visualizeReward(context, Coordinates(coords[0].toFloat(), coords[1].toFloat()), reward)
+
                 Data.player.inventory[index]=null
                 (listViewInventoryShop.adapter as ShopInventory).notifyDataSetChanged()
-                textViewMoney.text = Data.player.cubeCoins.toString()
+                textViewMoney.text = GameFlow.numberFormatString(Data.player.cubeCoins)
                 textViewInfoItem.visibility = View.INVISIBLE
                 window.dismiss()
             }
@@ -412,16 +420,18 @@ class Activity_Shop : AppCompatActivity(){
             if(Data.player.cubeCoins >= Data.player.shopOffer[index]!!.priceCubeCoins && Data.player.cubix >= Data.player.shopOffer[index]!!.priceCubix){
                 if(Data.player.inventory[viewIndex] == null){
                     Data.player.cubeCoins -= Data.player.shopOffer[index]!!.priceCubeCoins
-                    textViewMoney.text = Data.player.cubeCoins.toString()
+                    textViewMoney.text = GameFlow.numberFormatString(Data.player.cubeCoins)
                     Data.player.shopOffer[index]!!.priceCubeCoins /= 2
                     Data.player.inventory[viewIndex] = Data.player.shopOffer[index]
                     Data.player.shopOffer[index] = GameFlow.generateItem(Data.player)
                     textViewInfoItem.visibility = View.INVISIBLE
                 }else{
+                    SystemFlow.vibrateAsError(textViewInfoItem.context)
                     listViewInventoryShop.startAnimation(AnimationUtils.loadAnimation(textViewMoney.context, R.anim.animation_shaky_short))
                     //Snackbar.make(textViewInfoItem, "Not enough space!", Snackbar.LENGTH_SHORT).show()
                 }
             }else{
+                SystemFlow.vibrateAsError(textViewInfoItem.context)
                 textViewMoney.startAnimation(AnimationUtils.loadAnimation(textViewMoney.context, R.anim.animation_shaky_short))
                 //Snackbar.make(textViewInfoItem, "Not enough cube coins!", Snackbar.LENGTH_SHORT).show()
             }
@@ -567,7 +577,7 @@ class Activity_Shop : AppCompatActivity(){
 
                     if(item != null) {
 
-                        getDoubleClick(itemIndex, this, layoutInflater.inflate(R.layout.popup_dialog,null), listViewShopInventory, textViewShopMoney, textViewShopItemInfo)
+                        getDoubleClick(itemIndex, this, layoutInflater.inflate(R.layout.popup_dialog,null), listViewShopInventory, textViewShopMoney, textViewShopItemInfo, v)
 
                         true
                     }else false

@@ -23,6 +23,7 @@ class Fragment_Character : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_character, container, false)
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.imageViewCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, arguments?.getInt("drawable")!!, opts))

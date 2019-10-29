@@ -74,18 +74,22 @@ class Fragment_Faction_Create : Fragment() {
                                         }
                                     }
                                 }else {
+                                    SystemFlow.vibrateAsError(viewTemp.context)
                                     Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
                                     viewTemp.editTextFactionCreateDescription.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                                 }
                             }else {
+                                SystemFlow.vibrateAsError(viewTemp.context)
                                 Snackbar.make(viewTemp, "Not allowed!", Snackbar.LENGTH_SHORT).show()
                                 viewTemp.editTextFactionCreateTax.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                             }
                         }else {
+                            SystemFlow.vibrateAsError(viewTemp.context)
                             Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
                             viewTemp.editTextFactionCreateTax.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                         }
                     }else {
+                        SystemFlow.vibrateAsError(viewTemp.context)
                         Snackbar.make(viewTemp, "Not allowed!", Snackbar.LENGTH_SHORT).show()
                         viewTemp.editTextFactionCreateName.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                     }
@@ -128,6 +132,7 @@ class Fragment_Faction_Create : Fragment() {
             }
             val viewHolder = rowMain.tag as ViewHolder
 
+            System.gc()
             val opts = BitmapFactory.Options()
             opts.inScaled = false
 

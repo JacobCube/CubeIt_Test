@@ -7,6 +7,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.*
 import android.view.animation.AnimationUtils
@@ -22,11 +23,31 @@ import java.util.*
 class Fragment_Market_RegisterOffer : Fragment() {
 
     val createdOffer = MarketOffer()
+    var cubeCoinsTimer: TimerTask? = null
+    var cubixTimer: TimerTask? = null
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_market_registeroffer, container, false)
 
-        view.listViewMarketRegisterInventory.adapter = MarketRegisterInventory(Data.player, view.imageViewMarketRegisterItem, view.context, createdOffer, (activity as Activity_Market))
+        view.numberPickerMarketRegisterExpiryDays.apply {
+            minValue = 1
+            maxValue = 20
+            setOnValueChangedListener { _, _, finalValue ->
+                val date = Calendar.getInstance()
+                date.add(Calendar.DAY_OF_MONTH, finalValue)
+                date.set(Calendar.HOUR, 0)
+                date.set(Calendar.MINUTE, 0)
+
+                val year = date.get(Calendar.YEAR)
+                val monthOfYear = date.get(Calendar.MONTH)
+                val dayOfMonth = date.get(Calendar.DAY_OF_MONTH)
+                view.editTextMarketRegisterUntilDate.setText("$year/${monthOfYear+1}/$dayOfMonth")
+            }
+        }
+
+
+        view.listViewMarketRegisterInventory.adapter = MarketRegisterInventory(Data.player, view.imageViewMarketRegisterItem, view, createdOffer, (activity as Activity_Market))
 
         val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
         val windowPop = PopupWindow(view.context)
@@ -66,31 +87,62 @@ class Fragment_Market_RegisterOffer : Fragment() {
             }
         })
 
-        view.imageViewMarketRegisterCoins.setOnClickListener {
-            view.editTextMarketRegisterCoins.setText((if(view.editTextMarketRegisterCoins.text.toString().toIntOrNull()!=null){
-                view.editTextMarketRegisterCoins.text.toString().toInt()
-            } else{
-                0
-            } + if(createdOffer.item != null)createdOffer.item!!.priceCubeCoins/5 else 1).toString())
-        }
-        view.imageViewMarketRegisterCubeCoins.setOnClickListener {
-            view.editTextMarketRegisterCubeCoins.setText((if(view.editTextMarketRegisterCubeCoins.text.toString().toIntOrNull()!=null){
-                view.editTextMarketRegisterCubeCoins.text.toString().toInt()
-            } else{
-                0
-            } + if(createdOffer.item != null)createdOffer.item!!.priceCubix/5 else 1).toString())
+        view.imageViewMarketRegisterCoins.setOnTouchListener(object: Class_HoldTouchListener(view.imageViewMarketRegisterCoins, false, 0f, false){
+
+            override fun onStartHold(x: Float, y: Float) {
+                super.onStartHold(x, y)
+
+                cubeCoinsTimer = object : TimerTask() {
+                    override fun run() {
+                        val tempValue = view.editTextMarketRegisterCoins.text.toString().toIntOrNull()
+
+                        view.editTextMarketRegisterCoins.setText((if(createdOffer.item != null) ((tempValue ?: 0) + 1 + (tempValue ?: 0) / 8) else 0).toString())
+                    }
+                }
+                Timer().scheduleAtFixedRate(cubeCoinsTimer, 0, 50)
+            }
+
+            override fun onCancelHold() {
+                super.onCancelHold()
+                cubeCoinsTimer?.cancel()
+            }
+        })
+
+        view.imageViewMarketRegisterCubeCoins.setOnTouchListener(object: Class_HoldTouchListener(view.imageViewMarketRegisterCubeCoins, false, 0f, false){
+
+            override fun onStartHold(x: Float, y: Float) {
+                super.onStartHold(x, y)
+
+                cubixTimer = object : TimerTask() {
+                    override fun run() {
+                        val tempValue = view.editTextMarketRegisterCubeCoins.text.toString().toIntOrNull()
+
+                        view.editTextMarketRegisterCubeCoins.setText((if(createdOffer.item != null) ((tempValue ?: 0) + 1 + (tempValue ?: 0) / 8) else 0).toString())
+                    }
+                }
+                Timer().scheduleAtFixedRate(cubixTimer, 0, 50)
+            }
+
+            override fun onCancelHold() {
+                super.onCancelHold()
+                cubixTimer?.cancel()
+            }
+        })
+
+        view.imageViewMarketRegisterExit.setOnClickListener {
+            (activity as Activity_Market).disableRegisterOffer()
         }
 
         view.checkBoxMarketRegister.setOnCheckedChangeListener { _, isChecked ->
             createdOffer.closeAfterExpiry = !isChecked
             if(isChecked){
                 view.editTextMarketRegisterLowerCoins.setText(if(createdOffer.item != null){
-                    (createdOffer.item!!.priceCubeCoins*0.75).toInt().toString()
+                    (createdOffer.item!!.priceCubeCoins * 1.1).toInt().toString()
                 }else{
                     ""
                 })
                 view.editTextMarketRegisterLowerCubeCoins.setText(if(createdOffer.item != null){
-                    (createdOffer.item!!.priceCubix*0.75).toInt().toString()
+                    (createdOffer.item!!.priceCubix * 1.1).toInt().toString()
                 }else{
                     ""
                 })
@@ -122,6 +174,7 @@ class Fragment_Market_RegisterOffer : Fragment() {
             val datePicker = DatePickerDialog(view.context, DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
                 val date = ("$year/${monthOfYear+1}/$dayOfMonth")
                 view.editTextMarketRegisterUntilDate.setText(date)
+                view.numberPickerMarketRegisterExpiryDays.value = dayOfMonth - Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
             }, yy, mm, dd)
             calendar.add(Calendar.DAY_OF_MONTH, 1)
             datePicker.datePicker.minDate = calendar.timeInMillis
@@ -143,6 +196,7 @@ class Fragment_Market_RegisterOffer : Fragment() {
                             if (!createdOffer.closeAfterExpiry && view.editTextMarketRegisterLowerCoins.text.isNullOrBlank() && view.editTextMarketRegisterLowerCubeCoins.text.isNullOrBlank()) {
                                 view.editTextMarketRegisterLowerCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                 view.editTextMarketRegisterLowerCubeCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
+                                SystemFlow.vibrateAsError(viewP.context)
                                 Snackbar.make(view, "Some of the fields are required!", Snackbar.LENGTH_SHORT).show()
                             } else {
                                 if (view.editTextMarketRegisterLowerCubeCoins.text.toString() == "") {
@@ -159,14 +213,14 @@ class Fragment_Market_RegisterOffer : Fragment() {
                                 }
                                 with(createdOffer) {
                                     if (!closeAfterExpiry) {
-                                        afterExpiryCubeCoins = view.editTextMarketRegisterLowerCoins.text.toString().toInt()
-                                        afterExpiryCubix = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
+                                        afterExpiryCubeCoins = view.editTextMarketRegisterLowerCoins.text.toString().toIntOrNull() ?: createdOffer.item!!.priceCubeCoins
+                                        afterExpiryCubix = view.editTextMarketRegisterCubeCoins.text.toString().toIntOrNull() ?: createdOffer.item!!.priceCubix
                                     }
-                                    expiryDate = SimpleDateFormat("yyyy/MM/dd").parse(view.editTextMarketRegisterUntilDate.text.toString())
+                                    expiryDate = SimpleDateFormat("yyyy/MM/dd").parse((view.editTextMarketRegisterUntilDate.text ?: "").toString())
                                     seller = Data.player.username
-                                    priceCubeCoins = view.editTextMarketRegisterCoins.text.toString().toInt()
+                                    priceCubeCoins = view.editTextMarketRegisterCoins.text.toString().toIntOrNull() ?: createdOffer.item!!.priceCubeCoins
                                     if(priceCubeCoins < createdOffer.item!!.priceCubeCoins) priceCubeCoins = createdOffer.item!!.priceCubeCoins
-                                    priceCubix = view.editTextMarketRegisterCubeCoins.text.toString().toInt()
+                                    priceCubix = view.editTextMarketRegisterCubeCoins.text.toString().toIntOrNull() ?: createdOffer.item!!.priceCubix
                                     if(priceCubix < createdOffer.item!!.priceCubix) priceCubix = createdOffer.item!!.priceCubix
                                 }
                                 val tempIndex = Data.player.inventory.indexOf(createdOffer.item)
@@ -189,20 +243,24 @@ class Fragment_Market_RegisterOffer : Fragment() {
                                 (activity as Activity_Market).closeRegister()
                             }
                         }else{
+                            SystemFlow.vibrateAsError(viewP.context)
                             view.editTextMarketRegisterCubeCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                             view.editTextMarketRegisterCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                             Snackbar.make(view, "Don't rip yourself off like this!", Snackbar.LENGTH_SHORT).show()
                         }
                     }else{
+                        SystemFlow.vibrateAsError(viewP.context)
                         view.editTextMarketRegisterUntilDate.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                         Snackbar.make(view, "Field required!", Snackbar.LENGTH_SHORT).show()
                     }
                 }else{
+                    SystemFlow.vibrateAsError(viewP.context)
                     view.editTextMarketRegisterCubeCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     view.editTextMarketRegisterCoins.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Snackbar.make(view, "Field required!", Snackbar.LENGTH_SHORT).show()
                 }
             }else{
+                SystemFlow.vibrateAsError(viewP.context)
                 view.listViewMarketRegisterInventory.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                 Snackbar.make(view, "You have to choose an item!", Snackbar.LENGTH_SHORT).show()
             }
@@ -213,7 +271,7 @@ class Fragment_Market_RegisterOffer : Fragment() {
 }
 
 
-class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, private val context: Context, val createdOffer: MarketOffer, val activity: Activity) : BaseAdapter() {
+class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, private val view: View, val createdOffer: MarketOffer, val activity: Activity) : BaseAdapter() {
 
     override fun getCount(): Int {
         return playerC.inventory.size / 4 + 1
@@ -281,13 +339,13 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
 
                     override fun onStartHold(x: Float, y: Float) {
                         super.onStartHold(x, y)
-                        viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]!!.getStats())
+                        viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]?.getStats() ?: "")
                         viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
                         val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                         if(!windowPop.isShowing){
-                            viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]!!.getStats())
-                            viewP.imageViewPopUpInfoItem.setImageResource(Data.player.inventory[this@Node.index]!!.drawable)
+                            viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]?.getStats() ?: "")
+                            viewP.imageViewPopUpInfoItem.setImageResource(Data.player.inventory[this@Node.index]?.drawable ?: 0)
                             viewP.imageViewPopUpInfoItem.setBackgroundResource(Data.player.inventory[this@Node.index]!!.getBackground())
 
                             windowPop.showAsDropDown(activity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
@@ -301,6 +359,8 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
 
                     override fun onDoubleClick() {
                         super.onDoubleClick()
+                        view.editTextMarketRegisterCoins.setText(((Data.player.inventory[this@Node.index]?.priceCubeCoins ?: 0) * 1.5).toInt().toString())
+                        view.editTextMarketRegisterCubeCoins.setText(((Data.player.inventory[this@Node.index]?.priceCubix ?: 0) * 1.5).toInt().toString())
                         getDoubleClick(this@Node.index)
 
                         notifyDataSetChanged()

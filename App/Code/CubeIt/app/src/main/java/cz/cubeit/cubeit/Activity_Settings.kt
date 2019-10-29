@@ -101,7 +101,7 @@ class ActivitySettings : AppCompatActivity(){
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels.toDouble()
 
         frameLayoutMenu = frameLayoutMenuSettings
@@ -241,12 +241,14 @@ class ActivitySettings : AppCompatActivity(){
                             }
                         }
                     }else {
+                        SystemFlow.vibrateAsError(this)
                         buttonSettingChangePasswordOk.isEnabled = true
                         textViewSettingNewPasswordReq.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_shaky_short_vertical))
                         Snackbar.make(editTextSettingNewPassword, "Not allowed!", Snackbar.LENGTH_SHORT).show()
                         textViewSettingNewPasswordReq.setTextColor(Color.WHITE)
                     }
                 }else {
+                    SystemFlow.vibrateAsError(this)
                     buttonSettingChangePasswordOk.isEnabled = true
                     editTextSettingNewPassword.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_shaky_short))
                     Snackbar.make(editTextSettingNewPassword, "Enter new password.", Snackbar.LENGTH_SHORT).show()

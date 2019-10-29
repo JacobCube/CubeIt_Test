@@ -25,10 +25,9 @@ import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.buttonCloseDia
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.popup_info_dialog.view.*
 import java.lang.Math.max
-import java.lang.Math.min
 import kotlin.random.Random.Default.nextInt
 
-class FightSystem : AppCompatActivity() {              //In order to pass the enemyData.player - intent.putExtra(enemy, /username/)
+class ActivityFightSystem : AppCompatActivity() {              //In order to pass the enemyData.player - intent.putExtra(enemy, /username/)
     private lateinit var enemy: FightEnemy
     private lateinit var playerFight: FightPlayer
 
@@ -506,7 +505,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         }
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels
         displayX = dm.widthPixels
         textViewStats = textViewSpellSpecs
@@ -515,6 +514,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         opts.inScaled = false
 
         fun init(){
+            System.gc()
             imageViewEnemyChar.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.enemy.charClass.drawable, opts))
             imageViewPlayerChar.setImageBitmap(BitmapFactory.decodeResource(resources, playerFight.playerFight.charClass.drawable, opts))
 
@@ -556,7 +556,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                 val component: ImageView
         ){
             init {
-                this.component.setOnTouchListener(object : Class_OnSwipeTouchListener(this@FightSystem, Spell0, false) {
+                this.component.setOnTouchListener(object : Class_OnSwipeTouchListener(this@ActivityFightSystem, Spell0, false) {
                     override fun onSwipeUp() {
                         component.isClickable = false
                         if(this@Node.index < 2){
@@ -599,6 +599,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         val node6 = Node(6, Spell6)
         val node7 = Node(7, Spell7)
 
+        System.gc()
         imageViewFightBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
         imageViewFightBars.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
 
@@ -788,7 +789,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
         var reward: Reward? = Reward().generate(winner).decreaseBy(10.0, true)
         val playerName = playerFight.playerFight.username
         val enemyName = enemy.enemy.username
-        var fameGained = nextInt(0, 51)
+        var fameGained = nextInt(0, 76)
 
         viewPop.imageViewAdventure.setImageResource(enemy.enemy.charClass.drawable)
         if (playerName == enemyName) {
@@ -800,10 +801,11 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
 
             val message = if (winner.username == playerName) {
 
-                fameGained *= enemy.enemy.fame.safeDivider(playerFight.playerFight.fame)
+                fameGained = (fameGained.toDouble() * enemy.enemy.fame.safeDivider(playerFight.playerFight.fame)).toInt()
                 fameGained = kotlin.math.min(fameGained, 75)
 
                 if (enemy.enemy.fame <= fameGained) fameGained = enemy.enemy.fame
+
                 if (playerFight.playerFight.fame !in (enemy.enemy.fame * 0.75).toInt()..(enemy.enemy.fame * 5)) {                   //TODO fame by fame difference
                     reward = null
                 }
@@ -818,10 +820,11 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                         fightResult = false
                 )
             } else {
-                fameGained *= playerFight.playerFight.fame.safeDivider(enemy.enemy.fame)
+                fameGained = (fameGained.toDouble() * playerFight.playerFight.fame.safeDivider(enemy.enemy.fame)).toInt()
                 fameGained = kotlin.math.min(fameGained, 75)
 
                 if (playerFight.playerFight.fame <= fameGained) fameGained = playerFight.playerFight.fame
+
                 if (enemy.enemy.fame !in (playerFight.playerFight.fame * 0.75).toInt()..(playerFight.playerFight.fame * 1.25).toInt()) {
                     reward = null
                 }
@@ -860,7 +863,7 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
             viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${if(reward?.experience == null)0 else reward.experience}")
             viewPop.textViewPopAdventureCC.text = "${if(reward?.cubeCoins == null)0 else reward.cubeCoins}"
 
-            if(winner.username == Data.player.username) reward?.receive()
+            if(winner.username == Data.player.username) reward?.receive(null, false)
 
             window.isOutsideTouchable = false
             window.isFocusable = true
@@ -896,14 +899,14 @@ class FightSystem : AppCompatActivity() {              //In order to pass the en
                         if(holdValid){
                             viewP.textViewPopUpInfo.setHTMLText(reward.item!!.getStats())
                             viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                            val coordinates = SystemFlow.resolveLayoutLocation(this@FightSystem, x, y, viewP.measuredWidth, viewP.measuredHeight)
+                            val coordinates = SystemFlow.resolveLayoutLocation(this@ActivityFightSystem, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                             if(!Data.loadingActiveQuest && !windowPop.isShowing){
                                 viewP.textViewPopUpInfo.setHTMLText(reward.item!!.getStatsCompare())
                                 viewP.imageViewPopUpInfoItem.setBackgroundResource(reward.item!!.getBackground())
                                 viewP.imageViewPopUpInfoItem.setImageResource(reward.item!!.drawable)
 
-                                windowPop.showAsDropDown(this@FightSystem.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
+                                windowPop.showAsDropDown(this@ActivityFightSystem.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                             }
                         }
                     }

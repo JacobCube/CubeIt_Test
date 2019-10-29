@@ -1,11 +1,30 @@
 package cz.cubeit.cubeit
 
-import android.util.Log
 import androidx.fragment.app.Fragment
-import java.lang.Math.abs
 import kotlin.random.Random
 
 object GameFlow{
+
+    fun numberFormatString(cubeCoins: Int): String{
+        return (when{
+            cubeCoins > 1000000 -> "${(cubeCoins.toDouble() / 1000000).round(1)}M"
+            cubeCoins > 1000 -> "${(cubeCoins.toDouble() / 1000).round(1)}K"
+            else -> cubeCoins.toString()
+        })
+    }
+
+    fun experienceScaleFormatString(experience: Int, level: Int): String{
+        val neededXp = (level * 0.75 * (level * GenericDB.balance.playerXpRequiredLvlUpRate)).toInt()
+        return when {
+            experience > 1000000 -> "${(experience.toDouble() / 1000000).round(1)}M"
+            experience > 1000 -> "${(experience.toDouble() / 1000).round(1)}K"
+            else -> experience.toString()
+        } + " / " + when {
+            neededXp > 1000000 -> "${(neededXp.toDouble() / 1000000).round(1)}M"
+            neededXp > 1000 -> "${(neededXp.toDouble() / 1000).round(1)}K"
+            else -> neededXp.toString()
+        }
+    }
 
     fun getStoryFragment(fragmentID: String, instanceID: String, slideNum: Int): Fragment {          //fragmentID - number of fragment, slideNum
         return when (fragmentID) {

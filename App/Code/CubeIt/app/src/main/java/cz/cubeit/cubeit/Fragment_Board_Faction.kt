@@ -37,9 +37,9 @@ class Fragment_Board_Faction : Fragment() {
             enemyText += "\n${i.value}"
         }
 
-        view.progressBarBoardFactionXp.max = (chosenFaction.level * 0.75 * (8 * (chosenFaction.level*0.8) * (3))).toInt()
+        view.progressBarBoardFactionXp.max = (chosenFaction.level * 0.75 * (chosenFaction.level * GenericDB.balance.playerXpRequiredLvlUpRate)).toInt()
         view.progressBarBoardFactionXp.progress = chosenFaction.experience
-        view.textViewBoardFactionXp.text = chosenFaction.experience.toString() + "/" + (chosenFaction.level * 0.75 * (8 * (chosenFaction.level*0.8) * (3))).toInt().toString()
+        view.textViewBoardFactionXp.setHTMLText(GameFlow.experienceScaleFormatString(chosenFaction.experience, chosenFaction.level))
         view.textViewBoardFactionLevel.text = chosenFaction.level.toString()
         view.textViewBoardFactionAllies.text = allyText
         view.textViewBoardFactionEnemies.text = enemyText

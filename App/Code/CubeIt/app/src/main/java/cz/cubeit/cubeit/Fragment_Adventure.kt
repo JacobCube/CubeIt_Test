@@ -50,11 +50,13 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
     override fun onDestroy() {
         super.onDestroy()
         imageViewSurfaceBg.setImageDrawable(null)
+        System.gc()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
         imageViewSurfaceBg.setImageDrawable(null)
+        System.gc()
     }
 
     override fun onStop() {
@@ -176,9 +178,9 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
             }else {
                 viewPop.imageViewAdventure2.visibility = View.GONE
             }
-            viewPop.textViewPopAdventureCC.text = Data.player.currentSurfaces[index].boss?.reward?.cubeCoins.toString()
-            viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${Data.player.currentSurfaces[index].boss?.reward?.experience}")
-            viewPop.textViewPopAdventureGold.setHTMLText("<font color='#FFDF00'><b>g</b></font> ${Data.player.currentSurfaces[index].boss?.reward?.gold}")
+            viewPop.textViewPopAdventureCC.text = GameFlow.numberFormatString(Data.player.currentSurfaces[index].boss?.reward?.cubeCoins ?: 0)
+            viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${GameFlow.numberFormatString(Data.player.currentSurfaces[index].boss?.reward?.experience ?: 0)}")
+            viewPop.textViewPopAdventureGold.setHTMLText("<font color='#FFDF00'><b>g</b></font> ${GameFlow.numberFormatString(Data.player.currentSurfaces[index].boss?.reward?.gold ?: 0)}")
 
             viewPop.buttonAccept.setOnClickListener {
                 /*window.dismiss()
@@ -206,6 +208,7 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
             Data.player.currentSurfaces[index].boss = null
         }
 
+        System.gc()
         imageViewSurfaceBg.setImageBitmap(BitmapFactory.decodeResource(resources, arguments!!.getInt("drawable"), opts))
 
 

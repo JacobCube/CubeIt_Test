@@ -32,6 +32,7 @@ class FragmentAttack : Fragment(){      //TODO change the way spell bar generate
         val view = inflater.inflate(R.layout.fragment_attack, container, false)
         viewTemp = view
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.imageViewBarAttack.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbarattack, opts))

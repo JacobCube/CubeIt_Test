@@ -41,18 +41,17 @@ class FragmentLogin : Fragment() {
     private val RC_SIGN_IN = 9001
 
     private var dialog: AlertDialog? = null
+    private var popWindow: PopupWindow? = null
 
     private var mAuth: FirebaseAuth? = null
-    // [END declare_auth]
     lateinit var viewTemp: View
-    var popWindow: PopupWindow? = null
     lateinit var popView: View
     lateinit var auth: FirebaseAuth
-    var connectedTimer: TimerTask? = null
-    var playAnimation = true
-    var wasRunning = false
-    val pumpInOfflineIcon = ValueAnimator.ofFloat(0.95f, 1f)
-    val pumpOutOfflineIcon = ValueAnimator.ofFloat(1f, 0.95f)
+    private var connectedTimer: TimerTask? = null
+    private var playAnimation = true
+    private var wasRunning = false
+    private val pumpInOfflineIcon = ValueAnimator.ofFloat(0.95f, 1f)
+    private val pumpOutOfflineIcon = ValueAnimator.ofFloat(1f, 0.95f)
 
     private var mGoogleSignInClient: GoogleSignInClient? = null
 
@@ -116,6 +115,7 @@ class FragmentLogin : Fragment() {
         viewTemp.loginVersionInfo.text = "Alpha \tv${BuildConfig.VERSION_NAME}"
         viewTemp.loginPopUpBackground.foreground.alpha = 0
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         viewTemp.layoutLogin.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.login_bg, opts))
@@ -328,18 +328,22 @@ class FragmentLogin : Fragment() {
                                 Data.loadingStatus = LoadingStatus.CLOSELOADING
                             }
                         } else {
+                            SystemFlow.vibrateAsError(viewTemp.context)
                             viewTemp.inputPassLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                             Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
                         }
                     } else {
+                        SystemFlow.vibrateAsError(viewTemp.context)
                         viewTemp.inputEmailLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                         Snackbar.make(viewTemp, "Not valid email!", Snackbar.LENGTH_SHORT).show()
                     }
                 } else {
+                    SystemFlow.vibrateAsError(viewTemp.context)
                     viewTemp.inputEmailLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                     Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
                 }
             } else {
+                SystemFlow.vibrateAsError(viewTemp.context)
                 viewTemp.buttonLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                 Handler().postDelayed({ Snackbar.make(viewTemp, "Your device is not connected to the internet. Please check your connection and try again.", Snackbar.LENGTH_SHORT).show() }, 50)
                 connectedTimer?.cancel()
@@ -375,6 +379,7 @@ class FragmentLogin : Fragment() {
                 auth.sendPasswordResetEmail(userEmail)
                 showNotification("Alert", "A password reset link was sent to the above email account", viewTemp.context)
             } else {
+                SystemFlow.vibrateAsError(viewTemp.context)
                 viewTemp.inputEmailLogin.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                 Snackbar.make(viewTemp, "This action requires email. Please enter a valid email above.", Snackbar.LENGTH_SHORT).show()
             }
@@ -419,7 +424,7 @@ class FragmentLogin : Fragment() {
                             }
                         }.addOnFailureListener {
                             Data.loadingStatus = LoadingStatus.CLOSELOADING
-                            Snackbar.make(viewTemp, "Oops. Request timed out", Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(viewTemp, it.message ?: it.localizedMessage, Snackbar.LENGTH_LONG).show()
                         }
 
                     } catch (e: IndexOutOfBoundsException) {
@@ -429,7 +434,7 @@ class FragmentLogin : Fragment() {
                     }
                 }.addOnFailureListener {
                     Data.loadingStatus = LoadingStatus.CLOSELOADING
-                    Snackbar.make(viewTemp, "Oops. Request timed out", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(viewTemp, it.message ?: it.localizedMessage, Snackbar.LENGTH_LONG).show()
                 }
     }
 
@@ -557,11 +562,13 @@ class FragmentLogin : Fragment() {
                                             if (it.exists()) {
                                                 viewP.textViewPopRegisterError.visibility = View.VISIBLE
                                                 viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity!!, R.anim.animation_shaky_short))
+                                                SystemFlow.vibrateAsError(viewP.context)
                                             } else {
                                                 viewP.textViewPopRegisterError.visibility = View.GONE
                                             }
                                         }
                                     } else {
+                                        SystemFlow.vibrateAsError(viewP.context)
                                         viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity!!, R.anim.animation_shaky_short))
                                     }
                                 }
@@ -588,6 +595,7 @@ class FragmentLogin : Fragment() {
                                             }
                                             viewP.textViewPopRegisterError.visibility = View.VISIBLE
                                             viewP.textViewPopRegisterError.text = "Given username already exist."
+                                            SystemFlow.vibrateAsError(viewP.context)
                                             viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity!!, R.anim.animation_shaky_short))
 
                                         } else {
@@ -631,6 +639,7 @@ class FragmentLogin : Fragment() {
                                         }
                                     }
                                 } else {
+                                    SystemFlow.vibrateAsError(viewP.context)
                                     viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity!!, R.anim.animation_shaky_short))
                                     viewP.textViewPopRegisterError.visibility = View.VISIBLE
                                     viewP.textViewPopRegisterError.text = getString(R.string.register_username)

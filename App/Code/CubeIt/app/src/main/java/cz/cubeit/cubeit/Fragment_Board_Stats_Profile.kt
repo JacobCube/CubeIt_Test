@@ -43,9 +43,9 @@ class Fragment_Board_Stats_Profile : Fragment() {
         }
 
         view.profile_description.text = playerProfile.description
-        view.textViewProfileXp.text = playerProfile.experience.toString() + " / " + (playerProfile.level * 0.75 * (8 * (playerProfile.level*0.8) * (3))).toInt().toString()
+        view.textViewProfileXp.setHTMLText(GameFlow.experienceScaleFormatString(playerProfile.experience, playerProfile.level))
         view.textViewProfileLevel.text = playerProfile.level.toString()
-        view.progressBarProfileXp.max = (playerProfile.level * 0.75 * (8 * (playerProfile.level*0.8) * (3))).toInt()
+        view.progressBarProfileXp.max = (playerProfile.level * 0.75 * (playerProfile.level * GenericDB.balance.playerXpRequiredLvlUpRate)).toInt()
         view.progressBarProfileXp.progress = playerProfile.experience
 
         if(playerProfile.username == Data.player.username){
@@ -85,7 +85,7 @@ class Fragment_Board_Stats_Profile : Fragment() {
         view.profile_stats_fight.setOnClickListener {
             if(playerProfile.username != Data.player.username){
 
-                val intent = Intent(view.context, FightSystem()::class.java)
+                val intent = Intent(view.context, ActivityFightSystem()::class.java)
                 intent.putExtra("enemy", playerProfile)
                 startActivity(intent)
             }

@@ -172,7 +172,7 @@ class Fragment_Menu_Bar : Fragment() {
                     view.buttonAdventure.isEnabled = true
                 }, 150)
 
-                val intent = Intent(view.context, Adventure::class.java)
+                val intent = Intent(view.context, ActivityAdventure::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
                 activity?.overridePendingTransition(0,0)

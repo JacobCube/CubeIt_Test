@@ -15,9 +15,9 @@ class Fragment_Story_Overview : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_story_overview, container, false)
 
-        val opts = BitmapFactory.Options()
+        /*val opts = BitmapFactory.Options()
         opts.inScaled = false
-        //view.imageViewCharacter0.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_0, opts))
+        view.imageViewCharacter0.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_0, opts))*/
 
         view.viewPagerStoryOverview.adapter = ViewPagerStoryOverview(childFragmentManager)
         view.tabLayoutStoryOverview.setupWithViewPager(view.viewPagerStoryOverview)

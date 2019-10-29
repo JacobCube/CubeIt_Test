@@ -67,12 +67,11 @@
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingsTextFont"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:gravity="center_horizontal"
         android:textColor="@color/colorSecondary"
-        app:layout_constraintEnd_toStartOf="@+id/imageViewSettingFontRight"
         app:layout_constraintStart_toStartOf="@+id/switchSounds"
         app:layout_constraintTop_toBottomOf="@+id/seekBarSettingsTextSize"
         tools:text="attention, all gamers" />
@@ -130,19 +129,6 @@
         app:layout_constraintTop_toBottomOf="@+id/switchSounds"
         tools:checked="true" />
 
-    <ImageView
-        android:id="@+id/imageViewSettingsBugIcon"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:rotation="180"
-        android:tint="@color/colorSecondary"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline82"
-        app:srcCompat="@drawable/bug_icon"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteY="0dp" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline139"
         android:layout_width="wrap_content"
@@ -162,7 +148,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.3" />
+        app:layout_constraintGuide_percent="0.35" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingsSeekBar"
@@ -189,9 +175,11 @@
         android:id="@+id/imageViewSettingFontRight"
         android:layout_width="0dp"
         android:layout_height="20dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/textViewSettingsTextFont"
         app:layout_constraintDimensionRatio="H,1:2"
         app:layout_constraintEnd_toStartOf="@+id/guideline199"
+        app:layout_constraintStart_toEndOf="@+id/textViewSettingsTextFont"
         app:layout_constraintTop_toTopOf="@+id/textViewSettingsTextFont"
         app:srcCompat="@drawable/right_arrow" />
 
@@ -200,6 +188,7 @@
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:stateListAnimator="@null"
         android:layout_marginTop="8dp"
         android:text="set password"
         app:layout_constraintEnd_toStartOf="@+id/guideline139"
@@ -210,6 +199,7 @@
         android:id="@+id/buttonSettingChangePasswordOk"
         style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
+        android:stateListAnimator="@null"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@android:string/ok"
@@ -264,6 +254,7 @@
         android:id="@+id/buttonSettingsVibrate"
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
+        android:stateListAnimator="@null"
         android:layout_height="wrap_content"
         android:text="vibrate"
         android:visibility="invisible"
@@ -298,9 +289,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/loginColor_3"
+        app:layout_constraintBottom_toTopOf="@+id/buttonSettingsVibrate"
         app:layout_constraintEnd_toEndOf="@+id/editTextSettingsVibrate"
-        app:layout_constraintStart_toStartOf="@+id/editTextSettingsVibrate"
-        app:layout_constraintTop_toBottomOf="@+id/editTextSettingsVibrate" />
+        app:layout_constraintStart_toStartOf="@+id/editTextSettingsVibrate" />
 
     <ImageView
         android:id="@+id/homeButtonBackSettings"
@@ -330,16 +321,6 @@
         app:srcCompat="@drawable/setting3rows" />
 
     <FrameLayout
-        android:id="@+id/frameLayoutMenuSettings"
-        android:layout_width="0dp"
-        android:layout_height="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-    </FrameLayout>
-
-    <FrameLayout
         android:id="@+id/frameLayoutBugReport"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -349,6 +330,29 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline82"
         app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/imageViewSettingsBugIcon"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:rotation="180"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline82"
+        app:srcCompat="@drawable/bug_icon"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteY="0dp" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutMenuSettings"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
     </FrameLayout>
 

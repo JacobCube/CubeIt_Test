@@ -271,7 +271,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/listViewMarketItems"
         app:layout_constraintEnd_toStartOf="@+id/guideline85"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@+id/guideline173"
+        tools:visibility="visible">
 
     </FrameLayout>
 
@@ -308,8 +309,7 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketMoney"

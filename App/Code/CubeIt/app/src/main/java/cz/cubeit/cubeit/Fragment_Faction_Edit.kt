@@ -81,6 +81,7 @@ class Fragment_Faction_Edit : Fragment() {
             }
             val viewHolder = rowMain.tag as ViewHolder
 
+            System.gc()
             val opts = BitmapFactory.Options()
             opts.inScaled = false
 

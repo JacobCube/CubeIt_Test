@@ -31,15 +31,15 @@ class Fragment_Adventure_overview : Fragment() {
 
 
     fun resetAdapter(notifyDataSeChanged: Boolean = false){
-        (activity as Adventure).overviewList = if(notifyDataSeChanged){
+        (activity as ActivityAdventure).overviewList = if(notifyDataSeChanged){
             Data.player.currentSurfaces[0].quests.asSequence().plus(Data.player.currentSurfaces[1].quests.asSequence()).plus(Data.player.currentSurfaces[2].quests.asSequence()).plus(Data.player.currentSurfaces[3].quests.asSequence()).plus(Data.player.currentSurfaces[4].quests.asSequence()).plus(Data.player.currentSurfaces[5].quests.asSequence()).toMutableList()
         }else{
             this.overviewList
         }
-        (activity as Adventure).overviewFilterDifficulty = this.filterDifficulty
-        (activity as Adventure).overviewFilterExperience = this.filterExperience
-        (activity as Adventure).overviewFilterItem = this.filterItem
-        (activity as Adventure).overviewFilterCoins = this.filterCoins
+        (activity as ActivityAdventure).overviewFilterDifficulty = this.filterDifficulty
+        (activity as ActivityAdventure).overviewFilterExperience = this.filterExperience
+        (activity as ActivityAdventure).overviewFilterItem = this.filterItem
+        (activity as ActivityAdventure).overviewFilterCoins = this.filterCoins
 
         val fragment = this
 
@@ -49,12 +49,12 @@ class Fragment_Adventure_overview : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_adventure_overview, container, false)
 
-        overviewList = if((activity as Adventure).overviewList != null){
-            this.filterDifficulty = (activity as Adventure).overviewFilterDifficulty
-            this.filterExperience = (activity as Adventure).overviewFilterExperience
-            this.filterItem = (activity as Adventure).overviewFilterItem
-            this.filterCoins = (activity as Adventure).overviewFilterCoins
-            (activity as Adventure).overviewList!!
+        overviewList = if((activity as ActivityAdventure).overviewList != null){
+            this.filterDifficulty = (activity as ActivityAdventure).overviewFilterDifficulty
+            this.filterExperience = (activity as ActivityAdventure).overviewFilterExperience
+            this.filterItem = (activity as ActivityAdventure).overviewFilterItem
+            this.filterCoins = (activity as ActivityAdventure).overviewFilterCoins
+            (activity as ActivityAdventure).overviewList!!
         }else{
             if(Data.player.username != "player")Data.player.currentSurfaces[0].quests.asSequence().plus(Data.player.currentSurfaces[1].quests.asSequence()).plus(Data.player.currentSurfaces[2].quests.asSequence()).plus(Data.player.currentSurfaces[3].quests.asSequence()).plus(Data.player.currentSurfaces[4].quests.asSequence()).plus(Data.player.currentSurfaces[5].quests.asSequence()).toMutableList()
             else mutableListOf()
@@ -90,10 +90,10 @@ class Fragment_Adventure_overview : Fragment() {
             view.listViewAdventureOverview.setOnScrollChangeListener { _, _, _, _, _ ->
                 if(window.isShowing) window.dismiss()
 
-                (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility = View.GONE
+                (activity!! as ActivityAdventure).imageViewMenuUpAdventureTemp.visibility = View.GONE
                 handler.removeCallbacksAndMessages(null)
                 handler.postDelayed({
-                    if(activity != null && (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility != View.VISIBLE) (activity!! as Adventure).imageViewMenuUpAdventureTemp.visibility = View.VISIBLE
+                    if(activity != null && (activity!! as ActivityAdventure).imageViewMenuUpAdventureTemp.visibility != View.VISIBLE) (activity!! as ActivityAdventure).imageViewMenuUpAdventureTemp.visibility = View.VISIBLE
                 }, 1000)
             }
         }
@@ -344,12 +344,12 @@ class AdventureQuestsOverview(
                 if(!Data.loadingActiveQuest){
                     if(window.isShowing) window.dismiss()
                     when(sideQuestsAdventure[position].surface){
-                        0 -> Adventure().changeSurface(0, viewPager)
-                        1 -> Adventure().changeSurface(1, viewPager)
-                        2 -> Adventure().changeSurface(2, viewPager)
-                        3 -> Adventure().changeSurface(3, viewPager)
-                        4 -> Adventure().changeSurface(4, viewPager)
-                        5 -> Adventure().changeSurface(5, viewPager)
+                        0 -> ActivityAdventure().changeSurface(0, viewPager)
+                        1 -> ActivityAdventure().changeSurface(1, viewPager)
+                        2 -> ActivityAdventure().changeSurface(2, viewPager)
+                        3 -> ActivityAdventure().changeSurface(3, viewPager)
+                        4 -> ActivityAdventure().changeSurface(4, viewPager)
+                        5 -> ActivityAdventure().changeSurface(5, viewPager)
                     }
                     var index = 0
                     for(i in position-1 downTo 0){
@@ -359,7 +359,7 @@ class AdventureQuestsOverview(
                             break
                         }
                     }
-                    Handler().postDelayed({Adventure().onClickQuestOverview(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview, viewP =  activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false), usedActivity = activity)}, 100)
+                    Handler().postDelayed({ActivityAdventure().onClickQuestOverview(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview, viewP =  activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false), usedActivity = activity)}, 100)
                 }
             }
 
@@ -377,7 +377,7 @@ class AdventureQuestsOverview(
                 super.onSuccessSwipe()
                 if(Data.activeQuest == null && !Data.loadingActiveQuest){               //TODO loading screen overlay viz. login screen google sign in
                     Data.player.createActiveQuest(sideQuestsAdventure[position], sideQuestsAdventure[position].surface).addOnSuccessListener {
-                        (activity as Adventure).checkForQuest()
+                        (activity as ActivityAdventure).checkForQuest()
                         fragmentOverview.resetAdapter(true)
                     }
                 }

@@ -86,7 +86,7 @@ class Spells: AppCompatActivity(){
 
         val dm  = DisplayMetrics()
         val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {

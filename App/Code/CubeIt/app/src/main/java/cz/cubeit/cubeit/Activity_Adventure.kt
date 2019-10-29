@@ -28,12 +28,45 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import com.google.android.material.snackbar.Snackbar
+import java.lang.ref.WeakReference
 import kotlin.math.max
+import android.os.*
 
 
 var resourcesAdventure: Resources? = null
 
-class Adventure : AppCompatActivity() {
+class ActivityAdventure : AppCompatActivity() {
+
+
+    companion object {
+        class AdventureInitialization (context: ActivityAdventure): AsyncTask<Int, String, String?>(){
+            private val innerContext: WeakReference<Context> = WeakReference(context)
+
+            override fun doInBackground(vararg params: Int?): String? {
+                val context = innerContext.get() as ActivityAdventure?
+                //context leakage solution
+
+                return if(context != null){
+
+                    context.checkForQuest()
+
+                    "true"
+                }else "false"
+            }
+
+            override fun onPostExecute(result: String?) {
+                super.onPostExecute(result)
+                val context = innerContext.get() as ActivityAdventure?
+
+                if (result != null && result.toBoolean()){
+                    //do something, my result is successful
+                }else {
+                    Toast.makeText(context, "Something went wrong! Try restarting your application", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
 
     var displayY: Double = 0.0
     var progressAnimator: ValueAnimator? = null
@@ -155,21 +188,26 @@ class Adventure : AppCompatActivity() {
         hideSystemUI()
         setContentView(R.layout.activity_adventure)
 
+        this.window.decorView.rootView.post {
+            AdventureInitialization(this).execute()
+        }
+
         imageViewMenuUpAdventureTemp = imageViewMenuUpAdventure
 
         progressAdventureQuest.setOnClickListener {
             if(Data.activeQuest!!.completed){
                 if((Data.activeQuest!!.quest.reward.item != null && Data.player.inventory.contains(null)) || Data.activeQuest!!.quest.reward.item == null){
-                    val intent = Intent(this@Adventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
+                    val intent = Intent(this@ActivityAdventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
                     intent.putExtra("reward", Data.activeQuest!!.quest.reward)
                     intent.putExtra("difficulty", Data.activeQuest!!.quest.level)
                     startActivity(intent)
                 }else {
                     progressAdventureQuest.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_shaky_short_vertical))
                     Snackbar.make(progressAdventureQuest, "Your inventory cannot be full!", Snackbar.LENGTH_SHORT).show()
+                    SystemFlow.vibrateAsError(this)
                 }
             }else {
-                onClickQuestOverview(0,0, this@Adventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview), layoutInflater.inflate(R.layout.popup_info_dialog, null, false), this)
+                onClickQuestOverview(0,0, this@ActivityAdventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview), layoutInflater.inflate(R.layout.popup_info_dialog, null, false), this)
             }
         }
 
@@ -179,14 +217,12 @@ class Adventure : AppCompatActivity() {
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels.toDouble()
         val displayX = dm.widthPixels.toDouble()
         resourcesAdventure = resources
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commit()
-
-        checkForQuest()
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
@@ -252,8 +288,8 @@ class Adventure : AppCompatActivity() {
             }
         }
 
-        viewPagerAdventure!!.adapter = ViewPagerAdapterAdventure(supportFragmentManager)
-        viewPagerAdventure!!.offscreenPageLimit = 6
+        viewPagerAdventure?.adapter = ViewPagerAdapterAdventure(supportFragmentManager)
+        viewPagerAdventure?.offscreenPageLimit = 6
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuAdventure, Fragment_Menu_Bar.newInstance(R.id.viewPagerAdventure, R.id.frameLayoutMenuAdventure, R.id.homeButtonBackAdventure, R.id.imageViewMenuUpAdventure)).commitNow()
         frameLayoutMenuAdventure.y = dm.heightPixels.toFloat()
@@ -278,8 +314,8 @@ class Adventure : AppCompatActivity() {
         val buttonClose: ImageView = viewPop.buttonCloseDialog
         val imageViewAdventure: ImageView = viewPop.imageViewAdventure2
         val textViewStats: CustomTextView = viewPop.textViewItemStats
-        viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${quest.reward.experience}")
-        viewPop.textViewPopAdventureCC.text = quest.reward.cubeCoins.toString()
+        viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${GameFlow.numberFormatString(quest.reward.experience)}")
+        viewPop.textViewPopAdventureCC.setHTMLText(GameFlow.numberFormatString(quest.reward.cubeCoins))
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
@@ -368,14 +404,14 @@ class Adventure : AppCompatActivity() {
                 super.onStartHold(x, y)
                 viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
                 viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                val coordinates = SystemFlow.resolveLayoutLocation(this@Adventure, x, y, viewP.measuredWidth, viewP.measuredHeight)
+                val coordinates = SystemFlow.resolveLayoutLocation(this@ActivityAdventure, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                 if(!Data.loadingActiveQuest && !windowPop.isShowing){
                     viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
                     viewP.imageViewPopUpInfoItem.setBackgroundResource(quest.reward.item!!.getBackground())
                     viewP.imageViewPopUpInfoItem.setImageResource(quest.reward.item!!.drawable)
 
-                    windowPop.showAsDropDown(this@Adventure.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
+                    windowPop.showAsDropDown(this@ActivityAdventure.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
                 }
             }
 
@@ -479,8 +515,8 @@ class Adventure : AppCompatActivity() {
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        viewPopQuest.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${quest.reward.experience}")
-        viewPopQuest.textViewPopAdventureCC.text = quest.reward.cubeCoins.toString()
+        viewPopQuest.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${GameFlow.numberFormatString(quest.reward.experience)}")
+        viewPopQuest.textViewPopAdventureCC.setHTMLText(GameFlow.numberFormatString(quest.reward.cubeCoins))
 
         viewPopQuest.imageViewAdventure.setImageResource(R.drawable.question_mark)
         if (quest.reward.item != null) {

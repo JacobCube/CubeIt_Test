@@ -70,13 +70,14 @@ class Activity_Story: AppCompatActivity(){
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels.toDouble()
         displayX = dm.widthPixels.toDouble()
 
         frameLayoutMenuStory.y = displayY.toFloat()
         frameLayoutStoryOverview.x = (frameLayoutStoryQuest.width - frameLayoutStoryOverview.width).toFloat()
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         imageViewStoryBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.story_bg, opts))

@@ -58,9 +58,6 @@ class Activity_Market:AppCompatActivity(){
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val viewRect = Rect()
-        val viewRectCompare = Rect()
-        val viewRectRegister = Rect()
-        frameLayoutMarket.getGlobalVisibleRect(viewRectRegister)
         frameLayoutMenuMarket.getGlobalVisibleRect(viewRect)
 
         if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuMarket.y <= (displayY * 0.83).toFloat()) {
@@ -73,11 +70,11 @@ class Activity_Market:AppCompatActivity(){
                 start()
             }
         }
-
-        if(!viewRectRegister.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMarket.visibility != View.GONE){
-            frameLayoutMarket.visibility = View.GONE
-        }
         return super.dispatchTouchEvent(ev)
+    }
+
+    fun disableRegisterOffer(){
+        frameLayoutMarket.visibility = View.GONE
     }
 
     @SuppressLint("SetTextI18n")
@@ -90,9 +87,9 @@ class Activity_Market:AppCompatActivity(){
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels.toDouble()
-        textViewMarketMoney.text = "${Data.player.cubeCoins} CC\n${Data.player.cubix} cubix"
+        textViewMarketMoney.text = "${GameFlow.numberFormatString(Data.player.cubeCoins)} CC\n${GameFlow.numberFormatString(Data.player.cubix)} cubix"
 
         val rotateAnimation = RotateAnimation(
                 0f, 360f,
@@ -141,7 +138,7 @@ class Activity_Market:AppCompatActivity(){
         }
 
         imageViewMarketMyOffers.setOnClickListener {
-            frameLayoutMarketRegisterOffer.visibility = View.GONE
+            disableRegisterOffer()
             imageViewLoadingMarket.startAnimation(rotateAnimation)
             db.collection("market").whereEqualTo("seller", Data.player.username).limit(50).get().addOnCompleteListener {
                 if (it.isSuccessful) {
@@ -313,6 +310,7 @@ class Activity_Market:AppCompatActivity(){
             }
 
             imageViewSearchIconMarket.setOnClickListener {
+                disableRegisterOffer()
                 imageViewLoadingMarket.startAnimation(rotateAnimation)
                 if(editTextMarketSearch.text!!.isNotEmpty()){
                     docRef.whereGreaterThanOrEqualTo("itemName", editTextMarketSearch.text.toString()).get().addOnSuccessListener {             //filter by its item's name
@@ -333,6 +331,7 @@ class Activity_Market:AppCompatActivity(){
             }
 
             viewPop.buttonMarketFilterApply.setOnClickListener {                      //detailed filter
+                disableRegisterOffer()
                 imageViewLoadingMarket.startAnimation(rotateAnimation)
                 docRef = db.collection("market").whereEqualTo("buyer", null)
 
@@ -450,7 +449,7 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                                     Toast.makeText(activity, if(it.isSuccessful){
                                         itemsListAdapter.removeAt(position)
                                         this.notifyDataSetChanged()
-                                        textViewMoney.text = "${Data.player.cubeCoins} CC\n${Data.player.cubix} cubix"
+                                        textViewMoney.text = "${GameFlow.numberFormatString(Data.player.cubeCoins)} CC\n${GameFlow.numberFormatString(Data.player.cubix)} cubix"
                                         "Offer successfully removed."
                                     }else{
                                         "Error has occurred."

@@ -42,7 +42,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }else{
                 field = value
             }
-            enemy.enemy.calcSpell(playerFight, enemy, usedSpell, field, playerFight.stun, enemy.energy - enemy.requiredEnergy)
+            //enemy.enemy.calcSpell(playerFight, enemy, usedSpell, field, playerFight.stun, enemy.energy - enemy.requiredEnergy)
         }
     private var fightEnded:Boolean = false
     private var displayY = 0
@@ -464,7 +464,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         }
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels
         displayX = dm.widthPixels
 
@@ -472,6 +472,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
         opts.inScaled = false
 
         fun init(){
+            System.gc()
             imageViewEnemyCharNPC.setImageBitmap(BitmapFactory.decodeResource(resources, enemy.enemy.charClass.drawable, opts))
             //imageViewPlayerCharNPC.setImageBitmap(BitmapFactory.decodeResource(resources, playerFight.playerFight.charClass.drawable, opts))
             if(enemy.enemy.description == "")textViewDescriptionNPC.visibility = View.GONE else textViewDescriptionNPC.text = enemy.enemy.description
@@ -698,6 +699,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             }
         })
 
+        System.gc()
         imageViewFightBgNPC.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.arena, opts))
         imageViewFightBarsNPC.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.fight_bar, opts))
 
@@ -859,7 +861,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
     private fun endOfFight(completed: Boolean, view: View) {
         fightEnded = true
 
-        val endFight = Intent(this, Adventure::class.java)
+        val endFight = Intent(this, ActivityAdventure::class.java)
         endFight.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
         val window = PopupWindow(this)
@@ -955,7 +957,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
         if(Data.activeQuest!!.result == ActiveQuest.Result.WAITING){
             Data.activeQuest!!.complete(if(completed) ActiveQuest.Result.WON else ActiveQuest.Result.LOST).addOnSuccessListener {
-                if(completed) reward?.receive()
+                if(completed) reward?.receive(null, false)
 
                 Data.activeQuest = null
             }

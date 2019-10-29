@@ -211,6 +211,7 @@ class Fragment_Board_Character_Profile : Fragment() {
             Data.player
         }
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.profile_imageViewCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, playerProfile.charClass.drawable, opts))

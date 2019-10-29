@@ -111,9 +111,9 @@ class Activity_Character : AppCompatActivity() {
         super.onResume()
         Data.player.syncStats()
         progressBarCharacterXp.progress = Data.player.experience
-        progressBarCharacterXp.max = (Data.player.level * 0.75 * (8 * (Data.player.level*0.8) * (3))).toInt()
-        textViewCharacterLevel.text = Data.player.level.toString()
-        textViewCharacterXp.text = "${progressBarCharacterXp.progress} / ${progressBarCharacterXp.max}"
+        progressBarCharacterXp.max = (Data.player.level * 0.75 * (Data.player.level * GenericDB.balance.playerXpRequiredLvlUpRate)).toInt()
+        textViewCharacterLevel.setHTMLText(Data.player.level)
+        textViewCharacterXp.setHTMLText(GameFlow.experienceScaleFormatString(Data.player.experience, Data.player.level))
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
@@ -182,9 +182,9 @@ class Activity_Character : AppCompatActivity() {
         initBag()
 
         progressBarCharacterXp.progress = Data.player.experience
-        progressBarCharacterXp.max = (Data.player.level * 0.75 * (8 * (Data.player.level*0.8) * (3))).toInt()
+        progressBarCharacterXp.max = (Data.player.level * 0.75 * (Data.player.level * GenericDB.balance.playerXpRequiredLvlUpRate)).toInt()
         textViewCharacterLevel.text = Data.player.level.toString()
-        textViewCharacterXp.text = progressBarCharacterXp.progress.toString() + " / " + progressBarCharacterXp.max.toString()
+        textViewCharacterXp.setHTMLText(GameFlow.experienceScaleFormatString(Data.player.experience, Data.player.level))
 
         listViewInventory.smoothScrollByOffset(2)
 
@@ -192,6 +192,7 @@ class Activity_Character : AppCompatActivity() {
         imageViewRune0.setOnDragListener(runesDragListener)
         imageViewRune1.setOnDragListener(runesDragListener)
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         imageViewActivityCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_bg, opts))
@@ -210,7 +211,7 @@ class Activity_Character : AppCompatActivity() {
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels.toDouble()
 
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityCharacter, R.id.frameLayoutMenuCharacter, R.id.homeButtonBackCharacter, R.id.imageViewMenuUpCharacter)).commitNow()

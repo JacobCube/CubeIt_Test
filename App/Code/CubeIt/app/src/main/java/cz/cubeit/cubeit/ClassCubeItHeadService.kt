@@ -18,7 +18,7 @@ import android.widget.ImageView
 import android.animation.ValueAnimator
 
 
-class ClassCubeItHeadService : Service() {
+class ClassCubeItHeadService : Service() {              //TODO adventure timer
     private var mWindowManager: WindowManager? = null
     private var nWindowManager: WindowManager? = null
     private var mCubeItHeadView: View? = null
@@ -49,20 +49,20 @@ class ClassCubeItHeadService : Service() {
             params = WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.TYPE_PHONE,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT)
         }
 
         //Specify the chat head position
-        params.gravity = Gravity.TOP or Gravity.LEFT
+        params.gravity = Gravity.TOP or Gravity.START
         params.x = 0
         params.y = 100
 
         //Add the view to the window
 
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        mWindowManager!!.addView(mCubeItHeadView, params)
+        mWindowManager?.addView(mCubeItHeadView, params)
 
         nWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -138,7 +138,7 @@ class ClassCubeItHeadService : Service() {
                             stopSelf()
                         }else {
                             val displayMetrics = DisplayMetrics()
-                            nWindowManager!!.defaultDisplay.getMetrics(displayMetrics)
+                            nWindowManager!!.defaultDisplay.getRealMetrics(displayMetrics)
                             val displayYPercent: Double = (displayMetrics.heightPixels.toDouble()) / 100
                             val displayXHalf = displayMetrics.widthPixels / 2
 

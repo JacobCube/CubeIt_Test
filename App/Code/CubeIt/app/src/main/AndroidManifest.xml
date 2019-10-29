@@ -41,7 +41,7 @@
             android:name=".ActivityFightBoard"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".FightSystem"
+            android:name=".ActivityFightSystem"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".Activity_Faction_Base"
@@ -57,7 +57,7 @@
             android:name=".Activity_Shop"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".Adventure"
+            android:name=".ActivityAdventure"
             android:screenOrientation="sensorLandscape"/>
         <activity
             android:name=".Spells"

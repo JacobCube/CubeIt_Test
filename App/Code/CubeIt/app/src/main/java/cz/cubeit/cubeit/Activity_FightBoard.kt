@@ -46,7 +46,7 @@ class ActivityFightBoard: AppCompatActivity(){
                 return if(context != null){
                     val dm = DisplayMetrics()
                     val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                    windowManager.defaultDisplay.getMetrics(dm)
+                    windowManager.defaultDisplay.getRealMetrics(dm)
                     context.displayY = dm.heightPixels.toDouble()
 
                     context.rotateAnimation = RotateAnimation(
@@ -99,6 +99,7 @@ class ActivityFightBoard: AppCompatActivity(){
                     opts.inScaled = false
 
                     context.runOnUiThread {
+                        System.gc()
                         context.imageViewActivityFightBoard.setImageBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.fightboard_bg, opts))
 
                         context.window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
@@ -215,7 +216,7 @@ class ActivityFightBoard: AppCompatActivity(){
 
             val dm = DisplayMetrics()
             val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.defaultDisplay.getMetrics(dm)
+            windowManager.defaultDisplay.getRealMetrics(dm)
             frameLayoutMenuBoard.y = dm.heightPixels.toFloat()
 
             val handler = Handler()
@@ -320,10 +321,10 @@ class ActivityFightBoard: AppCompatActivity(){
                 override fun onAnimationEnd(animation: Animation?) {
                     if(isFaction){
                         imageViewFightBoardFaction.setImageResource(R.drawable.menu_character_icon)
-                        imageViewFightBoardFaction.setColorFilter(R.color.colorSecondary)
+                        //imageViewFightBoardFaction.clearColorFilter()
                     }else {
                         imageViewFightBoardFaction.setImageResource(R.drawable.faction_icon)
-                        imageViewFightBoardFaction.clearColorFilter()
+                        //imageViewFightBoardFaction.setColorFilter(R.color.colorSecondary)
                     }
                     imageViewFightBoardFaction.startAnimation(animSwitchType2)
                 }

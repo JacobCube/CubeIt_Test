@@ -35,6 +35,7 @@ class Fragment_Register : Fragment() {
         val view:View = inflater.inflate(R.layout.fragment_register, container, false)
 
         view.post {
+            System.gc()
             val opts = BitmapFactory.Options()
             opts.inScaled = false
             view.layoutRegister.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.register_bg, opts))
@@ -121,27 +122,33 @@ class Fragment_Register : Fragment() {
                                             }
                                         }
                                     }else {
+                                        SystemFlow.vibrateAsError(view.context)
                                         view.inputPassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                         view.inputRePassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                         Snackbar.make(view, "Passwords must match!", Snackbar.LENGTH_SHORT).show()
                                     }
                                 }else {
+                                    SystemFlow.vibrateAsError(view.context)
                                     view.inputPassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                     Snackbar.make(view, "Entered password is not valid!", Snackbar.LENGTH_SHORT).show()
                                 }
                             }else {
+                                SystemFlow.vibrateAsError(view.context)
                                 view.inputPassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                 Snackbar.make(view, "Field required!", Snackbar.LENGTH_SHORT).show()
                             }
                         }else {
+                            SystemFlow.vibrateAsError(view.context)
                             view.inputEmailReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                             Snackbar.make(view, "Not valid email!", Snackbar.LENGTH_SHORT).show()
                         }
                     }else {
+                        SystemFlow.vibrateAsError(view.context)
                         view.inputEmailReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                         Snackbar.make(view, "Field required!", Snackbar.LENGTH_SHORT).show()
                     }
                 }else {
+                    SystemFlow.vibrateAsError(view.context)
                     view.inputUsernameReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Snackbar.make(view, "Not allowed!", Snackbar.LENGTH_SHORT).show()
                 }

@@ -98,11 +98,11 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
 
         val dm = DisplayMetrics()
         val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayY = dm.heightPixels.toDouble()
         displayX = dm.widthPixels.toDouble()
 
-
+        System.gc()
         frameLayoutMenuFaction.y = displayY.toFloat()
         val opts = BitmapFactory.Options()
         opts.inScaled = false

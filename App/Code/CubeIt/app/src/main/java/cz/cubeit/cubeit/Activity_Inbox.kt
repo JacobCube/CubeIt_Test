@@ -399,12 +399,7 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                                 Data.inbox.add(i)
                                 if(i.status != MessageStatus.Sent){
                                     Snackbar.make(imageViewActivityInbox, "New message has arrived.", Snackbar.LENGTH_LONG).show()
-                                    val v = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
-                                    } else {
-                                        v!!.vibrate(20)
-                                    }
+                                    SystemFlow.vibrateAsError(this)
                                 }
                             }
                         }
@@ -413,25 +408,7 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                         (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
                         (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
                         Data.inboxChanged = false
-                    }/*else if(snapshot.documents.size >= 1 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
-                        for(i in inboxSnap){
-                             if(!Data.inbox.any { it.id == i.id }  && i.status != MessageStatus.Read){
-                                 Data.inbox.add(i)
-                                 if(i.status != MessageStatus.Sent){
-                                     Toast.makeText(this, "New message has arrived.", Toast.LENGTH_SHORT).show()
-                                     val v = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
-                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                         v!!.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
-                                     } else {
-                                         v!!.vibrate(20)
-                                     }
-                                     Data.inboxChanged = true
-                                     Data.inboxChangedMessages++
-                                 }
-                             }
-                        }
-                        SystemFlow.writeFileText(this, "inboxNew${Data.player.username}", "${Data.inboxChanged},${Data.inboxChangedMessages}")
-                    }*/
+                    }
                 }
             }
         }else {

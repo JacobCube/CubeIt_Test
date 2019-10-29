@@ -154,9 +154,9 @@ class FragmentInboxMessage : Fragment() {
                 view.buttonInboxMessageGet.visibility = View.VISIBLE
                 view.buttonInboxMessageGet.isEnabled = true
                 view.textViewInboxMessageCoins.visibility = View.VISIBLE
-                view.textViewInboxMessageCoins.setHTMLText("CC: ${chosenMail.reward!!.cubeCoins}" +
-                        "</br>cubix: ${chosenMail.reward!!.cubix}" +
-                        "</br><font color='#003366'><b>xp </b></font>${chosenMail.reward!!.experience}")
+                view.textViewInboxMessageCoins.setHTMLText("CC: ${GameFlow.numberFormatString(chosenMail.reward?.cubeCoins ?: 0)}" +
+                        "<br/>cubix: ${GameFlow.numberFormatString(chosenMail.reward?.cubix ?:0)}" +
+                        "<br/><font color='#003366'><b>xp </b></font>${GameFlow.numberFormatString(chosenMail.reward?.experience ?: 0)}")
 
                 if(chosenMail.reward!!.item != null){
                     view.imageViewInboxMessageItem.visibility = View.VISIBLE
@@ -195,10 +195,13 @@ class FragmentInboxMessage : Fragment() {
                 }
 
                 view.buttonInboxMessageGet.setOnClickListener {
+                    val tempActivity = activity!!
                     if(Data.player.inventory.contains(null)){
-                        view.buttonInboxMessageGet.isEnabled = false
+                        view.buttonInboxMessageGet.visibility = View.GONE
+                        val coords = intArrayOf(0, 0)
+                        view.buttonInboxMessageGet.getLocationOnScreen(coords)
                         Data.inbox.find { it.id == (activity as Activity_Inbox).chosenMail.id }!!.apply {
-                            reward!!.receive()
+                            reward!!.receive(null, true, tempActivity, Coordinates(coords[0].toFloat(), coords[1].toFloat()))
                             reward = null
                         }
                         Data.inbox.remove(Data.inbox.find { it.id == (activity as Activity_Inbox).chosenMail.id }!!)
@@ -211,7 +214,7 @@ class FragmentInboxMessage : Fragment() {
                     }
                 }
             }else{
-                view.buttonInboxMessageGet.isEnabled = false
+                view.buttonInboxMessageGet.visibility = View.GONE
             }
         }else if(arguments?.getString("type")=="reply"){
 
@@ -257,28 +260,30 @@ class FragmentInboxMessage : Fragment() {
 
                                     activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
                                 }else {
+                                    SystemFlow.vibrateAsError(view.context)
                                     view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                     Snackbar.make(view, "Content is  too long!", Snackbar.LENGTH_SHORT).show()
                                 }
-
                             }else{
+                                SystemFlow.vibrateAsError(view.context)
                                 view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                 Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
-
                             }
                         }else{
+                            SystemFlow.vibrateAsError(view.context)
                             view.editTextInboxSubject.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                             Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
                         }
                     }else{
+                        SystemFlow.vibrateAsError(view.context)
                         view.editTextInboxReciever.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                         Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
                     }
                 }else{
+                    SystemFlow.vibrateAsError(view.context)
                     view.spinnerInboxPriority.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
                 }
-
             }
 
         }else{
@@ -364,29 +369,31 @@ class FragmentInboxMessage : Fragment() {
                                     activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
 
                                 } else {
+                                    SystemFlow.vibrateAsError(view.context)
                                     view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                     Snackbar.make(view, "Content is  too long!", Snackbar.LENGTH_SHORT).show()
                                 }
-
                             } else {
+                                SystemFlow.vibrateAsError(view.context)
                                 view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                 Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
-
                             }
                         } else {
+                            SystemFlow.vibrateAsError(view.context)
                             view.editTextInboxSubject.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                             Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
                         }
                     } else {
+                        SystemFlow.vibrateAsError(view.context)
                         view.editTextInboxReciever.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                         Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
                     }
                 } else {
+                    SystemFlow.vibrateAsError(view.context)
                     view.spinnerInboxPriority.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
                 }
             }
-
         }
 
         return view

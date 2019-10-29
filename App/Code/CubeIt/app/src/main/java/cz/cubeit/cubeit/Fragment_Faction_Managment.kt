@@ -88,8 +88,6 @@ class Fragment_Faction_Managment : Fragment() {
             val viewHolder = rowMain.tag as ViewHolder
 
             val collection = collectionIn.values.toMutableList()
-            val opts = BitmapFactory.Options()
-            opts.inScaled = false
 
             viewHolder.settings.setOnClickListener { view ->
                 val wrapper = ContextThemeWrapper(viewGroup!!.context, R.style.FactionPopupMenu)

@@ -51,6 +51,7 @@ class Fragment_Story_Quest_Template_0 : Fragment() {
         val slide: StorySlide = quest.slides[arguments!!.getInt("slideNum")]
         viewTemplate0.textView0Template0.animateText(slide.textContent)
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         viewTemplate0.imageView0Template0.setImageBitmap(BitmapFactory.decodeResource(resources, slide.images[0].drawable, opts))

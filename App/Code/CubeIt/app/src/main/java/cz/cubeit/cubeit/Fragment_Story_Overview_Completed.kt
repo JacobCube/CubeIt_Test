@@ -19,8 +19,6 @@ class Fragment_Story_Overview_Completed : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_story_overview_completed, container, false)
 
-        val opts = BitmapFactory.Options()
-        opts.inScaled = false
         Data.player.storyQuestsCompleted.sortBy { it.id.toIntOrNull() }
 
         view.listViewStoryCompleted.adapter = StoryOverviewCompletedAdapter(Data.player.storyQuestsCompleted, activity!!)
@@ -63,8 +61,8 @@ private class StoryOverviewCompletedAdapter(var storyCompleted:MutableList<Story
         }
         viewHolder.name.text = storyCompleted[position].name
         viewHolder.shortDescription.text = storyCompleted[position].shortDescription
-        viewHolder.experience.text = "xp: " + storyCompleted[position].reward.experience.toString()
-        viewHolder.money.text = "CC: " + storyCompleted[position].reward.cubeCoins.toString()
+        viewHolder.experience.text = "xp: " + GameFlow.numberFormatString(storyCompleted[position].reward.experience)
+        viewHolder.money.text = "CC: " + GameFlow.numberFormatString(storyCompleted[position].reward.cubeCoins)
 
         rowMain.setOnClickListener {
             (activity as Activity_Story).onStoryClicked(storyCompleted[position])

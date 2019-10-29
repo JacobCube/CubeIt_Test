@@ -76,6 +76,7 @@ class Fragment_Minigame_Info : Fragment() {
         }
 
         activity?.runOnUiThread {
+            System.gc()
             val opts = BitmapFactory.Options()
             opts.inScaled = false
             view.imageViewFragmentInfo_0.setImageBitmap(BitmapFactory.decodeResource(resources, if(minigame.imagesResolved.size >= 1) minigame.imagesResolved[0] else 0, opts))

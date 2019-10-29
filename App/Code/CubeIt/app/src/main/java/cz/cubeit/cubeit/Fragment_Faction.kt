@@ -9,28 +9,21 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.text.Layout
 import android.util.DisplayMetrics
-import androidx.fragment.app.Fragment
-import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.*
+import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.MetadataChanges
 import kotlinx.android.synthetic.main.activity_faction_base.*
 import kotlinx.android.synthetic.main.fragment_faction.*
 import kotlinx.android.synthetic.main.fragment_faction.view.*
-import kotlinx.android.synthetic.main.pop_up_market_offer.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.popup_dialog_listview.view.*
 import kotlinx.android.synthetic.main.row_faction_members.view.*
-import kotlinx.android.synthetic.main.row_faction_mng_invitation.view.*
 import kotlinx.android.synthetic.main.row_faction_pictures.view.*
-import kotlin.math.max
 
 
 class Fragment_Faction: Fragment(){
@@ -92,24 +85,18 @@ class Fragment_Faction: Fragment(){
                         }else {
                             if(Data.factionSnapshot == null){
                                 val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
-                                val docRef = db.collection("factions").document(Data.player.factionID!!.toString())
+                                val docRef = db.collection("factions").document(Data.player.factionID?.toString() ?: "")
                                 Data.factionSnapshot = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                                     if (e != null) {
                                         return@addSnapshotListener
                                     }
-
-                                    val source = if (snapshot != null && snapshot.metadata.hasPendingWrites())
-                                        "Local"
-                                    else
-                                        "Server"
-
                                     if (snapshot != null && snapshot.exists()) {
                                         val newFaction = snapshot.toObject(Faction::class.java)
-                                        if(newFaction == null) activity!!.finish()
+                                        if(newFaction == null) activity?.finish()
                                         newFaction?.actionLog?.sortByDescending { it.captured }
                                         Data.player.faction?.actionLog?.sortByDescending { it.captured }
 
-                                        if(Data.player.faction != null && Data.player.faction == newFaction!!){
+                                        if(Data.player.faction != null && Data.player.faction == newFaction){
                                             currentInstanceOfFaction = Data.player.faction
                                         }else {
                                             if(newFaction?.actionLog != currentInstanceOfFaction?.actionLog){
@@ -121,7 +108,7 @@ class Fragment_Faction: Fragment(){
                                             Data.player.faction = newFaction
                                         }
                                         if(isAdded && isVisible)init()
-                                        if(Data.player.faction != newFaction!! && !isVisible){
+                                        if(Data.player.faction != newFaction && !isVisible){
                                             SystemFlow.factionChange = true
                                         }
 
@@ -135,8 +122,7 @@ class Fragment_Faction: Fragment(){
 
                         Data.loadingStatus = LoadingStatus.CLOSELOADING
                     }.addOnFailureListener {
-                        Log.d("Faction result", "Loading failed")
-                        activity!!.finish()
+                        activity?.finish()
                         SystemFlow.factionChange = false
                         Data.loadingStatus = LoadingStatus.CLOSELOADING
                     }
@@ -157,7 +143,7 @@ class Fragment_Faction: Fragment(){
                         Data.loadingStatus = LoadingStatus.CLOSELOADING
                     }else {
                         Data.loadingStatus = LoadingStatus.CLOSELOADING
-                        activity!!.finish()
+                        activity?.finish()
                     }
                 }
             }
@@ -165,6 +151,7 @@ class Fragment_Faction: Fragment(){
     }
 
     private fun init() {
+        if(currentInstanceOfFaction == null) return
 
         viewTemp.listViewFactionMembers.adapter = FactionMemberList(currentInstanceOfFaction!!, viewTemp.textViewFactionMemberDesc, viewTemp.context, currentInstanceOfFaction!!.members[Data.player.username], myFaction, mutableListOf(), activity!!, this)
         (viewTemp.listViewFactionMembers.adapter as FactionMemberList).notifyDataSetChanged()
@@ -186,37 +173,36 @@ class Fragment_Faction: Fragment(){
                     View.VISIBLE
                 } else View.GONE
 
-        viewTemp.textViewFactionInfoDesc.setHTMLText(currentInstanceOfFaction!!.getInfoDesc())
-        viewTemp.textViewFactionDescription.setHTMLText(currentInstanceOfFaction!!.description)
-        viewTemp.textViewFactionTitle.setHTMLText(currentInstanceOfFaction!!.name)
+        viewTemp.textViewFactionInfoDesc.setHTMLText(currentInstanceOfFaction?.getInfoDesc() ?: "")
+        viewTemp.textViewFactionDescription.setHTMLText(currentInstanceOfFaction?.description ?: "")
+        viewTemp.textViewFactionTitle.setHTMLText(currentInstanceOfFaction?.name ?: "")
         viewTemp.textViewFactionTitle.fontSizeType = CustomTextView.SizeType.title
 
         if(myFaction){
-            Log.d("factionLogChanged", Data.factionLogChanged.toString())
             viewTemp.imageViewFactionLogNew.visibility = if(Data.factionLogChanged){
                 View.VISIBLE
             }else {
                 View.GONE
             }
 
-            viewTemp.textViewFactionGold.text = resources.getString(R.string.faction_gold, currentInstanceOfFaction!!.gold.toString())
-            viewTemp.textViewFactionMemberDesc.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(Data.player.username))
+            viewTemp.textViewFactionGold.text = resources.getString(R.string.faction_gold, (currentInstanceOfFaction?.gold ?: 0).toString())
+            viewTemp.textViewFactionMemberDesc.setHTMLText(currentInstanceOfFaction?.getMemberDesc(Data.player.username) ?: "")
 
             childFragmentManager.beginTransaction().replace(R.id.frameLayoutFactionLog, Fragment_Faction_Log.newInstance(currentInstanceOfFaction!!)).commitAllowingStateLoss()
 
-            viewTemp.imageViewFactionGoldPlus.setOnClickListener {
+            viewTemp.imageViewFactionGoldPlus.setOnClickListener {      //TODO onhold
                 if(viewTemp.editTextFactionGold.text.toString().length <= 10){
-                    viewTemp.editTextFactionGold.setText(if (viewTemp.editTextFactionGold.text!!.isEmpty()) {
+                    viewTemp.editTextFactionGold.setText(if (viewTemp.editTextFactionGold.text.isNullOrEmpty()) {
                         "0"
                     } else {
-                        val temp = viewTemp.editTextFactionGold.text.toString().toInt()
-                        (temp + 1 + temp / 8).toString()
+                        val temp = viewTemp.editTextFactionGold.text.toString().toIntOrNull()
+                        ((temp ?: 0) + 1 + (temp ?: 0) / 8).toString()
                     })
                 }
             }
             viewTemp.buttonFactionGoldOk.setOnClickListener {
-                if (viewTemp.editTextFactionGold.text!!.isNotBlank()) {
-                    val amount: Int = viewTemp.editTextFactionGold.text.toString().toInt()
+                if (!viewTemp.editTextFactionGold.text.isNullOrEmpty()) {
+                    val amount: Int = viewTemp.editTextFactionGold.text.toString().toIntOrNull() ?: 0
                     if (Data.player.gold >= amount && amount > 0) {
                         viewTemp.editTextFactionGold.setBackgroundResource(0)
                         Data.player.gold -= amount
@@ -224,9 +210,15 @@ class Fragment_Faction: Fragment(){
                         currentInstanceOfFaction!!.members[Data.player.username]!!.goldGiven = amount.toLong()
                         currentInstanceOfFaction!!.gold += amount
                         currentInstanceOfFaction!!.actionLog.add(FactionActionLog(Data.player.username, " donated ", "$amount gold"))
-                        currentInstanceOfFaction!!.upload()
-                    } else it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
-                }else it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                        currentInstanceOfFaction?.upload()
+                    } else{
+                        SystemFlow.vibrateAsError(viewTemp.context)
+                        it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                    }
+                } else{
+                    SystemFlow.vibrateAsError(viewTemp.context)
+                    it.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                }
             }
             //if(currentInstanceOfFaction!!.contains(Data.player.username))view.textViewFactionMemberInfo.setHTMLText(currentInstanceOfFaction!!.getMemberDesc(currentInstanceOfFaction!!.members.indexOf(currentInstanceOfFaction!!.members.findMember(Data.player.username))))
             //view.textViewFactionMemberInfo.performClick()
@@ -260,13 +252,13 @@ class Fragment_Faction: Fragment(){
 
         val dm = DisplayMetrics()
         val windowManager = viewTemp.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(dm)
+        windowManager.defaultDisplay.getRealMetrics(dm)
         displayX = dm.widthPixels.toDouble()
         viewTemp.frameLayoutFactionLog.layoutParams.width = (displayX * 0.34).toInt()
 
-        viewTemp.imageViewFactionOpenLog.setOnClickListener {
-            it.isEnabled = false
-            it.isClickable = false
+        viewTemp.imageViewFactionOpenLog.setOnClickListener { view ->
+            view.isEnabled = false
+            view.isClickable = false
             viewTemp.imageViewFactionLogNew.visibility = View.GONE
             Data.factionLogChanged = false
             //viewTemp.imageViewFactionOpenLog.bringToFront()
@@ -292,8 +284,8 @@ class Fragment_Faction: Fragment(){
                         override fun onAnimationEnd(animation: Animator?) {
                             logClosed = false
                             viewTemp.imageViewFactionOpenLog.rotation = 270f
-                            it.isEnabled = true
-                            it.isClickable = true
+                            view.isEnabled = true
+                            view.isClickable = true
                         }
 
                     })
@@ -320,8 +312,8 @@ class Fragment_Faction: Fragment(){
                         override fun onAnimationEnd(animation: Animator?) {
                             logClosed = true
                             viewTemp.imageViewFactionOpenLog.rotation = 90f
-                            it.isEnabled = true
-                            it.isClickable = true
+                            view.isEnabled = true
+                            view.isClickable = true
                         }
                     })
                     start()
@@ -330,7 +322,7 @@ class Fragment_Faction: Fragment(){
         }
 
         viewTemp.buttonFactionApply.setOnClickListener {
-            if(Data.player.factionID == null && currentInstanceOfFaction!!.openToAllies){
+            if(Data.player.factionID == null && currentInstanceOfFaction?.openToAllies ?: false){
                 val db = FirebaseFirestore.getInstance()
                 var containsAlly = false
 
@@ -341,7 +333,7 @@ class Fragment_Faction: Fragment(){
                         Data.player.factionID = currentInstanceOfFaction?.id
                         Data.player.factionName = currentInstanceOfFaction?.name
                         containsAlly = true
-                        activity!!.finish()
+                        activity?.finish()
                         break
                     }
                 }
@@ -360,7 +352,7 @@ class Fragment_Faction: Fragment(){
             if(currentInstanceOfFaction != null && Data.player.factionRole == FactionRole.LEADER && Data.player.faction != null){
                 val db = FirebaseFirestore.getInstance()
 
-                Data.player.writeInbox(currentInstanceOfFaction!!.leader, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.leader, sender = Data.player.username, subject = "${Data.player.username} wants to ally with your faction.", content = "Greetings!\nPlayer ${Data.player.username} from faction ${Data.player.factionName} wants to discuss about being ally with your faction.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}", isInvitation1 = true, invitation = Invitation("","","", InvitationType.factionAlly, Data.player.factionID!!, "")))
+                Data.player.writeInbox(currentInstanceOfFaction?.leader ?: "", InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.leader, sender = Data.player.username, subject = "${Data.player.username} wants to ally with your faction.", content = "Greetings!\nPlayer ${Data.player.username} from faction ${Data.player.factionName} wants to discuss about being ally with your faction.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}", isInvitation1 = true, invitation = Invitation("","","", InvitationType.factionAlly, Data.player.factionID!!, "")))
                 db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("pendingInvitationsFaction.${currentInstanceOfFaction!!.id.toString()}" to currentInstanceOfFaction!!.name))
                 Data.player.faction!!.pendingInvitationsFaction[currentInstanceOfFaction!!.id.toString()] = currentInstanceOfFaction!!.name
                 Snackbar.make(viewTemp, "Ally request was successfully sent, wait for their response.", Snackbar.LENGTH_SHORT).show()
@@ -437,8 +429,6 @@ class Fragment_Faction: Fragment(){
             }
             val viewHolder = rowMain.tag as ViewHolder
 
-            val opts = BitmapFactory.Options()
-            opts.inScaled = false
             val rowIndex:Int = if(position == 0) 0 else{
                 position*4
             }

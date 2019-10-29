@@ -27,6 +27,7 @@ import kotlinx.android.synthetic.main.row_minigame_score.view.*
 import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.random.Random.Default.nextInt
+import kotlin.system.exitProcess
 
 
 var textViewLog: WeakReference<TextView>? = null
@@ -118,6 +119,7 @@ class Activity_Splash_Screen: AppCompatActivity(){
         val metrics = DisplayMetrics()
         windowManager.defaultDisplay.getRealMetrics(metrics)
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         imageViewSplashIG.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.ig_image, opts))
@@ -191,6 +193,10 @@ class Activity_Splash_Screen: AppCompatActivity(){
                             val intent = Intent(this@Activity_Splash_Screen, Activity_Character_Customization()::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             startActivity(intent)
+                        }
+                        LoadingStatus.CLOSEAPP -> {
+                            finishAffinity()
+                            exitProcess(0)
                         }
                         /*LoadingStatus.ENTERFIGHT -> {
                             finish()
@@ -665,6 +671,10 @@ class Activity_Splash_Screen: AppCompatActivity(){
                             LoadingStatus.CLOSELOADING -> {
                                 this@Activity_Splash_Screen.finish()
                                 this@Activity_Splash_Screen.overridePendingTransition(0, 0)
+                            }
+                            LoadingStatus.CLOSEAPP -> {
+                                finishAffinity()
+                                exitProcess(0)
                             }
                             else -> {
                             }

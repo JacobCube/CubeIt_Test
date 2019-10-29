@@ -19,9 +19,6 @@ class Fragment_Story_Overview_Upcoming : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view:View = inflater.inflate(R.layout.fragment_story_overview_upcoming, container, false)
 
-        val opts = BitmapFactory.Options()
-        opts.inScaled = false
-
         Data.storyQuests.sortWith(compareBy {it.index})
         view.listViewStoryUpcoming.adapter = StoryOverviewUpcomingAdapter(Data.storyQuests, activity!!)
         return view
@@ -63,8 +60,8 @@ private class StoryOverviewUpcomingAdapter(var storyUpcoming:MutableList<StoryQu
 
         viewHolder.name.text = storyUpcoming[position].name
         viewHolder.shortDescription.text = storyUpcoming[position].shortDescription
-        viewHolder.experience.text = "xp: " + storyUpcoming[position].reward.experience.toString()
-        viewHolder.money.text = "C: " + storyUpcoming[position].reward.cubeCoins.toString()
+        viewHolder.experience.text = "xp: " + GameFlow.numberFormatString(storyUpcoming[position].reward.experience)
+        viewHolder.money.text = "C: " + GameFlow.numberFormatString(storyUpcoming[position].reward.cubeCoins)
 
         rowMain.setOnClickListener {
             (activity as Activity_Story).onStoryClicked(storyUpcoming[position])

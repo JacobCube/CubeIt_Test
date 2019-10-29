@@ -25,6 +25,7 @@ class Fragment_Story_info : Fragment() {
 
         val quest = Data.storyQuests.filter { it.id == arguments?.getString("questID") }[0]
 
+        System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.imageViewStoryInfoEnemy.setImageBitmap(BitmapFactory.decodeResource(resources, quest.mainEnemy.drawable, opts))
