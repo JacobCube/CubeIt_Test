@@ -544,6 +544,7 @@ object SystemFlow{
             Data.player.syncStats()
             if (Data.player.music && Data.player.username != "player") {
                 val svc = Intent(context, Data.bgMusic::class.java)
+                Looper.prepare()
                 Handler().postDelayed({
                     context.startService(svc)
                 }, 500)

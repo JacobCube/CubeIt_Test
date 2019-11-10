@@ -146,7 +146,7 @@ object CustomBoard: Serializable {
         val upperPlayerRange = pageNumber * 50
         val lowerPlayerRange = if (pageNumber == 0) 0 else upperPlayerRange - 50
 
-        val docRef = db.collection("factions").orderBy("fame", Query.Direction.DESCENDING)
+        val docRef = db.collection("factions").orderBy("fame", Query.Direction.DESCENDING).limit(50)
                 .startAt(upperPlayerRange)
                 .endAt(lowerPlayerRange)
 
@@ -167,17 +167,31 @@ object CustomBoard: Serializable {
         val upperPlayerRange = pageNumber * 50
         val lowerPlayerRange = if (pageNumber == 0) 0 else upperPlayerRange - 50
 
-        val docRef = db.collection("users").orderBy("fame", Query.Direction.DESCENDING).limit(50)
+        val docRef = db.collection("users").orderBy("fame", Query.Direction.DESCENDING)
 
 
         return docRef.get().addOnSuccessListener { querySnapshot ->
 
-            val playerList: MutableList<out Player> = querySnapshot.toObjects(Player()::class.java)
+            val queryList: MutableList<out Player> = querySnapshot.toObjects(Player()::class.java)
 
-            playerListReturn.clear()
-            for (loadedPlayer in playerList) {
-                playerListReturn.add(loadedPlayer)
+            if (queryList.size >= 50)
+            {
+                val playerList: MutableList<out Player> = queryList.subList(lowerPlayerRange, upperPlayerRange)
+
+                playerListReturn.clear()
+                for (loadedPlayer in playerList) {
+                    playerListReturn.add(loadedPlayer)
+                }
             }
+            else {
+
+
+                playerListReturn.clear()
+                for (loadedPlayer in queryList) {
+                    playerListReturn.add(loadedPlayer)
+                }
+            }
+
         }
     }
 

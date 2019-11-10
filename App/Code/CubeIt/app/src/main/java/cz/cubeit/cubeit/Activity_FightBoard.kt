@@ -76,6 +76,7 @@ class ActivityFightBoard: AppCompatActivity(){
                     if(Data.playerBoard.isLoadable(context)){
                         CustomBoard.getPlayerList(context.currentPage).addOnSuccessListener {
                             context.runOnUiThread {
+                                Log.d("PlayerList", CustomBoard.playerListReturn.toString())
                                 context.listViewBoardRecords.adapter = FightBoardPlayerList(CustomBoard.playerListReturn, context.currentPage, context.supportFragmentManager, context)
                             }
                             context.rotateAnimation.cancel()
@@ -156,6 +157,7 @@ class ActivityFightBoard: AppCompatActivity(){
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         startActivity(intent)
         this.overridePendingTransition(0,0)
+        CustomBoard.playerListReturn.clear()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -174,6 +176,7 @@ class ActivityFightBoard: AppCompatActivity(){
     override fun onDestroy() {
         super.onDestroy()
         pickedPlayer = null
+        CustomBoard.playerListReturn.clear()
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
