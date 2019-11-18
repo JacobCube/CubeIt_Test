@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "829397353515",
+    "firebase_url": "https://cubeit-test-build.firebaseio.com",
+    "project_id": "cubeit-test-build",
+    "storage_bucket": "cubeit-test-build.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829397353515:android:9243ca7e0ac37edd4b966e",
+        "android_client_info": {
+          "package_name": "cz.cubeit.cubeit_test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "829397353515-nj0bbavmqsadkod1d8m6lrnjdntb861o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "cz.cubeit.cubeit_test",
+            "certificate_hash": "de1f0056f8ee5f3f8387fbe6812bf3a2820b0103"
+          }
+        },
+        {
+          "client_id": "829397353515-sca9453m6uh8o4cprnh6g95om7aef3oq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMTSGVdP1Pv4OdGZc_JDhdYHESH6ZT-fU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "829397353515-sca9453m6uh8o4cprnh6g95om7aef3oq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

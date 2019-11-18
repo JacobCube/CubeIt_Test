@@ -1,0 +1,745 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFightSystemNPC"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:configChanges="orientation"
+    android:screenOrientation="sensorLandscape"
+    tools:context=".ActivityFightSystem">
+
+    <ImageView
+        android:id="@+id/imageViewFightBgNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewFightBarsNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="true"
+        android:src="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline42NPC"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline38NPC"
+        app:srcCompat="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewEnemyCharNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:adjustViewBounds="true"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline31NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline86NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline88NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline39NPC"
+        app:srcCompat="@drawable/character_0" />
+
+    <ImageView
+        android:id="@+id/spellFightEnemyNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:alpha="0"
+        android:adjustViewBounds="true"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline62NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline196NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline43NPC" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewDescriptionNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/stats_info"
+        android:gravity="center_horizontal"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@+id/guideline31NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline89NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline19NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline42NPC" />
+
+    <ImageView
+        android:id="@+id/Spell2NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline35NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline36NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <ImageView
+        android:id="@+id/Spell0NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:adjustViewBounds="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline19NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <ImageView
+        android:id="@+id/Spell3NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:adjustViewBounds="true"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline34NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline35NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <ImageView
+        android:id="@+id/Spell5NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:adjustViewBounds="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline16NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline15NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <ImageView
+        android:id="@+id/Spell6NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline20NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline16NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <ImageView
+        android:id="@+id/Spell7NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline28NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline20NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <ImageView
+        android:id="@+id/Spell1NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:adjustViewBounds="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline36NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline10NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <ImageView
+        android:id="@+id/Spell4NPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline15NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline34NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewEnemyLevelNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="100"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline42NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline95NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline96NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline43NPC" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewPlayerLevelNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="100"
+        app:layout_constraintBottom_toTopOf="@+id/guideline42NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline93NPC"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline92NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline43NPC"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <ProgressBar
+        android:id="@+id/progressBarEnemyHealthNPC"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:max="100"
+        android:progress="100"
+        android:progressDrawable="@drawable/progresshealth"
+        android:rotation="180"
+        app:layout_constraintBottom_toTopOf="@+id/guideline39NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline97NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline86NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline38NPC" />
+
+    <ProgressBar
+        android:id="@+id/progressBarPlayerHealthNPC"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:animationResolution="@android:integer/config_longAnimTime"
+        android:max="100"
+        android:progress="100"
+        android:progressDrawable="@drawable/progresshealth"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/guideline39NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline88NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline90NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline38NPC" />
+
+    <ProgressBar
+        android:id="@+id/progressBarPlayerStunNPC"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:animationResolution="@android:integer/config_longAnimTime"
+        android:max="100"
+        android:progressDrawable="@drawable/progress_stun"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/guideline103NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline102NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline10NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline104NPC" />
+
+    <ProgressBar
+        android:id="@+id/progressBarEnemyStunNPC"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:animationResolution="@android:integer/config_longAnimTime"
+        android:max="100"
+        android:progressDrawable="@drawable/progress_stun"
+        android:rotation="180"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/guideline103NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline105NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline15NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline104NPC" />
+
+    <ProgressBar
+        android:id="@+id/progressBarEnemyEnergyNPC"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:max="100"
+        android:progress="100"
+        android:progressDrawable="@drawable/progressenergy"
+        android:rotation="180"
+        app:layout_constraintBottom_toTopOf="@+id/guideline40NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline97NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline87NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline41NPC" />
+
+    <ProgressBar
+        android:id="@+id/progressBarPlayerEnergyNPC"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:max="100"
+        android:progress="100"
+        android:progressDrawable="@drawable/progressenergy"
+        app:layout_constraintBottom_toTopOf="@+id/guideline40NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline89NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline90NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline41NPC" />
+
+    <TextView
+        android:id="@+id/textViewPlayerStunNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:gravity="start"
+        android:text="0%"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline103NPC"
+        app:layout_constraintEnd_toEndOf="@+id/progressBarPlayerStunNPC"
+        app:layout_constraintStart_toStartOf="@+id/progressBarPlayerStunNPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline104NPC" />
+
+    <TextView
+        android:id="@+id/textViewEnemyStunNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:gravity="end"
+        android:text="0%"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline103NPC"
+        app:layout_constraintEnd_toEndOf="@+id/progressBarEnemyStunNPC"
+        app:layout_constraintStart_toStartOf="@+id/progressBarEnemyStunNPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline104NPC" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline10NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.13" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline105NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.87" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline63NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.72" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline19NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.015" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline35NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.36" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline88NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.335" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline90NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.06" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline97NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.94" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline92NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.04" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline95NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.96" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline96NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.907" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline93NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.093" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline34NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.475" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline101NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline15NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.59" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline102NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.41" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline16NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.705" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline86NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.665" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline62NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.55" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline20NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.82" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline87NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.785" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline28NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.935" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline36NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.245" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline100NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.754" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline89NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.215" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline195NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.27" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline196NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.45" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline197NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.525" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline198NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.465" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewPlayerHealthNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:gravity="start"
+        android:text="1050"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline39NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline88NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline90NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline38NPC" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewEnemyHealthNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:gravity="end"
+        android:text="1050"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline39NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline97NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline86NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline38NPC" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewErrorNPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="error"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/holo_red_light"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline31NPC"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewPlayerEnergyNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:gravity="start"
+        android:text="100"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline40NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline89NPC"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline90NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline41NPC"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewEnemyEnergyNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:gravity="end"
+        android:text="100"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline40NPC"
+        app:layout_constraintEnd_toStartOf="@+id/guideline97NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline87NPC"
+        app:layout_constraintTop_toTopOf="@+id/guideline41NPC" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewSpellSpecsNPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/text_bg_dark"
+        android:textColor="@color/grey_light"
+        android:textAlignment="center"
+        android:paddingTop="2dp"
+        android:alpha="0.75"
+        android:paddingBottom="4dp"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/textViewErrorNPC"
+        app:layout_constraintEnd_toEndOf="@+id/textViewErrorNPC"
+        app:layout_constraintStart_toStartOf="@+id/textViewErrorNPC"
+        tools:text="test text"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewEnemyUsedSpellNPC"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_marginTop="4dp"
+        android:alpha="0.6"
+        android:background="@color/colorPrimaryDarker"
+        android:padding="2dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/basicattack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFightBarsNPC" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline31NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.81" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline38NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.092" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline39NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.15" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline103NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.055" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline104NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.02" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline40NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.257" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline41NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.20" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline42NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.367" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline43NPC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.3" />
+
+    <ImageView
+        android:id="@+id/imageViewFightSurrenderNPC"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline197NPC"
+        app:layout_constraintStart_toStartOf="@+id/guideline198NPC"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/white_flag" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

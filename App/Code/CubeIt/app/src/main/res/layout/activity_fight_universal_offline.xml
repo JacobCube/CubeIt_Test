@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:clipChildren="false"
+    android:screenOrientation="sensorLandscape"
+    tools:context=".ActivityFightSystem">
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineRound"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Round 1"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline235"
+        app:layout_constraintStart_toStartOf="@+id/guideline235"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/bg_basic_white"
+        android:visibility="gone"
+        android:text="00:15 s"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline235"
+        app:layout_constraintStart_toStartOf="@+id/guideline235"
+        app:layout_constraintTop_toBottomOf="@+id/textViewUniversalFightOfflineRound" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline235"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline257"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.40" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline259"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.60" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineCharacterAlly"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline236"
+        app:layout_constraintDimensionRatio="H,1.5:1"
+        app:layout_constraintStart_toEndOf="@+id/recyclerViewUniversalFightOfflineRecordsAlly"
+        app:layout_constraintTop_toTopOf="@+id/guideline255"
+        app:srcCompat="@drawable/character_7" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineCharacterEnemy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline236"
+        app:layout_constraintDimensionRatio="H,1.5:1"
+        app:layout_constraintEnd_toStartOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintTop_toTopOf="@+id/guideline255"
+        app:srcCompat="@drawable/character_7" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineCharacterName2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="username2"
+        android:textColor="@android:color/holo_red_dark"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/imageViewUniversalFightOfflineCharacterEnemy"
+        app:layout_constraintEnd_toStartOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintStart_toStartOf="@+id/imageViewUniversalFightOfflineCharacterEnemy" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineCharacterName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:text="username1"
+        android:textColor="@android:color/holo_green_dark"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/imageViewUniversalFightOfflineCharacterAlly"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewUniversalFightOfflineCharacterAlly"
+        app:layout_constraintStart_toEndOf="@+id/recyclerViewUniversalFightOfflineRecordsAlly" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewUniversalFightOfflineRecordsAlly"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/fight_offline_sides"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline253"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        tools:visibility="visible" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/fight_offline_sides"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline254"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline236"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.82" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline253"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.18" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline254"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.82" />
+
+    <ProgressBar
+        android:id="@+id/progressBarUniversalFightOfflineStunAlly"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/fight_progressbar_bg"
+        android:padding="2dp"
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/progress_stun"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewUniversalFightOfflineStunAlly"
+        app:layout_constraintEnd_toEndOf="@+id/textViewUniversalFightOfflineStunAlly"
+        app:layout_constraintStart_toStartOf="@+id/imageViewUniversalFightOfflineStunAlly"
+        app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineStunAlly"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineStunAlly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="100 / 100"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewUniversalFightOfflineStunAlly"
+        app:layout_constraintEnd_toStartOf="@+id/guideline257"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewUniversalFightOfflineEnergyAlly"
+        app:layout_constraintVertical_bias="0.25" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineStunAlly"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline262"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/recyclerViewUniversalFightOfflineRecordsAlly"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewUniversalFightOfflineEnergyAlly"
+        app:srcCompat="@drawable/stun_icon" />
+
+    <ProgressBar
+        android:id="@+id/progressBarUniversalFightOfflineEnergyAlly"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/fight_progressbar_bg"
+        android:padding="2dp"
+        android:layout_marginStart="10dp"
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/progressenergy"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewUniversalFightOfflineEnergyAlly"
+        app:layout_constraintEnd_toEndOf="@+id/textViewUniversalFightOfflineEnergyAlly"
+        app:layout_constraintStart_toStartOf="@+id/imageViewUniversalFightOfflineEnergyAlly"
+        app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineEnergyAlly" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineEnergyAlly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:paddingStart="4dp"
+
+        android:paddingEnd="4dp"
+        android:text="100 / 125"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewUniversalFightOfflineEnergyAlly"
+        app:layout_constraintEnd_toStartOf="@+id/guideline257"
+        app:layout_constraintTop_toTopOf="@+id/imageViewUniversalFightOfflineEnergyAlly"
+        app:layout_constraintVertical_bias="0.25" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineEnergyAlly"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline260"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/recyclerViewUniversalFightOfflineRecordsAlly"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewUniversalFightOfflineHPAlly"
+        app:srcCompat="@drawable/power_icon" />
+
+    <ProgressBar
+        android:id="@+id/progressBarUniversalFightOfflineHPAlly"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="10dp"
+        android:max="100"
+        android:background="@drawable/fight_progressbar_bg"
+        android:padding="2dp"
+        android:progress="50"
+        android:progressDrawable="@drawable/progresshealth"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewUniversalFightOfflineHPAlly"
+        app:layout_constraintEnd_toEndOf="@+id/textViewUniversalFightOfflineHPAlly"
+        app:layout_constraintStart_toStartOf="@+id/imageViewUniversalFightOfflineHPAlly"
+        app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineHPAlly" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineHPAlly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="10k / 10k"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewUniversalFightOfflineHPAlly"
+        app:layout_constraintEnd_toStartOf="@+id/guideline257"
+        app:layout_constraintTop_toTopOf="@+id/imageViewUniversalFightOfflineHPAlly" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineHPAlly"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="4dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline256"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/recyclerViewUniversalFightOfflineRecordsAlly"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/health_icon" />
+
+    <ProgressBar
+        android:id="@+id/progressBarUniversalFightOfflineStunEnemy"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/fight_progressbar_bg"
+        android:padding="2dp"
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/progress_stun"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewUniversalFightOfflineStunEnemy"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewUniversalFightOfflineStunEnemy"
+        app:layout_constraintStart_toStartOf="@+id/textViewUniversalFightOfflineStunEnemy"
+        app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineStunEnemy" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineStunEnemy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="100 / 125"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewUniversalFightOfflineStunEnemy"
+        app:layout_constraintStart_toStartOf="@+id/progressBarUniversalFightOfflineHPEnemy"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewUniversalFightOfflineEnergyEnemy"
+        app:layout_constraintVertical_bias="0.25" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineStunEnemy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline262"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewUniversalFightOfflineEnergyEnemy"
+        app:srcCompat="@drawable/stun_icon" />
+
+    <ProgressBar
+        android:id="@+id/progressBarUniversalFightOfflineEnergyEnemy"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="10dp"
+        android:max="100"
+        android:progress="50"
+        android:background="@drawable/fight_progressbar_bg"
+        android:padding="2dp"
+        android:progressDrawable="@drawable/progressenergy"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewUniversalFightOfflineEnergyEnemy"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewUniversalFightOfflineEnergyEnemy"
+        app:layout_constraintStart_toStartOf="@+id/textViewUniversalFightOfflineEnergyEnemy"
+        app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineEnergyEnemy"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineEnergyEnemy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="100 / 125"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewUniversalFightOfflineEnergyEnemy"
+        app:layout_constraintStart_toStartOf="@+id/progressBarUniversalFightOfflineHPEnemy"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewUniversalFightOfflineHPEnemy"
+        app:layout_constraintVertical_bias="0.25" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineEnergyEnemy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline260"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewUniversalFightOfflineHPEnemy"
+        app:srcCompat="@drawable/power_icon" />
+
+    <ProgressBar
+        android:id="@+id/progressBarUniversalFightOfflineHPEnemy"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:background="@drawable/fight_progressbar_bg"
+        android:padding="2dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="10dp"
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/progresshealth"
+        android:rotation="180"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewUniversalFightOfflineHPEnemy"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewUniversalFightOfflineHPEnemy"
+        app:layout_constraintStart_toStartOf="@+id/guideline259"
+        app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineHPEnemy" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewUniversalFightOfflineHPEnemy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="10k / 10k"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline256"
+        app:layout_constraintStart_toStartOf="@+id/progressBarUniversalFightOfflineHPEnemy"
+        app:layout_constraintTop_toTopOf="@+id/imageViewUniversalFightOfflineHPEnemy" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineHPEnemy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="2dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline256"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/health_icon" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline256"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.07" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline260"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.13" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline262"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.19" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline255"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.3" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineBarUp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:rotation="180"
+        android:tint="@color/loginColor_2_dark_light"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:0.9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline298"
+        app:srcCompat="@drawable/arrow_down" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightBar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@color/fight_offline_bar"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow0"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight0"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight0"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight0"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow1"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight1"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight1"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight1"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow2"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight2"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight2"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight2"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight2" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow3"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight3"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight3"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight3"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight3" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow4"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight4"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight4"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight4"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight4" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow5"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight5"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight5"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight5"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow6"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight6"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight6"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight6"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFightShadow7"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight7"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight7"
+        app:layout_constraintStart_toStartOf="@+id/fragmentSpellFight7"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:tag="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline35"
+        app:layout_constraintStart_toStartOf="@+id/guideline36"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight1" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight0"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:tag="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10"
+        app:layout_constraintStart_toStartOf="@+id/guideline19"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight3"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+
+        android:tag="3"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight2"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline34"
+        app:layout_constraintStart_toStartOf="@+id/guideline35"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight2" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight5"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+
+        android:tag="5"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight4"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline16"
+        app:layout_constraintStart_toStartOf="@+id/guideline15"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight4" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight6"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+
+        android:focusable="true"
+        android:tag="6"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight5"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline20"
+        app:layout_constraintStart_toStartOf="@+id/guideline16"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight5" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight7"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+
+        android:tag="7"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight6"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline28"
+        app:layout_constraintStart_toStartOf="@+id/guideline20"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:tag="1"
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight0"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline36"
+        app:layout_constraintStart_toStartOf="@+id/guideline10"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0" />
+
+    <ImageView
+        android:id="@+id/fragmentSpellFight4"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        android:tag="4"
+
+        app:layout_constraintBottom_toBottomOf="@+id/fragmentSpellFight3"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline15"
+        app:layout_constraintStart_toStartOf="@+id/guideline34"
+        app:layout_constraintTop_toTopOf="@+id/guideline236" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked0"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight0"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked1"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight1"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked3"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight3"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked2"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight2"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked4"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight4"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked5"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight5"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked6"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight6"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewFightChecked7"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragmentSpellFight7"
+        app:layout_constraintTop_toTopOf="@+id/fragmentSpellFight0"
+        app:srcCompat="@drawable/checkmark"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.13" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline19"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.01" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline35"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.37" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline34"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.49" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.61" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline16"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.73" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline20"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.85" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline28"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.97" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline298"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.92" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline36"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightArrow"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:tint="@color/leaderboard_first"
+        android:visibility="gone"
+        app:layout_constraintDimensionRatio="H,1:0.4"
+        app:layout_constraintEnd_toStartOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintStart_toStartOf="@+id/guideline16"
+        app:srcCompat="@drawable/right_arrow"
+        tools:layout_editor_absoluteY="138dp"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflineFightBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.85"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/darken_background"
+        android:clickable="true"
+        android:focusable="true"
+        tools:visibility="gone" />
+
+    <Button
+        android:id="@+id/buttonUniversalFightOfflineFight"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="FIGHT"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.40" />
+
+    <ImageView
+        android:id="@+id/imageViewSpellAlly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/fight_spell_use_bg"
+        tools:layout_editor_absoluteX="170dp"
+        tools:layout_editor_absoluteY="74dp"
+        tools:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/imageViewSpellEnemy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/fight_spell_use_bg"
+        tools:layout_editor_absoluteX="170dp"
+        tools:layout_editor_absoluteY="74dp"
+        tools:visibility="invisible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/adventure_window">
+
+    <ImageView
+        android:id="@+id/imageViewBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,5:4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+
+    <Button
+        android:id="@+id/buttonAccept"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_width="80dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="160dp"
+        android:layout_marginEnd="160dp"
+        android:layout_marginBottom="8dp"
+        android:text="Apply"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/buttonCloseDialog"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline61"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline60"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline60"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.9" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline61"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.12" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextBoardUsername"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:hint="username"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="text"
+        android:nextFocusLeft="@+id/editTextBoardPosition"
+        android:nextFocusRight="@+id/editTextBoardPosition"
+        android:nextFocusUp="@+id/editTextBoardPosition"
+        android:nextFocusDown="@+id/editTextBoardPosition"
+        android:nextFocusForward="@+id/editTextBoardPosition"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/quideline153"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextBoardLevelBottom"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:hint="lvl from"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="number"
+        android:nextFocusLeft="@+id/editTextBoardLevelTop"
+        android:nextFocusRight="@+id/editTextBoardLevelTop"
+        android:nextFocusUp="@+id/editTextBoardLevelTop"
+        android:nextFocusDown="@+id/editTextBoardLevelTop"
+        android:nextFocusForward="@+id/editTextBoardLevelTop"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline154"
+        app:layout_constraintEnd_toStartOf="@+id/guideline153"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/quideline153" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextBoardPosition"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:hint="position"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="number"
+        android:nextFocusLeft="@+id/editTextBoardLevelBottom"
+        android:nextFocusRight="@+id/editTextBoardLevelBottom"
+        android:nextFocusUp="@+id/editTextBoardLevelBottom"
+        android:nextFocusDown="@+id/editTextBoardLevelBottom"
+        android:nextFocusForward="@+id/editTextBoardLevelBottom"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/quideline153"
+        app:layout_constraintEnd_toEndOf="@+id/checkBoxBoardActive"
+        app:layout_constraintStart_toStartOf="@+id/checkBoxBoardActive"
+        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextBoardLevelTop"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:hint="lvl to"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="number"
+        android:nextFocusLeft="@+id/checkBoxBoardActive"
+        android:nextFocusRight="@+id/checkBoxBoardActive"
+        android:nextFocusUp="@+id/checkBoxBoardActive"
+        android:nextFocusDown="@+id/checkBoxBoardActive"
+        android:nextFocusForward="@+id/checkBoxBoardActive"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline154"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="@+id/guideline153"
+        app:layout_constraintTop_toTopOf="@+id/quideline153" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline152"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline153"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/quideline153"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.28" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline157"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.57" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline154"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.44" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline158"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.66" />
+
+    <CheckBox
+        android:id="@+id/checkBoxBoardActive"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:nextFocusLeft="@+id/checkBoxBoardActive"
+        android:nextFocusRight="@+id/checkBoxBoardActive"
+        android:nextFocusUp="@+id/checkBoxBoardActive"
+        android:nextFocusDown="@+id/checkBoxBoardActive"
+        android:nextFocusForward="@+id/checkBoxBoardActive"
+        android:text="active"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextBoardLevelBottom"
+        app:layout_constraintEnd_toStartOf="@+id/guideline60"
+        app:layout_constraintHorizontal_bias="0.39"
+        app:layout_constraintStart_toStartOf="@+id/guideline152"
+        app:layout_constraintTop_toTopOf="@+id/editTextBoardLevelBottom"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Spinner
+        android:id="@+id/spinnerBoardCharClass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toTopOf="@+id/guideline157"
+        app:layout_constraintStart_toStartOf="@+id/editTextBoardLevelBottom"
+        app:layout_constraintTop_toTopOf="@+id/guideline154" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
