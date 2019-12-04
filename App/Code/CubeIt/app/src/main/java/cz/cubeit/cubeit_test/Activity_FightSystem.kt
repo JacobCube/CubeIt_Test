@@ -22,8 +22,8 @@ import android.widget.*
 import kotlinx.android.synthetic.main.activity_fight_system.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.buttonCloseDialog
+import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
 import java.lang.Math.max
 import kotlin.random.Random.Default.nextInt
 
@@ -606,19 +606,17 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
             val viewS = layoutInflater.inflate(R.layout.popup_dialog, null, false)
             val window = PopupWindow(this)
             window.contentView = viewS
-            val buttonYes: Button = viewS.buttonYes
-            val buttonNo:ImageView = viewS.buttonCloseDialog
-            val info: TextView = viewS.textViewInfo
+            val info: TextView = viewS.textViewDialogInfo
             info.text = "Are you sure?"
             window.isOutsideTouchable = false
             window.isFocusable = true
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            buttonYes.setOnClickListener {
+            viewS.buttonDialogAccept.setOnClickListener {
                 surrender = true
                 endOfFight(enemy.enemy, spellFightEnemy)
                 window.dismiss()
             }
-            buttonNo.setOnClickListener {
+            viewS.imageViewDialogClose.setOnClickListener {
                 window.dismiss()
             }
             window.showAtLocation(viewS, Gravity.CENTER,0,0)
@@ -686,7 +684,7 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
                 }
             }
         }
-        if(playerSpell.dmgOverTime.rounds!=0)enemy.EOT.add(playerSpell.dmgOverTime.clone())
+        if(playerSpell.effectOverTime.rounds!=0)enemy.EOT.add(playerSpell.effectOverTime.clone())
 
         //enemy's attack
         if(enemy.stun >= 100){       //skip 1 round
@@ -719,7 +717,7 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
                 }
             }
         }
-        if(enemy.currentSpell.dmgOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.dmgOverTime.clone())
+        if(enemy.currentSpell.effectOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.effectOverTime.clone())
         //around here should be spell animation (make it as an attribute for a spell)
 
         //ifData.player is stunned from last enemy's attack - attack again
@@ -755,7 +753,7 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
                     }
                 }
             }
-            if(enemy.currentSpell.dmgOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.dmgOverTime.clone())
+            if(enemy.currentSpell.effectOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.effectOverTime.clone())
         }
 
         roundCounter++
@@ -862,7 +860,7 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
             viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${if(reward?.experience == null)0 else reward.experience}")
             viewPop.textViewPopAdventureCC.text = "${if(reward?.cubeCoins == null)0 else reward.cubeCoins}"
 
-            if(winner.username == Data.player.username) reward?.receive(null, false)
+            if(winner.username == Data.player.username) reward?.receive()
 
             window.isOutsideTouchable = false
             window.isFocusable = true
@@ -885,7 +883,7 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
                 imageItem.isEnabled = true
                 imageItem.isClickable = true
 
-                val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+                val viewP = layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
                 val windowPop = PopupWindow(view.context)
                 windowPop.contentView = viewP
                 windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -896,12 +894,12 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
                     override fun onStartHold(x: Float, y: Float) {
                         super.onStartHold(x, y)
                         if(holdValid){
-                            viewP.textViewPopUpInfo.setHTMLText(reward.item!!.getStats())
+                            viewP.textViewPopUpInfoDsc.setHTMLText(reward.item!!.getStats())
                             viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
                             val coordinates = SystemFlow.resolveLayoutLocation(this@ActivityFightSystem, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                             if(!Data.loadingActiveQuest && !windowPop.isShowing){
-                                viewP.textViewPopUpInfo.setHTMLText(reward.item!!.getStatsCompare())
+                                viewP.textViewPopUpInfoDsc.setHTMLText(reward.item!!.getStatsCompare())
                                 viewP.imageViewPopUpInfoItem.setBackgroundResource(reward.item!!.getBackground())
                                 viewP.imageViewPopUpInfoItem.setImageResource(reward.item!!.drawable)
 

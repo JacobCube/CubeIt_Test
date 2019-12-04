@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_home.*
 import androidx.lifecycle.ProcessLifecycleOwner
 import android.provider.Settings
@@ -25,7 +24,7 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.Query
 import java.lang.ref.WeakReference
 
-class Home : AppCompatActivity() {
+class Home : SystemFlow.GameActivity(R.layout.activity_home, ActivityType.Home, false) {
 
     lateinit var genericContext: Context
 
@@ -62,7 +61,18 @@ class Home : AppCompatActivity() {
                                             Data.inbox.add(i)
                                             if(i.status != MessageStatus.Sent){
                                                 Toast.makeText(context, "New message has arrived.", Toast.LENGTH_SHORT).show()
-                                                SystemFlow.vibrateAsError(context, 20)
+
+                                                if(i.vibrate && Data.player.vibrateEffects){
+                                                    val morseVibration = SystemFlow.translateIntoMorse(i.subject, null)
+                                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                        (context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(VibrationEffect.createWaveform(morseVibration.timing.toLongArray(), morseVibration.amplitudes.toIntArray(), -1))
+                                                    }else {
+                                                        SystemFlow.vibrateAsError(context, 20)
+                                                    }
+                                                }else {
+                                                    SystemFlow.vibrateAsError(context, 20)
+                                                }
+
                                                 Data.inboxChanged = true
                                                 Data.inboxChangedMessages++
                                                 context.runOnUiThread {
@@ -78,26 +88,28 @@ class Home : AppCompatActivity() {
                         }
                     }
 
-                    val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
-                    val docRef = db.collection("Server").document("Generic")
-                    docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
-                        if (snapshot != null && snapshot.exists()) {
+                    if(Data.serverSnapshotHome == null){
+                        val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
+                        val docRef = db.collection("Server").document("Generic")
+                        docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                            if (snapshot != null && snapshot.exists()) {
 
-                            if(snapshot.getString("Status") != "on"){
-                                val builder = AlertDialog.Builder(context)
-                                builder.setTitle("Server not available")
-                                builder.setMessage("Server is currently ${snapshot.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(snapshot.getBoolean("ShowDsc")!!)snapshot.getString("ExternalDsc") else "")
-                                if(context.dialog == null) context.dialog = builder.create()
-                                context.dialog!!.setCanceledOnTouchOutside(false)
-                                context.dialog!!.setCancelable(false)
+                                if(snapshot.getString("Status") != "on"){
+                                    val builder = AlertDialog.Builder(context)
+                                    builder.setTitle("Server not available")
+                                    builder.setMessage("Server is currently ${snapshot.getString("Status")}.\nWe apologize for any inconvenience.\n" + if(snapshot.getBoolean("ShowDsc")!!)snapshot.getString("ExternalDsc") else "")
+                                    if(context.dialog == null) context.dialog = builder.create()
+                                    context.dialog?.setCanceledOnTouchOutside(false)
+                                    context.dialog?.setCancelable(false)
 
-                                context.dialog!!.setButton(Dialog.BUTTON_POSITIVE, "OK") { dialogX, _ ->
-                                    dialogX.dismiss()
+                                    context.dialog?.setButton(Dialog.BUTTON_POSITIVE, "OK") { dialogX, _ ->
+                                        dialogX.dismiss()
+                                    }
+                                    context.dialog?.setOnDismissListener {
+                                        if(context.dialog?.isShowing == false) Data.signOut(context) else context.dialog!!.dismiss()
+                                    }
+                                    if(context.dialog?.isShowing == false) context.dialog?.show()
                                 }
-                                context.dialog!!.setOnDismissListener {
-                                    if(!context.dialog!!.isShowing) Data.signOut(context) else context.dialog!!.dismiss()
-                                }
-                                if(context.dialog?.isShowing == false) context.dialog?.show()
                             }
                         }
                     }
@@ -144,20 +156,6 @@ class Home : AppCompatActivity() {
         ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleListener)
     }
 
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-
     override fun onBackPressed() {
         if(signOut) Data.signOut(genericContext, true)
         else {
@@ -171,25 +169,7 @@ class Home : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         setContentView(R.layout.activity_home)
-
-        layoutHome.setOnClickListener {     //TODO testing
-            val intent = Intent(this, ActivityFightUniversalOffline()::class.java)
-            intent.putExtra("reward", Reward().generate())
-            intent.putParcelableArrayListExtra("enemies", arrayListOf<FightSystem.Fighter>(
-                    NPC().generate(playerX =  Data.player).toFighter(FightSystem.FighterType.Enemy),
-                    NPC().generate(playerX =  Data.player).toFighter(FightSystem.FighterType.Enemy),
-                    NPC().generate(playerX =  Data.player).toFighter(FightSystem.FighterType.Enemy)
-            ))
-            intent.putParcelableArrayListExtra("allies", arrayListOf<FightSystem.Fighter>(
-                    NPC().generate(playerX =  Data.player).toFighter(FightSystem.FighterType.Ally),
-                    NPC().generate(playerX =  Data.player).toFighter(FightSystem.FighterType.Ally),
-                    NPC().generate(playerX =  Data.player).toFighter(FightSystem.FighterType.Ally),
-                    Data.player.toFighter(FightSystem.FighterType.Ally)
-            ))
-            startActivity(intent)
-        }
 
         val tempActivity = this
         genericContext = this
@@ -198,12 +178,6 @@ class Home : AppCompatActivity() {
             HomeInitialization(tempActivity).execute()
 
             setupLifecycleListener()
-
-            window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-                if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                    Handler().postDelayed({hideSystemUI()},1000)
-                }
-            }
 
             imageViewHomeFactionNew.visibility = if(Data.factionLogChanged){
                 View.VISIBLE
@@ -242,27 +216,29 @@ class Home : AppCompatActivity() {
             var originalXExit = 0f
             var initialTouchExitX = 0f
             var clickableExit = false
+            var popUpMenuShown = false
 
-            imageViewExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewExit, false) {            //disconnect swipe / open menu
+            imageViewHomeExit.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewHomeExit, false) {            //disconnect swipe / open menu
                 override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
                     when (motionEvent.action) {
                         MotionEvent.ACTION_DOWN -> {
                             imageViewExitLeave.setColorFilter(R.color.loginColor_2, PorterDuff.Mode.SRC_ATOP)
-                            originalXExit = imageViewExit.x
+                            originalXExit = imageViewHomeExit.x
                             initialTouchExitX = motionEvent.rawX
                             clickableExit = true
                             Handler().postDelayed({clickableExit = false}, 100)
+                            popUpMenuShown = false
                             return true
                         }
                         MotionEvent.ACTION_UP -> {
-                            imageViewExit.x = originalXExit
+                            imageViewHomeExit.x = originalXExit
                             imageViewExitLeave.x = originalXExit + imageViewExitLeave.width
 
                             if(clickableExit){
                                 Handler().removeCallbacksAndMessages(null)
 
                                 val wrapper = ContextThemeWrapper(this@Home, R.style.FactionPopupMenu)
-                                val popup = PopupMenu(wrapper, imageViewExit)
+                                val popup = PopupMenu(wrapper, imageViewHomeExit)
                                 val popupMenu = popup.menu
 
                                 popupMenu.add("Sign-out")
@@ -270,7 +246,7 @@ class Home : AppCompatActivity() {
 
                                 popup.setOnMenuItemClickListener {
                                     when(it.title){
-                                        "Exit" -> {
+                                        "Sign-out" -> {
                                             Data.signOut(this@Home)
                                             true
                                         }
@@ -288,11 +264,16 @@ class Home : AppCompatActivity() {
                                         }
                                     }
                                 }
-                                popup.show()
+                                if(!popUpMenuShown){
+                                    Log.d("playComponentSound", "playing")
+                                    popUpMenuShown = true
+                                    SystemFlow.playComponentSound(this@Home)
+                                    popup.show()
+                                }
                             }else {
                                 if(motionEvent.rawX <= originalXExit - imageViewExitLeave.width * 3){
-                                    if(!imageViewExit.isEnabled) return true
-                                    imageViewExit.isEnabled = false
+                                    if(!imageViewHomeExit.isEnabled) return true
+                                    imageViewHomeExit.isEnabled = false
                                     Data.signOut(this@Home)
                                     return true
                                 }
@@ -300,7 +281,7 @@ class Home : AppCompatActivity() {
                             return true
                         }
                         MotionEvent.ACTION_MOVE -> {
-                            imageViewExit.x = ((originalXExit + (motionEvent.rawX - initialTouchExitX)/3))
+                            imageViewHomeExit.x = ((originalXExit + (motionEvent.rawX - initialTouchExitX)/3))
                             imageViewExitLeave.x = ((originalXExit + imageViewExitLeave.width + ((motionEvent.rawX - initialTouchExitX))/3))
 
                             if(motionEvent.rawX <= originalXExit - imageViewExitLeave.width * 3){

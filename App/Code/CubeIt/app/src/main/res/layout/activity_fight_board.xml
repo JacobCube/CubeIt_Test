@@ -124,19 +124,6 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.93" />
 
-    <ImageView
-        android:id="@+id/imageViewMenuUpBoard"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:adjustViewBounds="true"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline138"
-        app:srcCompat="@drawable/setting3rows" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline77"
         android:layout_width="wrap_content"
@@ -235,20 +222,6 @@
         app:layout_constraintGuide_percent="0.33" />
 
     <ImageView
-        android:id="@+id/homeButtonBackBoard"
-        android:layout_width="75dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/emptyspellslotlarge"
-        android:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/home_button"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
         android:id="@+id/imageViewLoadingBoard"
         android:layout_width="75dp"
         android:layout_height="0dp"
@@ -277,14 +250,6 @@
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline77"
         app:layout_constraintStart_toStartOf="@+id/guideline81" />
-
-    <FrameLayout
-        android:id="@+id/frameLayoutMenuBoard"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline85"

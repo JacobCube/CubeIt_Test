@@ -85,8 +85,18 @@ class Fragment_Board_Stats_Profile : Fragment() {
         view.profile_stats_fight.setOnClickListener {
             if(playerProfile.username != Data.player.username){
 
-                val intent = Intent(view.context, ActivityFightSystem()::class.java)
+                /*val intent = Intent(view.context, ActivityFightSystem()::class.java)
                 intent.putExtra("enemy", playerProfile)
+                startActivity(intent)*/
+
+                val intent = Intent(view.context, ActivityFightUniversalOffline()::class.java)
+                intent.putParcelableArrayListExtra("enemies", arrayListOf<FightSystem.Fighter>(
+                        playerProfile.toFighter(FightSystem.FighterType.Enemy)
+                ))
+                intent.putParcelableArrayListExtra("allies", arrayListOf<FightSystem.Fighter>(
+                        Data.player.toFighter(FightSystem.FighterType.Ally)
+                ))
+                intent.putExtra("isFameFight", true)
                 startActivity(intent)
             }
         }

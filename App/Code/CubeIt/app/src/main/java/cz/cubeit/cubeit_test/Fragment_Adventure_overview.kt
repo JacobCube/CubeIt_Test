@@ -1,7 +1,6 @@
 package cz.cubeit.cubeit_test
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -15,7 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
 import android.widget.*
 import kotlinx.android.synthetic.main.fragment_adventure_overview.view.*
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
+import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.*
 import kotlinx.android.synthetic.main.row_adventure_overview.view.*
 
 class Fragment_Adventure_overview : Fragment() {
@@ -60,7 +59,7 @@ class Fragment_Adventure_overview : Fragment() {
             else mutableListOf()
         }
 
-        val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+        val viewP = layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
         val window = PopupWindow(context)
         window.contentView = viewP
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -68,6 +67,7 @@ class Fragment_Adventure_overview : Fragment() {
         val dm = DisplayMetrics()
         val windowManager = activity!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getRealMetrics(dm)
+        viewP.imageViewPopUpInfoPin.visibility = View.GONE
 
         view.listViewAdventureOverview.adapter = AdventureQuestsOverview(
                 overviewList,
@@ -79,7 +79,7 @@ class Fragment_Adventure_overview : Fragment() {
                 activity!!.findViewById(R.id.viewPagerAdventure),
                 view.listViewAdventureOverview,
                 this,
-                activity!!,
+                (activity as SystemFlow.GameActivity),
                 window,
                 viewP,
                 dm.widthPixels.toFloat()
@@ -90,10 +90,10 @@ class Fragment_Adventure_overview : Fragment() {
             view.listViewAdventureOverview.setOnScrollChangeListener { _, _, _, _, _ ->
                 if(window.isShowing) window.dismiss()
 
-                (activity!! as ActivityAdventure).imageViewMenuUpAdventureTemp.visibility = View.GONE
+                (activity as ActivityAdventure).imageViewMenuUp?.visibility = View.GONE
                 handler.removeCallbacksAndMessages(null)
                 handler.postDelayed({
-                    if(activity != null && (activity!! as ActivityAdventure).imageViewMenuUpAdventureTemp.visibility != View.VISIBLE) (activity!! as ActivityAdventure).imageViewMenuUpAdventureTemp.visibility = View.VISIBLE
+                    if(activity != null && (activity!! as ActivityAdventure).imageViewMenuUp?.visibility != View.VISIBLE) (activity!! as ActivityAdventure).imageViewMenuUp?.visibility = View.VISIBLE
                 }, 1000)
             }
         }
@@ -234,14 +234,14 @@ class Fragment_Adventure_overview : Fragment() {
 class AdventureQuestsOverview(
         var sideQuestsAdventure: MutableList<Quest>,
         val context: Context,
-        val popupView:View,
+        val popupView: View,
         var progressBar: ProgressBar,
-        var textView: TextView,
+        var textView: CustomTextView,
         val viewPopUpQuest: View,
         val viewPager: ViewPager,
         val adapter: ListView,
         val fragmentOverview: Fragment_Adventure_overview,
-        val activity: Activity,
+        val activity: SystemFlow.GameActivity,
         val window: PopupWindow,
         val viewP: View,
         val displayX: Float
@@ -274,17 +274,7 @@ class AdventureQuestsOverview(
 
         viewHolder.textViewName.text = sideQuestsAdventure[position].name
 
-        val text = resourcesAdventure!!.getString(R.string.quest_generic, when(sideQuestsAdventure[position].level){
-            0 -> "<font color='#7A7A7A'>Peaceful</font>"
-            1 -> "<font color='#535353'>Easy</font>"
-            2 -> "<font color='#8DD837'>Medium rare</font>"
-            3 -> "<font color='#5DBDE9'>Medium</font>"
-            4 -> "<font color='#058DCA'>Well done</font>"
-            5 -> "<font color='#9136A2'>Hard rare</font>"
-            6 -> "<font color='#FF9800'>Hard</font>"
-            7 -> "<font color='#FFE500'>Evil</font>"
-            else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
-        })
+        val text = sideQuestsAdventure[position].getDifficulty()
 
         viewHolder.textViewDifficulty.setHTMLText(text)
 
@@ -294,7 +284,7 @@ class AdventureQuestsOverview(
             else -> "${sideQuestsAdventure[position].secondsLength/60}:${sideQuestsAdventure[position].secondsLength%60}"
         }
         viewHolder.textViewExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${sideQuestsAdventure[position].experience}")
-        viewHolder.textViewMoney.text = "${sideQuestsAdventure[position].money}"
+        viewHolder.textViewMoney.setHTMLText("${sideQuestsAdventure[position].money}")
         if(sideQuestsAdventure[position].reward.item != null){
             viewHolder.imageViewAdventureOverview.setImageResource(sideQuestsAdventure[position].reward.item!!.drawable)
             viewHolder.imageViewAdventureOverview.setBackgroundResource(sideQuestsAdventure[position].reward.item!!.getBackground())
@@ -315,13 +305,18 @@ class AdventureQuestsOverview(
         val holdValid = sideQuestsAdventure[position].reward.item != null
         rowMain.isClickable = true                  //to enable its usage in HoldTouchListener
         rowMain.isEnabled = true
+        viewP.layoutPopupInfo.apply {
+            minWidth = (activity.dm.heightPixels * 0.65).toInt()
+            minHeight = (activity.dm.heightPixels * 0.65).toInt()
+        }
+        viewP.imageViewPopUpInfoPin.visibility = View.GONE
         viewHolder.imageViewAdventureOverviewClick.setOnTouchListener(object: Class_HoldTouchListener(rowMain, false, displayX, true){
 
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
                 if(holdValid){
                     if(!Data.loadingActiveQuest && !window.isShowing){
-                        viewP.textViewPopUpInfo.setHTMLText(sideQuestsAdventure[position].reward.item!!.getStatsCompare())
+                        viewP.textViewPopUpInfoDsc.setHTMLText(sideQuestsAdventure[position].reward.item!!.getStatsCompare())
                         viewP.imageViewPopUpInfoItem.setBackgroundResource(sideQuestsAdventure[position].reward.item!!.getBackground())
                         viewP.imageViewPopUpInfoItem.setImageResource(sideQuestsAdventure[position].reward.item!!.drawable)
 
@@ -359,7 +354,7 @@ class AdventureQuestsOverview(
                             break
                         }
                     }
-                    Handler().postDelayed({ActivityAdventure().onClickQuestOverview(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview, viewP =  activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false), usedActivity = activity)}, 100)
+                    Handler().postDelayed({ActivityAdventure().onClickQuestOverview(surface = sideQuestsAdventure[position].surface, index = index, context = context, questIn = sideQuestsAdventure[position], progressAdventureQuest = progressBar, textViewQuestProgress = textView, viewPopQuest = viewPopUpQuest, viewPagerAdventure = viewPager, fromFragment = true, fragmentOverview = fragmentOverview, viewP =  activity.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false), usedActivity = activity)}, 100)
                 }
             }
 
@@ -379,13 +374,14 @@ class AdventureQuestsOverview(
                     val tempActivity = activity
                     val loadingScreen = SystemFlow.createLoading(tempActivity)
 
-                    Data.player.createActiveQuest(sideQuestsAdventure[position], sideQuestsAdventure[position].surface).addOnSuccessListener {
+                    Data.player.createActiveQuest(sideQuestsAdventure[position], sideQuestsAdventure[position].surface).addOnCompleteListener {
                         loadingScreen.cancel()
-                        (activity as ActivityAdventure).checkForQuest()
-                        fragmentOverview.resetAdapter(true)
-                    }.addOnFailureListener {
-                        loadingScreen.cancel()
-                        Toast.makeText(tempActivity, "Something went wrong! Try again later. (${it.localizedMessage})", Toast.LENGTH_LONG).show()
+                        if(it.isSuccessful){
+                            (activity as ActivityAdventure).checkForQuest()
+                            fragmentOverview.resetAdapter(true)
+                        }else {
+                            Toast.makeText(tempActivity, "Something went wrong! Try again later. (${it.exception?.localizedMessage})", Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }

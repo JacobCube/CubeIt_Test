@@ -29,8 +29,8 @@
         app:layout_constraintGuide_percent="0.365" />
 
 
-    <ListView
-        android:id="@+id/listViewInventory"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewInventory"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:choiceMode="singleChoice"
@@ -54,8 +54,8 @@
         android:paddingRight="4dp"
         android:paddingBottom="4dp"
         android:scrollbars="vertical"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/listViewInventory"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerViewInventory"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline7"
@@ -284,42 +284,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline6"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="gone">
 
     </FrameLayout>
-
-    <ImageView
-        android:id="@+id/homeButtonBackCharacter"
-        android:layout_width="75dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/emptyspellslotlarge"
-        android:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/home_button"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageViewMenuUpCharacter"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline137"
-        app:srcCompat="@drawable/setting3rows" />
-
-    <FrameLayout
-        android:id="@+id/frameLayoutMenuCharacter"
-        android:layout_width="0dp"
-        android:layout_height="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

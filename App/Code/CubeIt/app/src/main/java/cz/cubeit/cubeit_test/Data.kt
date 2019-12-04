@@ -2,7 +2,6 @@ package cz.cubeit.cubeit_test
 
 import android.animation.Animator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -19,10 +18,8 @@ import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.util.AttributeSet
 import android.util.Log
-import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -40,7 +37,9 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.GsonBuilder
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
+import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.*
+import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.layoutPopupInfo
+import kotlinx.android.synthetic.main.popup_silent_info_dialog.view.*
 import java.io.InvalidClassException
 import java.io.Serializable
 import java.security.MessageDigest
@@ -133,8 +132,8 @@ fun Any.toJSON(): String{
 }
 
 @Throws(IllegalAccessException::class, ClassCastException::class)
-fun Any.toSHA256(): String{            //algoritmus pro porovnání s daty ze serveru
-    val input: Any = when(this){            //parent/child třídy mají rozdílné chování při rozkladu na části, tento postup to vrací do parent podoby
+fun Any.toSHA256(): String{            //algoritmus pro porovnání lokálních dat s daty ze serveru
+    val input: Any = when(this){            //parent/child (inheritence) třídy mají rozdílné chování při rozkladu na části, tento postup to vrací do parent podoby
         is Weapon, is Wearable, is Runes -> {
             (this as Item).toItem()
         }
@@ -166,6 +165,8 @@ fun Any.toSHA256(): String{            //algoritmus pro porovnání s daty ze se
     if(jsonString.isNotEmpty() && jsonString[0] != '['){
         jsonString = "[$jsonString]"
     }
+
+    Log.d("SHA256", jsonString)
 
     var result = ""
     val bytes = jsonString.toByteArray()
@@ -298,7 +299,7 @@ var drawableStorage = hashMapOf(
 )
 
 /*fun showPinnedPop(activity: Activity, item: Spell, listener: Class_DragOutTouchListener): PopupWindow{
-    val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+    val viewP = activity.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
     val windowPop = PopupWindow(activity)
     windowPop.contentView = viewP
     windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -367,8 +368,8 @@ var drawableStorage = hashMapOf(
     return windowPop
 }*/
 
-fun View.setUpOnHold(activity: Activity, item: Item){
-    val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+fun View.setUpOnHoldDecorPop(activity: SystemFlow.GameActivity, item: Item){
+    val viewP = activity.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
     val windowPop = PopupWindow(activity)
     windowPop.contentView = viewP
     windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -385,7 +386,7 @@ fun View.setUpOnHold(activity: Activity, item: Item){
             viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
             false
         }else {
-            val drawable = activity.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
+            val drawable = activity.getDrawable(R.drawable.close_image)
             drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
             viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
             true
@@ -403,6 +404,7 @@ fun View.setUpOnHold(activity: Activity, item: Item){
                 x = motionEvent.rawX.toInt()
                 y = motionEvent.rawY.toInt()
                 windowPop.update(x - dx, y - dy, -1, -1)
+                windowPop.update()
             }
             MotionEvent.ACTION_UP -> {
                 windowPop.dismiss()
@@ -423,8 +425,12 @@ fun View.setUpOnHold(activity: Activity, item: Item){
     }
 
     viewP.imageViewPopUpInfoBg.setOnTouchListener(dragListener)
-    viewP.textViewPopUpInfoDrag.setOnTouchListener(dragListener)
+    //viewP.textViewPopUpInfoDrag.setOnTouchListener(dragListener)
     viewP.imageViewPopUpInfoItem.setOnTouchListener(dragListener)
+    viewP.layoutPopupInfo.apply {
+        minHeight = (activity.dm.heightPixels * 0.65).toInt()
+        minWidth = (activity.dm.heightPixels * 0.65).toInt()
+    }
 
 
     this.setOnTouchListener(object: Class_HoldTouchListener(this, false, 0f, false){
@@ -432,12 +438,12 @@ fun View.setUpOnHold(activity: Activity, item: Item){
         override fun onStartHold(x: Float, y: Float) {
             super.onStartHold(x, y)
 
-            viewP.textViewPopUpInfo.setHTMLText(item.getStatsCompare())
-            viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-            val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
+            viewP.textViewPopUpInfoDsc.setHTMLText(item.getStatsCompare())
+            //viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+            val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, (activity.dm.heightPixels * 0.65).toInt(), (activity.dm.heightPixels * 0.65).toInt()/*viewP.measuredWidth, viewP.measuredHeight*/)
 
             if(!Data.loadingActiveQuest && !windowPop.isShowing && !viewPinned){
-                viewP.textViewPopUpInfo.setHTMLText(item.getStatsCompare())
+                viewP.textViewPopUpInfoDsc.setHTMLText(item.getStatsCompare())
                 viewP.imageViewPopUpInfoItem.setBackgroundResource(item.getBackground())
                 viewP.imageViewPopUpInfoItem.setImageResource(item.drawable)
 
@@ -448,6 +454,80 @@ fun View.setUpOnHold(activity: Activity, item: Item){
         override fun onCancelHold() {
             super.onCancelHold()
             if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
+        }
+    })
+}
+
+fun View.setUpOnHoldSilentPop(activity: SystemFlow.GameActivity, item: Item? = null, spell: Spell? = null){
+    val viewP = activity.layoutInflater.inflate(R.layout.popup_silent_info_dialog, null, false)
+    val windowPop = PopupWindow(activity)
+    windowPop.contentView = viewP
+    windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+    var dx = 0
+    var dy = 0
+    var x = 0
+    var y = 0
+
+    val dragListener = View.OnTouchListener{ _, motionEvent ->
+        when (motionEvent.action) {
+            MotionEvent.ACTION_DOWN -> {
+                dx = motionEvent.x.toInt()
+                dy = motionEvent.y.toInt()
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                x = motionEvent.rawX.toInt()
+                y = motionEvent.rawY.toInt()
+                windowPop.update(x - dx, y - dy, -1, -1)
+                windowPop.update()
+            }
+            MotionEvent.ACTION_UP -> {
+                windowPop.dismiss()
+                val xOff = if(x - dx <= 0){
+                    5
+                } else {
+                    x -dx
+                }
+                val yOff = if(y - dy <= 0){
+                    5
+                } else {
+                    y -dy
+                }
+                windowPop.showAsDropDown(activity.window.decorView.rootView, xOff, yOff)
+            }
+        }
+        true
+    }
+
+    viewP.imageViewSilentPopInfoBg.setOnTouchListener(dragListener)
+    //viewP.textViewSilentPopInfoDrag.setOnTouchListener(dragListener)
+    viewP.imageViewSilentPopInfoItem.setOnTouchListener(dragListener)
+    viewP.layoutPopupInfo.apply {
+        minHeight = (activity.dm.heightPixels * 0.65).toInt()
+        minWidth = (activity.dm.heightPixels * 0.65).toInt()
+    }
+
+    this.setOnTouchListener(object: Class_HoldTouchListener(this, false, 0f, false){
+
+        override fun onStartHold(x: Float, y: Float) {
+            super.onStartHold(x, y)
+
+            viewP.textViewSilentPopInfoDsc.setHTMLText(item?.getStatsCompare() ?: spell?.getStats() ?: "Error, wrong input")
+            //viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
+            val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, (activity.dm.heightPixels * 0.65).toInt(), (activity.dm.heightPixels * 0.65).toInt()/*viewP.measuredWidth, viewP.measuredHeight*/)
+
+            if(!Data.loadingActiveQuest && !windowPop.isShowing){
+                viewP.textViewSilentPopInfoDsc.setHTMLText(item?.getStatsCompare() ?: spell?.getStats() ?: "Error, wrong input")
+                viewP.imageViewSilentPopInfoItem.setBackgroundResource(item?.getBackground() ?: R.drawable.emptyspellslot ?: 0)
+                viewP.imageViewSilentPopInfoItem.setImageResource(item?.drawable ?: spell?.drawable ?: 0)
+
+                windowPop.showAsDropDown(activity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
+            }
+        }
+
+        override fun onCancelHold() {
+            super.onCancelHold()
+            if(windowPop.isShowing) windowPop.dismiss()
         }
     })
 }
@@ -489,6 +569,8 @@ object Data {
             "Rocket game", listOf("100000", "100001"), true))
 
     var inbox: MutableList<InboxMessage> = mutableListOf()
+
+    var requestedBarX: Float? = null
 
     val splashTexts: List<String> = listOf(
             "We're contacting your parents, stay patient.",
@@ -596,6 +678,7 @@ object Data {
     var inboxChangedMessages: Int = 0
 
     var inboxSnapshotHome: ListenerRegistration? = null
+    var serverSnapshotHome: ListenerRegistration? = null
     var inboxSnapshot: ListenerRegistration? = null
     var factionSnapshot: ListenerRegistration? = null
 
@@ -638,17 +721,24 @@ object Data {
             factionSnapshot?.remove()
             inboxSnapshot?.remove()
             inboxSnapshotHome?.remove()
+            serverSnapshotHome?.remove()
+            serverSnapshotHome = null
             inboxSnapshotHome = null
             inboxSnapshot = null
             factionSnapshot = null
 
-            loadingStatus = if(closeApp) LoadingStatus.CLOSEAPP
-                else LoadingStatus.UNLOGGED
+            loadingStatus = if(closeApp){
+                LoadingStatus.CLOSEAPP
+            }else{
+                LoadingStatus.UNLOGGED
+            }
+            player = Player()
 
         }.addOnFailureListener{
             Toast.makeText(context, "There was a problem with uploading your profile data.", Toast.LENGTH_LONG).show()
             Log.d("signout_error", it.message)
             loadingStatus = LoadingStatus.CLOSELOADING
+            player = Player()
         }
     }
 
@@ -677,7 +767,6 @@ object Data {
             npcs = if (SystemFlow.readObject(context, "npcs.data") != 0) SystemFlow.readObject(context, "npcs.data") as HashMap<String, NPC> else hashMapOf()
             storyQuests = if (SystemFlow.readObject(context, "story.data") != 0) SystemFlow.readObject(context, "story.data") as MutableList<StoryQuest> else mutableListOf()
             surfaces = if (SystemFlow.readObject(context, "surfaces.data") != 0) SystemFlow.readObject(context, "surfaces.data") as List<Surface> else listOf()
-
             surfaces = surfaces.sortedBy { it.id.toIntOrNull() ?: 9999 }
             for(i in surfaces.indices){
                 surfaces[i].quests = surfaces[i].quests.toList().sortedBy { it.second.id.toIntOrNull() ?: 9999 }.toMap()
@@ -908,6 +997,8 @@ object Data {
 
     //import of harcoded data to firebase   -   nepoužívat, je to jen pro ukázku
     fun uploadGlobalData() {
+        Log.d("uploadGlobalData", "called succ")
+
         val db = FirebaseFirestore.getInstance()
         val storyRef = db.collection("story")
         val charClassRef = db.collection("charclasses")
@@ -926,7 +1017,7 @@ object Data {
                         Log.d("story", "${it.cause}")
                     }
         }*/
-        /*for (i in 0 until charClasses.size) {                                     //charclasses
+        for (i in 0 until charClasses.size) {                                     //charclasses
             charClassRef.document(charClasses[i].id)
                     .set(charClasses[i]
                     ).addOnSuccessListener {
@@ -943,7 +1034,7 @@ object Data {
                     }.addOnFailureListener {
                         Log.d("spellclasses", "${it.cause}")
                     }
-        }*/
+        }
         /*for (i in 0 until itemClasses.size) {                                     //items
             itemsRef.document(itemClasses[i].id)
                     .set(hashMapOf<String, Any?>(
@@ -965,7 +1056,8 @@ object Data {
                         Log.d("npcs", "${it.cause}")
                     }
         }*/
-        /*for (i in surfaces.indices) {                                     //surfaces
+        Log.d("charclasses", surfaces.size.toString())
+        for (i in surfaces.indices) {                                     //surfaces
             surfacesRef.document(i.toString())
                     .set(surfaces[i]
                     ).addOnSuccessListener {
@@ -973,7 +1065,7 @@ object Data {
                     }.addOnFailureListener {
                         Log.d("surface", "${it.cause}")
                     }
-        }*/
+        }
 
         balanceRef.set(GenericDB.balance).addOnSuccessListener {        //balance
             Log.d("COMPLETED balance", GenericDB.balance.toJSON())
@@ -1089,10 +1181,24 @@ enum class LoadingType : Serializable{
     RocketGameMotion
 }
 
-class PlayerSurface(
-
-){
-
+enum class ActivityType: Serializable{
+    Character,
+    Shop,
+    Adventure,
+    Story,
+    Settings,
+    CharacterCustomization,
+    Faction,
+    FightBoard,
+    FightUniversalOffline,
+    Home,
+    Inbox,
+    LoginRegister,
+    Market,
+    OfflineMG,
+    Spells,
+    SplashScreen,
+    FightReward
 }
 
 open class Player(
@@ -1115,6 +1221,7 @@ open class Player(
     var notificationsInbox: Boolean = true
     var notificationsFaction: Boolean = true
     var music: Boolean = true
+    var soundEffects: Boolean = true
     var experience: Int = 0
         set(value){
             field = value
@@ -1148,7 +1255,11 @@ open class Player(
         }
     var inventorySlots: Int = 8
     var fame: Int = 0
-    var drawableExt: Int = 0
+    var externalDrawableIn: String = ""
+    var externalDrawable: Int = 0
+        get(){
+            return drawableStorage[externalDrawableIn] ?: 0
+        }
     var storyQuestsCompleted: MutableList<StoryQuest> = mutableListOf()
     var factionName: String? = null
     var factionID: Int? = null
@@ -1173,21 +1284,22 @@ open class Player(
     var allies: MutableList<String> = mutableListOf("MexxFM")
     var inviteBy: String? = null
     var profilePicDrawableIn: String = "00000"
-    val profilePicDrawable: Int
-        get(){
+    @Exclude @Transient var profilePicDrawable: Int = 0
+        @Exclude get(){
             return drawableStorage[profilePicDrawableIn] ?: 0
         }
     var cubeCoins: Int = 0
     var cubix: Int = 0
     var gold: Int = 0
     var rocketGameScoreSeconds: Double = 0.0
+    var vibrationEasterEgg: Boolean = false
 
     //@Transient @Exclude var chosenEnemyOffline: FightSystem.Fighter? = null //CO-OP offline fight system
     @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - do not serialize!
     @Transient @Exclude var textSize: Float = 16f
     @Transient @Exclude var textFont: String = "average_sans"
     @Transient @Exclude var vibrateEffects: Boolean = true
-    @Transient @Exclude var allyList: MutableList<SocialItem> = mutableListOf()
+    @Transient @Exclude var socials: MutableList<SocialItem> = mutableListOf()
 
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
@@ -1195,8 +1307,8 @@ open class Player(
         if(SystemFlow.readFileText(context, "vibrateEffect${Data.player.username}.data") != "0") vibrateEffects = SystemFlow.readFileText(context, "vibrateEffect${Data.player.username}.data").toBoolean()
 
         var changed = false
-        for(i in currentSurfaces){                              //generate Bosses if last time seeing the last boss in the surface was longer than 8 hours ago
-            if(i.boss == null && i.lastBossAt.time + 28800000 <= java.util.Calendar.getInstance().time.time){
+        /*for(i in currentSurfaces){                              //generate Bosses if last time seeing the last boss in the surface was longer than 8 hours ago
+            if(i.boss == null && i.lastBossAt.time + 28800000 <= Calendar.getInstance().time.time){
                 Log.d("Boss_spawn", "valid time")
                 if(nextInt(0, 2) == 1){
                     changed = true
@@ -1208,13 +1320,15 @@ open class Player(
                         Log.d("Boss_spawn", it.localizedMessage)
                     }
                 }else {
-                    i.lastBossAt = java.util.Calendar.getInstance().time
+                    i.lastBossAt = Calendar.getInstance().time
                 }
             }
-        }
-        if(changed){        //TODO won't work!!!
-            this.uploadPlayer()
-        }
+        }*/
+        Handler().postDelayed({ //temporary workaround
+            if(changed){        //TODO won't work!!!
+                this.uploadPlayer()
+            }
+        }, 5000)
     }
 
     private fun changeFactionStatus(): Task<Void> {
@@ -1234,7 +1348,69 @@ open class Player(
             enemies.first()
         }
     }
-*/
+    */
+
+    fun writeSocial(item: SocialItem, context: Context): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+
+        this.socials.removeAll { it.username == item.username }
+        this.socials.add(item)
+
+        return if(socials.any { it.username == item.username }){
+            //if(socials.find { it.username == item.username } != item){
+                db.collection("users").document(this.username).collection("Allies").document(item.username).update(
+                        mapOf(
+                                "drawableIn" to item.drawableIn,
+                                "type" to item.type
+                        ))
+            //}
+        }else {
+            db.collection("users").document(this.username).collection("Allies").document(item.username).set(item).addOnCompleteListener {
+                if(it.isSuccessful){
+                    socials.add(item)
+                }else {
+                    Toast.makeText(context, "Social request wasn't successful. Try again later.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    fun requestSocialAlly(usernameIn: String, drawableIn: String): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        this.socials.add(SocialItem(SocialItemType.Sent, usernameIn, drawableIn))
+
+        return db.collection("users").document(usernameIn).collection("Allies").document(this.username)
+                .set(SocialItem(SocialItemType.Received, this.username, profilePicDrawableIn))
+    }
+
+    fun acceptSocialAlly(item: SocialItem, context: Context): Task<DocumentSnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("users").document(item.username).collection("Allies").document(this.username)
+
+        //Is ally request still valid?
+        return docRef.get().addOnCompleteListener {
+            if(it.result?.exists() == true && it.result?.toObject(SocialItem::class.java)?.type != SocialItemType.Blocked){
+                docRef.update(mapOf(
+                        "type" to SocialItemType.Ally,
+                        "drawableIn" to this.profilePicDrawableIn,
+                        "capturedAt" to Calendar.getInstance().time
+                )).continueWithTask {
+                    item.type = SocialItemType.Ally
+                    writeSocial(item, context)
+                }
+            }else {
+                Toast.makeText(context, "You cannot accept this ally request anymore.", Toast.LENGTH_SHORT).show()
+                removeSocial(item.username)
+            }
+        }
+    }
+
+    fun removeSocial(usernameIn: String): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        this.socials.removeAll { it.username == usernameIn }
+        return db.collection("users").document(this.username).collection("Allies").document(usernameIn).delete()
+    }
+
     fun uploadSingleItem(item: String): Task<Void> {
         val db = FirebaseFirestore.getInstance()
         val userStringHelper: HashMap<String, Any?> = hashMapOf(
@@ -1270,6 +1446,7 @@ open class Player(
                 "description" to this.description,
                 "cubix" to this.cubix,
                 "rocketGameScoreSeconds" to this.rocketGameScoreSeconds,
+                "vibrationEasterEgg" to this.vibrationEasterEgg,
                 "lastLogin" to FieldValue.serverTimestamp()
         )
 
@@ -1355,7 +1532,8 @@ open class Player(
         userString["description"] = this.description
         userString["storyQuestsCompleted"] = this.storyQuestsCompleted
         userString["currentStoryQuest"] = this.currentStoryQuest
-        userString["drawableExt"] = this.drawableExt
+        userString["externalDrawableIn"] = this.externalDrawableIn
+        userString["profilePicDrawableIn"] = this.profilePicDrawableIn
         userString["factionName"] = this.factionName
         userString["factionID"] = this.factionID
         userString["factionRole"] = this.factionRole
@@ -1365,6 +1543,7 @@ open class Player(
         userString["gold"] = this.gold
         userString["cubix"] = this.cubix
         userString["rocketGameScoreSeconds"] = this.rocketGameScoreSeconds
+        userString["vibrationEasterEgg"] = this.vibrationEasterEgg
 
 
         userString["lastLogin"] = FieldValue.serverTimestamp()
@@ -1411,7 +1590,8 @@ open class Player(
         userString["lastLogin"] = FieldValue.serverTimestamp()
         userString["storyQuestsCompleted"] = this.storyQuestsCompleted
         userString["currentStoryQuest"] = this.currentStoryQuest
-        userString["drawableExt"] = this.drawableExt
+        userString["externalDrawableIn"] = this.externalDrawableIn
+        userString["profilePicDrawableIn"] = this.profilePicDrawableIn
         userString["factionName"] = this.factionName
         userString["factionID"] = this.factionID
         userString["factionRole"] = this.factionRole
@@ -1421,6 +1601,7 @@ open class Player(
         userString["gold"] = this.gold
         userString["cubix"] = this.cubix
         userString["rocketGameScoreSeconds"] = this.rocketGameScoreSeconds
+        userString["vibrationEasterEgg"] = this.vibrationEasterEgg
 
         return db.collection("users").document(username).set(userString).continueWithTask {
             this.createInbox()
@@ -1500,7 +1681,7 @@ open class Player(
     private fun loadAllies(): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
         return db.collection("users").document(this.username).collection("Allies").orderBy("capturedAt", Query.Direction.DESCENDING).get().addOnSuccessListener {
-            this.allyList = it.toObjects(SocialItem::class.java)
+            this.socials = it.toObjects(SocialItem::class.java)
         }
     }
 
@@ -1764,7 +1945,8 @@ open class Player(
                 }
 
                 this.currentSurfaces = loadedPlayer.currentSurfaces
-                this.drawableExt = loadedPlayer.drawableExt
+                this.externalDrawableIn = loadedPlayer.externalDrawableIn
+                this.profilePicDrawableIn = loadedPlayer.profilePicDrawableIn
                 this.factionName = loadedPlayer.factionName
                 this.factionID = loadedPlayer.factionID
                 this.factionRole = loadedPlayer.factionRole
@@ -1773,6 +1955,7 @@ open class Player(
                 this.profilePicDrawableIn = loadedPlayer.profilePicDrawableIn
                 this.gold = loadedPlayer.gold
                 this.rocketGameScoreSeconds = loadedPlayer.rocketGameScoreSeconds
+                this.vibrationEasterEgg = loadedPlayer.vibrationEasterEgg
             }
         }.addOnFailureListener {
             Log.d("failed to load user", it.message.toString())
@@ -1882,13 +2065,13 @@ open class Player(
                 } else {
                     "<font color='red'>${this.charClass.staminaRatio * 100 - 100}%</font>"
                 } +
-                ")<br/><b>Armor: ${GameFlow.numberFormatString(this.armor)}</b><br/>+(" +
+                ")<br/><b>Armor: ${GameFlow.numberFormatString(this.armor)}%</b><br/>+(" +
                 if (this.charClass.armorRatio * 100 > 0) {
                     "<font color='green'>${this.charClass.armorRatio * 100}%</font>"
                 } else {
                     "<font color='red'>${this.charClass.armorRatio * 100}%</font>"
                 } +
-                ")<br/><b>Block: ${this.block}</b><br/>+(" +
+                ")<br/><b>Block: ${this.block}%</b><br/>+(" +
                 if (this.charClass.blockRatio * 100 - 100 >= 0) {
                     "<font color='green'>${this.charClass.blockRatio}%</font>"
                 } else {
@@ -1926,9 +2109,9 @@ open class Player(
                 } + "<br/><br/>" +
 
                         "Armor: "+if (this.armor >= playerX.armor) {
-                    "<font color='green'>${GameFlow.numberFormatString(this.armor)}</font>"
+                    "<font color='green'>${GameFlow.numberFormatString(this.armor)}%</font>"
                 } else {
-                    "<font color='red'>${GameFlow.numberFormatString(this.armor)}</font>"
+                    "<font color='red'>${GameFlow.numberFormatString(this.armor)}%</font>"
                 } + "<br/><br/>" +
 
                         "Block: "+if (this.block >= playerX.block) {
@@ -2020,14 +2203,19 @@ enum class SocialItemType{
     Sent,
     Received,
     Ally,
-    BlackListed
+    Blocked
 }
 
 data class SocialItem(
         var type: SocialItemType = SocialItemType.Received,
-        var username: String
+        var username: String,
+        var drawableIn: String
 ){
-    var captureAt: Date = java.util.Calendar.getInstance().time
+    var capturedAt: Date = Calendar.getInstance().time
+    var drawable: Int = 0
+        get(){
+            return drawableStorage[drawableIn] ?: 0
+        }
 
 
     fun initialize(ofUser: String){
@@ -2079,7 +2267,7 @@ class Spell(
         var energy: Int = 0,
         var power: Int = 0,
         var stun: Int = 0,
-        val dmgOverTime: FightEffect = FightEffect(0, 0.0, 0),
+        val effectOverTime: FightEffect = FightEffect(0, 0.0, 0),
         var level: Int = 0,
         var description: String = "",
         var lifeSteal: Int = 0,
@@ -2097,15 +2285,15 @@ class Spell(
             return if(this.energy == 0){
                 0.01
             }else{
-                (this.power + (this.dmgOverTime.dmg * this.dmgOverTime.rounds/2)) / this.energy
+                (this.power + (this.effectOverTime.dmg * this.effectOverTime.rounds/2)) / this.energy
             }
         }
 
     @Exclude fun getStats(): String {
-        var text = "\n<br/>${this.name}\n<br/>level: ${this.level}\n<br/> ${this.description}\n<br/>stamina: ${this.energy}\n<br/>power: ${(this.power * Data.player.power.toDouble() / 4).toInt()}"
+        var text = "\n<br/>${this.name}\n<br/>level: ${this.level}\n<br/> ${this.description}\n<br/>energy: ${this.energy}\n<br/>power: ${(this.power * Data.player.power.toDouble() / 4).toInt()}"
         if (this.stun != 0) text += "\n<br/>stun: +${this.stun}%"
         if (this.block != 1.0) text += "\n<br/>blocks ${this.block * 100}%"
-        if (this.dmgOverTime.rounds != 0) text += "\n<br/>damage over time: (\n<br/>rounds: ${this.dmgOverTime.rounds}\n<br/>damage: ${(this.dmgOverTime.dmg * Data.player.power / 4).toInt()})"
+        if (this.effectOverTime.rounds != 0) text += "\n<br/>effect over time: (\n<br/>rounds: ${this.effectOverTime.rounds}\n<br/>damage: ${(this.effectOverTime.dmg * Data.player.power / 4).toInt()})"
         return text
     }
 
@@ -2119,7 +2307,7 @@ class Spell(
         result = 31 * result + energy
         result = 31 * result + power
         result = 31 * result + stun
-        result = 31 * result + dmgOverTime.hashCode()
+        result = 31 * result + effectOverTime.hashCode()
         result = 31 * result + level
         result = 31 * result + description.hashCode()
         result = 31 * result + lifeSteal
@@ -2131,7 +2319,7 @@ class Spell(
     }
 }
 
-class CharClass: Serializable {
+class CharClass: Serializable{
     var id: String = "1"
     var dmgRatio: Double = 1.0
     var hpRatio: Double = 1.0
@@ -2582,14 +2770,12 @@ data class Reward(
         return this
     }
 
-    fun receive(menuFragment: Fragment_Menu_Bar? = null, visualize: Boolean, activity: Activity? = null, startingPoint: Coordinates? = null) {
+    fun receive(menuFragment: Fragment_Menu_Bar? = null) {
         if(this.item != null && !Data.player.inventory.contains(null)){
             Data.player.cubeCoins += this.item!!.priceCubeCoins
         }else {
             Data.player.inventory[Data.player.inventory.indexOf(null)] = this.item
         }
-
-        if(visualize) SystemFlow.visualizeReward(activity!!, startingPoint!!, this)
 
         Data.player.cubeCoins += this.cubeCoins
         Data.player.experience += this.experience
@@ -3143,8 +3329,8 @@ open class NPC(
 
     @Exclude fun generate(difficultyX: Int? = null, playerX: Player, multiplier: Double = 1.0): NPC {
         this.difficulty = difficultyX
-                ?: when (nextInt(0, GenericDB.balance.itemQualityPerc["7"]!! + 1)) {                   //quality of an item by percentage
-                    in 0 until GenericDB.balance.itemQualityPerc["0"]!! -> 0        //39,03%
+                ?: when (nextInt(0, (GenericDB.balance.itemQualityPerc["7"] ?: error("")) + 1)) {                   //quality of an item by percentage
+                    in 0 until (GenericDB.balance.itemQualityPerc["0"] ?: error("")) -> 0        //39,03%
                     in (GenericDB.balance.itemQualityPerc["0"] ?: error("")) + 1 until (GenericDB.balance.itemQualityPerc["1"] ?: error("")) -> 1     //27%
                     in (GenericDB.balance.itemQualityPerc["1"] ?: error("")) + 1 until (GenericDB.balance.itemQualityPerc["2"] ?: error("")) -> 2     //20%
                     in (GenericDB.balance.itemQualityPerc["2"] ?: error("")) + 1 until (GenericDB.balance.itemQualityPerc["3"] ?: error("")) -> 3     //8,41%
@@ -3156,10 +3342,9 @@ open class NPC(
                 }
 
         val allowedNPCs: MutableList<NPC> = mutableListOf()
-        allowedNPCs.addAll(Data.npcs.values)
-        //allowedNPCs.filter { it.levelAppearance < Data.player.level +10 && it.levelAppearance > Data.player.level -10 }         //TODO
-        val chosenNPC = if (Data.npcs.values.isNullOrEmpty()) {
-            NPC()
+        allowedNPCs.addAll(Data.npcs.values.filter { it.levelAppearance < Data.player.level +10 && it.levelAppearance > Data.player.level -10 })
+        val chosenNPC = if (allowedNPCs.isNullOrEmpty()) {
+            NPC(id = UUID.randomUUID().mostSignificantBits.toString(), inDrawable = "00000", inBgDrawable = "00000", name = namesStorage[nextInt(0, namesStorage.size)], charClassIndex = nextInt(0, 8))
         } else {
             allowedNPCs[nextInt(0, allowedNPCs.size)]
         }
@@ -3338,7 +3523,7 @@ open class NPC(
     @Exclude fun toPlayer(): Player {                 //probably temporary solution because of the fightsystem
         val npcPlayer = Player(this.charClassIndex, this.name, this.level)
 
-        npcPlayer.drawableExt = this.drawable
+        npcPlayer.externalDrawable = this.drawable
 
         npcPlayer.description = this.description
         npcPlayer.charClassIndex = this.charClassIndex
@@ -3559,25 +3744,28 @@ class Quest(
         secondsLength = ((reward.type!!.toDouble() + 2 - (((reward.type!!.toDouble() + 2) / 100) * Data.player.adventureSpeed.toDouble())) * 60).toInt()
     }
 
-    @Exclude fun getStats(resources: Resources): String {
-        return "<b>${resources.getString(R.string.quest_title, this.name)}</b><br/>${resources.getString(R.string.quest_generic, this.description)}<br/>difficulty: <b>" +
-                resources.getString(R.string.quest_generic, when (this.level) {
-                    0 -> "<font color='#7A7A7A'>Peaceful</font>"
-                    1 -> "<font color='#535353'>Easy</font>"
-                    2 -> "<font color='#8DD837'>Medium rare</font>"
-                    3 -> "<font color='#5DBDE9'>Medium</font>"
-                    4 -> "<font color='#058DCA'>Well done</font>"
-                    5 -> "<font color='#9136A2'>Hard rare</font>"
-                    6 -> "<font color='#FF9800'>Hard</font>"
-                    7 -> "<font color='#FFE500'>Evil</font>"
-                    else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
-                }) + "</b>, " +
+    @Exclude fun getStats(): String {
+        return "<b>${this.name}</b><br/>${this.description}<br/>difficulty: <b>" +
+                getDifficulty() + "</b>, " +
                 when {
                     this.secondsLength <= 0 -> "0:00"
                     this.secondsLength.toDouble() % 60 <= 10 -> "${this.secondsLength / 60}:0${this.secondsLength % 60}"
                     else -> "${this.secondsLength / 60}:${this.secondsLength % 60}"
                 } + " m"
-                // + "<br/>experience: ${resources.getString(R.string.quest_number, this.experience)}<br/>cube coins: ${resources.getString(R.string.quest_number, this.money)}"
+    }
+
+    @Exclude fun getDifficulty(): String{
+        return when (this.level) {
+            0 -> "<font color='#7A7A7A'>Peaceful</font>"
+            1 -> "<font color='#535353'>Easy</font>"
+            2 -> "<font color='#8DD837'>Medium rare</font>"
+            3 -> "<font color='#5DBDE9'>Medium</font>"
+            4 -> "<font color='#058DCA'>Well done</font>"
+            5 -> "<font color='#9136A2'>Hard rare</font>"
+            6 -> "<font color='#FF9800'>Hard</font>"
+            7 -> "<font color='#FFE500'>Evil</font>"
+            else -> "Error: Collection out of its bounds! <br/> report this to the support, please."
+        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -3790,7 +3978,8 @@ class InboxMessage(
         var status: MessageStatus = MessageStatus.New,
         var isInvitation1: Boolean = false,
         var invitation: Invitation = Invitation("","","",InvitationType.factionAlly),
-        var fightResult: Boolean? = null
+        var fightResult: Boolean? = null,
+        var vibrate: Boolean = false
 ): Serializable {
     var sentTime: Date = java.util.Calendar.getInstance().time
     @Transient var deleteTime: FieldValue? = null
@@ -3866,12 +4055,12 @@ enum class MessageStatus: Serializable {
     Allies
 }
 
-/*enum class ItemType{
+enum class ItemType{
     Weapon,
     Wearable,
     Rune,
     Other
-}*/
+}
 
 class Surface(
         var inBackground: String = "90000",
@@ -3894,6 +4083,20 @@ class Surface(
         result = 31 * result + quests.hashCode()
         result = 31 * result + lvlRequirement
         return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Surface
+
+        if (inBackground != other.inBackground) return false
+        if (id != other.id) return false
+        if (quests != other.quests) return false
+        if (lvlRequirement != other.lvlRequirement) return false
+
+        return true
     }
 }
 
@@ -3955,7 +4158,7 @@ data class FactionMember(
     }
 
     @Exclude fun refresh(): FactionMember{
-        this.activeDate = java.util.Calendar.getInstance().time
+        this.activeDate = Calendar.getInstance().time
         this.level = Data.player.level
         return this
     }
@@ -4292,7 +4495,8 @@ class Invitation(
         var subject: String = "Horde",
         var type: InvitationType = InvitationType.ally,
         var factionID: Int = 0,
-        var factionName: String = "Faction"
+        var factionName: String = "Faction",
+        var externalDrawable: String = Data.player.profilePicDrawableIn
 ): Serializable{
 
     @Exclude fun accept(){
@@ -4309,7 +4513,7 @@ class Invitation(
                 }
             }
             InvitationType.ally -> {
-                if(!Data.player.allies.contains(caller))Data.player.allies.add(caller)
+                Data.player.requestSocialAlly(Data.player.username, externalDrawable)
             }
             InvitationType.factionAlly -> {
                 if(Data.player.factionID != null && Data.player.factionName != null){

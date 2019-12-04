@@ -88,7 +88,7 @@ class Fragment_Register : Fragment() {
                             if (view.inputPassReg.text.toString().isNotBlank()) {
 
                                 val pass = view.inputPassReg.text.toString()
-                                if(pass.length > 7 && pass.contains("\\d+".toRegex()) /*&& pass.contains("[A-Z ]+".toRegex())*/){
+                                if(pass.length > 7/* && pass.contains("\\d+".toRegex()) && pass.contains("[A-Z ]+".toRegex())*/){
 
                                     if (inputPassReg.text.toString() == inputRePassReg.text.toString()){
 
@@ -149,7 +149,7 @@ class Fragment_Register : Fragment() {
                                 }else {
                                     SystemFlow.vibrateAsError(view.context)
                                     view.inputPassReg.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                                    Snackbar.make(view, "Entered password is not valid!", Snackbar.LENGTH_SHORT).show()
+                                    Snackbar.make(view, "Entered password is not long enough!", Snackbar.LENGTH_SHORT).show()
                                 }
                             }else {
                                 SystemFlow.vibrateAsError(view.context)

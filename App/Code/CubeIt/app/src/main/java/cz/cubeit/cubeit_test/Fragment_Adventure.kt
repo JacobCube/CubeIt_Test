@@ -156,10 +156,14 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
             window.elevation = 0.0f
             window.contentView = viewPop
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            val activityTemp = activity!!
+            val activityTemp = activity as SystemFlow.GameActivity
             window.isOutsideTouchable = false
             window.isFocusable = true
 
+            viewPop.layoutPopupQuest.apply {
+                minWidth = (activityTemp.dm.heightPixels * 0.75).toInt()
+                minHeight = (activityTemp.dm.heightPixels * 0.75).toInt()
+            }
             viewPop.imageViewAdventure.visibility = View.VISIBLE
             viewPop.textViewQuest.setHTMLText(Data.player.currentSurfaces[index].boss!!.description)
             viewPop.imageViewAdventure.setImageResource(Data.player.currentSurfaces[index].boss?.drawable ?: 0)
@@ -171,8 +175,8 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
                 viewPop.imageViewAdventure2.setImageResource(Data.player.currentSurfaces[index].boss!!.reward.item?.drawable ?: 0)
                 viewPop.imageViewAdventure2.setBackgroundResource(Data.player.currentSurfaces[index].boss!!.reward.item?.getBackground() ?: 0)
 
-                val tempActivity = activity!!
-                viewPop.imageViewAdventure2.setUpOnHold(tempActivity, Data.player.currentSurfaces[index].boss!!.reward.item!!)
+                val tempActivity = activity as SystemFlow.GameActivity
+                viewPop.imageViewAdventure2.setUpOnHoldDecorPop(tempActivity, Data.player.currentSurfaces[index].boss!!.reward.item!!)
             }else {
                 viewPop.imageViewAdventure2.visibility = View.GONE
             }

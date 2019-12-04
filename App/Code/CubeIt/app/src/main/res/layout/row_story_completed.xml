@@ -4,20 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_basic"
-    android:paddingBottom="1dp"
+    android:background="@drawable/bg_basic_logincolor_dark_border2"
+    android:paddingBottom="2dp"
     android:screenOrientation="sensorLandscape">
 
     <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
+        android:textStyle="bold"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        android:gravity="center"
+        android:gravity="center_vertical"
+        android:textColor="@color/bg_basic_white"
         android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/guideline160"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewStoryCompleted"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,89 +26,85 @@
         android:id="@+id/textViewOverviewRowMoney"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="2dp"
+        android:textColor="@color/bg_basic_white"
         android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline162"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline159"
-        app:layout_constraintVertical_bias="0.769" />
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/imageViewRowStoryCompletedCoin"
+        app:layout_constraintTop_toBottomOf="@+id/textViewShortDescription" />
 
     <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewOverviewRowExperience"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline161"
-        app:layout_constraintStart_toStartOf="@+id/guideline162"
-        app:layout_constraintTop_toTopOf="@+id/guideline159" />
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/imageViewRowStoryCompletedXp"
+        app:layout_constraintTop_toBottomOf="@+id/textViewShortDescription" />
 
     <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewShortDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="4dp"
         android:gravity="start"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        android:lines="3"
         android:text="TextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline161"
-        app:layout_constraintTop_toTopOf="@+id/guideline160" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline159"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.67" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline160"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.3333" />
+        app:layout_constraintEnd_toStartOf="@+id/imageViewStoryCompleted"
+        app:layout_constraintStart_toStartOf="@+id/guideline162"
+        app:layout_constraintTop_toBottomOf="@+id/textViewName" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline161"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.4" />
+        app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline162"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.2" />
-
-    <ImageView
-        android:id="@+id/imageViewLockedQuest"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:alpha="0.9"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@color/loginColor" />
+        app:layout_constraintGuide_percent="0.05" />
 
     <ImageView
         android:id="@+id/imageViewStoryCompleted"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintDimensionRatio="H,1:1"
-        android:tint="@android:color/holo_green_light"
-        android:visibility="invisible"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="4dp"
         android:layout_marginBottom="8dp"
+        android:tint="@android:color/holo_green_light"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/imageViewLockedQuest"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/completed" />
+        app:srcCompat="@drawable/completed"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewRowStoryCompletedCoin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewOverviewRowMoney"
+        app:layout_constraintStart_toStartOf="@+id/guideline162"
+        app:layout_constraintTop_toTopOf="@+id/textViewOverviewRowMoney"
+        app:srcCompat="@drawable/coin_basic" />
+
+    <ImageView
+        android:id="@+id/imageViewRowStoryCompletedXp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/textViewOverviewRowMoney"
+        app:layout_constraintTop_toTopOf="@+id/textViewOverviewRowMoney"
+        app:srcCompat="@drawable/xp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.os.Bundle
@@ -18,6 +19,7 @@ import android.widget.ImageView
 import kotlinx.android.synthetic.main.fragment_menu_bar.view.*
 import kotlin.math.abs
 import android.view.MotionEvent
+import kotlin.math.max
 import kotlin.math.min
 
 
@@ -46,10 +48,10 @@ class Fragment_Menu_Bar : Fragment() {
 
         if(Data.activeQuest != null && viewMenu.buttonAdventure.isEnabled && Data.activeQuest!!.completed){
             toYellow = ValueAnimator.ofInt(0, 255).apply{
-                duration = 800
+                duration = 1000
                 addUpdateListener {
                     if(toWhite.isRunning)toWhite.cancel()
-                    viewMenu.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                    viewMenu.buttonAdventure?.drawable?.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
                 }
                 addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
@@ -64,14 +66,13 @@ class Fragment_Menu_Bar : Fragment() {
                     override fun onAnimationEnd(animation: Animator?) {
                         toWhite.start()
                     }
-
                 })
             }
             toWhite = ValueAnimator.ofInt(255, 0).apply{
-                duration = 800
+                duration = 1000
                 addUpdateListener {
                     if(toYellow.isRunning)toYellow.cancel()
-                    viewMenu.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                    viewMenu.buttonAdventure?.drawable?.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
                 }
                 addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
@@ -92,9 +93,13 @@ class Fragment_Menu_Bar : Fragment() {
         }else{
             if(toYellow.isRunning)toYellow.end()
             if(toWhite.isRunning)toWhite.end()
-            viewMenu.buttonAdventure.setColorFilter(android.R.color.white)
-            viewMenu.buttonAdventure.drawable.clearColorFilter()
+            viewMenu.buttonAdventure?.setColorFilter(android.R.color.white)
+            viewMenu.buttonAdventure?.drawable?.clearColorFilter()
         }
+    }
+
+    fun setUpSecondAction(listener: View.OnClickListener){
+        viewMenu.imageViewControlMenuPropertyBar.setOnClickListener(listener)
     }
 
     fun refresh(){
@@ -103,10 +108,10 @@ class Fragment_Menu_Bar : Fragment() {
         if(Data.newLevel && viewMenu.buttonCharacter.isEnabled){
 
             toYellow = ValueAnimator.ofInt(0, 255).apply{
-                duration = 800
+                duration = 1000
                 addUpdateListener {
                     if(toWhite.isRunning)toWhite.cancel()
-                    viewMenu.buttonCharacter.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                    viewMenu.buttonCharacter?.drawable?.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
                 }
                 addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
@@ -125,10 +130,10 @@ class Fragment_Menu_Bar : Fragment() {
                 })
             }
             toWhite = ValueAnimator.ofInt(255, 0).apply{
-                duration = 800
+                duration = 1000
                 addUpdateListener {
                     if(toYellow.isRunning)toYellow.cancel()
-                    viewMenu.buttonCharacter.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                    viewMenu.buttonCharacter?.drawable?.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
                 }
                 addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
@@ -150,87 +155,115 @@ class Fragment_Menu_Bar : Fragment() {
             if(toYellow.isRunning)toYellow.end()
             if(toWhite.isRunning)toWhite.end()
             viewMenu.buttonCharacter.setColorFilter(android.R.color.white)
-            viewMenu.buttonCharacter.drawable.clearColorFilter()
+            viewMenu.buttonCharacter?.drawable?.clearColorFilter()
         }else{
             if(toYellow.isRunning)toYellow.end()
             if(toWhite.isRunning)toWhite.end()
             viewMenu.buttonCharacter.setColorFilter(android.R.color.white)
-            viewMenu.buttonCharacter.drawable.clearColorFilter()
+            viewMenu.buttonCharacter?.drawable?.clearColorFilter()
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        viewMenu.apply {
+            imageViewMenuBg.setImageResource(0)
+            buttonAdventure.setImageResource(0)
+            buttonFight.setImageResource(0)
+            buttonDefence.setImageResource(0)
+            buttonCharacter.setImageResource(0)
+            buttonSettings.setImageResource(0)
+            buttonShop.setImageResource(0)
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = inflater.inflate(R.layout.fragment_menu_bar, container, false)
-
         viewMenu = view
-        this.refresh()
 
-            view.buttonAdventure.setOnClickListener {
-                view.buttonAdventure.isEnabled = false
-                Handler().postDelayed({
-                    view.buttonAdventure.isEnabled = true
-                }, 150)
+        System.gc()
+        val opts = BitmapFactory.Options()
+        opts.inScaled = false
+        view.imageViewMenuBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.menu, opts))
 
-                val intent = Intent(view.context, ActivityAdventure::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
-                activity?.overridePendingTransition(0,0)
+            view.buttonAdventure.apply {
+                setOnClickListener {
+                    view.buttonAdventure.isEnabled = false
+                    Handler().postDelayed({
+                        view.buttonAdventure.isEnabled = true
+                    }, 150)
+
+                    val intent = Intent(view.context, ActivityAdventure::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0,0)
+                }
             }
-            view.buttonFight.setOnClickListener {
-                view.buttonFight.isEnabled = false
-                Handler().postDelayed({
-                    view.buttonFight.isEnabled = true
-                }, 150)
+            view.buttonFight.apply {
+                setOnClickListener {
+                    view.buttonFight.isEnabled = false
+                    Handler().postDelayed({
+                        view.buttonFight.isEnabled = true
+                    }, 150)
 
-                val intent = Intent(view.context, ActivityFightBoard::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
-                activity?.overridePendingTransition(0,0)
+                    val intent = Intent(view.context, ActivityFightBoard::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0,0)
+                }
             }
-            view.buttonDefence.setOnClickListener {
-                view.buttonDefence.isEnabled = false
-                Handler().postDelayed({
-                    view.buttonDefence.isEnabled = true
-                }, 150)
+            view.buttonDefence.apply {
+                setOnClickListener {
+                    view.buttonDefence.isEnabled = false
+                    Handler().postDelayed({
+                        view.buttonDefence.isEnabled = true
+                    }, 150)
 
-                val intent = Intent(view.context, Spells::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
-                activity?.overridePendingTransition(0,0)
+                    val intent = Intent(view.context, Spells::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0,0)
+                }
             }
-            view.buttonCharacter.setOnClickListener {
-                view.buttonCharacter.isEnabled = false
-                Handler().postDelayed({
-                    view.buttonCharacter.isEnabled = true
-                }, 150)
+            view.buttonCharacter.apply {
+                setOnClickListener {
+                    view.buttonCharacter.isEnabled = false
+                    Handler().postDelayed({
+                        view.buttonCharacter.isEnabled = true
+                    }, 150)
 
-                val intent = Intent(view.context, Activity_Character::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
-                activity?.overridePendingTransition(0,0)
+                    val intent = Intent(view.context, Activity_Character::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0,0)
+                }
             }
-            view.buttonSettings.setOnClickListener {
-                view.buttonSettings.isEnabled = false
-                Handler().postDelayed({
-                    view.buttonSettings.isEnabled = true
-                }, 150)
+            view.buttonSettings.apply {
+                setOnClickListener {
+                    view.buttonSettings.isEnabled = false
+                    Handler().postDelayed({
+                        view.buttonSettings.isEnabled = true
+                    }, 150)
 
-                val intent = Intent(view.context, ActivitySettings::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
-                activity?.overridePendingTransition(0,0)
+                    val intent = Intent(view.context, ActivitySettings::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0,0)
+                }
             }
-            view.buttonShop.setOnClickListener {
-                view.buttonShop.isEnabled = false
-                Handler().postDelayed({
-                    view.buttonShop.isEnabled = true
-                }, 150)
+            view.buttonShop.apply {
+                setOnClickListener {
+                    view.buttonShop.isEnabled = false
+                    Handler().postDelayed({
+                        view.buttonShop.isEnabled = true
+                    }, 150)
 
-                val intent = Intent(view.context, Activity_Shop::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
-                activity?.overridePendingTransition(0,0)
+                    val intent = Intent(view.context, Activity_Shop::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0,0)
+                }
             }
 
         when(arguments!!.getInt("layoutID")){
@@ -247,7 +280,6 @@ class Fragment_Menu_Bar : Fragment() {
             isClickable = false
         }
 
-
         var toWhite = ValueAnimator()
         var toYellow = ValueAnimator()
 
@@ -257,7 +289,7 @@ class Fragment_Menu_Bar : Fragment() {
                 duration = 1500
                 addUpdateListener {
                     if(toWhite.isRunning)toWhite.cancel()
-                    view.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                    view.buttonAdventure?.drawable?.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
                 }
                 addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
@@ -279,7 +311,7 @@ class Fragment_Menu_Bar : Fragment() {
                 duration = 1500
                 addUpdateListener {
                     if(toYellow.isRunning)toYellow.cancel()
-                    view.buttonAdventure.drawable.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
+                    view.buttonAdventure?.drawable?.setColorFilter(Color.rgb(255, 255, it.animatedValue as Int), PorterDuff.Mode.MULTIPLY)
                 }
                 addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
@@ -300,9 +332,11 @@ class Fragment_Menu_Bar : Fragment() {
         }else{
             if(toYellow.isRunning)toYellow.end()
             if(toWhite.isRunning)toWhite.end()
-            viewMenu.buttonAdventure.setColorFilter(android.R.color.white)
-            viewMenu.buttonAdventure.drawable.clearColorFilter()
+            viewMenu.buttonAdventure?.setColorFilter(android.R.color.white)
+            viewMenu.buttonAdventure?.drawable?.clearColorFilter()
         }
+
+        this.refresh()
 
         Log.d("layoutID", (arguments!!.getInt("layoutID")).toString())
         Log.d("menuID", (arguments!!.getInt("menuID")).toString())
@@ -336,7 +370,7 @@ class Fragment_Menu_Bar : Fragment() {
         rootOpenButton.setOnClickListener {
             rootMenu.bringToFront()
             menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
-                duration = (rootMenu.y/displayY * 160).toLong()
+                duration = 600
                 addUpdateListener {
                     rootMenu.y = (it.animatedValue as Float)
                 }
@@ -375,7 +409,7 @@ class Fragment_Menu_Bar : Fragment() {
                             1 -> {
                                 if ((originalY + (motionEvent.rawY - initialTouchY).toInt()) <= (displayY * 0.4)) {
                                     iconAnimator = ValueAnimator.ofFloat(rootIcon.y, -(displayY * 0.18).toFloat()).apply{
-                                        duration = (rootMenu.y/displayY * 160).toLong()
+                                        duration = 600
                                         addUpdateListener {
                                             rootIcon.y = it.animatedValue as Float
                                         }
@@ -388,17 +422,17 @@ class Fragment_Menu_Bar : Fragment() {
                                 }
                             }
                             2 -> {
-                                if (rootMenu.y < (displayY / 10 * 9)) {
-                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
-                                        duration = (rootMenu.y/displayY * 160).toLong()
+                                if(rootMenu.y >= (displayY * 0.9)){
+                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY).toFloat()).apply {
+                                        duration = 600
                                         addUpdateListener {
                                             rootMenu.y = (it.animatedValue as Float)
                                         }
                                         start()
                                     }
-                                }else if(rootMenu.y >= (displayY * 0.9)){
-                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY).toFloat()).apply {
-                                        duration = (rootMenu.y/displayY * 160).toLong()
+                                }else {
+                                    menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
+                                        duration = 600
                                         addUpdateListener {
                                             rootMenu.y = (it.animatedValue as Float)
                                         }
@@ -420,9 +454,10 @@ class Fragment_Menu_Bar : Fragment() {
                                     rootIcon.requestLayout()
                                 }
                                 2 -> {
-                                    if((originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))>= displayY*0.82){
-                                        rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
+                                    if(menuAnimator.isRunning){
+                                        menuAnimator.cancel()
                                     }
+                                    rootMenu.y = max((originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1))), (displayY * 0.825).toFloat())
                                 }
 
                             }
@@ -436,7 +471,7 @@ class Fragment_Menu_Bar : Fragment() {
 
         view.imageViewControlMenu.setOnClickListener {
             menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
-                duration = (rootMenu.y/displayY * 160).toLong()
+                duration = 600
                 addUpdateListener {
                     rootMenu.y = it.animatedValue as Float
                 }
@@ -469,7 +504,7 @@ class Fragment_Menu_Bar : Fragment() {
                             2 -> {
                                 if (rootMenu.y < (displayY * 0.9)) {
                                     menuAnimator = ValueAnimator.ofFloat(rootMenu.y, (displayY - rootMenu.height).toFloat()).apply {
-                                        duration = (rootMenu.y/displayY * 160).toLong()
+                                        duration = 600
                                         addUpdateListener {
                                             rootMenu.y = it.animatedValue as Float
                                         }
@@ -495,7 +530,7 @@ class Fragment_Menu_Bar : Fragment() {
                                     }
                                 }else if(rootMenu.y >= (displayY * 0.9)){
                                     menuAnimator = ValueAnimator.ofFloat(rootMenu.y, displayY.toFloat()).apply {
-                                        duration = (rootMenu.y/displayY * 160).toLong()
+                                        duration = 600
                                         addUpdateListener {
                                             rootMenu.y = it.animatedValue as Float
                                         }
@@ -510,9 +545,7 @@ class Fragment_Menu_Bar : Fragment() {
                         if(abs(motionEvent.rawX - initialTouchX) < abs(motionEvent.rawY - initialTouchY)){
                             when(eventType) {
                                 2 -> {
-                                    if((originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))>= displayY*0.82){
-                                        rootMenu.y = (originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1)))
-                                    }
+                                    rootMenu.y = max((originalYMenu + ((initialTouchY - motionEvent.rawY)*(-1))), (displayY * 0.825).toFloat())
                                 }
                             }
                         }

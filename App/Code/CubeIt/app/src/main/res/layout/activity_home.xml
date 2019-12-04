@@ -328,7 +328,7 @@
         app:layout_constraintGuide_percent="0.84" />
 
     <ImageView
-        android:id="@+id/imageViewExit"
+        android:id="@+id/imageViewHomeExit"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="2dp"
@@ -345,10 +345,10 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:src="@drawable/left_arrow"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewExit"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewHomeExit"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintStart_toEndOf="@+id/imageViewExit"
-        app:layout_constraintTop_toTopOf="@+id/imageViewExit"
+        app:layout_constraintStart_toEndOf="@+id/imageViewHomeExit"
+        app:layout_constraintTop_toTopOf="@+id/imageViewHomeExit"
         app:layout_constraintVertical_bias="1.0" />
 
     <ImageView

@@ -63,6 +63,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline85"
         app:layout_constraintTop_toTopOf="parent"
+        android:tint="@color/colorSecondary"
         app:srcCompat="@drawable/left_arrow" />
 
     <ImageView

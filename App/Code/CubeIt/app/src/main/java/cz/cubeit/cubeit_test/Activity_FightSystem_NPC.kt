@@ -25,7 +25,7 @@ import kotlinx.android.synthetic.main.activity_fight_system_npc.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.buttonCloseDialog
 import kotlinx.android.synthetic.main.popup_dialog.view.*
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
+import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.*
 import java.lang.Math.max
 import kotlin.random.Random.Default.nextInt
 
@@ -707,18 +707,15 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             val viewS = layoutInflater.inflate(R.layout.popup_dialog, null, false)
             val window = PopupWindow(this)
             window.contentView = viewS
-            val buttonYes: Button = viewS.buttonYes
-            val buttonNo:ImageView = viewS.buttonCloseDialog
-            val info: TextView = viewS.textViewInfo
-            info.text = "Are you sure?"
+            viewS.textViewDialogInfo.text = "Are you sure?"
             window.isOutsideTouchable = false
             window.isFocusable = true
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            buttonYes.setOnClickListener {
+            viewS.buttonDialogAccept.setOnClickListener {
                 endOfFight(false, spellFightEnemyNPC)
                 window.dismiss()
             }
-            buttonNo.setOnClickListener {
+            viewS.imageViewDialogClose.setOnClickListener {
                 window.dismiss()
             }
             window.showAtLocation(viewS, Gravity.CENTER,0,0)
@@ -779,7 +776,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 }
             }
         }
-        if(playerSpell.dmgOverTime.rounds!=0)enemy.EOT.add(playerSpell.dmgOverTime.clone())
+        if(playerSpell.effectOverTime.rounds!=0)enemy.EOT.add(playerSpell.effectOverTime.clone())
 
         //enemy's attack
         if(enemy.stun >= 100){
@@ -810,7 +807,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 }
             }
         }
-        if(enemy.currentSpell.dmgOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.dmgOverTime.clone())
+        if(enemy.currentSpell.effectOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.effectOverTime.clone())
         //around here should be spell animation (make it as an attribute for a spell)
 
         //ifData.player is stunned from last enemy's attack - attack again
@@ -844,7 +841,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                     }
                 }
             }
-            if(enemy.currentSpell.dmgOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.dmgOverTime.clone())
+            if(enemy.currentSpell.effectOverTime.rounds!=0) playerFight.EOT.add(enemy.currentSpell.effectOverTime.clone())
         }
 
         Log.d("current spell after", enemy.currentSpell.getStats())
@@ -913,7 +910,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
             imageItem.visibility = View.VISIBLE
             imageItem.isEnabled = true
 
-            val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+            val viewP = layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
             val windowPop = PopupWindow(view.context)
             windowPop.contentView = viewP
             windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -924,12 +921,12 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 override fun onStartHold(x: Float, y: Float) {
                     super.onStartHold(x, y)
                     if(holdValid){
-                        viewP.textViewPopUpInfo.setHTMLText(reward!!.item!!.getStats())
+                        viewP.textViewPopUpInfoDsc.setHTMLText(reward!!.item!!.getStats())
                         viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
                         val coordinates = SystemFlow.resolveLayoutLocation(this@FightSystemNPC, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                         if(!Data.loadingActiveQuest && !windowPop.isShowing){
-                            viewP.textViewPopUpInfo.setHTMLText(reward!!.item!!.getStatsCompare())
+                            viewP.textViewPopUpInfoDsc.setHTMLText(reward!!.item!!.getStatsCompare())
                             viewP.imageViewPopUpInfoItem.setBackgroundResource(reward!!.item!!.getBackground())
                             viewP.imageViewPopUpInfoItem.setImageResource(reward!!.item!!.drawable)
 
@@ -957,7 +954,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
         if(Data.activeQuest!!.result == ActiveQuest.Result.WAITING){
             Data.activeQuest!!.complete(if(completed) ActiveQuest.Result.WON else ActiveQuest.Result.LOST).addOnSuccessListener {
-                if(completed) reward?.receive(null, false)
+                if(completed) reward?.receive()
 
                 Data.activeQuest = null
             }

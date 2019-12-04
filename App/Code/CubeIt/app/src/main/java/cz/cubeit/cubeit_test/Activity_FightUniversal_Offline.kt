@@ -5,11 +5,10 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -18,19 +17,16 @@ import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.view.animation.RotateAnimation
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_fight_universal_offline.*
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
+import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.*
 import kotlinx.android.synthetic.main.row_fight_ally.view.*
 import kotlinx.android.synthetic.main.row_fight_enemy.view.*
 import java.util.*
@@ -39,13 +35,23 @@ import kotlin.collections.ArrayList
 /**
  *  required Intent extras: "reward" - Reward, "enemies" - List<FightSystem.Fighter>, "allies" - List<FightSystem.Fighter>
  *      Offline fightsystem, with combinated functionality of CO-OP with other players or even with generated NPC (NOT BOSSES!)
- *  @since Alpha 0.5.0.1
+ *  @since Alpha 0.5.0.2, DEV version
+ *
+ *  val intent = Intent(this, ActivityFightUniversalOffline()::class.java)
+ *  intent.putExtra("reward", Reward().generate())
+ *  intent.putParcelableArrayListExtra("enemies", arrayListOf<FightSystem.Fighter>(
+ *  NPC().generate(playerX =  Data.player).toFighter(FightSystem.FighterType.Enemy)
+ *  ))
+ *  intent.putParcelableArrayListExtra("allies", arrayListOf<FightSystem.Fighter>(
+ *  Data.player.toFighter(FightSystem.FighterType.Ally)
+ *  ))
+ *  startActivity(intent)
  */
-class ActivityFightUniversalOffline: AppCompatActivity(){
-
+class ActivityFightUniversalOffline: SystemFlow.GameActivity(R.layout.activity_fight_universal_offline, ActivityType.FightUniversalOffline, false){
     lateinit var universalOffline: FightSystem.UniversalFightOffline
     lateinit var allyVisualComponent: FightSystem.VisualComponent
     lateinit var enemyVisualComponent: FightSystem.VisualComponent
+    private var reward: Reward? = null
 
     private var checkedMarks = mutableListOf<ImageView>()
     private var spellViews = mutableListOf<ImageView>()
@@ -55,6 +61,8 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
     private var checkedIndex: Int? = null
     private var myRoundTimer = 0
     private var choosingSpellTimer: TimerTask? = null
+    private var timerPaused: Boolean = false
+    private var pauseLoading = ObjectAnimator()
     private var barHidden = false
     private var centerOfAlly: Coordinates = Coordinates(0f,0f)
     private var centerOfEnemy: Coordinates = Coordinates(0f,0f)
@@ -66,37 +74,43 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
 
     private var closableBar = false      //workaround, every time you set onscroll listener on any listview / recyclerview it scrolls automatically
 
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         System.gc()
         for(i in spellViews){
             i.setImageResource(0)
         }
+        for(i in spellViewsShadows){
+            i.setImageResource(0)
+        }
+        for(i in checkedMarks){
+            i.setImageResource(0)
+        }
     }
 
-    /*override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
-        imageViewUniversalFightBar.getGlobalVisibleRect(viewRect)
+    override fun onStop() {
+        super.onStop()
+        Handler().postDelayed({
+            if(universalOffline.winnerTeam == null){
+                imageViewUniversalFightOfflinePause?.performClick()
+                Toast.makeText(this, "Your fight has been paused.", Toast.LENGTH_SHORT).show()
+            }
+        }, 500)
+    }
 
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
-            hideBar()
+    override fun onBackPressed() {
+        if(pauseLoading.isRunning){
+            choosingSpellTimer = choosingSpellTimerSetUp(this)
+
+            if(myRoundTimer > 0){
+                Timer().scheduleAtFixedRate(choosingSpellTimer, 0, 1000)    //reschedule every 1000 milliseconds
+                pauseLoading.cancel()
+            }
         }
-        return super.dispatchTouchEvent(ev)
-    }*/
+        if(universalOffline.isTestFight){
+            super.onBackPressed()
+        }
+    }
 
     private fun alignView(parent: ActivityFightUniversalOffline){
         parent.textViewUniversalFightOfflineRound.setHTMLText("round ${universalOffline.waves + 1}")
@@ -175,23 +189,26 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
         }
     }
 
-    private fun initializeBarWith(spells: List<Spell?>, charClass: CharClass){
+    private fun initializeBarWith(spells: List<Spell?>, charClass: CharClass, parent: ActivityFightUniversalOffline){
         System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
 
         spellViews[0].apply {
             setImageBitmap(BitmapFactory.decodeResource(resources, charClass.spellList.find { it.id == "0001" }?.drawable ?: 0, opts))
+            setMeUpTouchListener(spellViewsShadows[0], parent)
             isEnabled = true
         }
         spellViews[1].apply {
             setImageBitmap(BitmapFactory.decodeResource(resources, charClass.spellList.find { it.id == "0000" }?.drawable ?: 0, opts))
+            setMeUpTouchListener(spellViewsShadows[1], parent)
             isEnabled = true
         }
 
         for(i in 2 until spellViews.size){
             spellViews[i].apply {
                 if(spells[i - 2] != null){
+                    setMeUpTouchListener(spellViewsShadows[i - 2], parent)
                     setImageBitmap(BitmapFactory.decodeResource(resources, spells[i - 2]?.drawable ?: 0, opts))
                     isEnabled = true
                     isClickable = true
@@ -245,7 +262,7 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
                     for(i in spellViews){
                         i.apply {
                             visibility = View.VISIBLE
-                            background.clearColorFilter()
+                            clearColorFilter()
                             invalidate()
                         }
                     }
@@ -256,23 +273,89 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
         }
     }
 
-    private fun endFight(){         //TODO
-        Toast.makeText(this, "Fight ended.", Toast.LENGTH_LONG).show()
+    private fun endFight(){
+        if(!universalOffline.fightCompleted){
+            Log.d("endFight", "called")
+
+            val intent = Intent(this, Activity_Fight_Reward()::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            if(universalOffline.winnerTeam == FightSystem.FighterType.Ally){
+                intent.putExtra("reward", reward)
+                intent.putExtra("winner", universalOffline.alliesName)
+                intent.putExtra("loser", universalOffline.enemiesName)
+            }else {
+                intent.putExtra("winner", universalOffline.enemiesName)
+                intent.putExtra("loser", universalOffline.alliesName)
+            }
+            intent.putExtra("fame", universalOffline.fameReceived)
+            startActivity(intent)
+            universalOffline.fightCompleted = true
+        }
+    }
+
+    enum class SpellAnimationType{
+        normal,
+        defense
+    }
+
+    private fun ImageView.animateSpell(isValid: Boolean, type: SpellAnimationType, team: FightSystem.FighterType): ValueAnimator{
+        return when(type) {
+            SpellAnimationType.defense -> {
+                this.apply {
+                    pivotY = 0.5f
+                    pivotX = 0.5f
+                }
+                ObjectAnimator.ofInt(this.width, (this.width * 1.75).toInt()).apply {
+                    startDelay = 100
+                    duration = 1200
+                    addUpdateListener {
+                        if (isValid) {
+                            this@animateSpell.apply {
+                                layoutParams.width = it.animatedValue as Int
+                                layoutParams.height = it.animatedValue as Int
+                                invalidate()
+                            }
+                        } else if (this@animateSpell.visibility == View.VISIBLE) {
+                            this@animateSpell.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+            else -> {
+                ObjectAnimator.ofFloat((if(team == FightSystem.FighterType.Ally) centerOfAlly.x else centerOfEnemy.x) - fragmentSpellFight0.width / 2, (if(team == FightSystem.FighterType.Ally) centerOfEnemy.x else centerOfAlly.x) - fragmentSpellFight0.width / 2).apply {
+                    startDelay = 100
+                    duration = 1200
+                    addUpdateListener {
+                        if (isValid) {
+                            this@animateSpell.x = it.animatedValue as Float
+                        } else if (this@animateSpell.visibility == View.VISIBLE) {
+                            this@animateSpell.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun applyCompleteRound(parent: ActivityFightUniversalOffline){
+        universalOffline.currentRound?.chooseWhoStarts()
 
         myRoundTimer = 0
-        var allySpell = ValueAnimator()
-        var enemySpell = ValueAnimator()
+        var allySpellAnimation = ValueAnimator()
+        var enemySpellAnimation = ValueAnimator()
 
+        if(universalOffline.currentAlly?.chosenEnemyUUID == "") universalOffline.currentAlly?.chosenEnemyUUID = universalOffline.enemies.firstOrNull()?.uuid ?: ""
+        if(universalOffline.currentEnemy?.chosenEnemyUUID == "") universalOffline.currentEnemy?.chosenEnemyUUID = universalOffline.allies.firstOrNull()?.uuid ?: ""
+
+        if(universalOffline.currentEnemy?.chosenSpell == null) universalOffline.currentEnemy?.chosenSpell = universalOffline.currentEnemy?.sourcePlayer?.learnedSpells?.firstOrNull() ?: universalOffline.currentEnemy?.sourceNPC?.chosenSpellsDefense?.firstOrNull()
+        if(universalOffline.currentAlly?.chosenSpell == null) universalOffline.currentAlly?.chosenSpell = universalOffline.currentAlly?.sourcePlayer?.learnedSpells?.firstOrNull() ?: universalOffline.currentAlly?.sourceNPC?.chosenSpellsDefense?.firstOrNull()
         parent.runOnUiThread {
             imageViewSpellAlly.apply {
                 x = centerOfAlly.x
                 y = centerOfAlly.y
                 layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
-                layoutParams.height = fragmentSpellFight0.width
-                layoutParams.width = fragmentSpellFight0.height
+                layoutParams.height = fragmentSpellFight0?.width ?: 0
+                layoutParams.width = fragmentSpellFight0?.height ?: 0
                 visibility = View.GONE
                 setImageResource(universalOffline.currentAlly?.chosenSpell?.drawable ?: R.drawable.twitter_icon)
             }
@@ -280,155 +363,212 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
                 x = centerOfEnemy.x
                 y = centerOfEnemy.y
                 layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
-                layoutParams.height = fragmentSpellFight0.width
-                layoutParams.width = fragmentSpellFight0.height
+                layoutParams.height = fragmentSpellFight0?.width ?: 0
+                layoutParams.width = fragmentSpellFight0?.height ?: 0
                 visibility = View.GONE
                 setImageResource(universalOffline.currentEnemy?.chosenSpell?.drawable ?: R.drawable.twitter_icon)
             }
         }
 
         val allyValid = (((recyclerViewAllies.adapter as FightOfflineAllyList).chosenFighterUUID ?: universalOffline.currentAllyUUID) == universalOffline.currentAllyUUID && ((recyclerViewEnemies.adapter as FightOfflineEnemyList).chosenFighterUUID ?: universalOffline.currentAlly?.chosenEnemyUUID) == universalOffline.currentAlly?.chosenEnemyUUID)
-        allySpell = ObjectAnimator.ofFloat(centerOfAlly.x - fragmentSpellFight0.width / 2, centerOfEnemy.x - fragmentSpellFight0.width / 2).apply{
-            startDelay = 100
-            duration = 1200
-            addUpdateListener {
-                if(allyValid) parent.imageViewSpellAlly.x = it.animatedValue as Float
+        val allySpell = universalOffline.currentAlly?.chosenSpell ?: (universalOffline.currentAlly?.sourceNPC?.allowedSpells?.first() ?: universalOffline.currentAlly?.sourcePlayer?.learnedSpells?.first()!!)
+        allySpellAnimation = parent.imageViewSpellAlly.animateSpell(allyValid,
+                when {
+                    allySpell.block != 1.0 -> {
+                        SpellAnimationType.defense
+                    }
+                    else -> SpellAnimationType.normal
+                }
+        , FightSystem.FighterType.Ally)
+        allySpellAnimation.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {
+                if(allyValid) parent.imageViewSpellAlly.visibility = View.VISIBLE
             }
-            addListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {
-                    if(allyValid) parent.imageViewSpellAlly.visibility = View.VISIBLE
+
+            override fun onAnimationEnd(animation: Animator) {
+                val dmgDealt = universalOffline.enemies.find { it.uuid == universalOffline.currentAlly?.chosenEnemyUUID }?.attackMe(allySpell, universalOffline.currentAlly!!) ?: 0
+                SystemFlow.makeActionText(parent, Coordinates(centerOfEnemy.x- fragmentSpellFight0.width / 2, parent.imageViewSpellAlly.y), if(dmgDealt == 0){
+                    "Blocked!"
+                }else {
+                    "-${GameFlow.numberFormatString(dmgDealt)}"
+                }, R.color.loginColor, CustomTextView.SizeType.title)
+
+                if(enemyVisualComponent.shownFighterUUID == universalOffline.currentAlly?.chosenEnemyUUID) enemyVisualComponent.update(universalOffline.enemies.find { it.uuid == universalOffline.currentAlly?.chosenEnemyUUID }!!)
+
+                (recyclerViewEnemies.adapter as? FightOfflineEnemyList)?.notifyDataSetChanged()
+                parent.imageViewSpellAlly.visibility = View.GONE
+
+
+                if(universalOffline.prepareRound(reward)){
+                    endFight()
+                    return
+                }else if(!universalOffline.isTestFight){
+                    universalOffline.currentAlly?.chosenSpell = null
+                    if(universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Ally && universalOffline.currentEnemy != null) enemySpellAnimation.start()
                 }
+            }
 
-                override fun onAnimationEnd(animation: Animator) {
-                    universalOffline.enemies.find { it.uuid == universalOffline.currentAlly?.chosenEnemyUUID }?.attackMe(universalOffline.currentAlly?.chosenSpell ?: (universalOffline.currentAlly?.sourceNPC?.allowedSpells?.first() ?: universalOffline.currentAlly?.sourcePlayer?.learnedSpells?.first()!!), universalOffline.currentAlly!!)
+            override fun onAnimationCancel(animation: Animator) {}
 
-                    if(enemyVisualComponent.shownFighterUUID == universalOffline.currentAlly?.chosenEnemyUUID) enemyVisualComponent.update(universalOffline.enemies.find { it.uuid == universalOffline.currentAlly?.chosenEnemyUUID }!!)
-
-                    (recyclerViewEnemies.adapter as? FightOfflineEnemyList)?.notifyDataSetChanged()
-                    parent.imageViewSpellAlly.visibility = View.GONE
-
-                    if(universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Ally && universalOffline.currentEnemy != null) enemySpell.start()
-                }
-
-                override fun onAnimationCancel(animation: Animator) {}
-
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
-        }
+            override fun onAnimationRepeat(animation: Animator) {}
+        })
 
         Log.d("enemyValid_as", "Enemy list ${(recyclerViewEnemies.adapter as FightOfflineEnemyList).chosenFighterUUID} - current ${universalOffline.currentEnemyUUID }, ally list: ${(recyclerViewAllies.adapter as FightOfflineAllyList).chosenFighterUUID} - current ${universalOffline.currentEnemy?.chosenEnemyUUID}")
         val enemyValid = (((recyclerViewEnemies.adapter as FightOfflineEnemyList).chosenFighterUUID ?: universalOffline.currentEnemyUUID) == universalOffline.currentEnemyUUID && ((recyclerViewAllies.adapter as FightOfflineAllyList).chosenFighterUUID ?: universalOffline.currentEnemy?.chosenEnemyUUID)== universalOffline.currentEnemy?.chosenEnemyUUID)
-        enemySpell = ObjectAnimator.ofFloat(centerOfEnemy.x - fragmentSpellFight0.width / 2, centerOfAlly.x - fragmentSpellFight0.width / 2).apply{
-            startDelay = 100
-            duration = 1200
-            addUpdateListener {
-                if(enemyValid) parent.imageViewSpellEnemy.x = it.animatedValue as Float
+        val enemySpell = universalOffline.currentEnemy?.chosenSpell ?: (universalOffline.currentEnemy?.sourceNPC?.allowedSpells?.first() ?: universalOffline.currentEnemy?.sourcePlayer?.learnedSpells?.first()!!)
+        enemySpellAnimation = parent.imageViewSpellEnemy.animateSpell(enemyValid,
+                when {
+                    enemySpell.block != 1.0 -> {
+                        SpellAnimationType.defense
+                    }
+                    else -> SpellAnimationType.normal
+                }
+        , FightSystem.FighterType.Enemy)
+        enemySpellAnimation.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {
+                if(enemyValid) parent.imageViewSpellEnemy.visibility = View.VISIBLE
             }
-            addListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {
-                    if(enemyValid) parent.imageViewSpellEnemy.visibility = View.VISIBLE
+
+            override fun onAnimationEnd(animation: Animator) {
+                val dmgDealt = universalOffline.allies.find { it.uuid == universalOffline.currentEnemy?.chosenEnemyUUID }?.attackMe(enemySpell, universalOffline.currentEnemy!!) ?: 0
+                SystemFlow.makeActionText(parent, Coordinates(centerOfAlly.x- fragmentSpellFight0.width / 2, parent.imageViewSpellEnemy.y), if(dmgDealt == 0){
+                    "Blocked!"
+                }else {
+                    "-${GameFlow.numberFormatString(dmgDealt)}"
+                }, R.color.loginColor, CustomTextView.SizeType.title)
+
+                if(allyVisualComponent.shownFighterUUID == universalOffline.currentEnemy?.chosenEnemyUUID) allyVisualComponent.update(universalOffline.allies.find { it.uuid == universalOffline.currentEnemy?.chosenEnemyUUID }!!)
+
+                (recyclerViewAllies.adapter as? FightOfflineAllyList)?.notifyDataSetChanged()
+                parent.imageViewSpellEnemy.visibility = View.GONE
+
+                if(universalOffline.prepareRound(reward)){
+                    endFight()
+                    return
+                }else {
+                    universalOffline.currentEnemy?.chosenSpell = null
+                    if(universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Enemy && universalOffline.currentAlly != null) allySpellAnimation.start()
                 }
+            }
 
-                override fun onAnimationEnd(animation: Animator) {
-                    universalOffline.allies.find { it.uuid == universalOffline.currentEnemy?.chosenEnemyUUID }?.attackMe(universalOffline.currentEnemy?.chosenSpell ?: (universalOffline.currentEnemy?.sourceNPC?.allowedSpells?.first() ?: universalOffline.currentEnemy?.sourcePlayer?.learnedSpells?.first()!!), universalOffline.currentEnemy!!)
+            override fun onAnimationCancel(animation: Animator) {}
 
-                    if(allyVisualComponent.shownFighterUUID == universalOffline.currentEnemy?.chosenEnemyUUID) allyVisualComponent.update(universalOffline.allies.find { it.uuid == universalOffline.currentEnemy?.chosenEnemyUUID }!!)
-
-                    (recyclerViewAllies.adapter as? FightOfflineAllyList)?.notifyDataSetChanged()
-                    parent.imageViewSpellEnemy.visibility = View.GONE
-
-                    if(universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Enemy && universalOffline.currentAlly != null) allySpell.start()
-                }
-
-                override fun onAnimationCancel(animation: Animator) {}
-
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
-        }
+            override fun onAnimationRepeat(animation: Animator) {}
+        })
 
         handlerStartRound.postDelayed({
             when{
                 (universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Ally) && universalOffline.currentAlly != null -> {
                     parent.imageViewSpellAlly.post {
-                        allySpell.start()
+                        allySpellAnimation.start()
                     }
                 }
                 (universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Ally) && universalOffline.currentAlly == null && universalOffline.currentEnemy != null -> {
                     parent.imageViewSpellEnemy.post {
-                        enemySpell.start()
+                        enemySpellAnimation.start()
                     }
                 }
                 (universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Enemy) && universalOffline.currentEnemy != null -> {
                     parent.imageViewSpellEnemy.post {
-                        enemySpell.start()
+                        enemySpellAnimation.start()
                     }
                 }
                 (universalOffline.currentRound?.whoStarts == FightSystem.FighterType.Enemy) && universalOffline.currentEnemy == null && universalOffline.currentAlly != null -> {
                     parent.imageViewSpellAlly.post {
-                        allySpell.start()
+                        allySpellAnimation.start()
                     }
                 }
             }
             handlerStartAnotherRound.postDelayed({
+                universalOffline.currentAlly?.chosenEnemyUUID = ""
+                universalOffline.currentEnemy?.chosenEnemyUUID = ""
+
                 startRound(parent)
             }, 3600)
         }, 500)
     }
 
-    fun onMyRoundEnd(parent: ActivityFightUniversalOffline){
+    private fun onMyRoundEnd(parent: ActivityFightUniversalOffline){
         val spells = mutableListOf<Spell?>()
         spells.addAll(mutableListOf(Data.player.charClass.spellList.find { it.id == "0001" }!!, Data.player.charClass.spellList.find { it.id == "0000" }!!))
         spells.addAll(Data.player.chosenSpellsAttack)
 
         choosingSpellTimer?.cancel()
-        parent.runOnUiThread { textViewUniversalFightOfflineTime.visibility = View.GONE }
+        parent.runOnUiThread {
+            textViewUniversalFightOfflineTime.visibility = View.GONE
+            imageViewUniversalFightOfflinePause.visibility = View.GONE
+        }
 
+        Log.d("checkedIndex", checkedIndex.toString())
         if(checkedIndex != null){
+            Log.d("checkedIndex energy", (universalOffline.currentAlly?.energy ?: 0 >= (spells[checkedIndex!!]?.energy ?: 1)).toString())
             if(universalOffline.currentAlly?.energy ?: 0 >= (spells[checkedIndex!!]?.energy ?: 1)){
                 universalOffline.currentAlly?.chosenSpell = spells[checkedIndex!!]
                 universalOffline.currentAlly?.chosenSpellsIndex = checkedIndex
-            }else {
-                setChecked(checkedIndex ?: 0)
+                Log.d("checkedIndex_spell", spells[checkedIndex!!]?.getStats() ?: "")
             }
+            setChecked(checkedIndex ?: 0)
         }
     }
 
+    private fun choosingSpellTimerSetUp(parent: ActivityFightUniversalOffline): TimerTask{
+        return (object : TimerTask() {
+            override fun run() {
+                if((recyclerViewEnemies.adapter as FightOfflineEnemyList).chosenFighterUUID == "" || universalOffline.currentAlly?.chosenEnemyUUID == ""){
+                    (recyclerViewEnemies.adapter as FightOfflineEnemyList).apply {
+                        chosenFighterUUID = universalOffline.enemies.first().uuid
+                        notifyDataSetChanged()
+                    }
+                    universalOffline.currentAlly?.chosenEnemyUUID = universalOffline.enemies.first().uuid
+                }
+                if(myRoundTimer > 1){
+                    parent.runOnUiThread { textViewUniversalFightOfflineTime.setHTMLText( if(myRoundTimer < 10) "<font color='red'>0${myRoundTimer}s</font>" else "$myRoundTimer s" ) }
+                    myRoundTimer--
+                }else {
+                    universalOffline.allies.find { it.name == Data.player.username }?.chosenSpell = Data.player.learnedSpells.find { it?.id == "0001" }
+                    universalOffline.currentRound?.allySpell = Data.player.learnedSpells.find { it?.id == "0001" }
+                    onMyRoundEnd(parent)
+                    applyCompleteRound(parent)
+                }
+            }
+        })
+    }
+
     private fun startRound(parent: ActivityFightUniversalOffline){
-        if(universalOffline.processOfflineRound()){
+        if(universalOffline.processOfflineRound(reward)){
             endFight()
             return
         }
 
         alignView(parent)
 
-        if(universalOffline.currentAlly != null && allyVisualComponent.shownFighterUUID != universalOffline.currentAllyUUID) allyVisualComponent.baseOn(universalOffline.currentAlly!!, this, FightSystem.FighterType.Ally, universalOffline.allies.size == 1, centerOfAlly)
-        if(universalOffline.currentEnemy != null && enemyVisualComponent.shownFighterUUID != universalOffline.currentEnemyUUID) enemyVisualComponent.baseOn(universalOffline.currentEnemy!!, this, FightSystem.FighterType.Enemy, universalOffline.enemies.size == 1, centerOfEnemy)
+        if(universalOffline.currentAlly != null && allyVisualComponent.shownFighterUUID != universalOffline.currentAllyUUID){
+            allyVisualComponent.baseOn(universalOffline.currentAlly!!, this, FightSystem.FighterType.Ally, universalOffline.allies.size == 1, centerOfAlly)
+            (recyclerViewAllies.adapter as FightOfflineAllyList).apply {
+                chosenFighterUUID = universalOffline.currentAllyUUID
+                notifyDataSetChanged()
+            }
+        }else if(allyVisualComponent.shownFighterUUID != ""){
+            allyVisualComponent.update(universalOffline.allies.find { it.uuid == allyVisualComponent.shownFighterUUID }!!)
+        }
+        if(universalOffline.currentEnemy != null && enemyVisualComponent.shownFighterUUID != universalOffline.currentEnemyUUID){
+            enemyVisualComponent.baseOn(universalOffline.currentEnemy!!, this, FightSystem.FighterType.Enemy, universalOffline.enemies.size == 1, centerOfEnemy)
+            (recyclerViewEnemies.adapter as FightOfflineEnemyList).apply {
+                chosenFighterUUID = universalOffline.currentEnemyUUID
+                notifyDataSetChanged()
+            }
+        }else if(enemyVisualComponent.shownFighterUUID != ""){
+            enemyVisualComponent.update(universalOffline.enemies.find { it.uuid == enemyVisualComponent.shownFighterUUID }!!)
+        }
 
         if(universalOffline.currentAlly?.name == Data.player.username){
             parent.textViewUniversalFightOfflineTime.visibility = View.VISIBLE
+            imageViewUniversalFightOfflinePause.visibility = View.VISIBLE
             myRoundTimer = 30
 
             parent.imageViewUniversalFightOfflineBarUp.performClick()  //show bar (problem with UI thread)
-            choosingSpellTimer = (object : TimerTask() {
-                override fun run() {
-                    if((recyclerViewEnemies.adapter as FightOfflineEnemyList).chosenFighterUUID == "" || universalOffline.currentAlly?.chosenEnemyUUID == ""){
-                        (recyclerViewEnemies.adapter as FightOfflineEnemyList).apply {
-                            chosenFighterUUID = universalOffline.enemies.first().uuid
-                            notifyDataSetChanged()
-                        }
-                        universalOffline.currentAlly?.chosenEnemyUUID = universalOffline.enemies.first().uuid
-                    }
-                    if(myRoundTimer > 1){
-                        parent.runOnUiThread { textViewUniversalFightOfflineTime.setHTMLText( if(myRoundTimer < 10) "<font color='red'>0${myRoundTimer}s</font>" else "${myRoundTimer}s" ) }
-                        myRoundTimer--
-                    }else {
-                        onMyRoundEnd(parent)
-                        universalOffline.allies.find { it.name == Data.player.username }?.chosenSpell = Data.player.learnedSpells.find { it?.id == "0001" }
-                        universalOffline.currentRound?.allySpell = Data.player.learnedSpells.find { it?.id == "0001" }
-                        applyCompleteRound(parent)
-                    }
-                }
-            })
+            choosingSpellTimer = choosingSpellTimerSetUp(parent)
+
             (recyclerViewEnemies.adapter as FightOfflineEnemyList).apply {
                 chosenFighterUUID = universalOffline.enemies.first().uuid
                 enemyVisualComponent.shownFighterUUID = universalOffline.enemies.first().uuid
@@ -448,11 +588,7 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
         spells.addAll(Data.player.chosenSpellsAttack)
         val chosenSpell = spells[this.tag.toString().toIntOrNull() ?: 0]
 
-
-        /*
-        WindowPopUp
-         **/
-        val viewP = parent.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+        val viewP = parent.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
         val windowPop = PopupWindow(parent)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -469,7 +605,7 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
                 viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
                 false
             }else {
-                val drawable = parent.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
+                val drawable = parent.getDrawable(R.drawable.close_image)
                 drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
                 viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
                 true
@@ -507,9 +643,12 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
         }
 
         viewP.imageViewPopUpInfoBg.setOnTouchListener(dragListener)
-        viewP.textViewPopUpInfoDrag.setOnTouchListener(dragListener)
+        //viewP.textViewPopUpInfoDrag.setOnTouchListener(dragListener)
         viewP.imageViewPopUpInfoItem.setOnTouchListener(dragListener)
-        //end of WindowPopUp
+        viewP.layoutPopupInfo.apply {
+            minHeight = (dm.heightPixels * 0.65).toInt()
+            minWidth = (dm.heightPixels * 0.65).toInt()
+        }
 
 
         this.setOnTouchListener(object: Class_DragOutTouchListener(this, false, true, imageViewShadow, parent){
@@ -520,12 +659,12 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
 
             override fun solidHold(x: Float, y: Float) {
                 super.solidHold(x, y)
-                viewP.textViewPopUpInfo.setHTMLText(chosenSpell?.getStats() ?: "")
+                viewP.textViewPopUpInfoDsc.setHTMLText(chosenSpell?.getStats() ?: "")
                 viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
+                val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, (dm.heightPixels * 0.65).toInt(), (dm.heightPixels * 0.65).toInt())
 
                 if(!Data.loadingActiveQuest && !windowPop.isShowing && !viewPinned){
-                    viewP.textViewPopUpInfo.setHTMLText(chosenSpell?.getStats() ?: "")
+                    viewP.textViewPopUpInfoDsc.setHTMLText(chosenSpell?.getStats() ?: "")
                     viewP.imageViewPopUpInfoItem.setBackgroundResource(R.drawable.emptyspellslot)
                     viewP.imageViewPopUpInfoItem.setImageResource(chosenSpell?.drawable ?: R.drawable.basicattack)
 
@@ -543,7 +682,7 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
 
                 if(myRoundTimer > 0){
 
-                    if(universalOffline.currentAlly?.energy ?: 0 >= spells[externalView.tag.toString().toIntOrNull() ?: 0]?.energy ?: 1){
+                    if(universalOffline.currentAlly?.energy ?: 1 >= spells[externalView.tag.toString().toIntOrNull() ?: 0]?.energy ?: 0){
                         this@setMeUpTouchListener.apply {
                             pivotX = (this.width / 2).toFloat()
                             pivotY = (this.width / 2).toFloat()
@@ -559,12 +698,11 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
                         this@setMeUpTouchListener.clearAnimation()
                         universalOffline.allies.find { it.name == Data.player.username }?.chosenSpell = spells[externalView.tag.toString().toIntOrNull() ?: 0]
 
-                        universalOffline.currentAlly?.useSpell(spells[externalView.tag.toString().toIntOrNull() ?: 0] ?: Spell())
                         applyCompleteRound(parent)
                     }else {
-                        this@setMeUpTouchListener.apply {
+                        spellViews[externalView.tag.toString().toIntOrNull() ?: 0].apply {
                             startAnimation(AnimationUtils.loadAnimation(this@ActivityFightUniversalOffline, R.anim.animation_shaky_extrashort))
-                            background.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
+                            setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
                         }
                     }
 
@@ -575,19 +713,20 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
-        if(intent?.extras?.getSerializable("reward") == null) finish()
-        setContentView(R.layout.activity_fight_universal_offline)
+        //if(intent?.extras?.getSerializable("reward") == null) finish()
 
-        val reward = intent?.extras?.getSerializable("reward") as? Reward
+        this.window.decorView.rootView.post {
+            initializeBarWith(Data.player.chosenSpellsAttack, Data.player.charClass, this)
+            hideBar(this)
+        }
+
+        reward = intent?.extras?.getSerializable("reward") as? Reward
         val enemies = (intent?.extras?.getParcelableArrayList<FightSystem.Fighter?>("enemies") as ArrayList<FightSystem.Fighter>).toMutableList()
         val allies = (intent?.extras?.getSerializable("allies") as ArrayList<FightSystem.Fighter>).toMutableList()
+        val allyName = intent?.extras?.getString("allyName")
+        val enemyName = intent?.extras?.getString("allyName")
 
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
-        }
+
         System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = true
@@ -597,7 +736,10 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
         imageViewUniversalFightBg.setOnClickListener { hideBar(this) }
 
         chosenEnemyArrow = imageViewUniversalFightArrow
-        universalOffline = FightSystem.UniversalFightOffline(mutableListOf(), allies, enemies)
+        universalOffline = FightSystem.UniversalFightOffline(mutableListOf(), allies, enemies, allyName ?: allies.firstOrNull()?.name ?: "", enemyName ?: enemies.firstOrNull()?.name ?: "")
+        universalOffline.isTestFight = intent?.extras?.getBoolean("isTest") ?: false
+        universalOffline.isFameFight = intent?.extras?.getBoolean("isFameFight") ?: false
+
         handlerStartRound = Handler()
         handlerStartAnotherRound = Handler()
 
@@ -631,13 +773,6 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
                 fragmentSpellFightShadow6,
                 fragmentSpellFightShadow7
         ))
-
-        window.decorView.rootView.post {
-            initializeBarWith(Data.player.chosenSpellsAttack, Data.player.charClass)
-            for(i in spellViews.indices){
-                spellViews[i].setMeUpTouchListener(spellViewsShadows[i], this)
-            }
-        }
 
         allyVisualComponent = FightSystem.VisualComponent(
                 FightSystem.VisualSubComponent(
@@ -709,6 +844,28 @@ class ActivityFightUniversalOffline: AppCompatActivity(){
             buttonUniversalFightOfflineFight.visibility = View.GONE
             startRound(this)
         }
+
+        val cancelPauseListener = View.OnClickListener {
+            choosingSpellTimer?.cancel()
+            choosingSpellTimer = choosingSpellTimerSetUp(this@ActivityFightUniversalOffline)
+            Timer().scheduleAtFixedRate(choosingSpellTimer, 0, 1000)    //reschedule every 1000 milliseconds
+            pauseLoading.cancel()
+            imageViewUniversalFightOfflinePause.setImageResource(android.R.drawable.ic_media_pause)
+            timerPaused = false
+        }
+
+        imageViewUniversalFightOfflinePause.setOnClickListener {    //TODO pause, resume
+            if(myRoundTimer > 0 && choosingSpellTimer != null){
+                if(!timerPaused){
+                    pauseLoading = SystemFlow.createLoading(activity = this, startAutomatically = true, cancelable = true, listener = cancelPauseListener)
+                    choosingSpellTimer?.cancel()
+                    //imageViewUniversalFightOfflinePause.setImageResource(android.R.drawable.ic_media_play)
+                    timerPaused = true
+                }
+            }
+        }
+
+        Data.loadingStatus = LoadingStatus.CLOSELOADING
     }
 
 

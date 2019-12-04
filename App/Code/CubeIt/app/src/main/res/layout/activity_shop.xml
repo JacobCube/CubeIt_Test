@@ -121,17 +121,6 @@
         app:layout_constraintGuide_percent="0.57" />
 
     <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewShopMoney"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/bg_basic_white"
-        android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@+id/imageViewShopCoinVisual"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="asdasdasd" />
-
-    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewShopItemInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -201,50 +190,5 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline48"
         app:layout_constraintStart_toStartOf="@+id/guideline47"
         app:layout_constraintTop_toTopOf="@+id/guideline9" />
-
-    <ImageView
-        android:id="@+id/homeButtonBackShop"
-        android:layout_width="75dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/emptyspellslotlarge"
-        android:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/home_button"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageViewMenuUpShop"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline136"
-        app:srcCompat="@drawable/setting3rows" />
-
-    <ImageView
-        android:id="@+id/imageViewShopCoinVisual"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewShopMoney"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textViewShopMoney"
-        app:srcCompat="@drawable/coin_basic" />
-
-    <FrameLayout
-        android:id="@+id/frameLayoutMenuShop"
-        android:layout_width="0dp"
-        android:layout_height="91dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

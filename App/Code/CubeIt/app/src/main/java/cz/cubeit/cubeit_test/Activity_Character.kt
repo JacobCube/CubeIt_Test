@@ -8,46 +8,38 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.os.Bundle
-import android.os.Handler
 import androidx.fragment.app.FragmentManager
-import androidx.appcompat.app.AppCompatActivity
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_character.*
+import kotlinx.android.synthetic.main.popup_dialog_recyclerview.view.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
+import kotlinx.android.synthetic.main.row_icon_text.view.*
 import kotlin.math.abs
 
-
-@Suppress("DEPRECATION")
-class Activity_Character : AppCompatActivity() {
-    private var hidden = false
-    private val handler = Handler()
-    private var clicks = 0
-    var animUpText: Animation? = null
-    var animDownText: Animation? = null
-    var displayY: Double = 0.0
-    var inventoryListView: ListView? = null
+class Activity_Character : SystemFlow.GameActivity(R.layout.activity_character, ActivityType.Character, true, R.id.imageViewActivityCharacter) {
+    private var inventoryRecyclerView: RecyclerView? = null
     lateinit var textViewInfoItemTemp: CustomTextView
-    lateinit var imageViewRune0Temp: ImageView
-    lateinit var imageViewRune1Temp: ImageView
+    private lateinit var imageViewRune0Temp: ImageView
+    private lateinit var imageViewRune1Temp: ImageView
     lateinit var context: Context
 
-    var animatorStatsUp = ValueAnimator()
-    var animatorStatsDown = ValueAnimator()
+    private var animatorStatsUp = ValueAnimator()
+    private var animatorStatsDown = ValueAnimator()
     var statsShowed = false
     var statsLocked = false
     var inAnimationStats = false
 
     fun refreshItemsLayout(updateStats: Boolean = false){
-        if(inventoryListView != null){
+        if(inventoryRecyclerView != null){
             Log.d("refreshItemsLayout", "refreshed")
             Data.player.syncStats()
-            (inventoryListView!!.adapter as InventoryView).dragItemSync()
+            (inventoryRecyclerView!!.adapter as InventoryRecycler).notifyDataSetChanged()
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
 
             initBag()
@@ -90,19 +82,6 @@ class Activity_Character : AppCompatActivity() {
         this.overridePendingTransition(0,0)
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
     override fun onResume() {
         super.onResume()
         Data.player.syncStats()
@@ -113,26 +92,13 @@ class Activity_Character : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
         val viewRectStats = Rect()
 
         frameLayoutCharacterStats.getGlobalVisibleRect(viewRectStats)
-        frameLayoutMenuCharacter.getGlobalVisibleRect(viewRect)
 
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuCharacter.y <= (displayY * 0.83).toFloat()) {
-
-            ValueAnimator.ofFloat(frameLayoutMenuCharacter.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenuCharacter.y/displayY * 160).toLong()
-                addUpdateListener {
-                    frameLayoutMenuCharacter.y = it.animatedValue as Float
-                }
-                start()
-            }
-
-        }
         if(!viewRectStats.contains(ev.rawX.toInt(), ev.rawY.toInt()) && statsShowed && !animatorStatsDown.isRunning && !statsLocked){
 
-            animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
+            animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, dm.heightPixels.toFloat() + 1f).apply {
                 duration = 800
                 addUpdateListener {
                     frameLayoutCharacterStats.y = it.animatedValue as Float
@@ -164,14 +130,13 @@ class Activity_Character : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         Data.player.syncStats()
         setContentView(R.layout.activity_character)
         Data.newLevel = false
 
         imageViewRune0Temp = imageViewRune0
         imageViewRune1Temp = imageViewRune1
-        inventoryListView = listViewInventory
+        inventoryRecyclerView = recyclerViewInventory
         textViewInfoItemTemp = textViewShopItemInfo
         context = this
 
@@ -179,10 +144,8 @@ class Activity_Character : AppCompatActivity() {
 
         progressBarCharacterXp.progress = Data.player.experience
         progressBarCharacterXp.max = (Data.player.level * 0.75 * (Data.player.level * GenericDB.balance.playerXpRequiredLvlUpRate)).toInt()
-        textViewCharacterLevel.text = Data.player.level.toString()
+        textViewCharacterLevel.setHTMLText(Data.player.level)
         textViewCharacterXp.setHTMLText(GameFlow.experienceScaleFormatString(Data.player.experience, Data.player.level))
-
-        listViewInventory.smoothScrollByOffset(2)
 
         imageViewCharacterBag.setOnDragListener(runesDragListener)
         imageViewRune0.setOnDragListener(runesDragListener)
@@ -193,50 +156,23 @@ class Activity_Character : AppCompatActivity() {
         opts.inScaled = false
         imageViewActivityCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.character_bg, opts))
 
-        animUpText = AnimationUtils.loadAnimation(applicationContext,
-                R.anim.animation_shop_text_up)
-        animDownText = AnimationUtils.loadAnimation(applicationContext,
-                R.anim.animation_shop_text_down)
-        textViewShopItemInfo.startAnimation(animDownText)
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                handler.postDelayed({hideSystemUI()},1000)
-            }
-        }
-
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        displayY = dm.heightPixels.toDouble()
-
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuCharacter, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityCharacter, R.id.frameLayoutMenuCharacter, R.id.homeButtonBackCharacter, R.id.imageViewMenuUpCharacter)).commitNow()
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterProfile, Fragment_Board_Character_Profile()).commitNow()
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutCharacterStats, Fragment_Character_stats()).commitNow()
 
-        frameLayoutCharacterStats.y = displayY.toFloat() + 1f
-
-
-        frameLayoutMenuCharacter.y = dm.heightPixels.toFloat()
+        frameLayoutCharacterStats.y = dm.heightPixels.toFloat() + 1f
 
         imageViewCharacterProfileAllies.setOnClickListener {
-            /*val dialogView = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false)
+            val dialogView = layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false)
 
             dialogView.recyclerViewDialogRecycler.apply {
-                layoutManager = LinearLayoutManager(this@Activity_Character)
-                adapter = OfflineMgCategories(
-                        Data.miniGames,
-                        frameLayoutOfflineMG,
-                        this@ActivityOfflineMG
-                )
-            }*/
-
-            //TODO allies
+                SystemFlow.showSocials(this@Activity_Character)
+            }
         }
 
         imageViewRune0.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune0, true) {
             override fun onClick(x: Float, y: Float) {
                 super.onClick(x, y)
+                if(textViewShopItemInfo.visibility != View.VISIBLE) textViewShopItemInfo.visibility = View.VISIBLE
                 textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[0]?.getStats() ?: "")
             }
 
@@ -264,7 +200,7 @@ class Activity_Character : AppCompatActivity() {
                             Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
                             Data.player.backpackRunes[0] = null
                             imageViewRune0.isClickable = false
-                            (listViewInventory.adapter as InventoryView).dragItemSync()
+                            (recyclerViewInventory.adapter as InventoryRecycler).notifyDataSetChanged()
                         }
                     }
                 }else{
@@ -274,7 +210,7 @@ class Activity_Character : AppCompatActivity() {
                         Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[0]
                         Data.player.backpackRunes[0] = null
                         imageViewRune0.isClickable = false
-                        (listViewInventory.adapter as InventoryView).dragItemSync()
+                        (recyclerViewInventory.adapter as InventoryRecycler).notifyDataSetChanged()
                     }
                 }
                 updateCharStats()
@@ -283,6 +219,7 @@ class Activity_Character : AppCompatActivity() {
             override fun onLongClick() {
                 super.onLongClick()
 
+                if(textViewShopItemInfo.visibility != View.VISIBLE) textViewShopItemInfo.visibility = View.VISIBLE
                 textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[0]?.getStats() ?: "")
                 if(Data.player.backpackRunes[0] != null){
                     val item = ClipData.Item(Data.player.backpackRunes[0]?.slot.toString())
@@ -312,6 +249,7 @@ class Activity_Character : AppCompatActivity() {
         imageViewRune1.setOnTouchListener(object : Class_OnSwipeTouchListener(this, imageViewRune1, true) {
             override fun onClick(x: Float, y: Float) {
                 super.onClick(x, y)
+                if(textViewShopItemInfo.visibility != View.VISIBLE) textViewShopItemInfo.visibility = View.VISIBLE
                 textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[1]?.getStats() ?: "")
             }
 
@@ -339,7 +277,7 @@ class Activity_Character : AppCompatActivity() {
                             Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[1]
                             Data.player.backpackRunes[1] = null
                             imageViewRune1.isClickable = true
-                            (listViewInventory.adapter as InventoryView).dragItemSync()
+                            (recyclerViewInventory.adapter as InventoryRecycler).notifyDataSetChanged()
                         }
                     }
                 }else{
@@ -349,7 +287,7 @@ class Activity_Character : AppCompatActivity() {
                         Data.player.inventory[Data.player.inventory.indexOf(null)] = Data.player.backpackRunes[1]
                         Data.player.backpackRunes[1] = null
                         imageViewRune1.isClickable = false
-                        (listViewInventory.adapter as InventoryView).dragItemSync()
+                        (recyclerViewInventory.adapter as InventoryRecycler).notifyDataSetChanged()
                     }
                 }
                 updateCharStats()
@@ -358,6 +296,7 @@ class Activity_Character : AppCompatActivity() {
             override fun onLongClick() {
                 super.onLongClick()
 
+                if(textViewShopItemInfo.visibility != View.VISIBLE) textViewShopItemInfo.visibility = View.VISIBLE
                 textViewShopItemInfo.setHTMLText(Data.player.backpackRunes[1]?.getStats() ?: "")
                 if(Data.player.backpackRunes[1] != null){
                     val item = ClipData.Item(Data.player.backpackRunes[1]?.slot.toString())
@@ -383,84 +322,44 @@ class Activity_Character : AppCompatActivity() {
                 }
             }
         })
-        listViewInventory.adapter = InventoryView(this, Data.player, textViewShopItemInfo, imageViewRune0, imageViewRune1, supportFragmentManager, imageViewCharacterBag, frameLayoutCharacterProfile, this)
+        recyclerViewInventory.apply {
+            layoutManager = LinearLayoutManager(this@Activity_Character)
+            adapter = InventoryRecycler(this@Activity_Character,
+                    Data.player,
+                    textViewShopItemInfo,
+                    imageViewRune0,
+                    imageViewRune1,
+                    supportFragmentManager,
+                    this@Activity_Character)
+        }
     }
 
-    /*private class OfflineMgCategories(private val playerC: Player, private val parent: Activity_Character) :
-            RecyclerView.Adapter<OfflineMgCategories.CategoryViewHolder>() {
+    private class InventoryRecycler(val activity: Activity_Character, var playerC:Player, val textViewInfoItem: CustomTextView, val buttonBag0:ImageView, val buttonBag1:ImageView, val supportFragmentManager: FragmentManager, val parent: SystemFlow.GameActivity) :
+            RecyclerView.Adapter<InventoryRecycler.CategoryViewHolder>() {
 
         var inflater: View? = null
 
-        class CategoryViewHolder(val textViewName: CustomTextView, val textViewNew: TextView, val imageViewBg: ImageView, inflater: View, val viewGroup: ViewGroup): RecyclerView.ViewHolder(inflater)
+        class CategoryViewHolder(val buttonInventory1: ImageView, val buttonInventory2: ImageView, val buttonInventory3: ImageView, val buttonInventory4: ImageView, inflater: View, val viewGroup: ViewGroup): RecyclerView.ViewHolder(inflater)
 
-        override fun getItemCount() = miniGames.size
+        override fun getItemCount() = playerC.inventory.size / 4 + 1
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
-            inflater = LayoutInflater.from(parent.context).inflate(R.layout.row_offline_mg_category, parent, false)
+            inflater = LayoutInflater.from(parent.context).inflate(R.layout.row_character_inventory, parent, false)
             return CategoryViewHolder(
-                    inflater!!.textViewRowOfflineMgName,
-                    inflater!!.textViewRowOfflineMgNew,
-                    inflater!!.imageViewRowOfflineMgBg,
-                    inflater ?: LayoutInflater.from(parent.context).inflate(R.layout.row_offline_mg_category, parent, false),
+                    inflater!!.itemInventory1,
+                    inflater!!.itemInventory2,
+                    inflater!!.itemInventory3,
+                    inflater!!.itemInventory4,
+                    inflater ?: LayoutInflater.from(parent.context).inflate(R.layout.row_character_inventory, parent, false),
                     parent
             )
         }
 
-        override fun onBindViewHolder(viewHolder: CategoryViewHolder, position: Int) {
-            viewHolder.textViewName.text = miniGames[position].title
-            viewHolder.textViewNew.visibility = if(miniGames[position].isNew){
-                View.VISIBLE
-            }else View.GONE
-
-            viewHolder.viewGroup.setPadding(3, 6 ,if(!pinned) 42 else 0, 6)
-
-            viewHolder.imageViewBg.setOnClickListener {
-                if(viewHolder.textViewNew.visibility != View.GONE){
-                    viewHolder.textViewNew.visibility = View.GONE
-                }
-                pinned = true
-                this.notifyDataSetChanged()
-                viewHolder.viewGroup.setPadding(6, 6 ,0, 6)
-                parent.supportFragmentManager.beginTransaction().replace(infoFrameLayout.id, miniGames[position].getFragmentInstance()).commitAllowingStateLoss()
-            }
-        }
-    }*/
-
-    private class InventoryView(val activity: Activity_Character, var playerC:Player, val textViewInfoItem: CustomTextView, val buttonBag0:ImageView, val buttonBag1:ImageView, val supportFragmentManager: FragmentManager, val bagView:View, val equipView: View,
-                                /*val equipItem0:ImageView, val equipItem1:ImageView, val equipItem2:ImageView, val equipItem3:ImageView, val equipItem4:ImageView, val equipItem5:ImageView, val equipItem6:ImageView, val equipItem7:ImageView, val equipItem8:ImageView, val equipItem9:ImageView,*/ private val context: Context) : BaseAdapter() {
-
-        override fun getCount(): Int {
-            return playerC.inventory.size/4+1
-        }
-
-        override fun getItemId(position: Int): Long {
-            return position.toLong()
-        }
-
-        override fun getItem(position: Int): Any {
-            return "TEST STRING"
-        }
-
-        fun dragItemSync() {
-            this.notifyDataSetChanged()
-        }
-
         @SuppressLint("ClickableViewAccessibility")
-        override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
-            val rowMain: View
-
+        override fun onBindViewHolder(viewHolder: CategoryViewHolder, position: Int) {
             val indexAdapter:Int = if(position == 0) 0 else{
                 position*4
             }
-
-            if (convertView == null) {
-                val layoutInflater = LayoutInflater.from(viewGroup!!.context)
-                rowMain = layoutInflater.inflate(R.layout.row_character_inventory, viewGroup, false)
-                val viewHolder = ViewHolder(rowMain.itemInventory1, rowMain.itemInventory2, rowMain.itemInventory3, rowMain.itemInventory4)
-                rowMain.tag = viewHolder
-
-            } else rowMain = convertView
-            val viewHolder = rowMain.tag as ViewHolder
 
             class Node(
                     val component:ImageView,
@@ -496,9 +395,10 @@ class Activity_Character : AppCompatActivity() {
                     component.setOnDragListener(activity.inventoryDragListener)
                     component.tag = this.index.toString()
 
-                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
+                    component.setOnTouchListener(object : Class_OnSwipeTouchListener(parent, component, true) {
                         override fun onClick(x: Float, y: Float) {
                             super.onClick(x, y)
+                            if(textViewInfoItem.visibility != View.VISIBLE) textViewInfoItem.visibility = View.VISIBLE
                             textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare() ?: "")
                         }
 
@@ -507,6 +407,7 @@ class Activity_Character : AppCompatActivity() {
 
                             getDoubleClick(this@Node.index, playerC, component)
                             if(playerC.inventory[this@Node.index] != null){
+                                if(textViewInfoItem.visibility != View.VISIBLE) textViewInfoItem.visibility = View.VISIBLE
                                 textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare()!!)
                             }
                             notifyDataSetChanged()
@@ -516,6 +417,7 @@ class Activity_Character : AppCompatActivity() {
                         override fun onLongClick() {
                             super.onLongClick()
 
+                            if(textViewInfoItem.visibility != View.VISIBLE) textViewInfoItem.visibility = View.VISIBLE
                             textViewInfoItem.setHTMLText(playerC.inventory[this@Node.index]?.getStatsCompare() ?: "")
                             if(playerC.inventory[this@Node.index] != null){
                                 val item = ClipData.Item(this@Node.index.toString())
@@ -544,15 +446,14 @@ class Activity_Character : AppCompatActivity() {
                 }
             }
 
-            rowMain.isEnabled = false
+            viewHolder.viewGroup.isEnabled = false
 
             Node(viewHolder.buttonInventory1, indexAdapter)
             Node(viewHolder.buttonInventory2, indexAdapter + 1)
             Node(viewHolder.buttonInventory3, indexAdapter + 2)
             Node(viewHolder.buttonInventory4, indexAdapter + 3)
-
-            return rowMain
         }
+
         private fun getDoubleClick(index: Int, playerC:Player, view:ImageView) {
             val tempMemory: Item?
 
@@ -603,7 +504,7 @@ class Activity_Character : AppCompatActivity() {
                             }
                             view.setImageResource(playerC.inventory[index]!!.drawable)
                             button.setBackgroundResource(playerC.backpackRunes[playerC.inventory[index]!!.slot-10]!!.getBackground())
-                            dragItemSync()
+                            notifyDataSetChanged()
                         }
                     }
 
@@ -621,7 +522,7 @@ class Activity_Character : AppCompatActivity() {
                         view.setImageResource(playerC.inventory[index]!!.drawable)
                         view.setBackgroundResource(playerC.inventory[index]!!.getBackground())
                         view.isClickable = false
-                        dragItemSync()
+                        notifyDataSetChanged()
                     }
                 }
                 val frg = supportFragmentManager.findFragmentById(R.id.frameLayoutCharacterStats)
@@ -636,8 +537,6 @@ class Activity_Character : AppCompatActivity() {
                 Snackbar.make(view, "Not compatible!", Snackbar.LENGTH_SHORT).show()
             }
         }
-
-        private class ViewHolder(val buttonInventory1: ImageView, val buttonInventory2: ImageView, val buttonInventory3: ImageView, val buttonInventory4: ImageView)
     }
 
     fun onCharacterClicked(view: View){
@@ -669,7 +568,7 @@ class Activity_Character : AppCompatActivity() {
                     start()
                 }
             }else{
-                animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, displayY.toFloat() + 1f).apply {
+                animatorStatsDown =  ValueAnimator.ofFloat(frameLayoutCharacterStats.y, dm.heightPixels.toFloat() + 1f).apply {
                     duration = 800
                     addUpdateListener {
                         frameLayoutCharacterStats.y = it.animatedValue as Float
@@ -818,6 +717,7 @@ class Activity_Character : AppCompatActivity() {
                             }
                         }
 
+                        if(textViewInfoItemTemp.visibility != View.VISIBLE) textViewInfoItemTemp.visibility = View.VISIBLE
                         textViewInfoItemTemp.setHTMLText(if (Data.player.inventory[itemIndex] == null) "" else Data.player.inventory[itemIndex]!!.getStatsCompare(false))
 
                         true
@@ -934,6 +834,7 @@ class Activity_Character : AppCompatActivity() {
                             Data.player.inventory[itemIndex] = tempItem
                         }
 
+                        if(textViewInfoItemTemp.visibility != View.VISIBLE) textViewInfoItemTemp.visibility = View.VISIBLE
                         textViewInfoItemTemp.setHTMLText(if (Data.player.inventory[itemIndex] == null) "" else Data.player.inventory[itemIndex]!!.getStatsCompare(false))
 
                         true
@@ -992,6 +893,7 @@ class Activity_Character : AppCompatActivity() {
                             v.invalidate()
 
                             //item comparison
+                            if(textViewInfoItemTemp.visibility != View.VISIBLE) textViewInfoItemTemp.visibility = View.VISIBLE
                             textViewInfoItemTemp.setHTMLText(item.getStatsCompare())
 
                         }
@@ -1005,19 +907,19 @@ class Activity_Character : AppCompatActivity() {
                 itemIndex = event.clipDescription.getMimeType(0).toInt()
                 val viewIndex = v.tag.toString().toInt()
 
-                when {
-                    event.clipDescription.label == "equip" || event.clipDescription.label == "runes"  -> {
+                when (event.clipDescription.label) {
+                    "equip", "runes" -> {
                         if(itemIndex == Data.player.inventory[viewIndex]?.slot) {
                             (v as ImageView?)?.setColorFilter(Color.BLACK)
                             v.invalidate()
 
                             //item comparison
-                            textViewInfoItemTemp.text = ""
+                            textViewInfoItemTemp.visibility = View.GONE
+                            textViewInfoItemTemp.setHTMLText("")
 
                         }
                         true
                     }
-
                     else -> event.clipDescription.label == "inventory"
                 }
             }
@@ -1030,8 +932,8 @@ class Activity_Character : AppCompatActivity() {
                 Log.d("mimeType", event.clipDescription.getMimeType(0).toString())
                 Log.d("viewindex", v.tag.toString())
 
-                when {
-                    event.clipDescription.label == "equip" -> {
+                when (event.clipDescription.label) {
+                    "equip" -> {
 
                         val viewIndex = v.tag.toString().toInt()
                         itemIndex = event.clipDescription.getMimeType(0).toInt()
@@ -1055,12 +957,13 @@ class Activity_Character : AppCompatActivity() {
                                 else -> return@OnDragListener false
                             }
 
+                            if(textViewInfoItemTemp.visibility != View.VISIBLE) textViewInfoItemTemp.visibility = View.VISIBLE
                             textViewInfoItemTemp.setHTMLText(if(Data.player.inventory[viewIndex] == null) "" else Data.player.inventory[viewIndex]!!.getStatsCompare(false))
                         }
 
                         true
                     }
-                    event.clipDescription.label == "runes" -> {
+                    "runes" -> {
                         val viewIndex = v.tag.toString().toInt()
                         itemIndex = event.clipDescription.getMimeType(0).toInt()
                         item = Data.player.backpackRunes[itemIndex - 10]
@@ -1095,7 +998,7 @@ class Activity_Character : AppCompatActivity() {
 
                         true
                     }
-                    event.clipDescription.label == "inventory" -> {
+                    "inventory" -> {
                         val viewIndex = v.tag.toString().toInt()
                         itemIndex = event.clipDescription.getMimeType(0).toInt()
                         item = Data.player.inventory[itemIndex]
@@ -1129,5 +1032,4 @@ class Activity_Character : AppCompatActivity() {
             }
         }
     }
-
 }

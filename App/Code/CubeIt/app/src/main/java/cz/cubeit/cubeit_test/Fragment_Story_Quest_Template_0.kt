@@ -69,19 +69,16 @@ class Fragment_Story_Quest_Template_0 : Fragment() {
             val viewP = layoutInflater.inflate(R.layout.popup_dialog, container, false)
             val window = PopupWindow(context)
             window.contentView = viewP
-            val buttonYes: Button = viewP.buttonYes
-            val buttonNo: ImageView = viewP.buttonCloseDialog
-            val info: TextView = viewP.textViewInfo
-            info.text = "Are you sure?"
+            viewP.textViewDialogInfo.text = "Skip the dialog?"
             window.isOutsideTouchable = false
             window.isFocusable = true
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            buttonYes.setOnClickListener {
+
+            viewP.buttonDialogAccept.setOnClickListener {
                 (this.parentFragment as Fragment_Story).skipStory()
-                Log.d("story skip", "true")
                 window.dismiss()
             }
-            buttonNo.setOnClickListener {
+            viewP.imageViewDialogClose.setOnClickListener {
                 window.dismiss()
             }
             window.showAtLocation(viewP, Gravity.CENTER,0,0)

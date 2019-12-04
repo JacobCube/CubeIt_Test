@@ -29,7 +29,8 @@
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/buttonPopRegisterYes"
         app:layout_constraintEnd_toEndOf="@+id/buttonPopRegisterYes"
-        app:layout_constraintStart_toStartOf="@+id/buttonPopRegisterYes" />
+        app:layout_constraintStart_toStartOf="@+id/buttonPopRegisterYes"
+        tools:visibility="visible" />
 
     <Button
         android:id="@+id/buttonPopRegisterYes"

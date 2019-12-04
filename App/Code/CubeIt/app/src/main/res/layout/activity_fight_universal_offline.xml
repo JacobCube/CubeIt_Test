@@ -15,8 +15,9 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
+        android:src="@drawable/arena"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -37,13 +38,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:text="30 s"
         android:textColor="@color/bg_basic_white"
-        android:visibility="gone"
-        android:text="00:15 s"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/guideline235"
         app:layout_constraintStart_toStartOf="@+id/guideline235"
-        app:layout_constraintTop_toBottomOf="@+id/textViewUniversalFightOfflineRound" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewUniversalFightOfflineRound"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline235"
@@ -119,7 +121,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline253"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.05"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
@@ -133,6 +135,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.95"
         app:layout_constraintStart_toStartOf="@+id/guideline254"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible">
@@ -468,9 +471,9 @@
         android:id="@+id/imageViewUniversalFightBar"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@color/fight_offline_bar"
         android:clickable="true"
         android:focusable="true"
+        android:src="@color/fight_offline_bar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -892,5 +895,16 @@
         tools:layout_editor_absoluteX="170dp"
         tools:layout_editor_absoluteY="74dp"
         tools:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/imageViewUniversalFightOfflinePause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/textViewUniversalFightOfflineTime"
+        app:layout_constraintStart_toStartOf="@+id/textViewUniversalFightOfflineTime"
+        app:layout_constraintTop_toBottomOf="@+id/textViewUniversalFightOfflineTime"
+        app:srcCompat="@android:drawable/ic_media_pause"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,7 +11,7 @@
     android:screenOrientation="sensorLandscape">
 
     <ListView
-        android:id="@+id/chosen_listView"
+        android:id="@+id/listViewFragmentDefenseChosen"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="2dp"
@@ -24,7 +24,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline12"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBarDefense">
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentDefenseBar">
 
     </ListView>
 
@@ -58,7 +58,7 @@
         app:layout_constraintGuide_percent="0.41" />
 
     <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewInfoSpells"
+        android:id="@+id/textViewIFragmentDefenseSpellInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:focusable="false"
@@ -72,13 +72,13 @@
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/chosen_listView"
+        app:layout_constraintEnd_toStartOf="@+id/listViewFragmentDefenseChosen"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/imageViewDefenseDescription"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBarDefense" />
+        app:layout_constraintStart_toEndOf="@+id/imageViewFragmentDefenseSpellIcon"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentDefenseBar" />
 
     <ListView
-        android:id="@+id/choosing_listview"
+        android:id="@+id/listViewFragmentDefenseLearned"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
@@ -91,7 +91,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline18"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBarDefense" />
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentDefenseBar" />
 
     <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewError"
@@ -105,10 +105,10 @@
         android:textAlignment="center"
         android:textColor="@android:color/holo_red_light"
         android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@+id/chosen_listView"
+        app:layout_constraintEnd_toStartOf="@+id/listViewFragmentDefenseChosen"
         app:layout_constraintHorizontal_bias="0.512"
-        app:layout_constraintStart_toEndOf="@+id/choosing_listview"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBarDefense" />
+        app:layout_constraintStart_toEndOf="@+id/listViewFragmentDefenseLearned"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentDefenseBar" />
 
 
     <androidx.constraintlayout.widget.Guideline
@@ -126,7 +126,7 @@
         app:layout_constraintGuide_percent="0.12" />
 
     <ImageView
-        android:id="@+id/imageViewBarDefense"
+        android:id="@+id/imageViewFragmentDefenseBar"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitXY"
@@ -137,7 +137,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/buttonSet"
+        android:id="@+id/buttonFragmentDefenseTest"
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -148,7 +148,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/buttonDefenseReset"
+        android:id="@+id/buttonFragmentDefenseReset"
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -159,22 +159,24 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/buttonToAttack0"
+        android:id="@+id/buttonFragmentDefenseAttack"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
+        android:tag="0"
         android:layout_marginBottom="4dp"
         android:adjustViewBounds="true"
         android:background="@android:color/transparent"
         android:onClick="onClickArrow"
         android:src="@drawable/right_arrow"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewBarDefense"
-        app:layout_constraintEnd_toEndOf="@+id/imageViewBarDefense"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentDefenseBar"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewFragmentDefenseBar"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/imageViewDefenseDescription"
+        android:id="@+id/imageViewFragmentDefenseSpellIcon"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="2dp"

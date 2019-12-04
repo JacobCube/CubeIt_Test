@@ -16,7 +16,6 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
-import kotlinx.android.synthetic.main.activity_faction_base.*
 import kotlinx.android.synthetic.main.fragment_faction.*
 import kotlinx.android.synthetic.main.fragment_faction.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
@@ -287,7 +286,7 @@ class Fragment_Faction: Fragment(){
             //viewTemp.imageViewFactionOpenLog.bringToFront()
 
             if(logClosed){
-                (activity as Activity_Faction_Base).imageViewMenuUpFaction.visibility = View.GONE
+                (activity as Activity_Faction_Base).imageViewMenuUp?.visibility = View.GONE
                 ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x - frameLayoutFactionLog.width).apply {
                     duration = 800
                     addUpdateListener {
@@ -315,7 +314,7 @@ class Fragment_Faction: Fragment(){
                     start()
                 }
             }else {
-                (activity as Activity_Faction_Base).imageViewMenuUpFaction.visibility = View.VISIBLE
+                (activity as Activity_Faction_Base).imageViewMenuUp?.visibility = View.VISIBLE
                 ValueAnimator.ofFloat(frameLayoutFactionLog.x, frameLayoutFactionLog.x + frameLayoutFactionLog.width).apply {
                     duration = 800
                     addUpdateListener {
@@ -388,17 +387,13 @@ class Fragment_Faction: Fragment(){
 
                 val viewP = layoutInflater.inflate(R.layout.popup_dialog, container, false)
                 val window = PopupWindow(context)
-                window.contentView = viewP
-                val buttonYes: Button = viewP.buttonYes
-                val buttonNo:ImageView = viewP.buttonCloseDialog
-                val info:TextView = viewP.textViewInfo
-                info.text = "Do you really want to put ${currentInstanceOfFaction!!.name} on your faction's enemy list?"
+                viewP.textViewDialogInfo.text = "Do you really want to put ${currentInstanceOfFaction!!.name} on your faction's enemy list?"
                 window.isOutsideTouchable = false
                 window.isFocusable = true
                 val db = FirebaseFirestore.getInstance()
                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                buttonYes.setOnClickListener {
 
+                viewP.buttonDialogAccept.setOnClickListener {      //TODO use methods
                     db.collection("factions").document(Data.player.factionID!!.toString()).update(mapOf("enemyFactions.${currentInstanceOfFaction!!.id.toString()}" to currentInstanceOfFaction!!.name))
                     db.collection("factions").document(currentInstanceOfFaction!!.name).update(mapOf("enemyFactions.${Data.player.factionID.toString()}" to Data.player.factionName))
                     Data.player.faction!!.enemyFactions[currentInstanceOfFaction!!.id.toString()] = currentInstanceOfFaction!!.name
@@ -408,7 +403,7 @@ class Fragment_Faction: Fragment(){
                     viewTemp.buttonFactionEnemy.isEnabled = false
                     window.dismiss()
                 }
-                buttonNo.setOnClickListener {
+                viewP.imageViewDialogClose.setOnClickListener {
                     window.dismiss()
                 }
                 window.showAtLocation(viewP, Gravity.CENTER,0,0)
@@ -621,20 +616,18 @@ class Fragment_Faction: Fragment(){
                             val viewP = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
                             val window = PopupWindow(context)
                             window.contentView = viewP
-                            val buttonYes: Button = viewP.buttonYes
-                            val buttonNo:ImageView = viewP.buttonCloseDialog
-                            val info:TextView = viewP.textViewInfo
-                            info.text = "Do you want to kick ${member.username}?"
+                            viewP.textViewDialogInfo.text = "Do you want to kick ${member.username}?"
                             window.isOutsideTouchable = false
                             window.isFocusable = true
                             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                            buttonYes.setOnClickListener {
+
+                            viewP.buttonDialogAccept.setOnClickListener {
                                 faction.kickMember(member, Data.player.username)
                                 faction.members.remove(member.username)
                                 parent.notifyDataSetChanged()
                                 window.dismiss()
                             }
-                            buttonNo.setOnClickListener {
+                            viewP.imageViewDialogClose.setOnClickListener {
                                 window.dismiss()
                             }
                             window.showAtLocation(viewP, Gravity.CENTER,0,0)
@@ -647,15 +640,13 @@ class Fragment_Faction: Fragment(){
                             val viewP = activity.layoutInflater.inflate(R.layout.popup_dialog, null, false)
                             val window = PopupWindow(context)
                             window.contentView = viewP
-                            val buttonYes: Button = viewP.buttonYes
-                            val buttonNo:ImageView = viewP.buttonCloseDialog
-                            val info:TextView = viewP.textViewInfo
-                            info.text = "Do you want to leave your faction?"
+                            viewP.textViewDialogInfo.text = "Do you want to leave your faction?"
                             window.isOutsideTouchable = false
                             window.isFocusable = true
                             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                            buttonYes.setOnClickListener {
-                                buttonYes.isEnabled = false
+
+                            viewP.buttonDialogAccept.setOnClickListener {
+                                viewP.buttonDialogAccept.isEnabled = false
                                 Data.player.leaveFaction()
                                 val intent = Intent(context, Home::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -663,7 +654,7 @@ class Fragment_Faction: Fragment(){
                                 window.dismiss()
                                 popupMenu.close()
                             }
-                            buttonNo.setOnClickListener {
+                            viewP.imageViewDialogClose.setOnClickListener {
                                 window.dismiss()
                             }
                             window.showAtLocation(viewP, Gravity.CENTER,0,0)

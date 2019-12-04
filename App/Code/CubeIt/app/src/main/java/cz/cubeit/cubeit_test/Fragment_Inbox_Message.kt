@@ -1,21 +1,22 @@
 package cz.cubeit.cubeit_test
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.provider.Telephony
 import androidx.fragment.app.Fragment
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_inbox_message.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
-
 
 class FragmentInboxMessage : Fragment() {
 
@@ -48,7 +49,7 @@ class FragmentInboxMessage : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val view:View = inflater.inflate(R.layout.fragment_inbox_message, container, false)
+        val view: View = inflater.inflate(R.layout.fragment_inbox_message, container, false)
         /*val opts = BitmapFactory.Options()
         opts.inScaled = false
         view.surface1.setImageBitmap(BitmapFactory.decodeResource(resources, Data.surfaces[0].background, opts))*/
@@ -58,20 +59,27 @@ class FragmentInboxMessage : Fragment() {
         ArrayAdapter.createFromResource(
                 view.context,
                 R.array.inbox_priority,
-                android.R.layout.simple_spinner_item
+                R.layout.spinner_inbox_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
+            adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
             view.spinnerInboxPriority.adapter = adapter
         }
+
+
         view.imageViewFragmentInboxMessage.setOnClickListener{view.context}
 
         if(arguments?.getString("type")=="read"){
 
             val chosenMail = (activity as Activity_Inbox).chosenMail
 
-            if(chosenMail.isInvitation1 && Data.player.factionID == null){
+            Log.d("condition0", (chosenMail.invitation.type == InvitationType.ally && Data.player.socials.find { it.username == chosenMail.invitation.caller } == null).toString())
+            Log.d("condition1", (chosenMail.invitation.type == InvitationType.faction && Data.player.factionID == null).toString())
+            Log.d("condition2", (chosenMail.invitation.type == InvitationType.factionAlly && Data.player.factionID != null).toString())
+
+            if(chosenMail.isInvitation1 && ((chosenMail.invitation.type == InvitationType.ally && Data.player.socials.find { it.username == chosenMail.invitation.caller } == null)
+                    || (chosenMail.invitation.type == InvitationType.faction && Data.player.factionID == null)
+                    || (chosenMail.invitation.type == InvitationType.factionAlly && Data.player.factionID != null))){
+
                 view.imageViewDeleteMessage.visibility = View.GONE
 
                 view.imageViewInboxMessageAccept.apply {
@@ -79,9 +87,9 @@ class FragmentInboxMessage : Fragment() {
                     setOnClickListener {
                         chosenMail.invitation.accept()
                         Data.player.removeInbox(chosenMail.id)
-                        (activity as Activity_Inbox).currentCategory.messages.remove(chosenMail)
-                        (activity!! as Activity_Inbox).refreshCategory()
-                        activity!!.supportFragmentManager.beginTransaction().remove(this@FragmentInboxMessage).commitNow()
+                        (activity as? Activity_Inbox)?.currentCategory?.messages?.remove(chosenMail)
+                        (activity as? Activity_Inbox)?.refreshCategory()
+                        activity?.supportFragmentManager?.beginTransaction()?.remove(this@FragmentInboxMessage)?.commitNow()
                     }
                 }
                 view.imageViewInboxMessageDecline.apply {
@@ -89,9 +97,9 @@ class FragmentInboxMessage : Fragment() {
                     setOnClickListener {
                         chosenMail.invitation.decline()
                         Data.player.removeInbox(chosenMail.id)
-                        (activity as Activity_Inbox).currentCategory.messages.remove(chosenMail)
-                        (activity!! as Activity_Inbox).refreshCategory()
-                        activity!!.supportFragmentManager.beginTransaction().remove(this@FragmentInboxMessage).commitNow()
+                        (activity as? Activity_Inbox)?.currentCategory?.messages?.remove(chosenMail)
+                        (activity as? Activity_Inbox)?.refreshCategory()
+                        activity?.supportFragmentManager?.beginTransaction()?.remove(this@FragmentInboxMessage)?.commitNow()
                     }
                 }
             }else {
@@ -100,6 +108,7 @@ class FragmentInboxMessage : Fragment() {
                 view.imageViewDeleteMessage.visibility = View.VISIBLE
             }
 
+            view.imageViewInboxMessageDropDown.visibility = View.GONE
             view.spinnerInboxPriority.setSelection(arguments?.getInt("priority")!!)
             view.spinnerInboxPriority.isEnabled = false
             view.editTextInboxSubject.setText(arguments?.getString("object"))
@@ -130,21 +139,19 @@ class FragmentInboxMessage : Fragment() {
                 val viewP = layoutInflater.inflate(R.layout.popup_dialog, container, false)
                 val window = PopupWindow(context)
                 window.contentView = viewP
-                val buttonYes: Button = viewP.buttonYes
-                val buttonNo:ImageView = viewP.buttonCloseDialog
-                val info:TextView = viewP.textViewInfo
-                info.text = "Are you sure?"
+                viewP.textViewDialogInfo.text = "Are you sure?"
                 window.isOutsideTouchable = false
                 window.isFocusable = true
                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                buttonYes.setOnClickListener {
+
+                viewP.buttonDialogAccept.setOnClickListener {
                     Data.player.removeInbox(chosenMail.id)
                     (activity as Activity_Inbox).currentCategory.messages.remove((activity as Activity_Inbox).chosenMail)
-                    (activity!! as Activity_Inbox).refreshCategory()
-                    activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
+                    (activity as? Activity_Inbox)?.refreshCategory()
+                    activity?.supportFragmentManager?.beginTransaction()?.remove(this)?.commitNow()
                     window.dismiss()
                 }
-                buttonNo.setOnClickListener {
+                viewP.imageViewDialogClose.setOnClickListener {
                     window.dismiss()
                 }
                 window.showAtLocation(viewP, Gravity.CENTER,0,0)
@@ -163,35 +170,8 @@ class FragmentInboxMessage : Fragment() {
                     view.imageViewInboxMessageItem.setImageResource(chosenMail.reward!!.item!!.drawable)
                     view.imageViewInboxMessageItem.setBackgroundResource(chosenMail.reward!!.item!!.getBackground())
 
-                    val tempActivity = activity!!
-                    view.imageViewInboxMessageItem.setUpOnHold(tempActivity, chosenMail.reward!!.item!!)
-                    /*val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
-                    val windowPop = PopupWindow(view.context)
-                    windowPop.contentView = viewP
-                    windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-                    view.imageViewInboxMessageItem.setOnTouchListener(object: Class_HoldTouchListener(view.imageViewInboxMessageItem, false, 0f, false){
-
-                        override fun onStartHold(x: Float, y: Float) {
-                            super.onStartHold(x, y)
-                            viewP.textViewPopUpInfo.setHTMLText(chosenMail.reward!!.item!!.getStats())
-                            viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                            val coordinates = SystemFlow.resolveLayoutLocation(activity!!, x, y, viewP.measuredWidth, viewP.measuredHeight)
-
-                            if(!windowPop.isShowing){
-                                viewP.textViewPopUpInfo.setHTMLText(chosenMail.reward!!.item!!.getStatsCompare())
-                                viewP.imageViewPopUpInfoItem.setImageResource(chosenMail.reward!!.item!!.drawable)
-                                viewP.imageViewPopUpInfoItem.setBackgroundResource(chosenMail.reward!!.item!!.getBackground())
-
-                                windowPop.showAsDropDown(activity!!.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
-                            }
-                        }
-
-                        override fun onCancelHold() {
-                            super.onCancelHold()
-                            if(windowPop.isShowing) windowPop.dismiss()
-                        }
-                    })*/
+                    val tempActivity = activity as SystemFlow.GameActivity
+                    view.imageViewInboxMessageItem.setUpOnHoldDecorPop(tempActivity, chosenMail.reward!!.item!!)
                 }
 
                 val tempActivity = activity as Activity_Inbox
@@ -201,14 +181,18 @@ class FragmentInboxMessage : Fragment() {
                         val coords = intArrayOf(0, 0)
                         view.buttonInboxMessageGet.getLocationOnScreen(coords)
                         Data.inbox.find { it.id == (activity as Activity_Inbox).chosenMail.id }!!.apply {
-                            reward!!.receive(null, true, tempActivity, Coordinates(coords[0].toFloat(), coords[1].toFloat()))
-                            reward = null
+                            (activity as SystemFlow.GameActivity).visualizeRewardWith(Coordinates(coords[0].toFloat(), coords[1].toFloat()), reward)?.addListener(object : AnimatorListenerAdapter() {
+                                override fun onAnimationEnd(animation: Animator) {
+                                    reward = null
+                                }
+                            })
                         }
-                        Data.inbox.remove(Data.inbox.find { it.id == (activity as Activity_Inbox).chosenMail.id }!!)
 
                         Data.player.removeInbox((activity as Activity_Inbox).chosenMail.id)
+
+                        Data.inbox.remove(Data.inbox.find { it.id == (activity as Activity_Inbox).chosenMail.id }!!)
                         Data.refreshInbox(view.context)
-                        (activity!! as Activity_Inbox).refreshCategory()
+                        tempActivity.refreshCategory()
                     }else{
                         Snackbar.make(view, "No space in inventory!", Snackbar.LENGTH_SHORT).show()
                     }
@@ -218,21 +202,21 @@ class FragmentInboxMessage : Fragment() {
             }
         }else if(arguments?.getString("type")=="reply"){
 
-
             view.textViewInboxMessageSender.text = "from ${Data.player.username}"
             view.editTextInboxReciever.setText((activity as Activity_Inbox).chosenMail.sender)
             view.editTextInboxSubject.setText("RE: ${(activity as Activity_Inbox).chosenMail.subject}")
+            view.checkBoxInboxMessageVibrate.visibility = if(Data.player.vibrationEasterEgg) View.VISIBLE else View.GONE
 
             view.imageViewInboxSend.setOnClickListener {
                 if(view.spinnerInboxPriority.selectedItem.toString().isNotEmpty()){
 
-                    if(view.editTextInboxReciever.text.toString().isNotEmpty()){
+                    if((view.editTextInboxReciever.text ?: "").length in 1..15){
 
-                        if(view.editTextInboxReciever.text.toString().isNotEmpty()){
+                        if(view.editTextInboxSubject.text.toString().isNotEmpty() && view.editTextInboxSubject.text.toString().length in 1..30){
 
-                            if(view.editTextInboxReciever.text.toString().isNotEmpty()){
+                            if(view.editTextInboxContent.text.toString().isNotEmpty()){
 
-                                if(view.editTextInboxContent.text.toString().length < 500){
+                                if(view.editTextInboxContent.text.toString().length <= 140){
 
                                     val activityTemp = activity!!
 
@@ -241,7 +225,8 @@ class FragmentInboxMessage : Fragment() {
                                             receiver = view.editTextInboxReciever.text.toString(),
                                             subject = view.editTextInboxSubject.text.toString(),
                                             content = view.editTextInboxContent.text.toString(),
-                                            sender = Data.player.username
+                                            sender = Data.player.username,
+                                            vibrate = view.checkBoxInboxMessageVibrate.isChecked
                                     )).addOnSuccessListener {
                                         (activityTemp as Activity_Inbox).makeMeASnack("Message to ${view.editTextInboxReciever.text} has been successfully sent.", Snackbar.LENGTH_SHORT)
                                     }.continueWithTask {
@@ -251,14 +236,15 @@ class FragmentInboxMessage : Fragment() {
                                                 receiver = view.editTextInboxReciever.text.toString(),
                                                 subject = view.editTextInboxSubject.text.toString(),
                                                 content = view.editTextInboxContent.text.toString(),
-                                                sender = Data.player.username
+                                                sender = Data.player.username,
+                                                vibrate = view.checkBoxInboxMessageVibrate.isChecked
                                         )
                                         temp.status = MessageStatus.Sent
                                         Data.inboxCategories[MessageStatus.Sent]!!.messages.add(temp)
                                         Data.player.writeInbox(Data.player.username, temp)
                                     }
 
-                                    activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
+                                    activity?.supportFragmentManager?.beginTransaction()?.remove(this)?.commitNow()
                                 }else {
                                     SystemFlow.vibrateAsError(view.context)
                                     view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
@@ -272,12 +258,12 @@ class FragmentInboxMessage : Fragment() {
                         }else{
                             SystemFlow.vibrateAsError(view.context)
                             view.editTextInboxSubject.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                            Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(view, "1 - 30 characters!", Snackbar.LENGTH_SHORT).show()
                         }
                     }else{
                         SystemFlow.vibrateAsError(view.context)
                         view.editTextInboxReciever.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                        Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(view, "1 - 15 characters!", Snackbar.LENGTH_SHORT).show()
                     }
                 }else{
                     SystemFlow.vibrateAsError(view.context)
@@ -291,6 +277,7 @@ class FragmentInboxMessage : Fragment() {
             view.editTextInboxReciever.setText(arguments?.getString("receiver"))
             view.editTextInboxReciever.isLongClickable = Data.player.allies.isNotEmpty() || Data.player.factionID != null
             view.imageViewInboxOpenMenu.visibility = if(Data.player.allies.isNotEmpty() || Data.player.factionID != null) View.VISIBLE else View.GONE
+            view.checkBoxInboxMessageVibrate.visibility = if(Data.player.vibrationEasterEgg) View.VISIBLE else View.GONE
 
             view.imageViewInboxOpenMenu.setOnClickListener{ view1 ->
                 val wrapper = ContextThemeWrapper(context, R.style.FactionPopupMenu)
@@ -314,15 +301,15 @@ class FragmentInboxMessage : Fragment() {
 
             view.imageViewInboxSend.setOnClickListener {
 
-                if (view.spinnerInboxPriority.selectedItem.toString().isNotEmpty()) {
+                if(view.spinnerInboxPriority.selectedItem.toString().isNotEmpty()){
 
-                    if (view.editTextInboxReciever.text.toString().isNotEmpty()) {
+                    if((view.editTextInboxReciever.text ?: "").length in 1..15){
 
-                        if (view.editTextInboxReciever.text.toString().isNotEmpty()) {
+                        if(view.editTextInboxSubject.text.toString().isNotEmpty() && view.editTextInboxSubject.text.toString().length in 1..30){
 
-                            if (view.editTextInboxReciever.text.toString().isNotEmpty()) {
+                            if(view.editTextInboxContent.text.toString().isNotEmpty()){
 
-                                if (view.editTextInboxContent.text.toString().length < 500 && view.editTextInboxContent.text.toString().isNotEmpty()) {
+                                if(view.editTextInboxContent.text.toString().length <= 140){
 
                                     val activityTemp = activity!!
 
@@ -334,9 +321,10 @@ class FragmentInboxMessage : Fragment() {
                                                             priority = view.spinnerInboxPriority.selectedItemPosition,
                                                             status = MessageStatus.Faction,
                                                             receiver = i.username,
-                                                            subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
-                                                            content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
-                                                            sender = Data.player.username
+                                                            subject = view.editTextInboxSubject.text.toString(),
+                                                            content = view.editTextInboxContent.text.toString(),
+                                                            sender = Data.player.username,
+                                                            vibrate = view.checkBoxInboxMessageVibrate.isChecked
                                                     ))
                                                 }
                                                 (activityTemp as Activity_Inbox).makeMeASnack("Message to your faction has been successfully sent.", Snackbar.LENGTH_SHORT)
@@ -346,9 +334,10 @@ class FragmentInboxMessage : Fragment() {
                                         Data.player.writeInbox(view.editTextInboxReciever.text.toString(), InboxMessage(
                                                 priority = view.spinnerInboxPriority.selectedItemPosition,
                                                 receiver = view.editTextInboxReciever.text.toString(),
-                                                subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
-                                                content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
-                                                sender = Data.player.username
+                                                subject = view.editTextInboxSubject.text.toString(),
+                                                content = view.editTextInboxContent.text.toString(),
+                                                sender = Data.player.username,
+                                                vibrate = view.checkBoxInboxMessageVibrate.isChecked
                                         )).addOnSuccessListener {
                                             (activityTemp as Activity_Inbox).makeMeASnack("Message to ${view.editTextInboxReciever.text} has been successfully sent.", Snackbar.LENGTH_SHORT)
                                         }.continueWithTask {
@@ -356,9 +345,10 @@ class FragmentInboxMessage : Fragment() {
                                             val temp = InboxMessage(
                                                     priority = view.spinnerInboxPriority.selectedItemPosition,
                                                     receiver = view.editTextInboxReciever.text.toString(),
-                                                    subject = view.editTextInboxSubject.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
-                                                    content = view.editTextInboxContent.text.toString().replace("negr", "I love CubeIt").replace("nigga", "I love CubeIt").replace("nigger", "I love CubeIt").replace("nigg", "I love CubeIt"),
-                                                    sender = Data.player.username
+                                                    subject = view.editTextInboxSubject.text.toString(),
+                                                    content = view.editTextInboxContent.text.toString(),
+                                                    sender = Data.player.username,
+                                                    vibrate = view.checkBoxInboxMessageVibrate.isChecked
                                             )
                                             temp.status = MessageStatus.Sent
                                             Data.inboxCategories[MessageStatus.Sent]!!.messages.add(temp)
@@ -366,29 +356,28 @@ class FragmentInboxMessage : Fragment() {
                                         }
                                     }
 
-                                    activity!!.supportFragmentManager.beginTransaction().remove(this).commitNow()
-
-                                } else {
+                                    activity?.supportFragmentManager?.beginTransaction()?.remove(this)?.commitNow()
+                                }else {
                                     SystemFlow.vibrateAsError(view.context)
                                     view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                     Snackbar.make(view, "Content is  too long!", Snackbar.LENGTH_SHORT).show()
                                 }
-                            } else {
+                            }else{
                                 SystemFlow.vibrateAsError(view.context)
                                 view.editTextInboxContent.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                                 Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
                             }
-                        } else {
+                        }else{
                             SystemFlow.vibrateAsError(view.context)
                             view.editTextInboxSubject.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                            Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(view, "1 - 30 characters!", Snackbar.LENGTH_SHORT).show()
                         }
-                    } else {
+                    }else{
                         SystemFlow.vibrateAsError(view.context)
                         view.editTextInboxReciever.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
-                        Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(view, "1 - 15 characters!", Snackbar.LENGTH_SHORT).show()
                     }
-                } else {
+                }else{
                     SystemFlow.vibrateAsError(view.context)
                     view.spinnerInboxPriority.startAnimation(AnimationUtils.loadAnimation(view.context, R.anim.animation_shaky_short))
                     Snackbar.make(view, "This field is required!", Snackbar.LENGTH_SHORT).show()

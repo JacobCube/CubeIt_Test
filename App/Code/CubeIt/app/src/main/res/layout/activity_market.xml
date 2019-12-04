@@ -34,20 +34,20 @@
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="8dp"
         android:text="File an offer"
-        app:layout_constraintBottom_toTopOf="@+id/imageViewMenuUpMarket"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewMarketMyOffers" />
 
     <Button
         android:id="@+id/imageViewMarketMyOffers"
         style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="16dp"
         android:text="My offers"
-        app:layout_constraintBottom_toTopOf="@+id/imageViewMarketRegister"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewMarketMoney" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline76"
@@ -235,6 +235,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/listViewMarketItems" />
 
+    <ImageView
+        android:id="@+id/imageViewMarketCoin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewMarketFilter"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline85"
+        app:layout_constraintTop_toTopOf="@+id/imageViewMarketFilter"
+        app:srcCompat="@drawable/coin_basic" />
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline176"
         android:layout_width="wrap_content"
@@ -276,53 +287,18 @@
 
     </FrameLayout>
 
-    <ImageView
-        android:id="@+id/homeButtonBackMarket"
-        android:layout_width="75dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/emptyspellslotlarge"
-        android:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/home_button"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageViewMenuUpMarket"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline138"
-        app:srcCompat="@drawable/setting3rows"
-        app:tint="@color/colorSecondary" />
-
-    <FrameLayout
-        android:id="@+id/frameLayoutMenuMarket"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewMarketMoney"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:text="CC"
         android:textColor="@android:color/white"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline138"
-        app:layout_constraintStart_toStartOf="@+id/guideline85"
+        app:layout_constraintStart_toEndOf="@+id/imageViewMarketCoin"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketSearch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

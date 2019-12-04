@@ -3,6 +3,7 @@ package cz.cubeit.cubeit_test
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,9 +11,9 @@ import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.ImageView
-import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_spell_bar.view.*
 import kotlinx.android.synthetic.main.fragment_attack.view.*
 import kotlinx.android.synthetic.main.row_attack.view.*
@@ -27,66 +28,121 @@ class FragmentAttack : Fragment(){      //TODO change the way spell bar generate
         (view as ImageView).setImageResource(0)
     }
 
+    private fun clearSet(){
+        for(i in 2 until spellButtons.size){
+            spellButtons[i].setImageResource(0)
+        }
+        Data.player.chosenSpellsAttack = arrayOfNulls<Spell?>(6).toMutableList()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        System.gc()
+        viewTemp.imageViewFragmentAttackBar.setImageResource(0)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { //I/Choreographer: Skipped 74 frames!  The application may be doing too much work on its main thread.
-        val view = inflater.inflate(R.layout.fragment_attack, container, false)
-        viewTemp = view
+        viewTemp = inflater.inflate(R.layout.fragment_attack, container, false)
 
         System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        view.imageViewBarAttack.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbarattack, opts))
+        viewTemp.imageViewFragmentAttackBar.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbarattack, opts))
 
-        spellButtons = arrayOf(view.FragmentSpell0, view.FragmentSpell1,view.FragmentSpell2, view.FragmentSpell3,
-                view.FragmentSpell4, view.FragmentSpell5, view.FragmentSpell6, view.FragmentSpell7)
+        spellButtons = arrayOf(viewTemp.FragmentSpell0, viewTemp.FragmentSpell1,viewTemp.FragmentSpell2, viewTemp.FragmentSpell3,
+                viewTemp.FragmentSpell4, viewTemp.FragmentSpell5, viewTemp.FragmentSpell6, viewTemp.FragmentSpell7)
 
         spellButtons[0].setImageResource(Data.player.learnedSpells[0]!!.drawable)
         spellButtons[1].setImageResource(Data.player.learnedSpells[1]!!.drawable)
         for(i in 0 until Data.player.chosenSpellsAttack.size){
             if(Data.player.chosenSpellsAttack[i] != null){
-                spellButtons[i+2].setImageResource(Data.player.chosenSpellsAttack[i]!!.drawable)
-                spellButtons[i+2].isClickable = true
+                spellButtons[i + 2].setImageResource(Data.player.chosenSpellsAttack[i]!!.drawable)
+                spellButtons[i + 2].isClickable = true
             }else {
-                spellButtons[i+2].isClickable = false
-                spellButtons[i+2].setImageResource(0)
+                spellButtons[i + 2].isClickable = false
+                spellButtons[i + 2].setImageResource(0)
             }
             //spellButtons[i].tag = i.toString()
-            spellButtons[i+2].setOnDragListener(attackDragListener)
+            spellButtons[i + 2].setOnDragListener(attackDragListener)
         }
 
-        view.listViewSpells.adapter = AllSpells(view.textViewInfoSpell, view.imageViewIcon, spellButtons, view.context)
+        viewTemp.listViewFragmentAttackSpells.apply {
+            layoutManager = LinearLayoutManager(viewTemp.context)
+            adapter = LearnedSpellsAdapter(viewTemp.textViewIFragmentAttackSpellInfo,
+                    viewTemp.imageViewFragmentAttackSpellIcon,
+                    spellButtons, viewTemp.context,
+                    viewTemp.imageViewFragmentAttackSpellBg
+            )
+        }
 
-        return view
+        viewTemp.buttonFragmentAttackReset.setOnClickListener {
+            clearSet()
+        }
+
+        viewTemp.buttonFragmentAttackTest.setOnClickListener {
+            val intent = Intent(viewTemp.context, ActivityFightUniversalOffline()::class.java)
+            val enemies = listOf(NPC().generate(playerX = Data.player))
+            val fighterEnemies = arrayListOf<FightSystem.Fighter>()
+            for(i in enemies){
+                i.power = 0
+                i.health = 9999999.0
+                fighterEnemies.add(i.toFighter(FightSystem.FighterType.Enemy))
+            }
+            intent.putParcelableArrayListExtra("enemies", fighterEnemies)
+            intent.putParcelableArrayListExtra("allies", arrayListOf(
+                    Data.player.toFighter(FightSystem.FighterType.Ally)
+            ))
+            intent.putExtra("isTest", true)
+            startActivity(intent)
+        }
+
+        return viewTemp
     }
-    class AllSpells(private val textViewInfoSpell: TextView, private val imageViewIcon: ImageView, private val spellButtons: Array<ImageView>, private val context: Context): BaseAdapter() {
 
-        override fun getCount(): Int {
-            return if(Data.player.learnedSpells.size/5 < 5) 1 else Data.player.learnedSpells.size/5+1
+    private class LearnedSpellsAdapter(
+            private val textViewInfoSpell: CustomTextView,
+            private val imageViewIcon: ImageView,
+            private val spellButtons: Array<ImageView>,
+            private val context: Context,
+            private val imageViewSpellDescBg: ImageView
+    ) :
+            RecyclerView.Adapter<LearnedSpellsAdapter.CategoryViewHolder>() {
+
+        var inflater: View? = null
+
+        class CategoryViewHolder(
+                val buttonSpellsManagement1: ImageView,
+                val buttonSpellsManagement2: ImageView,
+                val buttonSpellsManagement3: ImageView,
+                val buttonSpellsManagement4: ImageView,
+                val buttonSpellsManagement5: ImageView,
+                val buttonSpellsManagement6: ImageView,
+                inflater: View,
+                val viewGroup: ViewGroup
+        ): RecyclerView.ViewHolder(inflater)
+
+        override fun getItemCount() = if(Data.player.learnedSpells.size / 5 < 5) 1 else Data.player.learnedSpells.size / 5 + 1
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
+            inflater = LayoutInflater.from(parent.context).inflate(R.layout.row_attack, parent, false)
+            return CategoryViewHolder(
+                    inflater!!.buttonSpellsManagment1,
+                    inflater!!.buttonSpellsManagment2,
+                    inflater!!.buttonSpellsManagment3,
+                    inflater!!.buttonSpellsManagment4,
+                    inflater!!.buttonSpellsManagment5,
+                    inflater!!.buttonSpellsManagment6,
+                    inflater ?: LayoutInflater.from(parent.context).inflate(R.layout.row_attack, parent, false),
+                    parent
+            )
         }
 
-        override fun getItemId(position: Int): Long {
-            return position.toLong()
-        }
-
-        override fun getItem(position: Int): Any {
-            return "TEST STRING"
-        }
-
-        @SuppressLint("ClickableViewAccessibility")
-        override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
-            val rowMain: View
-
-            val index:Int = if(position == 0) 0 else{
+        override fun onBindViewHolder(viewHolder: CategoryViewHolder, position: Int) {
+            val innerIndex:Int = if(position == 0) 0 else{
                 position*5
             }
-            if (convertView == null) {
-                val layoutInflater = LayoutInflater.from(viewGroup!!.context)
-                rowMain = layoutInflater.inflate(R.layout.row_attack, viewGroup, false)
-                val viewHolder = ViewHolder(rowMain.buttonSpellsManagment1,rowMain.buttonSpellsManagment2,rowMain.buttonSpellsManagment3,rowMain.buttonSpellsManagment4,rowMain.buttonSpellsManagment5)
-                rowMain.tag = viewHolder
 
-            } else rowMain = convertView
-            val viewHolder = rowMain.tag as ViewHolder
-
+            @SuppressLint("ClickableViewAccessibility")
             class Node(
                     val index: Int = 0,
                     val component: ImageView
@@ -103,18 +159,31 @@ class FragmentAttack : Fragment(){      //TODO change the way spell bar generate
                     component.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
                         override fun onClick(x: Float, y: Float) {
                             super.onClick(x, y)
-                            textViewInfoSpell.text = Data.player.learnedSpells[this@Node.index]?.getStats()
+                            if(imageViewSpellDescBg.visibility != View.VISIBLE){
+                                imageViewSpellDescBg.visibility = View.VISIBLE
+                            }
+                            textViewInfoSpell.setHTMLText(Data.player.learnedSpells[this@Node.index]?.getStats() ?: "")
                             imageViewIcon.setImageResource(Data.player.learnedSpells[this@Node.index]!!.drawable)
                         }
 
                         override fun onDoubleClick() {
                             super.onDoubleClick()
-                            getClickSpell(this@Node.index, spellButtons)
+                            if(Data.player.chosenSpellsAttack.contains(null)){
+                                val tempIndex = Data.player.chosenSpellsAttack.indexOf(null)
+                                if(index > 1 && !Data.player.chosenSpellsAttack.any { it?.id == Data.player.learnedSpells[index]!!.id }) {
+                                    Data.player.chosenSpellsAttack[tempIndex] = Data.player.learnedSpells[index]
+                                    spellButtons[tempIndex + 2].apply {
+                                        setImageResource(Data.player.chosenSpellsAttack[tempIndex]!!.drawable)
+                                        isEnabled = true
+                                        isClickable = true
+                                    }
+                                }
+                            }
                         }
 
                         override fun onLongClick() {
                             super.onLongClick()
-                            textViewInfoSpell.text = Data.player.learnedSpells[this@Node.index]?.getStats()
+                            textViewInfoSpell.setHTMLText(Data.player.learnedSpells[this@Node.index]?.getStats().toString())
                             imageViewIcon.setImageResource(Data.player.learnedSpells[this@Node.index]!!.drawable)
 
                             if(Data.player.learnedSpells[this@Node.index] != null){
@@ -140,28 +209,13 @@ class FragmentAttack : Fragment(){      //TODO change the way spell bar generate
 
             }
 
-            Node(index, viewHolder.buttonSpellsManagement1)
-            Node(index + 1, viewHolder.buttonSpellsManagement2)
-            Node(index + 2, viewHolder.buttonSpellsManagement3)
-            Node(index + 3, viewHolder.buttonSpellsManagement4)
-            Node(index + 4, viewHolder.buttonSpellsManagement5)
-
-            return rowMain
+            Node(innerIndex, viewHolder.buttonSpellsManagement1)
+            Node(innerIndex + 1, viewHolder.buttonSpellsManagement2)
+            Node(innerIndex + 2, viewHolder.buttonSpellsManagement3)
+            Node(innerIndex + 3, viewHolder.buttonSpellsManagement4)
+            Node(innerIndex + 4, viewHolder.buttonSpellsManagement5)
+            Node(innerIndex + 5, viewHolder.buttonSpellsManagement6)
         }
-        companion object {
-            private fun getClickSpell(index:Int, spellButtons:Array<ImageView>){
-                if(Data.player.chosenSpellsAttack.contains(null)){
-                    val tempIndex = Data.player.chosenSpellsAttack.indexOf(null)
-                    if(index != 0 && index != 1 && !Data.player.chosenSpellsAttack.any { it?.id == Data.player.learnedSpells[index]!!.id }) {
-                        Data.player.chosenSpellsAttack[tempIndex] = Data.player.learnedSpells[index]
-                        spellButtons[tempIndex + 2].setImageResource(Data.player.chosenSpellsAttack[tempIndex]!!.drawable)
-                        spellButtons[tempIndex + 2].isEnabled = true
-                    }
-                }
-            }
-
-        }
-        private class ViewHolder(val buttonSpellsManagement1: ImageView, val buttonSpellsManagement2: ImageView, val buttonSpellsManagement3: ImageView, val buttonSpellsManagement4: ImageView, val buttonSpellsManagement5: ImageView)
     }
 
     val attackDragListener = View.OnDragListener { v, event ->               //used in Fragment_Board_Character_Profile

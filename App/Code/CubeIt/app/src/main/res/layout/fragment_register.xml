@@ -39,7 +39,6 @@
         android:id="@+id/imageViewRegisterIcon"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="8dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
         app:layout_constraintBottom_toTopOf="@+id/texguideline5"
@@ -122,9 +121,10 @@
         android:layout_marginTop="2dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center"
-        android:text="7+ characters,\nat least 1 number"
+        android:text="required 7+ characters"
         android:textColor="@color/loginColor_2"
         android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/texguideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline271"
         app:layout_constraintTop_toBottomOf="@+id/inputPassReg" />
 
@@ -168,6 +168,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.48" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/texguideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.44" />
 
     <ImageView
         android:id="@+id/arrowAccExists1"
@@ -285,9 +292,11 @@
         android:id="@+id/imageViewRegisterShowPass"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:src="@android:drawable/ic_menu_view"
         app:layout_constraintBottom_toTopOf="@+id/texguideline8"
-        app:layout_constraintEnd_toStartOf="@+id/guideline272"
-        app:layout_constraintStart_toStartOf="@+id/guideline271"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/texguideline6"
+        app:layout_constraintStart_toStartOf="@+id/texguideline2"
         app:layout_constraintTop_toTopOf="@+id/guideline11" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

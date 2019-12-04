@@ -1,25 +1,16 @@
 package cz.cubeit.cubeit_test
 
-import android.animation.ValueAnimator
-import android.content.Context
-import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.os.Handler
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import androidx.appcompat.app.AppCompatActivity
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
-import android.view.WindowManager
 import android.widget.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
@@ -29,80 +20,24 @@ import kotlinx.android.synthetic.main.fragment_faction_managment.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import java.lang.Exception
 
-class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: String
-
-    var displayY = 0.0
-    var displayX = 0.0
-    lateinit var frameLayoutMenuFactionTemp: FrameLayout
+class Activity_Faction_Base: SystemFlow.GameActivity(R.layout.activity_faction_base, ActivityType.Faction, true, R.id.imageViewFactionBg){           //arguments - id: String
     lateinit var viewPagerFactionTemp: StoryViewPager
     lateinit var tabLayoutFactionTemp: TabLayout
     lateinit var buttonFactionSaveTemp: Button
     var inviteList: MutableList<String> = mutableListOf()
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
-        frameLayoutMenuFactionTemp.getGlobalVisibleRect(viewRect)
-
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuFactionTemp.y <= (displayY * 0.83).toFloat()) {
-
-            ValueAnimator.ofFloat(frameLayoutMenuFactionTemp.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenuFactionTemp.y/displayY * 160).toLong()
-                addUpdateListener {
-                    frameLayoutMenuFactionTemp.y = it.animatedValue as Float
-                }
-                start()
-            }
-        }
-
-        return super.dispatchTouchEvent(ev)
-    }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d("Action_base", "has been determined")
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         setContentView(R.layout.activity_faction_base)
-        frameLayoutMenuFactionTemp = frameLayoutMenuFaction
         viewPagerFactionTemp = viewPagerFaction
         tabLayoutFactionTemp = tabLayoutFaction
 
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuFaction, Fragment_Menu_Bar.newInstance(R.id.imageViewFactionBg, R.id.frameLayoutMenuFaction, R.id.homeButtonBackFaction, R.id.imageViewMenuUpFaction), "menuFaction").commit()
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({ hideSystemUI() }, 1000)
-            }
-        }
-
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        displayY = dm.heightPixels.toDouble()
-        displayX = dm.widthPixels.toDouble()
-
         System.gc()
-        frameLayoutMenuFaction.y = displayY.toFloat()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
         imageViewFactionBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.color.loginColor, opts))
@@ -165,8 +100,6 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
 
         })
 
-        frameLayoutMenuFactionTemp.bringToFront()
-
         buttonFactionSaveTemp = buttonFactionSave
         buttonFactionSaveTemp.setOnClickListener {
             if(viewPagerFactionTemp.currentItem == 2 && Data.player.faction != null){   //TODO porovnání provedených změn v pozadí
@@ -203,8 +136,8 @@ class Activity_Faction_Base: AppCompatActivity(){           //arguments - id: St
                     val view = layoutInflater.inflate(R.layout.popup_dialog,null)
                     val window = PopupWindow(this)
                     window.contentView = view
-                    val buttonYes:Button = view.buttonYes
-                    val buttonNo: ImageView = view.buttonCloseDialog
+                    val buttonYes:Button = view.buttonDialogAccept
+                    val buttonNo: ImageView = view.imageViewDialogClose
                     window.isOutsideTouchable = false
                     window.isFocusable = true
                     window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

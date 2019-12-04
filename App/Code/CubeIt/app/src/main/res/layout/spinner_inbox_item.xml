@@ -5,7 +5,7 @@
     style="?android:attr/spinnerItemStyle"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_pop_up"
+    android:background="@drawable/bg_basic_logincolor_dark"
     android:clickable="false"
     android:ellipsize="marquee"
     android:gravity="center_vertical"
@@ -13,6 +13,7 @@
     android:paddingEnd="4dp"
     android:singleLine="true"
     android:textAlignment="inherit"
+    android:textStyle="bold"
     android:textColor="@android:color/white"
     android:textSize="14sp"
     tools:text="testText" />

@@ -1,10 +1,9 @@
 package cz.cubeit.cubeit_test
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.os.Handler
-import androidx.appcompat.app.AppCompatActivity
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -14,8 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_offline_mg.*
 import kotlinx.android.synthetic.main.row_offline_mg_category.view.*
 
-class ActivityOfflineMG: AppCompatActivity(){
-
+class ActivityOfflineMG: SystemFlow.GameActivity(R.layout.activity_offline_mg, ActivityType.OfflineMG, false){
 
     fun isConnected(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -23,34 +21,12 @@ class ActivityOfflineMG: AppCompatActivity(){
         return networkInfo != null && networkInfo.isConnected
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
-        setContentView(R.layout.activity_offline_mg)
 
         textViewOfflineMGTitle.fontSizeType = CustomTextView.SizeType.title
         imageViewOfflineMGBack.setOnClickListener {
             this.finish()
-        }
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({ hideSystemUI() }, 1000)
-            }
         }
 
         recyclerViewOfflineMG.apply {
@@ -63,7 +39,7 @@ class ActivityOfflineMG: AppCompatActivity(){
         }
     }
 
-    class OfflineMgCategories(private val miniGames: List<Minigame>, private val infoFrameLayout: FrameLayout, private val parent: ActivityOfflineMG) :
+    private class OfflineMgCategories(private val miniGames: List<Minigame>, private val infoFrameLayout: FrameLayout, private val parent: ActivityOfflineMG) :
             RecyclerView.Adapter<OfflineMgCategories.CategoryViewHolder>() {
 
         var inflater: View? = null
@@ -90,7 +66,18 @@ class ActivityOfflineMG: AppCompatActivity(){
                 View.VISIBLE
             }else View.GONE
 
-            viewHolder.viewGroup.setPadding(3, 6 ,if(!pinned) 42 else 0, 6)
+            ObjectAnimator.ofInt(if(pinned) 42 else 0, if(pinned) 0 else 42).apply{
+                duration = 450
+                addUpdateListener {
+                    viewHolder.viewGroup.setPadding(3, 6 ,it.animatedValue as Int, 6)
+                }
+                start()
+            }
+            if(!pinned){
+
+            }else {
+                viewHolder.viewGroup.setPadding(3, 6, 42, 6)
+            }
 
             viewHolder.imageViewBg.setOnClickListener {
                 if(viewHolder.textViewNew.visibility != View.GONE){

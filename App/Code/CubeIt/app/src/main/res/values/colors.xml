@@ -3,7 +3,7 @@
     <color name="colorPrimaryDarker">#2B2B2B</color>
     <color name="colorGrey">#646D72</color>
     <color name="colorPrimary">#161B42</color>
-    <color name="colorSecondary">#CAB21A</color>
+    <color name="colorSecondary">#E6CB1F</color>
     <color name="colorThird">#C0B02D</color>
     <color name="auctionMenu">#FFA200</color>
     <color name="defense_bg">#54C3CC</color>
@@ -15,12 +15,12 @@
     <color name="loginColor_2_dark">#484553</color>
     <color name="loginColor_2_dark_light">#34323C</color>
     <color name="loginColor_2_darker">#292736</color>
-    <color name="loginColor_4">#737386</color>
+    <color name="loginColor_4">#595972</color>
     <color name="loginColor_3">#DBDBDE</color>
     <color name="black">#000000</color>
     <color name="dark_gray">#686868</color>
     <color name="stunThird">#860704</color>
-    <color name="experience">#2835A5</color>
+    <color name="experience">#2232C7</color>
     <color name="factionBg">#9494A8</color>
     <color name="factionInbox">#D88406</color>
     <color name="pop_up_bg">#494949</color>

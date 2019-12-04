@@ -1,18 +1,11 @@
 package cz.cubeit.cubeit_test
 
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.os.Handler
 import androidx.core.content.ContextCompat.startActivity
-import androidx.appcompat.app.AppCompatActivity
-import android.util.DisplayMetrics
-import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
@@ -25,12 +18,10 @@ import kotlinx.android.synthetic.main.pop_up_market_offer.view.*
 import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_market_items.view.*
 import java.text.SimpleDateFormat
-import android.view.MotionEvent
 
 
-class Activity_Market:AppCompatActivity(){
+class Activity_Market: SystemFlow.GameActivity(R.layout.activity_market, ActivityType.Market, true, R.id.layoutMarket, R.color.colorSecondary){
 
-    var displayY = 0.0
     private lateinit var frameLayoutMarket: FrameLayout
     private var filterPrice: Int = 0
     private var filterDate: Boolean = true
@@ -41,36 +32,6 @@ class Activity_Market:AppCompatActivity(){
         frameLayoutMarket.visibility = View.GONE
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
-        frameLayoutMenuMarket.getGlobalVisibleRect(viewRect)
-
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuMarket.y <= (displayY * 0.83).toFloat()) {
-
-            ValueAnimator.ofFloat(frameLayoutMenuMarket.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenuMarket.y/displayY * 160).toLong()
-                addUpdateListener {
-                    frameLayoutMenuMarket.y = it.animatedValue as Float
-                }
-                start()
-            }
-        }
-        return super.dispatchTouchEvent(ev)
-    }
-
     fun disableRegisterOffer(){
         frameLayoutMarket.visibility = View.GONE
     }
@@ -78,16 +39,10 @@ class Activity_Market:AppCompatActivity(){
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
-        setContentView(R.layout.activity_market)
 
         var itemsList: MutableList<MarketOffer> = mutableListOf()
 
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        displayY = dm.heightPixels.toDouble()
-        textViewMarketMoney.text = "${GameFlow.numberFormatString(Data.player.cubeCoins)} CC\n${GameFlow.numberFormatString(Data.player.cubix)} cubix"
+        textViewMarketMoney.text = "${GameFlow.numberFormatString(Data.player.cubeCoins)}\n${GameFlow.numberFormatString(Data.player.cubix)} cubix"
 
         val rotateAnimation = RotateAnimation(
                 0f, 360f,
@@ -98,19 +53,9 @@ class Activity_Market:AppCompatActivity(){
         rotateAnimation.repeatCount = Animation.INFINITE
         imageViewLoadingMarket.startAnimation(rotateAnimation)
 
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({ hideSystemUI() }, 1000)
-            }
-        }
         frameLayoutMarket = frameLayoutMarketRegisterOffer
         val db = FirebaseFirestore.getInstance()
         var docRef: Query = db.collection("market").whereEqualTo("buyer", null)
-
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuMarket, Fragment_Menu_Bar.newInstance(R.id.layoutMarket, R.id.frameLayoutMenuMarket, R.id.homeButtonBackMarket, R.id.imageViewMenuUpMarket)).commitNow()
-        frameLayoutMenuMarket.y = dm.heightPixels.toFloat()
-
-        //listViewMarketItems.adapter = MarketItemsList(itemsList, this, textViewMarketMoney)
 
         rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
 
@@ -433,11 +378,11 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                 windowBuy.isOutsideTouchable = false
                 windowBuy.isFocusable = true
 
-                viewPopBuy.buttonCloseDialog.setOnClickListener {
+                viewPopBuy.imageViewDialogClose.setOnClickListener {
                     windowBuy.dismiss()
                 }
 
-                viewPopBuy.buttonYes.setOnClickListener {
+                viewPopBuy.buttonDialogAccept.setOnClickListener {
                     viewHolder.buttonRemove.isEnabled = false
                     if(Data.player.inventory.contains(null)){
                         Data.player.inventory[Data.player.inventory.indexOf(null)] = itemsListAdapter[position].item
@@ -493,13 +438,13 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
                     windowBuy.isOutsideTouchable = false
                     windowBuy.isFocusable = true
 
-                    viewPopBuy.buttonCloseDialog.setOnClickListener {
+                    viewPopBuy.imageViewDialogClose.setOnClickListener {
                         windowBuy.dismiss()
                     }
 
-                    viewPopBuy.buttonYes.isEnabled = Data.player.cubeCoins >= itemsListAdapter[position].priceCubeCoins && Data.player.cubix >= itemsListAdapter[position].priceCubix
+                    viewPopBuy.buttonDialogAccept.isEnabled = Data.player.cubeCoins >= itemsListAdapter[position].priceCubeCoins && Data.player.cubix >= itemsListAdapter[position].priceCubix
 
-                    viewPopBuy.buttonYes.setOnClickListener {
+                    viewPopBuy.buttonDialogAccept.setOnClickListener {
                         windowBuy.dismiss()
                         window.dismiss()
                         rowMain.isEnabled = false
@@ -531,9 +476,9 @@ class MarketItemsList(private var itemsListAdapter: MutableList<MarketOffer>, va
         viewHolder.textViewMarketSeller.text = itemsListAdapter[position].itemLvl.toString()
 
         viewHolder.imageViewMarketItem.isClickable = true
-        viewHolder.imageViewMarketItem.setUpOnHold(activity, itemsListAdapter[position].item ?: Item())
+        viewHolder.imageViewMarketItem.setUpOnHoldDecorPop(activity, itemsListAdapter[position].item ?: Item())
 
-        /*val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+        /*val viewP = activity.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
         val windowPop = PopupWindow(activity)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

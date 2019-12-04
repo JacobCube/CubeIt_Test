@@ -70,38 +70,5 @@
 
     </FrameLayout>
 
-    <ImageView
-        android:id="@+id/imageViewMenuUpStory"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline141"
-        app:srcCompat="@drawable/setting3rows" />
-
-    <FrameLayout
-        android:id="@+id/frameLayoutMenuStory"
-        android:layout_width="0dp"
-        android:layout_height="85dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
-
-    <ImageView
-        android:id="@+id/homeButtonBackStory"
-		 android:adjustViewBounds="true"
-        android:layout_width="75dp"
-        android:layout_height="0dp"
-        android:background="@drawable/emptyspellslotlarge"
-        android:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/home_button"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

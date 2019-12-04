@@ -35,8 +35,6 @@ class Fragment_Minigame_Info : Fragment() {
         view.textViewFragmentInfoTitle.setHTMLText("<b>${minigame.title}</b>")
         view.textViewFragmentInfoDesc.text = minigame.description
 
-        Log.d("myScores", (MiniGameScore(type = minigame.type).findMyBoard().list as MutableList<MiniGameScore>).toJSON())
-
         view.recyclerViewFragmentInfoScore.apply {
 
             adapter = OfflineMGScoreboard((MiniGameScore(type = minigame.type).findMyBoard().list as MutableList<MiniGameScore>))
@@ -103,6 +101,7 @@ class Fragment_Minigame_Info : Fragment() {
             scores.clear()
             scores.addAll(newlist)
             this.notifyDataSetChanged()
+            Log.d("updateScores", "updated, called")
         }
 
         override fun getItemCount() = scores.size

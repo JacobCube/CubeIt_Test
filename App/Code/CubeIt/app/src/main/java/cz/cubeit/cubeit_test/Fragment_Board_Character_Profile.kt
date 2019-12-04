@@ -2,16 +2,11 @@ package cz.cubeit.cubeit_test
 
 import android.content.ClipData
 import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.PorterDuff
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.ImageView
-import android.widget.PopupWindow
 import kotlinx.android.synthetic.main.fragment_character_profile.view.*
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
 
 class Fragment_Board_Character_Profile : Fragment() {
 
@@ -78,90 +73,16 @@ class Fragment_Board_Character_Profile : Fragment() {
         val view: View = inflater.inflate(R.layout.fragment_character_profile, container, false)
 
         fun View.getListenerBoard(chosenPlayer: Player) {
+            val tempActivity = activity as SystemFlow.GameActivity
             val index = this.tag.toString().toInt()
-            val holdValid = chosenPlayer.equip[index] != null
 
-            val tempActivity = activity!!
-
-            val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
-            val windowPop = PopupWindow(context)
-            windowPop.contentView = viewP
-            windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            var viewPinned = false
-            var dx = 0
-            var dy = 0
-            var x = 0
-            var y = 0
-
-            viewP.imageViewPopUpInfoPin.visibility = View.VISIBLE
-            viewP.imageViewPopUpInfoPin.setOnClickListener {
-                viewPinned = if(viewPinned){
-                    windowPop.dismiss()
-                    viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
-                    false
-                }else {
-                    val drawable = tempActivity.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
-                    drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
-                    viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
-                    true
+            if(chosenPlayer.equip[index] != null){
+                this.apply {
+                    isClickable = true
+                    isEnabled = true
+                    setUpOnHoldDecorPop(tempActivity, chosenPlayer.equip[index] ?: Item())
                 }
             }
-
-            viewP.textViewPopUpInfoDrag.setOnTouchListener { view, motionEvent ->
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        dx = motionEvent.x.toInt()
-                        dy = motionEvent.y.toInt()
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        x = motionEvent.rawX.toInt()
-                        y = motionEvent.rawY.toInt()
-                        windowPop.update(x - dx, y - dy, -1, -1)
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        windowPop.dismiss()
-                        val xOff = if(x - dx <= 0){
-                            5
-                        } else {
-                            x -dx
-                        }
-                        val yOff = if(y - dy <= 0){
-                            5
-                        } else {
-                            y -dy
-                        }
-                        windowPop.showAsDropDown(tempActivity.window.decorView.rootView, xOff, yOff)
-                    }
-                }
-                true
-            }
-
-            this.setOnTouchListener(object: Class_HoldTouchListener(this, false, 0f, false){
-
-                override fun onStartHold(x: Float, y: Float) {
-                    super.onStartHold(x, y)
-                    if(holdValid){
-                        viewP.textViewPopUpInfo.setHTMLText(chosenPlayer.equip[index]!!.getStats())
-                        viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                        val coordinates = SystemFlow.resolveLayoutLocation(tempActivity, x, y, viewP.measuredWidth, viewP.measuredHeight)
-
-                        if(!Data.loadingActiveQuest && !windowPop.isShowing){
-                            viewP.textViewPopUpInfo.setHTMLText(chosenPlayer.equip[index]!!.getStats())
-                            viewP.imageViewPopUpInfoItem.setBackgroundResource(chosenPlayer.equip[index]!!.getBackground())
-                            viewP.imageViewPopUpInfoItem.setImageResource(chosenPlayer.equip[index]!!.drawable)
-
-                            windowPop.showAsDropDown(tempActivity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
-                        }
-                    }
-                }
-
-                override fun onCancelHold() {
-                    super.onCancelHold()
-                    if(holdValid){
-                        if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
-                    }
-                }
-            })
         }
 
         val playerProfile: Player = if(arguments?.getString("key")== "notnull" && arguments?.getSerializable("pickedPlayer") != null){
@@ -215,7 +136,7 @@ class Fragment_Board_Character_Profile : Fragment() {
         opts.inScaled = false
         view.profile_imageViewCharacter.setImageBitmap(BitmapFactory.decodeResource(resources, playerProfile.charClass.drawable, opts))
 
-        view.profile_textViewInfoCharacter.text = playerProfile.username
+        view.profile_textViewInfoCharacter.setHTMLText(playerProfile.username)
 
         for(i in 0 until 10) {
             val itemEquip: ImageView = view.findViewById(this.resources.getIdentifier("profile_EquipItem$i", "id", view.context.packageName))

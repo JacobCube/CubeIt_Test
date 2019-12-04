@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:alwaysDrawnWithCache="false"
+    android:animateLayoutChanges="true"
+    android:configChanges="orientation"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewFragmentSocialsBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_basic_logincolor_dark_border2" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline132"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <ImageView
+        android:id="@+id/imageViewFragmentSocialsClose"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:adjustViewBounds="true"
+        android:tint="@android:color/holo_red_dark"
+        app:layout_constraintBottom_toTopOf="@+id/guideline309"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/close_image" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewFragmentSocials"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_basic_white_bot"
+        android:padding="6dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentSocialsBg"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewFragmentSocialsClose"
+        app:layout_constraintStart_toStartOf="@+id/guideline132"
+        app:layout_constraintTop_toBottomOf="@+id/editTextFragmentSocialsAdd" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutSocials"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/loginColor_2_darker"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentSocialsClose"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerViewFragmentSocials"
+        app:layout_constraintStart_toStartOf="@+id/recyclerViewFragmentSocials"
+        app:layout_constraintTop_toTopOf="@+id/imageViewFragmentSocialsClose"
+        app:tabBackground="@drawable/bg_basic_logincolor_darkish_top"
+        app:tabGravity="center"
+        app:tabIndicatorColor="@color/bg_basic_white"
+        app:tabSelectedTextColor="@color/character_dark"
+        app:tabTextColor="@color/bg_basic_white"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewFragmentSocialsError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nothing to show"
+        android:textColor="@color/loginColor_2"
+        app:layout_constraintBottom_toBottomOf="@+id/recyclerViewFragmentSocials"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerViewFragmentSocials"
+        app:layout_constraintStart_toStartOf="@+id/guideline132"
+        app:layout_constraintTop_toTopOf="@+id/recyclerViewFragmentSocials"
+        app:layout_constraintVertical_bias="0.05"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextFragmentSocialsAdd"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_basic_white"
+        android:text="asdasd"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerViewFragmentSocials"
+        app:layout_constraintStart_toStartOf="@+id/guideline132"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentSocialsClose"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline309"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline310"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

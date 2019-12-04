@@ -1,6 +1,5 @@
 package cz.cubeit.cubeit_test
 
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -12,8 +11,6 @@ import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.view.animation.Animation
@@ -25,12 +22,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.android.synthetic.main.activity_fight_board.*
 import kotlinx.android.synthetic.main.pop_up_board_filter.view.*
-import kotlinx.android.synthetic.main.pop_up_board_filter.view.editTextBoardUsername
 import kotlinx.android.synthetic.main.row_fight_board.view.*
 import android.os.AsyncTask
 import java.lang.ref.WeakReference
 
-class ActivityFightBoard: AppCompatActivity(){
+class ActivityFightBoard: SystemFlow.GameActivity(R.layout.activity_fight_board, ActivityType.FightBoard, true, R.id.imageViewActivityFightBoard, R.color.colorSecondary){
 
     companion object {
         class LoadRecords (context: ActivityFightBoard) :AsyncTask<Int, String, String?>(){
@@ -43,10 +39,6 @@ class ActivityFightBoard: AppCompatActivity(){
                 //context leakage solution
 
                 return if(context != null){
-                    val dm = DisplayMetrics()
-                    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                    windowManager.defaultDisplay.getRealMetrics(dm)
-                    context.displayY = dm.heightPixels.toDouble()
 
                     context.rotateAnimation = RotateAnimation(
                             0f, 360f,
@@ -86,7 +78,6 @@ class ActivityFightBoard: AppCompatActivity(){
                     }else {
                         context.innerHandler.postDelayed({
                             context.rotateAnimation.cancel()
-                            Log.d("animation_visibility", context.imageViewLoadingBoard.visibility.toString())
                             context.runOnUiThread {
                                 context.listViewBoardRecords.adapter = FightBoardPlayerList(Data.playerBoard.list as MutableList<Player>, context.currentPage, context.supportFragmentManager, context)
                             }
@@ -100,12 +91,6 @@ class ActivityFightBoard: AppCompatActivity(){
                     context.runOnUiThread {
                         System.gc()
                         context.imageViewActivityFightBoard.setImageBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.fightboard_bg, opts))
-
-                        context.window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-                            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                                context.innerHandler.postDelayed({context.hideSystemUI()},1000)
-                            }
-                        }
 
                         context.imageViewLoadingBoard.startAnimation(context.rotateAnimation)
                     }
@@ -135,7 +120,6 @@ class ActivityFightBoard: AppCompatActivity(){
 
     lateinit var textViewBoardCompare: CustomTextView
     private var currentPage:Int = 0
-    var displayY = 0.0
     var filter: FightBoardFilter? = null
     var pickedPlayer:Player? = null
     var changeFragment = 0
@@ -147,7 +131,6 @@ class ActivityFightBoard: AppCompatActivity(){
     var innerHandler = Handler()
 
     var localFactions: MutableList<Faction> = mutableListOf()
-    var localPlayers: MutableList<Player> = mutableListOf()
 
     override fun onBackPressed() {
         pickedPlayer = null
@@ -157,43 +140,17 @@ class ActivityFightBoard: AppCompatActivity(){
         this.overridePendingTransition(0,0)
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         pickedPlayer = null
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
         val viewRectCompare = Rect()
         val viewRectCompareCharacter = Rect()
-        frameLayoutMenuBoard.getGlobalVisibleRect(viewRect)
         frameLayoutFightProfile.getGlobalVisibleRect(viewRectCompareCharacter)
         textViewBoardCompare.getGlobalVisibleRect(viewRectCompare)
 
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuBoard.y <= (displayY * 0.83).toFloat()) {
-
-            ValueAnimator.ofFloat(frameLayoutMenuBoard.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenuBoard.y/displayY * 160).toLong()
-                addUpdateListener {
-                    frameLayoutMenuBoard.y = it.animatedValue as Float
-                }
-                start()
-            }
-
-        }
         if(!viewRectCompare.contains(ev.rawX.toInt(), ev.rawY.toInt()) && !viewRectCompareCharacter.contains(ev.rawX.toInt(), ev.rawY.toInt())){
             textViewBoardCompare.visibility = View.GONE
         }
@@ -202,33 +159,23 @@ class ActivityFightBoard: AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         setContentView(R.layout.activity_fight_board)
 
         val extraUsername = intent.getStringExtra("username")
 
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuBoard, Fragment_Menu_Bar.newInstance(R.id.imageViewActivityFightBoard, R.id.frameLayoutMenuBoard, R.id.homeButtonBackBoard, R.id.imageViewMenuUpBoard)).commitNow()
-        frameLayoutMenuBoard.y = displayY.toFloat()
-
         this.window.decorView.rootView.post {
             LoadRecords(this).execute()
-
-            val dm = DisplayMetrics()
-            val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.defaultDisplay.getRealMetrics(dm)
-            frameLayoutMenuBoard.y = dm.heightPixels.toFloat()
 
             val handler = Handler()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 listViewBoardRecords.setOnScrollChangeListener { _, _, _, _, _ ->
-                    imageViewMenuUpBoard.visibility = View.GONE
+                    imageViewMenuUp?.visibility = View.GONE
                     handler.removeCallbacksAndMessages(null)
                     handler.postDelayed({
-                        if(imageViewMenuUpBoard.visibility != View.VISIBLE) imageViewMenuUpBoard.visibility = View.VISIBLE
+                        if(imageViewMenuUp?.visibility != View.VISIBLE) imageViewMenuUp?.visibility = View.VISIBLE
                     }, 1000)
                 }
             }
-
             animSwitchType1 = AnimationUtils.loadAnimation(this, R.anim.animation_flip_to_middle)
             animSwitchType2 = AnimationUtils.loadAnimation(this, R.anim.animation_flip_from_middle)
 
@@ -392,16 +339,16 @@ class ActivityFightBoard: AppCompatActivity(){
                     CustomBoard.playerListReturn.clear()
 
                     val docRef = db.collection("users")
-                            .whereGreaterThanOrEqualTo("username", editTextBoardSearch.text.toString())
+                            .whereEqualTo("username", editTextBoardSearch.text.toString())
 
-                    docRef.limit(50).get().addOnSuccessListener { querySnapshot ->
+                    docRef.limit(10).get().addOnSuccessListener { querySnapshot ->
                         val tempList = querySnapshot.toObjects(Player()::class.java)
 
                         for (loadedPlayer in tempList)
                         {
                             CustomBoard.playerListReturn.add(loadedPlayer)
                         }
-                        CustomBoard.playerListReturn.sortBy { it.fame }
+                        CustomBoard.playerListReturn.sortByDescending { it.fame }
                         rotateAnimation.cancel()
                         (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
                     }.addOnFailureListener {
@@ -428,15 +375,15 @@ class ActivityFightBoard: AppCompatActivity(){
             window.elevation = 0.0f
             window.contentView = viewPop
 
-            val spinner: Spinner = viewPop.spinnerBoardCharClass
-            val username: EditText = viewPop.editTextBoardUsername
-            val lvlFrom: EditText = viewPop.editTextBoardLevelBottom
-            val lvlTo: EditText = viewPop.editTextBoardLevelTop
-            val active: CheckBox = viewPop.checkBoxBoardActive
-            val position: EditText = viewPop.editTextBoardPosition
+            val spinner: Spinner = viewPop.spinnerBoardFilterCharClass
+            val username: EditText = viewPop.editTextBoardFilterUsername
+            val lvlFrom: EditText = viewPop.editTextBoardFilterLevelBottom
+            val lvlTo: EditText = viewPop.editTextBoardFilterLevelTop
+            val active: CheckBox = viewPop.checkBoxBoardFilterActive
+            val position: EditText = viewPop.editTextBoardFilterPosition
 
-            val buttonClose: Button = viewPop.buttonCloseDialog
-            val buttonApply: Button = viewPop.buttonAccept
+            val buttonClose: ImageView = viewPop.imageViewBoardFilterClose
+            val buttonApply: Button = viewPop.buttonBoardFilterAccept
 
             ArrayAdapter.createFromResource(
                     this,

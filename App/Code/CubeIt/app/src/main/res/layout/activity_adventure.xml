@@ -53,6 +53,7 @@
         android:gravity="center"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:textColor="@color/bg_basic_white"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/guideline135"
         app:layout_constraintEnd_toEndOf="parent"
@@ -71,26 +72,6 @@
         app:layout_constraintVertical_bias="0.0">
 
     </FrameLayout>
-
-    <ImageView
-        android:id="@+id/imageViewMenuUpAdventure"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:rotation="180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline133"
-        app:srcCompat="@drawable/setting3rows" />
-
-    <FrameLayout
-        android:id="@+id/frameLayoutMenuAdventure"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></FrameLayout>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline83"
@@ -120,23 +101,10 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
         android:clickable="true"
-        android:focusable="false"
+        android:focusable="true"
         android:src="@drawable/secondarymission"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/homeButtonBackAdventure"
-        android:layout_width="75dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/emptyspellslotlarge"
-        android:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/home_button"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline135"

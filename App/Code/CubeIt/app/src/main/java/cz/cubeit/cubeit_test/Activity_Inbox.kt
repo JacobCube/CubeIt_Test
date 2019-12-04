@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
-import androidx.appcompat.app.AppCompatActivity
 import android.view.*
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_inbox.*
@@ -22,13 +21,12 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.Query
-import kotlinx.android.synthetic.main.pop_up_inbox_filter.view.buttonCloseDialog
+import kotlinx.android.synthetic.main.popup_dialog.view.*
 import kotlinx.android.synthetic.main.row_inbox_messages.view.checkBoxInboxMessagesAction
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
+class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, ActivityType.Inbox, false){
 
     lateinit var messagesAdapter: Adapter
     lateinit var categories: Adapter
@@ -62,11 +60,6 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
         if(editMode)editMode = false; this.refreshCategory()
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-
     override fun onPause() {
         super.onPause()
         onTop = false
@@ -96,15 +89,6 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
         Snackbar.make(this.window.decorView.rootView, text, length).show()
     }
 
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
     fun refreshCategory(forceCategory: Boolean = false){
         if(!forceCategory){
             currentCategory = Data.inboxCategories[currentCategory.status]!!
@@ -117,28 +101,18 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
-        setContentView(R.layout.activity_inbox)
-
         onTop = true
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({ hideSystemUI() }, 1000)
-            }
-        }
 
         imageViewInboxActionCloseEditMode.setOnClickListener {
             editMode = false
         }
         imageViewInboxActionDelete.setOnClickListener {
             if(editModeMessages.size >= 1){
-                val viewP = layoutInflater.inflate(R.layout.popup_dialog, null, false)
+                val viewP = layoutInflater.inflate(R.layout.popup_dialog, null, false)          //TODO změnil jsem wrong popup
                 val window = PopupWindow(this)
                 window.contentView = viewP
-                val buttonYes: Button = viewP.findViewById(R.id.buttonYes)
-                val buttonNo: ImageView = viewP.findViewById(R.id.buttonCloseDialog)
-                val info:TextView = viewP.findViewById(R.id.textViewInfo)
+                val buttonYes: Button = viewP.buttonDialogAccept
+                val info: CustomTextView = viewP.textViewDialogInfo
                 info.text = "Do you really want to delete selected ${editModeMessages.size} messages?"
                 window.isOutsideTouchable = false
                 window.isFocusable = true
@@ -155,7 +129,7 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                     refreshCategory()
                     window.dismiss()
                 }
-                buttonNo.setOnClickListener {
+                viewP.imageViewInboxFilterClose.setOnClickListener {
                     window.dismiss()
                     refreshCategory()
                 }
@@ -262,16 +236,16 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                 window.elevation = 0.0f
                 window.contentView = viewPop
 
-                val dateFrom: EditText = viewPop.editTextInboxDateFrom
-                val dateTo: EditText = viewPop.editTextInboxDateTo
-                val spinnerCategory: Spinner = viewPop.spinnerInboxCategory
-                val sender: EditText = viewPop.editTextInboxSender
-                val receiver: EditText = viewPop.editTextInboxReceiver
-                val subject: EditText = viewPop.editTextInboxSubject
-                val content: EditText = viewPop.editTextInboxContent
+                val dateFrom: EditText = viewPop.editTextInboxFilterDateFrom
+                val dateTo: EditText = viewPop.editTextInboxFilterDateTo
+                val spinnerCategory: Spinner = viewPop.spinnerInboxFilterCategory
+                val sender: EditText = viewPop.editTextInboxFilterSender
+                val receiver: EditText = viewPop.editTextInboxFilterReceiver
+                val subject: EditText = viewPop.editTextInboxFilterSubject
+                val content: EditText = viewPop.editTextInboxFilterContent
 
-                val buttonClose: Button = viewPop.buttonCloseDialog
-                val buttonApply: Button = viewPop.buttonAccept
+                val buttonClose: ImageView = viewPop.imageViewInboxFilterClose
+                val buttonApply: Button = viewPop.buttonInboxFilterAccept
 
                 dateFrom.setOnClickListener {
 
@@ -393,16 +367,26 @@ class Activity_Inbox : AppCompatActivity(R.layout.activity_inbox){
                            Log.d("newinbox", "correct")
                        }else Log.d("newinbox", "incorrect")
                     }
-
                     inboxSnap.sortByDescending { it.id }
 
+                    Log.d("newinbox2", "onTop: $onTop, documents.size: ${snapshot.documents.size}, inboxSnap.size: ${inboxSnap.size}, ${inboxSnap}, ${Data.inbox}")
                     if(onTop && snapshot.documents.size > 0 && inboxSnap.size > 0 && inboxSnap != Data.inbox){
                         for(i in inboxSnap){
                             if(!Data.inbox.any { it.id == i.id } && i.status != MessageStatus.Read){
                                 Data.inbox.add(i)
                                 if(i.status != MessageStatus.Sent){
                                     Snackbar.make(imageViewActivityInbox, "New message has arrived.", Snackbar.LENGTH_LONG).show()
-                                    SystemFlow.vibrateAsError(this)
+
+                                    if(i.vibrate && Data.player.vibrateEffects){
+                                        val morseVibration = SystemFlow.translateIntoMorse(i.subject, null)
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                            (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(VibrationEffect.createWaveform(morseVibration.timing.toLongArray(), morseVibration.amplitudes.toIntArray(), -1))
+                                        }else {
+                                            SystemFlow.vibrateAsError(this, 20)
+                                        }
+                                    }else {
+                                        SystemFlow.vibrateAsError(this, 20)
+                                    }
                                 }
                             }
                         }

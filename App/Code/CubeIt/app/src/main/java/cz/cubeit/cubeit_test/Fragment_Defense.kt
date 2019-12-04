@@ -65,30 +65,38 @@ class FragmentDefense : Fragment(){
         System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        view.imageViewBarDefense.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbardefense, opts))
+        view.imageViewFragmentDefenseBar.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.topbardefense, opts))
 
-        view.buttonSet.setOnClickListener {
-            val intent = Intent(view.context, ActivityFightSystem()::class.java)        //enemy: String
-            intent.putExtra("enemy", Data.player)
+        view.buttonFragmentDefenseTest.setOnClickListener {
+            val intent = Intent(view.context, ActivityFightUniversalOffline()::class.java)
+            intent.putParcelableArrayListExtra("enemies", arrayListOf<FightSystem.Fighter>(
+                    Data.player.toFighter(FightSystem.FighterType.Enemy)
+            ))
+            intent.putParcelableArrayListExtra("allies", arrayListOf<FightSystem.Fighter>(
+                    Data.player.toFighter(FightSystem.FighterType.Ally)
+            ))
             startActivity(intent)
+            /*val intent = Intent(view.context, ActivityFightSystem()::class.java)        //enemy: String
+            intent.putExtra("enemy", Data.player)
+            startActivity(intent)*/
             //Activity().overridePendingTransition(0,0)
         }
-        view.textViewInfoSpells.fontSizeType = CustomTextView.SizeType.smallTitle
+        view.textViewIFragmentDefenseSpellInfo.fontSizeType = CustomTextView.SizeType.smallTitle
 
-        view.chosen_listView.adapter = ChosenSpellsView(view.choosing_listview, this)
-        view.choosing_listview.adapter = LearnedSpellsView(view.textViewInfoSpells, view.imageViewDefenseDescription, view.textViewError, view.chosen_listView.adapter as ChosenSpellsView, requiredEnergy, view.context)
+        view.listViewFragmentDefenseChosen.adapter = ChosenSpellAdapter(view.listViewFragmentDefenseLearned, this)
+        view.listViewFragmentDefenseLearned.adapter = LearnedSpellsAdapter(view.textViewIFragmentDefenseSpellInfo, view.imageViewFragmentDefenseSpellIcon, view.textViewError, view.listViewFragmentDefenseChosen.adapter as ChosenSpellAdapter, requiredEnergy, view.context)
 
-        view.buttonDefenseReset.setOnClickListener {
+        view.buttonFragmentDefenseReset.setOnClickListener {
             textViewError.visibility = View.GONE
             Data.player.chosenSpellsDefense = arrayOfNulls<Spell?>(20).toMutableList()
-            (view.choosing_listview.adapter as LearnedSpellsView).notifyDataSetChanged()
-            (view.chosen_listView.adapter as ChosenSpellsView).notifyDataSetChanged()
+            (view.listViewFragmentDefenseLearned.adapter as LearnedSpellsAdapter).notifyDataSetChanged()
+            (view.listViewFragmentDefenseChosen.adapter as ChosenSpellAdapter).notifyDataSetChanged()
         }
 
         return view
     }
 
-    private class LearnedSpellsView(var textViewInfoSpells: TextView, val imageViewSpellDescription: ImageView, val errorTextView: TextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int, private val context:Context) : BaseAdapter() { //listview of player's learned spells
+    private class LearnedSpellsAdapter(var textViewInfoSpells: CustomTextView, val imageViewSpellDescription: ImageView, val errorTextView: CustomTextView, var chosen_listView:BaseAdapter, var requiredEnergy:Int, private val context:Context) : BaseAdapter() { //listview of player's learned spells
 
         override fun getCount(): Int {
             return (Data.player.learnedSpells.size/2+1)
@@ -157,7 +165,7 @@ class FragmentDefense : Fragment(){
                     countText.setOnTouchListener(object : Class_OnSwipeTouchListener(context, component, true) {
                         override fun onClick(x: Float, y: Float) {
                             super.onClick(x, y)
-                            textViewInfoSpells.text = Data.player.learnedSpells[this@Node.index]?.getStats()
+                            textViewInfoSpells.setHTMLText(Data.player.learnedSpells[this@Node.index]?.getStats() ?: "")
                             imageViewSpellDescription.setImageResource(Data.player.learnedSpells[this@Node.index]?.drawable ?: 0)
                         }
 
@@ -170,11 +178,11 @@ class FragmentDefense : Fragment(){
                                         errorTextView.visibility = View.GONE
                                         Data.player.chosenSpellsDefense[i] = Data.player.learnedSpells[this@Node.index]
                                         chosen_listView.notifyDataSetChanged()
-                                        this@LearnedSpellsView.notifyDataSetChanged()
+                                        this@LearnedSpellsAdapter.notifyDataSetChanged()
                                         break
                                     }else{
                                         errorTextView.visibility = View.VISIBLE
-                                        errorTextView.text = "You would be too exhausted this round"
+                                        errorTextView.setHTMLText(context.getString(R.string.defenseError))
                                         break
                                     }
                                 }else{
@@ -197,7 +205,7 @@ class FragmentDefense : Fragment(){
 
                         override fun onLongClick() {
                             super.onLongClick()
-                            textViewInfoSpells.text = Data.player.learnedSpells[this@Node.index]?.getStats()
+                            textViewInfoSpells.setHTMLText(Data.player.learnedSpells[this@Node.index]?.getStats() ?: "")
                             imageViewSpellDescription.setImageResource(Data.player.learnedSpells[this@Node.index]?.drawable ?: 0)
 
                             if(Data.player.learnedSpells[this@Node.index] != null){
@@ -230,7 +238,7 @@ class FragmentDefense : Fragment(){
         private class ViewHolder(val button1: ImageView, val button2: ImageView, val textViewRowSpellChoosing1: CustomTextView, val textViewRowSpellChoosing2: CustomTextView)
     }
 
-    private class ChosenSpellsView(val listView: ListView, val parent: FragmentDefense) : BaseAdapter() {
+    private class ChosenSpellAdapter(val listView: ListView, val parent: FragmentDefense) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 20
@@ -286,7 +294,7 @@ class FragmentDefense : Fragment(){
             viewHolder.textViewEnergy.setHTMLText("<b>" + (position+1).toString() +". Energy: "+ ((Data.player.energy+position*25) - requiredEnergy).toString() + "</b>")
 
             viewHolder.button1.setOnClickListener {
-                (listView.adapter as LearnedSpellsView).notifyDataSetChanged()
+                (listView.adapter as LearnedSpellsAdapter).notifyDataSetChanged()
                 Data.player.chosenSpellsDefense[position] = null
                 viewHolder.button1.setBackgroundResource(R.drawable.emptyslot)
                 notifyDataSetChanged()
@@ -383,7 +391,7 @@ class FragmentDefense : Fragment(){
 
                             }else {
                                 viewTemp.textViewError.visibility = View.VISIBLE
-                                viewTemp.textViewError.text = getString(R.string.defenseError)
+                                viewTemp.textViewError.setHTMLText(getString(R.string.defenseError))
                             }
 
                         }else if(Data.player.chosenSpellsDefense.contains(null)){
@@ -398,7 +406,7 @@ class FragmentDefense : Fragment(){
 
                             }else {
                                 viewTemp.textViewError.visibility = View.VISIBLE
-                                viewTemp.textViewError.text = getString(R.string.defenseError)
+                                viewTemp.textViewError.setHTMLText(getString(R.string.defenseError))
                             }
                         }
 
@@ -415,7 +423,8 @@ class FragmentDefense : Fragment(){
                             }
                         }
 
-                        (viewTemp.chosen_listView.adapter as ChosenSpellsView).notifyDataSetChanged()
+                        (viewTemp.listViewFragmentDefenseChosen.adapter as ChosenSpellAdapter).notifyDataSetChanged()
+                        (viewTemp.listViewFragmentDefenseLearned.adapter as LearnedSpellsAdapter).notifyDataSetChanged()
 
                         true
                     }else false
@@ -426,7 +435,8 @@ class FragmentDefense : Fragment(){
             }
 
             DragEvent.ACTION_DRAG_ENDED -> {
-                (viewTemp.chosen_listView.adapter as ChosenSpellsView).notifyDataSetChanged()
+                (viewTemp.listViewFragmentDefenseChosen.adapter as ChosenSpellAdapter).notifyDataSetChanged()
+                (viewTemp.listViewFragmentDefenseLearned.adapter as LearnedSpellsAdapter).notifyDataSetChanged()
 
                 true
             }

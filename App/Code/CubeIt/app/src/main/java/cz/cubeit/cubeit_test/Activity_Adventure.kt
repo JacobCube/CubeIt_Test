@@ -2,12 +2,9 @@ package cz.cubeit.cubeit_test
 
 import android.animation.Animator
 import android.animation.ValueAnimator
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
@@ -15,16 +12,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_adventure.*
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.widget.*
 import kotlinx.android.synthetic.main.pop_up_adventure_quest.view.*
 import java.util.*
 import java.util.concurrent.TimeUnit
-import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import com.google.android.material.snackbar.Snackbar
@@ -32,11 +26,7 @@ import java.lang.ref.WeakReference
 import kotlin.math.max
 import android.os.*
 
-
-var resourcesAdventure: Resources? = null
-
-class ActivityAdventure : AppCompatActivity() {
-
+class ActivityAdventure : SystemFlow.GameActivity(R.layout.activity_adventure, ActivityType.Adventure, true, R.id.viewPagerAdventure) {
 
     companion object {
         class AdventureInitialization (context: ActivityAdventure): AsyncTask<Int, String, String?>(){
@@ -66,9 +56,6 @@ class ActivityAdventure : AppCompatActivity() {
             }
         }
     }
-
-
-    var displayY: Double = 0.0
     var progressAnimator: ValueAnimator? = null
     private var overViewOpened = false
 
@@ -78,7 +65,6 @@ class ActivityAdventure : AppCompatActivity() {
     var overviewFilterItem: Boolean = true
     var overviewFilterCoins: Boolean = true
     private lateinit var overviewQuestIconTemp: ImageView
-    lateinit var imageViewMenuUpAdventureTemp: ImageView
 
     private var iconSideQuestsAnim = ValueAnimator()
 
@@ -87,37 +73,6 @@ class ActivityAdventure : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         startActivity(intent)
         this.overridePendingTransition(0,0)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
-        frameLayoutMenuAdventure.getGlobalVisibleRect(viewRect)
-
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuAdventure.y <= (displayY * 0.83).toFloat()) {
-
-            ValueAnimator.ofFloat(frameLayoutMenuAdventure.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenuAdventure.y / displayY * 160).toLong()
-                addUpdateListener {
-                    frameLayoutMenuAdventure.y = it.animatedValue as Float
-                }
-                start()
-            }
-
-        }
-        return super.dispatchTouchEvent(ev)
     }
 
     fun checkForQuest(){
@@ -155,11 +110,11 @@ class ActivityAdventure : AppCompatActivity() {
                                     Data.player.checkForQuest().addOnSuccessListener {                   //zkontroluj to podle databáze
                                         if(Data.activeQuest!!.completed){
                                             this.cancel()
-                                            textViewQuestProgress.text = "Quest's completed!"
+                                            textViewQuestProgress.setHTMLText("Quest's completed!")
                                         }
                                     }
                                 }
-                                textViewQuestProgress.text = Data.activeQuest!!.getLength()
+                                textViewQuestProgress.setHTMLText(Data.activeQuest!!.getLength())
 
                                 if(progressAnimator == null){
                                     progressAnimator = ValueAnimator.ofInt(progressAdventureQuest.progress, progressAdventureQuest.max).apply{
@@ -185,59 +140,52 @@ class ActivityAdventure : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         setContentView(R.layout.activity_adventure)
 
         this.window.decorView.rootView.post {
             AdventureInitialization(this).execute()
         }
 
-        imageViewMenuUpAdventureTemp = imageViewMenuUpAdventure
-
         progressAdventureQuest.setOnClickListener {
             if(Data.activeQuest!!.completed){
                 if((Data.activeQuest!!.quest.reward.item != null && Data.player.inventory.contains(null)) || Data.activeQuest!!.quest.reward.item == null){
-                    val intent = Intent(this@ActivityAdventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
+
+                    val intent = Intent(this, ActivityFightUniversalOffline()::class.java)
+                    intent.putExtra("reward", Data.activeQuest!!.quest.reward)
+                    intent.putParcelableArrayListExtra("enemies", arrayListOf<FightSystem.Fighter>(
+                            NPC().generate(playerX = Data.player, difficultyX = Data.activeQuest!!.quest.level).toFighter(FightSystem.FighterType.Enemy)
+                    ))
+                    intent.putParcelableArrayListExtra("allies", arrayListOf<FightSystem.Fighter>(
+                            Data.player.toFighter(FightSystem.FighterType.Ally)
+                    ))
+                    startActivity(intent)
+
+                    /*val intent = Intent(this@ActivityAdventure, FightSystemNPC()::class.java)   //npcID: String, reward: Reward, difficulty: Int
                     intent.putExtra("reward", Data.activeQuest!!.quest.reward)
                     intent.putExtra("difficulty", Data.activeQuest!!.quest.level)
-                    startActivity(intent)
+                    startActivity(intent)*/
                 }else {
                     progressAdventureQuest.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_shaky_short_vertical))
                     Snackbar.make(progressAdventureQuest, "Your inventory cannot be full!", Snackbar.LENGTH_SHORT).show()
                     SystemFlow.vibrateAsError(this)
                 }
             }else {
-                onClickQuestOverview(0,0, this@ActivityAdventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview), layoutInflater.inflate(R.layout.popup_info_dialog, null, false), this)
+                onClickQuestOverview(0,0, this@ActivityAdventure, Data.activeQuest?.quest, null, progressAdventureQuest, textViewQuestProgress, layoutInflater.inflate(R.layout.pop_up_adventure_quest, null, false), viewPagerAdventure, false, supportFragmentManager.findFragmentById(R.id.frameLayoutAdventureOverview), layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false), this)
             }
         }
 
         textViewQuestProgress.setOnClickListener {
             progressAdventureQuest.performClick()
         }
-
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        displayY = dm.heightPixels.toDouble()
-        val displayX = dm.widthPixels.toDouble()
-        resourcesAdventure = resources
-
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutAdventureOverview, Fragment_Adventure_overview()).commit()
 
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
-        }
-
         overviewQuestIconTemp = overviewQuestIcon
-        overviewQuestIcon.layoutParams.height = (displayY / 10).toInt()
-        overviewQuestIcon.layoutParams.width = (displayY / 10).toInt()
+        overviewQuestIcon.layoutParams.height = dm.heightPixels / 10
+        overviewQuestIcon.layoutParams.width = dm.heightPixels / 10
 
-        frameLayoutAdventureOverview.x = displayX.toFloat() - (overviewQuestIcon.width).toFloat()
+        frameLayoutAdventureOverview.x = dm.widthPixels.toFloat() - (overviewQuestIcon.width).toFloat()
 
         overviewQuestIcon.setOnClickListener {
-            if(imageViewMenuUpAdventure.visibility != View.VISIBLE) imageViewMenuUpAdventure.visibility = View.VISIBLE
 
             if(iconSideQuestsAnim.isRunning)iconSideQuestsAnim.pause()
             overViewOpened = if(!overViewOpened){
@@ -290,9 +238,6 @@ class ActivityAdventure : AppCompatActivity() {
 
         viewPagerAdventure?.adapter = ViewPagerAdapterAdventure(supportFragmentManager)
         viewPagerAdventure?.offscreenPageLimit = 6
-
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuAdventure, Fragment_Menu_Bar.newInstance(R.id.viewPagerAdventure, R.id.frameLayoutMenuAdventure, R.id.homeButtonBackAdventure, R.id.imageViewMenuUpAdventure)).commitNow()
-        frameLayoutMenuAdventure.y = dm.heightPixels.toFloat()
     }
 
     fun changeSurface(surfaceIndex:Int, viewPagerAdventure: ViewPager){
@@ -319,6 +264,11 @@ class ActivityAdventure : AppCompatActivity() {
         textViewQuest.fontSizeType = CustomTextView.SizeType.title
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
+        viewPop.layoutPopupQuest.apply {
+            minWidth = (dm.heightPixels * 0.85).toInt()
+            minHeight = (dm.heightPixels * 0.85).toInt()
+        }
+
         //viewPop.imageViewAdventure.setImageResource(R.drawable.question_mark)       //enemy image
         if (quest.reward.item != null) {
             imageViewAdventure.setBackgroundResource(quest.reward.item!!.getBackground())
@@ -340,86 +290,9 @@ class ActivityAdventure : AppCompatActivity() {
             imageViewAdventure.setImageResource(0)
         }
         textViewStats.visibility = View.GONE
-        textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
+        textViewQuest.setHTMLText(quest.getStats())
 
-        imageViewAdventure.setUpOnHold(this, quest.reward.item ?: Item())
-
-        /*val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
-        val windowPop = PopupWindow(view.context)
-        windowPop.contentView = viewP
-        windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        var viewPinned = false
-        var dx = 0
-        var dy = 0
-        var x = 0
-        var y = 0
-
-        viewP.imageViewPopUpInfoPin.visibility = View.VISIBLE
-        viewP.imageViewPopUpInfoPin.setOnClickListener {
-            viewPinned = if(viewPinned){
-                windowPop.dismiss()
-                viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
-                false
-            }else {
-                val drawable = this.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
-                drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
-                viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
-                true
-            }
-        }
-
-        viewP.textViewPopUpInfoDrag.setOnTouchListener { _, motionEvent ->
-            when (motionEvent.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    dx = motionEvent.x.toInt()
-                    dy = motionEvent.y.toInt()
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    x = motionEvent.rawX.toInt()
-                    y = motionEvent.rawY.toInt()
-                    windowPop.update(x - dx, y - dy, -1, -1)
-                }
-                MotionEvent.ACTION_UP -> {
-                    windowPop.dismiss()
-                    val xOff = if(x - dx <= 0){
-                        5
-                    } else {
-                        x -dx
-                    }
-                    val yOff = if(y - dy <= 0){
-                        5
-                    } else {
-                        y -dy
-                    }
-                    windowPop.showAsDropDown(this.window.decorView.rootView, xOff, yOff)
-                }
-            }
-            true
-        }
-
-        imageViewAdventure.setOnTouchListener(object: Class_HoldTouchListener(imageViewAdventure, false, 0f, false){
-
-            override fun onStartHold(x: Float, y: Float) {
-                super.onStartHold(x, y)
-                viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
-                viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                val coordinates = SystemFlow.resolveLayoutLocation(this@ActivityAdventure, x, y, viewP.measuredWidth, viewP.measuredHeight)
-
-                if(!Data.loadingActiveQuest && !windowPop.isShowing){
-                    viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
-                    viewP.imageViewPopUpInfoItem.setBackgroundResource(quest.reward.item!!.getBackground())
-                    viewP.imageViewPopUpInfoItem.setImageResource(quest.reward.item!!.drawable)
-
-                    windowPop.showAsDropDown(this@ActivityAdventure.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
-                }
-            }
-
-            override fun onCancelHold() {
-                super.onCancelHold()
-                if(windowPop.isShowing) windowPop.dismiss()
-            }
-        })*/
+        imageViewAdventure.setUpOnHoldDecorPop(this, quest.reward.item ?: Item())
 
         window.setOnDismissListener {
             window.dismiss()
@@ -444,7 +317,7 @@ class ActivityAdventure : AppCompatActivity() {
                             textViewQuestProgress.visibility = View.VISIBLE
                             progressAdventureQuest.y = -progressAdventureQuest.height.toFloat()
                             textViewQuestProgress.y = -progressAdventureQuest.height.toFloat()
-                            textViewQuestProgress.text = "0"
+                            textViewQuestProgress.setHTMLText("0")
                             progressAdventureQuest.max = Data.activeQuest!!.quest.secondsLength*1000
 
                             ValueAnimator.ofFloat(progressAdventureQuest.y, 4f).apply{
@@ -472,11 +345,11 @@ class ActivityAdventure : AppCompatActivity() {
                                                 Data.player.checkForQuest().addOnSuccessListener {
                                                     if(Data.activeQuest!!.completed){
                                                         this.cancel()
-                                                        textViewQuestProgress.text = "Quest completed!"
+                                                        textViewQuestProgress.setHTMLText("Quest completed!")
                                                     }
                                                 }
                                             }
-                                            textViewQuestProgress.text = Data.activeQuest!!.getLength()
+                                            textViewQuestProgress.setHTMLText(Data.activeQuest!!.getLength())
 
                                             if(progressAnimator == null){
                                                 progressAnimator = ValueAnimator.ofInt(progressAdventureQuest.progress, progressAdventureQuest.max).apply{
@@ -508,7 +381,7 @@ class ActivityAdventure : AppCompatActivity() {
         window.showAtLocation(view, Gravity.CENTER,0,0)
     }
 
-    fun onClickQuestOverview(surface:Int, index:Int, context: Context, questA: Quest? = null, questIn: Quest? = null, progressAdventureQuest: ProgressBar, textViewQuestProgress: TextView, viewPopQuest: View, viewPagerAdventure: ViewPager, fromFragment: Boolean, fragmentOverview: Fragment?, viewP: View, usedActivity: Activity){
+    fun onClickQuestOverview(surface:Int, index:Int, context: Context, questA: Quest? = null, questIn: Quest? = null, progressAdventureQuest: ProgressBar, textViewQuestProgress: CustomTextView, viewPopQuest: View, viewPagerAdventure: ViewPager, fromFragment: Boolean, fragmentOverview: Fragment?, viewP: View, usedActivity: SystemFlow.GameActivity){
         val quest:Quest = questA ?: questIn?: Data.player.currentSurfaces[surface].quests[index]
 
         val window = PopupWindow(context)
@@ -545,90 +418,14 @@ class ActivityAdventure : AppCompatActivity() {
             imageViewAdventure.isEnabled = false
         }
         textViewStats.visibility = View.GONE
-
-        textViewQuest.setHTMLText(quest.getStats(resourcesAdventure!!))
-
-        imageViewAdventure.setUpOnHold(usedActivity, quest.reward.item ?: Item())
-
-        /*val windowPop = PopupWindow(usedActivity)
-        windowPop.contentView = viewP
-        windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        var viewPinned = false
-        var dx = 0
-        var dy = 0
-        var x = 0
-        var y = 0
-
-        viewP.imageViewPopUpInfoPin.visibility = View.VISIBLE
-        viewP.imageViewPopUpInfoPin.setOnClickListener {
-            viewPinned = if(viewPinned){
-                windowPop.dismiss()
-                viewP.imageViewPopUpInfoPin.setImageResource(R.drawable.pin_icon)
-                false
-            }else {
-                val drawable = this.getDrawable(android.R.drawable.ic_menu_close_clear_cancel)
-                drawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP)
-                viewP.imageViewPopUpInfoPin.setImageDrawable(drawable)
-                true
-            }
+        viewPopQuest.layoutPopupQuest.apply {
+            minWidth = (usedActivity.dm.heightPixels * 0.85).toInt()
+            minHeight = (usedActivity.dm.heightPixels * 0.85).toInt()
         }
 
-        viewP.textViewPopUpInfoDrag.setOnTouchListener { view, motionEvent ->
-            when (motionEvent.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    dx = motionEvent.x.toInt()
-                    dy = motionEvent.y.toInt()
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    x = motionEvent.rawX.toInt()
-                    y = motionEvent.rawY.toInt()
-                    windowPop.update(x - dx, y - dy, -1, -1)
-                }
-                MotionEvent.ACTION_UP -> {
-                    windowPop.dismiss()
-                    val xOff = if(x - dx <= 0){
-                        5
-                    } else {
-                        x -dx
-                    }
-                    val yOff = if(y - dy <= 0){
-                        5
-                    } else {
-                        y -dy
-                    }
-                    windowPop.showAsDropDown(this.window.decorView.rootView, xOff, yOff)
-                }
-            }
-            true
-        }
+        textViewQuest.setHTMLText(quest.getStats())
 
-        val holdValid =  quest.reward.item != null
-        imageViewAdventure.setOnTouchListener(object: Class_HoldTouchListener(imageViewAdventure, false, 0f, false){
-
-            override fun onStartHold(x: Float, y: Float) {
-                super.onStartHold(x, y)
-                if(holdValid){
-                    viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
-                    viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-                    val coordinates = SystemFlow.resolveLayoutLocation(usedActivity, x, y, viewP.measuredWidth, viewP.measuredHeight)
-
-                    if(!Data.loadingActiveQuest && !windowPop.isShowing){
-                        viewP.textViewPopUpInfo.setHTMLText(quest.reward.item!!.getStatsCompare())
-                        viewP.imageViewPopUpInfoItem.setBackgroundResource(quest.reward.item!!.getBackground())
-                        viewP.imageViewPopUpInfoItem.setImageResource(quest.reward.item!!.drawable)
-
-                        windowPop.showAsDropDown(usedActivity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
-                    }
-                }
-            }
-
-            override fun onCancelHold() {
-                super.onCancelHold()
-                if(holdValid){
-                    if(windowPop.isShowing && !viewPinned) windowPop.dismiss()
-                }
-            }
-        })*/
+        imageViewAdventure.setUpOnHoldDecorPop(usedActivity, quest.reward.item ?: Item())
 
         window.setOnDismissListener {
             (fragmentOverview as Fragment_Adventure_overview).resetAdapter()
@@ -655,7 +452,7 @@ class ActivityAdventure : AppCompatActivity() {
                         textViewQuestProgress.visibility = View.VISIBLE
                         progressAdventureQuest.y = -progressAdventureQuest.height.toFloat()
                         textViewQuestProgress.y = -progressAdventureQuest.height.toFloat()
-                        textViewQuestProgress.text = "0"
+                        textViewQuestProgress.setHTMLText("0")
                         progressAdventureQuest.max = Data.activeQuest!!.quest.secondsLength*1000
 
                         ValueAnimator.ofFloat(progressAdventureQuest.y, 4f).apply{
@@ -681,11 +478,11 @@ class ActivityAdventure : AppCompatActivity() {
                                             Data.player.checkForQuest().addOnSuccessListener {
                                                 if(Data.activeQuest!!.completed){
                                                     this.cancel()
-                                                    textViewQuestProgress.text = "Quest completed!"
+                                                    textViewQuestProgress.setHTMLText("Quest completed!")
                                                 }
                                             }
                                         }
-                                        textViewQuestProgress.text = Data.activeQuest!!.getLength()
+                                        textViewQuestProgress.setHTMLText(Data.activeQuest!!.getLength())
 
                                         if(progressAnimator == null){
                                             progressAnimator = ValueAnimator.ofInt(progressAdventureQuest.progress, progressAdventureQuest.max).apply{

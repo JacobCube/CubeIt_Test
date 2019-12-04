@@ -19,8 +19,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/menu" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/buttonFight"
@@ -30,12 +29,12 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="4dp"
+        android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/menu_fight_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
-        android:adjustViewBounds="true"
         app:layout_constraintEnd_toStartOf="@+id/guideline35"
         app:layout_constraintStart_toStartOf="@+id/guideline7"
         app:layout_constraintTop_toTopOf="@+id/imageViewMenuBg" />
@@ -66,12 +65,12 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="4dp"
+        android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/menu_spells_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
-        android:adjustViewBounds="true"
         app:layout_constraintEnd_toStartOf="@+id/guideline34"
         app:layout_constraintStart_toStartOf="@+id/guideline13"
         app:layout_constraintTop_toTopOf="@+id/imageViewMenuBg" />
@@ -84,12 +83,12 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="4dp"
+        android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/menu_settings_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
-        android:adjustViewBounds="true"
         app:layout_constraintEnd_toStartOf="@+id/guideline16"
         app:layout_constraintStart_toStartOf="@+id/guideline33"
         app:layout_constraintTop_toTopOf="@+id/imageViewMenuBg" />
@@ -102,9 +101,9 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="4dp"
+        android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
-        android:adjustViewBounds="true"
         android:src="@drawable/menu_adventure_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -198,15 +197,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.955" />
+        app:layout_constraintGuide_percent="0.96" />
 
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline132"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.94" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline7"
@@ -226,14 +218,32 @@
         android:id="@+id/imageViewControlMenu"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:tint="@android:color/white"
         android:adjustViewBounds="true"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewMenuBg"
+        app:layout_constraintBottom_toTopOf="@+id/guideline308"
+        app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline132"
+        app:layout_constraintStart_toEndOf="@+id/buttonSettings"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/arrow_down" />
+        app:srcCompat="@drawable/menu_firstaction_button" />
+
+    <ImageView
+        android:id="@+id/imageViewControlMenuPropertyBar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="W,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonSettings"
+        app:layout_constraintTop_toTopOf="@+id/guideline308"
+        app:srcCompat="@drawable/menu_secondaction_button" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline308"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

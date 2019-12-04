@@ -2,48 +2,19 @@ package cz.cubeit.cubeit_test
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import androidx.appcompat.app.AppCompatActivity
-import android.view.View
 import kotlinx.android.synthetic.main.activity_character_customization.*
 import kotlin.random.Random.Default.nextInt
 
 
-class Activity_Character_Customization: AppCompatActivity(){
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("onresume", "called")
-    }
+class Activity_Character_Customization: SystemFlow.GameActivity(R.layout.activity_character_customization, ActivityType.CharacterCustomization, false){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         setContentView(R.layout.activity_character_customization)
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
-        }
 
         if (viewPagerCharacterCustomization!= null) {
             viewPagerCharacterCustomization.adapter = ViewPagerCharacterCustomization(supportFragmentManager)
@@ -135,7 +106,7 @@ class Activity_Character_Customization: AppCompatActivity(){
         }
     }
 
-    class ViewPagerCharacterCustomization internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
+    private class ViewPagerCharacterCustomization internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm){
 
         override fun getItem(position: Int): Fragment {
             val drawable = Data.charClasses[position+1].drawable

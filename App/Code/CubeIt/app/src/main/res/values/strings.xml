@@ -48,7 +48,7 @@
     <string name="username">username</string>
     <string name="splash_normal">Normal</string>
     <string name="splash_rocket_game">Rocket game</string>
-    <string name="register_username">Must be 6 – 11 characters</string>
+    <string name="register_username">Must be 6 – 15 characters</string>
     <string name="defenseError">You would be too exhausted this round</string>
 
 </resources>

@@ -32,68 +32,68 @@
             tools:replace="android:launchMode" />
 
         <activity
-            android:name=".SystemFlow$GameActivity"
+            android:name="cz.cubeit.cubeit_test.SystemFlow$GameActivity"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Home"
+            android:name="cz.cubeit.cubeit_test.Home"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Activity_Character"
+            android:name="cz.cubeit.cubeit_test.Activity_Character"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".ActivityFightBoard"
+            android:name="cz.cubeit.cubeit_test.ActivityFightBoard"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".ActivityFightSystem"
+            android:name="cz.cubeit.cubeit_test.ActivityFightSystem"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".Activity_Faction_Base"
+            android:name="cz.cubeit.cubeit_test.Activity_Faction_Base"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".FightSystemNPC"
+            android:name="cz.cubeit.cubeit_test.FightSystemNPC"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".ActivitySettings"
+            android:name="cz.cubeit.cubeit_test.ActivitySettings"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".Activity_Shop"
+            android:name="cz.cubeit.cubeit_test.Activity_Shop"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".ActivityAdventure"
+            android:name="cz.cubeit.cubeit_test.ActivityAdventure"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Spells"
+            android:name="cz.cubeit.cubeit_test.Spells"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".Activity_Character_Customization"
+            android:name="cz.cubeit.cubeit_test.Activity_Character_Customization"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".Activity_Story"
+            android:name="cz.cubeit.cubeit_test.Activity_Story"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Activity_Inbox"
+            android:name="cz.cubeit.cubeit_test.Activity_Inbox"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Activity_Splash_Screen"
+            android:name="cz.cubeit.cubeit_test.Activity_Splash_Screen"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Activity_Market"
+            android:name="cz.cubeit.cubeit_test.Activity_Market"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".ActivityFightUniversalOffline"
+            android:name="cz.cubeit.cubeit_test.ActivityFightUniversalOffline"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Activity_FightBoss_offline"
+            android:name="cz.cubeit.cubeit_test.Activity_FightBoss_offline"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".ActivityOfflineMG"
+            android:name="cz.cubeit.cubeit_test.ActivityOfflineMG"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".Activity_Fight_Reward"
+            android:name="cz.cubeit.cubeit_test.Activity_Fight_Reward"
             android:screenOrientation="sensorLandscape"/>
         <activity
-            android:name=".ActivityLoginRegister"
+            android:name="cz.cubeit.cubeit_test.ActivityLoginRegister"
             android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -113,10 +113,10 @@
             android:value="com.google.firebase.components.ComponentRegistrar" />
 
         <service
-            android:name=".SystemFlow$BackgroundSoundService"
+            android:name="cz.cubeit.cubeit_test.SystemFlow$BackgroundSoundService"
             android:enabled="true" />
         <service
-            android:name=".ClassCubeItHeadService"
+            android:name="cz.cubeit.cubeit_test.ClassCubeItHeadService"
             android:enabled="true" />
 
         <meta-data

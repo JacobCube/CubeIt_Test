@@ -7,20 +7,19 @@
     android:background="@color/attack_bg"
     android:screenOrientation="sensorLandscape">
 
-    <ListView
-        android:id="@+id/listViewSpells"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listViewFragmentAttackSpells"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/spells_leftattack"
         android:scrollbars="none"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline45"
         app:layout_constraintEnd_toStartOf="@+id/guideline14"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBarAttack" />
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentAttackBar" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline9"
@@ -30,25 +29,25 @@
         app:layout_constraintGuide_percent="0.75" />
 
     <ImageView
-        android:id="@+id/imageViewAttackRightBg"
-        android:layout_width="0dp"
+        android:id="@+id/imageViewFragmentAttackSpellBg"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:adjustViewBounds="true"
         android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
         android:src="@drawable/spells_rightattack"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewInfoSpell"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintStart_toStartOf="@+id/guideline14"
-
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBarAttack" />
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentAttackBar"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline45"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.80" />
+        app:layout_constraintGuide_percent="0.825" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline57"
@@ -56,6 +55,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.14" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline307"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1575" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline263"
@@ -69,7 +75,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.385" />
+        app:layout_constraintGuide_percent="0.393" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline14"
@@ -84,7 +90,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.76" />
+        app:layout_constraintGuide_percent="0.7485" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline70"
@@ -98,7 +104,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.87" />
+        app:layout_constraintGuide_percent="0.88175" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline30"
@@ -108,7 +114,7 @@
         app:layout_constraintGuide_percent="0.948" />
 
     <ImageView
-        android:id="@+id/imageViewBarAttack"
+        android:id="@+id/imageViewFragmentAttackBar"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
@@ -128,29 +134,31 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:adjustViewBounds="true"
+        android:tag="1"
         android:background="@android:color/transparent"
         android:onClick="onClickArrow"
+        android:tint="@color/colorSecondary"
         android:src="@drawable/left_arrow"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewBarAttack"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentAttackBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewInfoSpell"
+        android:id="@+id/textViewIFragmentAttackSpellInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="2dp"
-        android:textColor="@color/bg_basic_white"
+        android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
+        android:textColor="@color/bg_basic_white"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentAttackSpellBg"
         app:layout_constraintEnd_toStartOf="@+id/guideline30"
         app:layout_constraintStart_toStartOf="@+id/guideline70"
         app:layout_constraintTop_toTopOf="@+id/guideline58" />
 
     <ImageView
-        android:id="@+id/imageViewIcon"
+        android:id="@+id/imageViewFragmentAttackSpellIcon"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
@@ -158,12 +166,33 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline58"
         app:layout_constraintDimensionRatio="H, 1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline56"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline54"
-        app:layout_constraintTop_toTopOf="@+id/guideline57" />
+        app:layout_constraintTop_toTopOf="@+id/guideline307" />
+
+    <Button
+        android:id="@+id/buttonFragmentAttackReset"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="2dp"
+        android:text="clear"
+        app:layout_constraintStart_toStartOf="@+id/guideline70"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonFragmentAttackTest"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="5dp"
+        android:text="test"
+        app:layout_constraintEnd_toStartOf="@+id/guideline70"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <fragment
-        android:id="@+id/fragmentSpellBar"
+        android:id="@+id/fragmentFragmentAttackSpellBar"
         android:name="cz.cubeit.cubeit_test.Fragment_SpellBar"
         android:layout_width="0dp"
         android:layout_height="0dp"

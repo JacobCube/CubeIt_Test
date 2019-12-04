@@ -4,13 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingBottom="1dp"
+    android:layout_margin="2dp"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
         android:id="@+id/buttonSpellsManagment1"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/emptyspelllist"
+        android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
         android:adjustViewBounds="true"
@@ -24,7 +25,7 @@
         android:id="@+id/buttonSpellsManagment3"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/emptyspelllist"
+        android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
         android:adjustViewBounds="true"
@@ -39,7 +40,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
-        android:background="@drawable/emptyspelllist"
+        android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -53,7 +54,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
-        android:background="@drawable/emptyspelllist"
+        android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -66,14 +67,26 @@
         android:id="@+id/buttonSpellsManagment5"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/emptyspelllist"
+        android:adjustViewBounds="true"
+        android:background="@drawable/emptyspellslot"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline306"
+        app:layout_constraintStart_toStartOf="@+id/guideline24"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/buttonSpellsManagment6"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline24"
-        android:adjustViewBounds="true"
+        app:layout_constraintStart_toStartOf="@+id/guideline306"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -81,27 +94,34 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.2" />
+        app:layout_constraintGuide_percent="0.166666" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline22"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.4" />
+        app:layout_constraintGuide_percent="0.3333333" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline23"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.6" />
+        app:layout_constraintGuide_percent="0.50" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline24"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.8" />
+        app:layout_constraintGuide_percent="0.666666" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline306"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.833333" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

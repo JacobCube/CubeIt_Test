@@ -38,8 +38,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:textColor="@color/bg_basic_white"
         android:text="TextView"
+        android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/imageViewAdventureOverview"
         app:layout_constraintHorizontal_bias="0.0"
@@ -117,14 +117,14 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:alpha="0"
-        android:clickable="true"
         android:background="@color/itemborder_uncommon"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/imageViewBackground"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0"
-        android:focusable="true" />
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

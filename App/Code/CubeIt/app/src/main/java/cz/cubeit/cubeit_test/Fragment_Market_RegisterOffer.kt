@@ -1,7 +1,6 @@
 package cz.cubeit.cubeit_test
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -12,11 +11,10 @@ import android.view.animation.AnimationUtils
 import android.widget.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_market_registeroffer.view.*
-import kotlinx.android.synthetic.main.popup_info_dialog.view.*
+import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.*
 import kotlinx.android.synthetic.main.row_character_inventory.view.*
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class Fragment_Market_RegisterOffer : Fragment() {
 
@@ -47,21 +45,26 @@ class Fragment_Market_RegisterOffer : Fragment() {
 
         view.listViewMarketRegisterInventory.adapter = MarketRegisterInventory(Data.player, view.imageViewMarketRegisterItem, view, createdOffer, (activity as Activity_Market))
 
-        val viewP = layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+        val viewP = layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
         val windowPop = PopupWindow(view.context)
         windowPop.contentView = viewP
         windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        viewP.layoutPopupInfo.apply {
+            minWidth = ((activity as SystemFlow.GameActivity).dm.heightPixels * 0.65).toInt()
+            minHeight = ((activity as SystemFlow.GameActivity).dm.heightPixels * 0.65).toInt()
+        }
 
         view.imageViewMarketRegisterItem.setOnTouchListener(object: Class_HoldTouchListener(view.imageViewMarketRegisterItem, false, 0f, false){
 
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
-                viewP.textViewPopUpInfo.setHTMLText(createdOffer.item!!.getStats())
+                viewP.textViewPopUpInfoDsc.setHTMLText(createdOffer.item!!.getStats())
                 viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
                 val coordinates = SystemFlow.resolveLayoutLocation(activity!!, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                 if(!windowPop.isShowing && createdOffer.item != null){
-                    viewP.textViewPopUpInfo.setHTMLText(createdOffer.item!!.getStats())
+                    viewP.textViewPopUpInfoDsc.setHTMLText(createdOffer.item!!.getStats())
                     viewP.imageViewPopUpInfoItem.setBackgroundResource(createdOffer.item!!.getBackground())
                     viewP.imageViewPopUpInfoItem.setImageResource(createdOffer.item!!.drawable)
 
@@ -280,7 +283,7 @@ class Fragment_Market_RegisterOffer : Fragment() {
 }
 
 
-class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, private val view: View, val createdOffer: MarketOffer, val activity: Activity) : BaseAdapter() {
+class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, private val view: View, val createdOffer: MarketOffer, val activity: SystemFlow.GameActivity) : BaseAdapter() {
 
     override fun getCount(): Int {
         return playerC.inventory.size / 4 + 1
@@ -339,21 +342,26 @@ class MarketRegisterInventory(var playerC:Player, val imageViewItem: ImageView, 
                     }
                 }
 
-                val viewP = activity.layoutInflater.inflate(R.layout.popup_info_dialog, null, false)
+                val viewP = activity.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
                 val windowPop = PopupWindow(activity)
                 windowPop.contentView = viewP
                 windowPop.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+                viewP.layoutPopupInfo.apply {
+                    minWidth = (activity.dm.heightPixels * 0.65).toInt()
+                    minHeight = (activity.dm.heightPixels * 0.65).toInt()
+                }
 
                 component.setOnTouchListener(object: Class_HoldTouchListener(component, false, 0f, false){
 
                     override fun onStartHold(x: Float, y: Float) {
                         super.onStartHold(x, y)
-                        viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]?.getStats() ?: "")
+                        viewP.textViewPopUpInfoDsc.setHTMLText(Data.player.inventory[this@Node.index]?.getStats() ?: "")
                         viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
                         val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, viewP.measuredWidth, viewP.measuredHeight)
 
                         if(!windowPop.isShowing){
-                            viewP.textViewPopUpInfo.setHTMLText(Data.player.inventory[this@Node.index]?.getStats() ?: "")
+                            viewP.textViewPopUpInfoDsc.setHTMLText(Data.player.inventory[this@Node.index]?.getStats() ?: "")
                             viewP.imageViewPopUpInfoItem.setImageResource(Data.player.inventory[this@Node.index]?.drawable ?: 0)
                             viewP.imageViewPopUpInfoItem.setBackgroundResource(Data.player.inventory[this@Node.index]!!.getBackground())
 

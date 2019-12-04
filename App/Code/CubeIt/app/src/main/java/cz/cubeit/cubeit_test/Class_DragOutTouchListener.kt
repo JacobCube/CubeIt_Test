@@ -8,7 +8,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.view.animation.RotateAnimation
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import kotlin.math.abs
@@ -168,7 +167,6 @@ open class Class_DragOutTouchListener(var externalView: ImageView, val isList: B
             (externalView.y + externalView.height / 2  < viewCoords[1] && abs(percentageReachedY) * 100 >= 100) -> {
                 onSwipeUp()
             }
-            else -> Log.d("ACTION_MOVE", "else path?")
         }
 
         Log.d("MOTION", "has been canceled")

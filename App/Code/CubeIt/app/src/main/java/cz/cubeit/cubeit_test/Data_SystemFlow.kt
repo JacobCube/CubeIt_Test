@@ -5,27 +5,29 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Point
+import android.graphics.*
+import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.SoundPool
 import android.net.Uri
 import android.os.*
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.view.animation.Animation
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
@@ -39,7 +41,21 @@ import kotlin.random.Random.Default.nextInt
 object SystemFlow{
     var factionChange: Boolean = false
 
-    class GameActivity(private val contentLayoutId: Int, private val hasMenu: Boolean): AppCompatActivity(contentLayoutId){
+    open class GameActivity(
+            private val contentLayoutId: Int,
+            private val activityType: ActivityType,
+            private val hasMenu: Boolean,
+            private val menuID: Int = 0,
+            private val menuUpColor: Int? = null
+    ): AppCompatActivity(contentLayoutId){
+
+        val dm = DisplayMetrics()
+        var frameLayoutMenuBar: FrameLayout? = null
+        var imageViewSwipeDown: ImageView? = null
+        var imageViewMenuUp: ImageView? = null
+        var menuFragment: Fragment_Menu_Bar? = null
+        lateinit var parentViewGroup: ViewGroup
+        lateinit var propertiesBar: GamePropertiesBar
 
         private fun hideSystemUI() {
             window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
@@ -50,20 +66,212 @@ object SystemFlow{
                     or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
 
+        fun visualizeRewardWith(startingPoint: Coordinates, reward: Reward?, existingPropertiesBar: GamePropertiesBar? = null): ValueAnimator? {
+            return visualizeReward(this, startingPoint, reward, existingPropertiesBar)
+        }
+
+        private fun clearFocus(){
+            val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            var view = currentFocus
+            if (view == null) {
+                view = View(this)
+            }
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+
+        }
+
         override fun onWindowFocusChanged(hasFocus: Boolean) {
             super.onWindowFocusChanged(hasFocus)
             if (hasFocus) hideSystemUI()
+        }
+
+        override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+            val menuViewRect = Rect()
+            val propertyBarViewRect = Rect()
+            frameLayoutMenuBar?.getGlobalVisibleRect(menuViewRect)
+            propertiesBar.frameLayoutBar.getGlobalVisibleRect(propertyBarViewRect)
+
+            if (!menuViewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuBar?.y ?: 0f <= (dm.heightPixels * 0.83).toFloat() && ev.action == MotionEvent.ACTION_UP && solidMenuBar() && !propertyBarViewRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                hideMenuBar()
+            }
+            return super.dispatchTouchEvent(ev)
+        }
+
+        override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+            if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP){
+                respondOnMediaButton(this)
+            }
+            return super.onKeyDown(keyCode, event)
+        }
+
+        fun showMenuBar(){
+            if(hasMenu && frameLayoutMenuBar != null){
+                ValueAnimator.ofFloat(frameLayoutMenuBar?.y ?: 0f, (dm.heightPixels * 0.83).toFloat()).apply {
+                    duration = 600
+                    addUpdateListener {
+                        frameLayoutMenuBar?.y = it.animatedValue as Float
+                    }
+                    start()
+                }
+            }
+        }
+
+        fun solidMenuBar(): Boolean{
+            return frameLayoutMenuBar?.y == (dm.heightPixels - (frameLayoutMenuBar?.height ?: 0)).toFloat()
+        }
+
+        fun hideMenuBar(){
+            if(hasMenu && frameLayoutMenuBar != null){
+                ValueAnimator.ofFloat(frameLayoutMenuBar?.y ?: 0f, dm.heightPixels.toFloat()).apply {
+                    duration = 600
+                    addUpdateListener {
+                        frameLayoutMenuBar?.y = it.animatedValue as Float
+                    }
+                    start()
+                }
+            }
+        }
+
+        fun initMenuBar(layoutID: Int){
+            if(hasMenu && frameLayoutMenuBar != null){
+                frameLayoutMenuBar?.post {
+                    menuFragment = Fragment_Menu_Bar.newInstance(layoutID, frameLayoutMenuBar?.id ?: 0, imageViewSwipeDown?.id ?: 0, imageViewMenuUp?.id ?: 0)
+
+                    supportFragmentManager.beginTransaction()
+                            .replace(parentViewGroup.findViewWithTag<FrameLayout>("frameLayoutMenuBar$activityType").id, menuFragment!!, "menuBarFragment$activityType").commitAllowingStateLoss()
+
+                    Handler().postDelayed({
+                        menuFragment?.setUpSecondAction(View.OnClickListener { if(propertiesBar.isShown) propertiesBar.hide() else propertiesBar.show() })
+                    }, 500)
+                }
+            }
+        }
+
+        fun hasMenu(): Boolean{
+            return hasMenu && frameLayoutMenuBar != null
         }
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             hideSystemUI()
             setContentView(contentLayoutId)
+            val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            windowManager.defaultDisplay.getRealMetrics(dm)
+            parentViewGroup = this.window.decorView.rootView.findViewById(android.R.id.content)
+
+            propertiesBar = GamePropertiesBar(this)
 
             window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
                 if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
                     Handler().postDelayed({hideSystemUI()},1000)
                 }
+            }
+            parentViewGroup.post {
+                clearFocus()
+            }
+
+            if(hasMenu){
+                frameLayoutMenuBar = FrameLayout(this)
+                imageViewSwipeDown = ImageView(this)
+                imageViewMenuUp = ImageView(this)
+
+                parentViewGroup.post {
+                    frameLayoutMenuBar?.apply {
+                        layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+                        layoutParams.height = ((dm.heightPixels * 0.175).toInt())
+                        layoutParams.width = dm.widthPixels
+                        y = (dm.heightPixels).toFloat()
+                        tag = "frameLayoutMenuBar$activityType"
+                        id = View.generateViewId()                  //generate new ID, since adding fragment requires IDs
+                    }
+                    imageViewSwipeDown?.apply {
+                        layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+                        layoutParams.height = ((dm.heightPixels * 0.175).toInt())
+                        layoutParams.width = ((dm.heightPixels * 0.175).toInt())
+                        x = (dm.widthPixels * 0.5 - dm.heightPixels * 0.175).toFloat()
+                        y = -(dm.heightPixels * 0.175).toFloat()
+                        setImageResource(R.drawable.home_button)
+                        setBackgroundResource(R.drawable.emptyspellslotlarge)
+                        tag = "imageViewSwipeDown$activityType"
+                        id = View.generateViewId()
+                    }
+
+                    imageViewMenuUp?.apply {
+                        layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+                        layoutParams.height = ((dm.widthPixels * 0.07).toInt())
+                        layoutParams.width = ((dm.widthPixels * 0.07).toInt())
+                        x = (dm.widthPixels - (dm.widthPixels * 0.07) - 4f).toFloat()
+                        y = dm.heightPixels - (dm.widthPixels * 0.07).toFloat()
+                        tag = "imageViewMenuUp$activityType"
+                        id = View.generateViewId()
+                        setBackgroundResource(R.drawable.arrow_up)
+                        background?.setColorFilter(resources.getColor(menuUpColor ?: R.color.loginColor), PorterDuff.Mode.SRC_ATOP)
+                    }
+                    parentViewGroup.apply {
+                        addView(imageViewSwipeDown)
+                        addView(imageViewMenuUp)
+                        addView(frameLayoutMenuBar)
+                        invalidate()
+                    }
+
+                    frameLayoutMenuBar?.post {
+                        imageViewSwipeDown?.background?.setColorFilter(resources.getColor(R.color.loginColor), PorterDuff.Mode.SRC_ATOP)
+                    }
+                    initMenuBar(menuID)
+                }
+            }
+        }
+    }
+
+    fun showSocials(activity: GameActivity): Fragment_Socials{
+        val parent: ViewGroup = activity.window.decorView.findViewById(android.R.id.content)
+        val frameLayoutSocials = FrameLayout(activity)
+        val fragmentSocials = Fragment_Socials()
+
+        parent.removeView(parent.findViewWithTag<FrameLayout>("frameLayoutSocials"))
+
+        frameLayoutSocials.apply {
+            layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+            layoutParams.height = activity.dm.heightPixels
+            layoutParams.width = (activity.dm.widthPixels * 0.6).toInt()
+            y = 0f
+            x = ((activity.dm.widthPixels * 0.5) - (activity.dm.heightPixels * 0.5)).toFloat()
+            tag = "frameLayoutSocials"
+            id = View.generateViewId()                  //generate new ID, since adding fragment requires IDs
+        }
+
+        parent.addView(frameLayoutSocials)
+        parent.invalidate()
+        frameLayoutSocials.post {
+            (activity as AppCompatActivity).supportFragmentManager.beginTransaction().replace(parent.findViewWithTag<FrameLayout>("frameLayoutSocials").id, fragmentSocials, "frameLayoutSocials").commitAllowingStateLoss()
+        }
+
+        return fragmentSocials
+    }
+
+    /**
+     * SoundPool for short audio clips only, max 1 MB.
+     * @since Alpha 0.5.0.2, DEV version
+     * @author Jakub Kostka
+     */
+    fun playComponentSound(context: Context, raw: Int = R.raw.creeper){
+        if(!Data.player.soundEffects) return
+
+        val attributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+        val sounds = SoundPool.Builder()
+                .setAudioAttributes(attributes)
+                .setMaxStreams(5)
+                .build()
+
+        val componentSound = sounds.load(context, raw, 1)       //raw has to processed beforehand
+
+        sounds.setOnLoadCompleteListener { soundPool, sampleId, status ->
+            Log.d("sounds_status", status.toString())
+            if(status == 0){
+                sounds.play(componentSound, 1f, 1f, 1, 0, 1f)
             }
         }
     }
@@ -130,6 +338,11 @@ object SystemFlow{
                 i.removeCallbacksAndMessages(null)
             }
         }
+    }
+
+    //TODO vytvoř obdobu visualize reward baru nabízející vypnutí hudby, změny hlasitosti atd.
+    fun respondOnMediaButton(context: Context){
+        Toast.makeText(context, "Shhhhh!", Toast.LENGTH_SHORT).show()
     }
 
     fun translateIntoMorse(text: String, textView: CustomTextView? = null): MorseVibration {
@@ -248,30 +461,81 @@ object SystemFlow{
      * @author Jakub Kostka
      */
     class GamePropertiesBar(
-            val activity: Activity,
+            val activity: GameActivity,
             val duration: Long? = null
     ){
         private val parent: ViewGroup = activity.window.decorView.findViewById(android.R.id.content)
         val fragmentBar = FragmentGamePropertiesBar()
-        private val frameLayoutBar: FrameLayout = FrameLayout(parent.context)
+        val frameLayoutBar: FrameLayout = FrameLayout(parent.context)
+        var isShown = false
+        var attached = false
 
+        fun updateProperties(){
+            if(!isShown){
+                show()?.addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        fragmentBar.animateChanges()
+                    }
+                })
+            }else fragmentBar.animateChanges()
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
         fun attach(): ValueAnimator? {
-            val dm = DisplayMetrics()
-            val windowManager = parent.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.defaultDisplay.getRealMetrics(dm)
+            if(attached) return null
 
+            attached = true
+
+            var clickableTemp = false
+            var initialTouchX = 0f
+            var originalX = (activity.dm.widthPixels * 0.25).toFloat()
             frameLayoutBar.apply {
                 layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
-                layoutParams.height = ((dm.heightPixels * 0.1).toInt())
-                layoutParams.width = (dm.widthPixels * 0.5).toInt()
-                y = (-(dm.heightPixels * 0.1)).toFloat()
-                x = (dm.widthPixels * 0.25).toFloat()
+                layoutParams.height = ((activity.dm.heightPixels * 0.1).toInt())
+                layoutParams.width = (activity.dm.widthPixels * 0.5).toInt()
+                y = (-(activity.dm.heightPixels * 0.1)).toFloat()
+                x = Data.requestedBarX ?: originalX
                 tag = "frameLayoutBar"
                 id = View.generateViewId()                  //generate new ID, since adding fragment requires IDs
-                setOnClickListener {
-                    this@GamePropertiesBar.hide()
-                }
             }
+
+            Handler().postDelayed({
+                fragmentBar.getActionBackground().setOnTouchListener { _, motionEvent ->
+                    when (motionEvent.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            initialTouchX = motionEvent.rawX
+
+                            clickableTemp = true
+                            Handler().postDelayed({
+                                clickableTemp = false
+                            }, 100)
+                            originalX = frameLayoutBar.x
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            if(clickableTemp){
+                                this@GamePropertiesBar.hide()
+                            }else {
+                                Data.requestedBarX = frameLayoutBar.x
+                            }
+                        }
+                        MotionEvent.ACTION_MOVE -> {
+                            val requestedX = (originalX + (motionEvent.rawX - initialTouchX))
+                            frameLayoutBar.x = when {
+                                requestedX < 0 -> {
+                                    0f
+                                }
+                                requestedX > activity.dm.widthPixels * 0.5 -> {
+                                    (activity.dm.widthPixels * 0.5).toFloat()
+                                }
+                                else -> {
+                                    requestedX
+                                }
+                            }
+                        }
+                    }
+                    true
+                }
+            }, 600)
 
             parent.addView(frameLayoutBar)
             parent.invalidate()
@@ -285,8 +549,19 @@ object SystemFlow{
                 }, duration)
             }
 
-            return ObjectAnimator.ofFloat((-(dm.heightPixels * 0.1)).toFloat(), 0f).apply{
-                duration = 800
+            return show()
+        }
+
+        /**
+         * animation not promised
+         */
+        fun hide(): ValueAnimator? {
+            if(!isShown) return null
+
+            isShown = false
+
+            return ObjectAnimator.ofFloat(frameLayoutBar.y, (-(activity.dm.heightPixels * 0.1).toFloat())).apply{
+                duration = 600
                 addUpdateListener {
                     frameLayoutBar.y = it.animatedValue as Float
                 }
@@ -294,23 +569,33 @@ object SystemFlow{
             }
         }
 
-        fun hide(): ValueAnimator? {
-            val dm = DisplayMetrics()
-            val windowManager = parent.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.defaultDisplay.getRealMetrics(dm)
+        /**
+         * animation not promised
+         */
+        fun show(): ValueAnimator? {
+            if(isShown) return null
 
-            return ObjectAnimator.ofFloat(frameLayoutBar.y, (-(dm.heightPixels * 0.1).toFloat())).apply{
-                duration = 800
-                addUpdateListener {
-                    frameLayoutBar.y = it.animatedValue as Float
+            return if(!attached){
+                attach()
+            }else {
+                isShown = true
+                ObjectAnimator.ofFloat((-(activity.dm.heightPixels * 0.1)).toFloat(), 0f).apply{
+                    duration = 600
+                    addUpdateListener {
+                        frameLayoutBar.y = it.animatedValue as Float
+                    }
+                    start()
                 }
-                start()
             }
         }
 
         fun detach(){
+            if(!attached) return
+
             hide()?.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
+                    isShown = false
+                    attached = false
                     parent.removeView(frameLayoutBar)
                 }
             })
@@ -318,237 +603,391 @@ object SystemFlow{
     }
 
     /**
+     * Animation overlay, primarily used to show damage dealt by any action in fight.
+     *
+     * @property activity: Activity - used for display metrics and attaching generated views on the activity's main viewGroup
+     * @property startingPoint: Coordinates - use "getLocationOnScreen(IntArray(2))" to return correct position of the clicked view, regular x, y may not work.
+     * @return ObjectAnimator. Override onAnimationEnd method to end the animation properly, or use native method ObjectAnimator.cancel().
+     * @since Alpha 0.5.0.2, DEV version
+     * @author Jakub Kostka
+     */
+    fun makeActionText(activity: GameActivity, startingPoint: Coordinates, text: String, color: Int = R.color.loginColor, sizeType: CustomTextView.SizeType = CustomTextView.SizeType.adaptive): ObjectAnimator{
+        val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
+
+        val textView = CustomTextView(activity)
+        textView.apply {
+            fontSizeType = sizeType
+            layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)
+            visibility = View.VISIBLE
+            setHTMLText("<b>$text</b>")
+            tag = "actionText-${startingPoint.x}-${startingPoint.y}"
+            setTextColor(activity.resources.getColor(color))
+        }
+
+        parent.addView(textView)
+        textView.post {
+
+            textView.x = startingPoint.x + textView.width / 2
+            textView.invalidate()
+            ObjectAnimator.ofFloat(startingPoint.y - textView.height / 2, (startingPoint.y - textView.height / 2) / 4).apply{
+                duration = 600
+                addUpdateListener {
+                    textView.y = it.animatedValue as Float
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {}
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        parent.removeView(textView)
+                        Log.d("makeActionText", "post-ended, x: ${textView.x}, y: ${textView.y}, width: ${textView.width}, height: ${textView.height}")
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {}
+
+                    override fun onAnimationRepeat(animation: Animator) {}
+                })
+                start()
+            }
+        }
+
+        return ObjectAnimator()
+    }
+
+    /**
      * Animation overlay, universally used to show user's property bar with values and change them with animation.
      *
      * @property activity: Activity - used for display metrics and attaching generated views on the activity's main viewGroup
      * @property startingPoint: Coordinates - use "getLocationOnScreen(IntArray(2))" to return correct position of the clicked view, regular x, y may not work.
-     * @return ObjectAnimator. MUST DO: override onAnimationEnd method to end the animation properly, or use native method ObjectAnimator.cancel().
+     * @return ObjectAnimator. Override onAnimationEnd method to end the animation properly, or use native method ObjectAnimator.cancel().
      * @since Alpha 0.5.0.2, DEV version
      * @author Jakub Kostka
      */
-    fun visualizeReward(activity: Activity, startingPoint: Coordinates, reward: Reward): ObjectAnimator {
-
-        val propertiesBar = GamePropertiesBar(activity)
-
+    fun visualizeReward(activity: GameActivity, startingPoint: Coordinates, reward: Reward?, existingPropertiesBar: GamePropertiesBar? = null): ValueAnimator? {
         val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
-        val context = parent.context
-        val dm = DisplayMetrics()
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        val activityWidth = dm.widthPixels
+        val activityWidth = activity.dm.widthPixels
+
+        val propertiesBar = existingPropertiesBar ?: GamePropertiesBar(activity)
 
         val floatingCoins: MutableList<ImageView> = mutableListOf()
         val floatingXps: MutableList<ImageView> = mutableListOf()
+        val floatingCubix: MutableList<ImageView> = mutableListOf()
 
-        propertiesBar.attach()?.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                if(reward.cubeCoins > 0){
-                    for(i in 0 until nextInt(3, 10)){
-                        val currentCoin = ImageView(activity)
+        fun process(){
+            if((reward?.cubeCoins ?: 0) > 0){
+                for(i in 0 until nextInt(3, 10)){
+                    val currentCoin = ImageView(activity)
 
-                        floatingCoins.add(i, ImageView(activity))
-                        parent.addView(currentCoin)
-                        parent.invalidate()
+                    floatingCoins.add(i, ImageView(activity))
+                    parent.addView(currentCoin)
+                    parent.invalidate()
 
-                        currentCoin.post {
-                            currentCoin.apply {
-                                setImageResource(R.drawable.coin_basic)
+                    currentCoin.post {
+                        currentCoin.apply {
+                            setImageResource(R.drawable.coin_basic)
 
-                                layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
-                                layoutParams?.width = (activityWidth * 0.05).toInt()
-                                layoutParams?.height = (activityWidth * 0.05).toInt()
-                                visibility = View.VISIBLE
-                            }
-                        }
-
-                        val newX = nextInt((startingPoint.x - (activityWidth * 0.075)).toInt(), (startingPoint.x + (activityWidth * 0.075)).toInt()).toFloat()
-                        val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
-
-                        //travel animation CC
-                        val travelXCC = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().x).apply{
-                            duration = 600
-                            addUpdateListener {
-                                currentCoin.x = it.animatedValue as Float
-                            }
-                        }
-                        val travelYCC = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().y).apply{
-                            duration = 600
-                            addUpdateListener {
-                                currentCoin.y = it.animatedValue as Float
-                            }
-                            addListener(object : Animator.AnimatorListener {
-                                override fun onAnimationStart(animation: Animator) {}
-
-                                override fun onAnimationEnd(animation: Animator) {
-                                    parent.removeView(currentCoin)
-                                    propertiesBar.fragmentBar.animateChanges()
-                                    Handler().postDelayed({
-                                        propertiesBar.detach()
-                                    }, 620)
-                                }
-
-                                override fun onAnimationCancel(animation: Animator) {}
-
-                                override fun onAnimationRepeat(animation: Animator) {}
-                            })
-                        }
-
-                        //spread animation CC
-                        ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
-                            duration = 200
-                            addUpdateListener {
-                                currentCoin.x = it.animatedValue as Float
-                            }
-                            start()
-                        }
-                        ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
-                            duration = 200
-                            addUpdateListener {
-                                currentCoin.y = it.animatedValue as Float
-                            }
-                            addListener(object : Animator.AnimatorListener {
-                                override fun onAnimationStart(animation: Animator) {}
-
-                                override fun onAnimationEnd(animation: Animator) {
-                                    travelXCC.start()
-                                    travelYCC.start()
-                                }
-
-                                override fun onAnimationCancel(animation: Animator) {}
-
-                                override fun onAnimationRepeat(animation: Animator) {}
-                            })
-                            start()
+                            ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
+                            layoutParams?.width = (activityWidth * 0.05).toInt()
+                            layoutParams?.height = (activityWidth * 0.05).toInt()
+                            visibility = View.VISIBLE
                         }
                     }
-                }
 
-                if(reward.experience > 0){
-                    for(i in 0 until nextInt(3, 7)){
-                        val currentXp = ImageView(activity)
+                    val newX = nextInt((startingPoint.x - (activityWidth * 0.075)).toInt(), (startingPoint.x + (activityWidth * 0.075)).toInt()).toFloat()
+                    val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
 
-                        floatingXps.add(i, ImageView(activity))
-                        parent.addView(currentXp)
-                        parent.invalidate()
-
-                        currentXp.post {
-                            currentXp.apply {
-                                setImageResource(R.drawable.xp)
-
-                                layoutParams!!.width = (activityWidth * 0.05).toInt()
-                                layoutParams!!.height = (activityWidth * 0.05).toInt()
-                                ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
-                                visibility = View.VISIBLE
-                            }
+                    //travel animation CC
+                    val travelXCC = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().x).apply{
+                        duration = 600
+                        addUpdateListener {
+                            currentCoin.x = it.animatedValue as Float
                         }
-
-                        val newX = nextInt((startingPoint.x - (activityWidth * 0.075)).toInt(), (startingPoint.x + (activityWidth * 0.075)).toInt()).toFloat()
-                        val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
-
-                        //travel animation XP
-                        val travelXXP = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsExperience().x).apply{
-                            duration = 700
-                            addUpdateListener {
-                                currentXp.x = it.animatedValue as Float
-                            }
+                    }
+                    val travelYCC = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().y).apply{
+                        duration = 600
+                        addUpdateListener {
+                            currentCoin.y = it.animatedValue as Float
                         }
-                        val travelYXP = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsExperience().y).apply{
-                            duration = 700
-                            addUpdateListener {
-                                currentXp.y = it.animatedValue as Float
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {}
+
+                            override fun onAnimationEnd(animation: Animator) {
+                                parent.removeView(currentCoin)
+                                propertiesBar.updateProperties()
+                                Handler().postDelayed({
+                                    if(propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
+                                }, 620)
                             }
-                            addListener(object : Animator.AnimatorListener {
-                                override fun onAnimationStart(animation: Animator) {}
 
-                                override fun onAnimationEnd(animation: Animator) {
-                                    parent.removeView(currentXp)
-                                    propertiesBar.fragmentBar.animateChanges()
-                                    Handler().postDelayed({
-                                        propertiesBar.detach()
-                                    }, 700)
-                                }
+                            override fun onAnimationCancel(animation: Animator) {}
 
-                                override fun onAnimationCancel(animation: Animator) {}
+                            override fun onAnimationRepeat(animation: Animator) {}
+                        })
+                    }
 
-                                override fun onAnimationRepeat(animation: Animator) {}
-                            })
+                    //spread animation CC
+                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
+                        duration = 200
+                        addUpdateListener {
+                            currentCoin.x = it.animatedValue as Float
                         }
+                        start()
+                    }
+                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
+                        duration = 200
+                        addUpdateListener {
+                            currentCoin.y = it.animatedValue as Float
+                        }
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {}
 
-                        //spread animation XP
-                        ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
-                            duration = 300
-                            addUpdateListener {
-                                currentXp.x = it.animatedValue as Float
+                            override fun onAnimationEnd(animation: Animator) {
+                                travelXCC.start()
+                                travelYCC.start()
                             }
-                            start()
-                        }
-                        ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
-                            duration = 300
-                            addUpdateListener {
-                                currentXp.y = it.animatedValue as Float
-                            }
-                            addListener(object : Animator.AnimatorListener {
-                                override fun onAnimationStart(animation: Animator) {}
 
-                                override fun onAnimationEnd(animation: Animator) {
-                                    travelXXP.start()
-                                    travelYXP.start()
-                                }
+                            override fun onAnimationCancel(animation: Animator) {}
 
-                                override fun onAnimationCancel(animation: Animator) {}
-
-                                override fun onAnimationRepeat(animation: Animator) {}
-                            })
-                            start()
-                        }
+                            override fun onAnimationRepeat(animation: Animator) {}
+                        })
+                        start()
                     }
                 }
             }
-        })
 
+            if((reward?.experience ?: 0) > 0){
+                for(i in 0 until nextInt(3, 7)){
+                    val currentXp = ImageView(activity)
 
+                    floatingXps.add(i, ImageView(activity))
+                    parent.addView(currentXp)
+                    parent.invalidate()
 
-        return ObjectAnimator()
+                    currentXp.post {
+                        currentXp.apply {
+                            setImageResource(R.drawable.xp)
+
+                            layoutParams!!.width = (activityWidth * 0.05).toInt()
+                            layoutParams!!.height = (activityWidth * 0.05).toInt()
+                            ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
+                            visibility = View.VISIBLE
+                        }
+                    }
+
+                    val newX = nextInt((startingPoint.x - (activityWidth * 0.075)).toInt(), (startingPoint.x + (activityWidth * 0.075)).toInt()).toFloat()
+                    val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
+
+                    //travel animation XP
+                    val travelXXP = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsExperience().x).apply{
+                        duration = 700
+                        addUpdateListener {
+                            currentXp.x = it.animatedValue as Float
+                        }
+                    }
+                    val travelYXP = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsExperience().y).apply{
+                        duration = 700
+                        addUpdateListener {
+                            currentXp.y = it.animatedValue as Float
+                        }
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {}
+
+                            override fun onAnimationEnd(animation: Animator) {
+                                parent.removeView(currentXp)
+                                propertiesBar.updateProperties()
+                                Handler().postDelayed({
+                                    if(propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
+                                }, 700)
+                            }
+
+                            override fun onAnimationCancel(animation: Animator) {}
+
+                            override fun onAnimationRepeat(animation: Animator) {}
+                        })
+                    }
+
+                    //spread animation XP
+                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
+                        duration = 300
+                        addUpdateListener {
+                            currentXp.x = it.animatedValue as Float
+                        }
+                        start()
+                    }
+                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
+                        duration = 300
+                        addUpdateListener {
+                            currentXp.y = it.animatedValue as Float
+                        }
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {}
+
+                            override fun onAnimationEnd(animation: Animator) {
+                                travelXXP.start()
+                                travelYXP.start()
+                            }
+
+                            override fun onAnimationCancel(animation: Animator) {}
+
+                            override fun onAnimationRepeat(animation: Animator) {}
+                        })
+                        start()
+                    }
+                }
+            }
+
+            if((reward?.cubix ?: 0) > 0){
+                for(i in 0 until nextInt(3, 7)){
+                    val currentCubix = ImageView(activity)
+
+                    floatingCubix.add(i, ImageView(activity))
+                    parent.addView(currentCubix)
+                    parent.invalidate()
+
+                    currentCubix.post {
+                        currentCubix.apply {
+                            setImageResource(R.drawable.crystal)
+
+                            layoutParams!!.width = (activityWidth * 0.05).toInt()
+                            layoutParams!!.height = (activityWidth * 0.05).toInt()
+                            ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
+                            visibility = View.VISIBLE
+                        }
+                    }
+
+                    val newX = nextInt((startingPoint.x - (activityWidth * 0.075)).toInt(), (startingPoint.x + (activityWidth * 0.075)).toInt()).toFloat()
+                    val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
+
+                    //travel animation Cubix
+                    val travelXCubix = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsCubix().x).apply{
+                        duration = 700
+                        addUpdateListener {
+                            currentCubix.x = it.animatedValue as Float
+                        }
+                    }
+                    val travelYCubix = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsCubix().y).apply{
+                        duration = 700
+                        addUpdateListener {
+                            currentCubix.y = it.animatedValue as Float
+                        }
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {}
+
+                            override fun onAnimationEnd(animation: Animator) {
+                                parent.removeView(currentCubix)
+                                propertiesBar.updateProperties()
+                                Handler().postDelayed({
+                                    if(propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
+                                }, 700)
+                            }
+
+                            override fun onAnimationCancel(animation: Animator) {}
+
+                            override fun onAnimationRepeat(animation: Animator) {}
+                        })
+                    }
+
+                    //spread animation Cubix
+                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
+                        duration = 300
+                        addUpdateListener {
+                            currentCubix.x = it.animatedValue as Float
+                        }
+                        start()
+                    }
+                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
+                        duration = 300
+                        addUpdateListener {
+                            currentCubix.y = it.animatedValue as Float
+                        }
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationStart(animation: Animator) {}
+
+                            override fun onAnimationEnd(animation: Animator) {
+                                travelXCubix.start()
+                                travelYCubix.start()
+                            }
+
+                            override fun onAnimationCancel(animation: Animator) {}
+
+                            override fun onAnimationRepeat(animation: Animator) {}
+                        })
+                        start()
+                    }
+                }
+            }
+
+            Handler().postDelayed({
+                reward?.receive()
+            }, 400)
+        }
+
+        if(propertiesBar.isShown){
+            process()
+        }else {
+            propertiesBar.attach()?.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    process()
+                }
+            })
+        }
+        return ObjectAnimator.ofFloat(0f, 0f).apply{
+            duration = 1500
+            start()
+        }
     }
 
     /**
      * Loading screen overlay, universally used to make user wait, with having just darken background, not entire screen.
      *
      * @property activity: Activity - used for display metrics and attaching generated views on the activity's main viewGroup
-     * @return ObjectAnimator. MUST DO: override onAnimationEnd method to end the animation properly, or use native method ObjectAnimator.cancel().
+     * @return ObjectAnimator. Override onAnimationEnd method to end the animation properly, or use native method ObjectAnimator.cancel().
      * @since Alpha 0.5.0.2, DEV version
      * @author Jakub Kostka
      */
-    fun createLoading(activity: Activity, startAutomatically: Boolean = true): ObjectAnimator {
+    fun createLoading(activity: GameActivity, startAutomatically: Boolean = true, cancelable: Boolean = false, listener: View.OnClickListener? = null): ObjectAnimator {
         val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
         val context = parent.context
 
-        val dm = DisplayMetrics()
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        val activityWidth = dm.widthPixels
+        val activityWidth = activity.dm.widthPixels
 
         val loadingBg = ImageView(context)
-        loadingBg.tag = "customLoadingBg"
-        loadingBg.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
-        loadingBg.visibility = View.VISIBLE
-        loadingBg.isClickable = true
-        loadingBg.isFocusable = true
-        loadingBg.setImageResource(R.drawable.darken_background)
-        loadingBg.alpha = 0.8f
+        loadingBg.apply {
+            tag = "customLoadingBg"
+            layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+            visibility = View.VISIBLE
+            isClickable = true
+            isFocusable = true
+            setImageResource(R.drawable.darken_background)
+            alpha = 0.8f
+        }
 
         val loadingImage = ImageView(context)
-        loadingImage.tag = "customLoadingImage"
-        loadingImage.setImageResource(R.drawable.icon_web)
-        loadingImage.visibility = View.VISIBLE
-        loadingImage.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
-        loadingImage.layoutParams.width = (activityWidth * 0.1).toInt()
-        loadingImage.layoutParams.height = (activityWidth * 0.1).toInt()
-        loadingImage.x = ((activityWidth / 2 - (activityWidth * 0.1 / 2).toInt()).toFloat())
-        loadingImage.y = (activityWidth * 0.05).toFloat()
+        loadingImage.apply {
+            tag = "customLoadingImage"
+            setImageResource(R.drawable.icon_web)
+            visibility = View.VISIBLE
+            layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
+            layoutParams.width = (activityWidth * 0.1).toInt()
+            layoutParams.height = (activityWidth * 0.1).toInt()
+            x = ((activityWidth / 2 - (activityWidth * 0.1 / 2).toInt()).toFloat())
+            y = (activityWidth * 0.05).toFloat()
+        }
 
         parent.addView(loadingBg)
         parent.addView(loadingImage)
+        if(cancelable){
+            val loadingCancel = Button(context, null, 0, R.style.AppTheme_Button)
+            loadingCancel.apply {
+                tag = "customLoadingCancel"
+                visibility = View.VISIBLE
+                text = "cancel"
+                layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)
+                x = ((activityWidth / 2 - (activityWidth * 0.1 / 2).toInt()).toFloat())
+                y = (activity.dm.heightPixels * 0.4).toFloat()
+                setOnClickListener(listener)
+            }
+            parent.addView(loadingCancel)
+        }
 
         val rotateAnimation: ObjectAnimator = ObjectAnimator.ofFloat(loadingImage ,
                 "rotation", 0f, 360f)
@@ -559,13 +998,14 @@ object SystemFlow{
                 super.onAnimationEnd(animation)
                 parent.removeView(parent.findViewWithTag<ImageView>("customLoadingImage"))
                 parent.removeView(parent.findViewWithTag<FrameLayout>("customLoadingBg"))
+                if(cancelable) parent.removeView(parent.findViewWithTag<Button>("customLoadingCancel"))
             }
 
-            override fun onAnimationStart(animation: Animator?) {
+            /*override fun onAnimationStart(animation: Animator?) {
                 super.onAnimationStart(animation)
                 loadingBg.bringToFront()
                 loadingImage.bringToFront()
-            }
+            }*/
         })
         rotateAnimation.duration = 900
         rotateAnimation.repeatCount = Animation.INFINITE

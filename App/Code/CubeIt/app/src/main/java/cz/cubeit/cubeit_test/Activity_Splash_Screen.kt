@@ -2,7 +2,6 @@ package cz.cubeit.cubeit_test
 
 import android.animation.ValueAnimator
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.animation.Animation
 import kotlinx.android.synthetic.main.activity_splash_screen.*
 import android.view.animation.RotateAnimation
@@ -17,7 +16,6 @@ import android.graphics.drawable.ColorDrawable
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Handler
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -31,7 +29,7 @@ import kotlin.system.exitProcess
 
 var textViewLog: WeakReference<TextView>? = null
 
-class Activity_Splash_Screen: AppCompatActivity(){
+class Activity_Splash_Screen: SystemFlow.GameActivity(R.layout.activity_splash_screen, ActivityType.SplashScreen, false){
 
     var keepSplash: Boolean = false
     var rocketTimer: TimerTask? = null
@@ -44,20 +42,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectivityManager.activeNetworkInfo
         return networkInfo != null && networkInfo.isConnected
-    }
-
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
     }
 
     override fun onStop() {
@@ -110,8 +94,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
-        setContentView(R.layout.activity_splash_screen)
         textViewLog = WeakReference(textViewLoadingLog)
 
         if(Data.loadingScreenType == LoadingType.RocketGamePad){
@@ -121,9 +103,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
             switchSplashScreenType.visibility = View.VISIBLE
             switchSplashScreenLoading.visibility = View.VISIBLE
         }
-
-        val metrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(metrics)
 
         System.gc()
         val opts = BitmapFactory.Options()
@@ -297,10 +276,10 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 imageViewSplashIcon.isEnabled = false
 
                 imageViewSplashRocket.detach()
-                imageViewSplashRocket.coordinatesRocket.update(0f, metrics.heightPixels.toFloat() / 2 - (metrics.widthPixels * 0.14 / 1.9 / 2).toInt(), imageViewSplashRocket)
-                imageViewSplashRocket.layoutParams.width = (metrics.widthPixels * 0.14).toInt()
+                imageViewSplashRocket.coordinatesRocket.update(0f, dm.heightPixels.toFloat() / 2 - (dm.widthPixels * 0.14 / 1.9 / 2).toInt(), imageViewSplashRocket)
+                imageViewSplashRocket.layoutParams.width = (dm.widthPixels * 0.14).toInt()
 
-                imageViewSplashRocket.init(layoutSplashScreen, metrics.widthPixels, metrics.heightPixels, 10, (metrics.widthPixels * 0.14).toInt(), (metrics.widthPixels * 0.14 / 1.9).toInt())
+                imageViewSplashRocket.init(layoutSplashScreen, dm.widthPixels, dm.heightPixels, 10, (dm.widthPixels * 0.14).toInt(), (dm.widthPixels * 0.14 / 1.9).toInt())
                 imageViewSplashRocket.initialize()
                 var endCount = 0
                 var ended = false
@@ -642,13 +621,11 @@ class Activity_Splash_Screen: AppCompatActivity(){
             }
         })
 
-
         imageViewSplashIG.setOnClickListener {
             val openURL = Intent(Intent.ACTION_VIEW)
             openURL.data = Uri.parse("https://www.instagram.com/cubeit_app/")
             startActivity(openURL)
         }
-
 
         imageViewSplashIcon.setOnClickListener {
             imageViewSplashText.visibility = View.VISIBLE
@@ -717,12 +694,6 @@ class Activity_Splash_Screen: AppCompatActivity(){
                 imageViewSplashIcon.scaleY = value
             }
             pumpInAnimation.start()
-        }
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
         }
 
     }

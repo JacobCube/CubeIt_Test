@@ -100,7 +100,7 @@ object FightSystem{
                     health = sourcePlayer?.health?.absoluteValue ?: 0.0
                     name = sourcePlayer?.username ?: ""
                     drawable = sourcePlayer?.charClass?.drawable ?: 0
-                    drawableBg = sourcePlayer?.drawableExt ?: 0
+                    drawableBg = sourcePlayer?.externalDrawable ?: 0
                     level = sourcePlayer?.level ?: 0
                     power = sourcePlayer?.power ?: 0
                 }
@@ -126,20 +126,32 @@ object FightSystem{
             return "$name, ${level}lvl."      //"stun: $stun% ${if(currentlyStunned) "(currently stunned)" else ""}</b>Health status: $statusWeight"
         }
 
-        fun attackMe(spell: Spell, attacker: Fighter){
+        /**
+         * @return Boolean - blocked
+         */
+        fun attackMe(spell: Spell, attacker: Fighter): Int{
+            attacker.useSpell(spell)
+
             val blockValue = if(this.activeSpell){
                 chosenSpell?.block ?: 1.0
             }else {
                 1.0
             }
+            Log.d("chosenSpell?.block", chosenSpell?.block.toString())
 
             var dmgToDeal = (spell.power.toDouble() * attacker.power.toDouble() * (blockValue) / 4)// / 100 * (sourceNPC?.armor ?: sourcePlayer?.armor!!)
             dmgToDeal -= dmgToDeal / 100 * (sourceNPC?.armor ?: sourcePlayer?.armor!!)
             dmgToDeal = if(dmgToDeal > 0) nextInt((dmgToDeal * 0.75).toInt(), (dmgToDeal * 1.5).toInt()).toDouble() else 0.0
-            attacker.health += dmgToDeal.safeDivider(100.0) * (spell.lifeSteal + (sourceNPC?.lifeSteal ?: sourcePlayer?.lifeSteal!!))
-            health -= dmgToDeal
-            stun += spell.stun
 
+            stun += spell.stun
+            if(nextInt(0, 101) in 0..(sourceNPC?.block?.toInt() ?: 0)){
+                dmgToDeal = 0.0
+            }else {
+                attacker.health += (dmgToDeal.safeDivider(100.0) * (spell.lifeSteal + (sourceNPC?.lifeSteal ?: sourcePlayer?.lifeSteal!!))).toInt()
+                Log.d("attacker lifesteal", (dmgToDeal.safeDivider(100.0) * (spell.lifeSteal + (sourceNPC?.lifeSteal ?: sourcePlayer?.lifeSteal!!))).toString())
+                health -= dmgToDeal.toInt()
+            }
+            return dmgToDeal.toInt()
         }
 
         fun startMyRound(){
@@ -250,11 +262,19 @@ object FightSystem{
     class UniversalFightOffline(
             var rounds: MutableList<OfflineRound>,
             var allies: MutableList<Fighter> = mutableListOf(),
-            var enemies: MutableList<Fighter> = mutableListOf()
+            var enemies: MutableList<Fighter> = mutableListOf(),
+            var alliesName: String = "",
+            var enemiesName: String= "",
+            var alliesFame: Int? = null,
+            var enemiesFame: Int? = null
     ): Serializable  {
-        var initialized = 0
+        var winnerTeam: FighterType? = null
         var roundCounter = -1
         var waves = 0
+        var fameReceived = 0
+        var fightCompleted = false
+        var isTestFight = false
+        var isFameFight = false
 
         @Transient @Exclude var myselfIndex = 0
         @Transient @Exclude var allyIndex = 0
@@ -316,10 +336,63 @@ object FightSystem{
             Log.d("newWave", "newWave called")
         }
 
+        private fun endFight(team: FighterType, reward: Reward?){
+            winnerTeam = team
+            if(isTestFight || !isFameFight) return
+
+            var fameGained = nextInt(0, 76)
+
+            val log: FightLog
+            val message = if(team == FighterType.Ally){
+                fameGained = (fameGained.toDouble() * (enemiesFame ?: 0).safeDivider(alliesFame ?: 0)).toInt()
+                fameGained = kotlin.math.min(fameGained, 75)
+
+                log = FightLog(
+                        winnerName = alliesName,
+                        looserName = enemiesName,
+                        reward = reward ?: Reward(),
+                        fame = fameGained
+                )
+                InboxMessage(
+                        status = MessageStatus.Fight,
+                        receiver = enemiesName,
+                        sender = alliesName,
+                        subject = "$alliesName fought you!",
+                        content = "$alliesName fought you and you lost!\nYou lost $fameGained fame.\nNow it's your turn to decide who's gonna win the war.",
+                        fightResult = false
+                )
+            }else {
+                fameGained = (fameGained.toDouble() * (alliesFame ?: 0).safeDivider(enemiesFame ?: 0)).toInt()
+                fameGained = kotlin.math.min(fameGained, 75)
+
+                log = FightLog(
+                        winnerName = enemiesName,
+                        looserName = alliesName,
+                        reward = reward ?: Reward(),
+                        fame = fameGained
+                )
+                InboxMessage(
+                        status = MessageStatus.Fight,
+                        receiver = enemiesName,
+                        sender = alliesName,
+                        reward = reward,
+                        subject = "$alliesName fought you!",
+                        content = "$alliesName fought you and you won!\nYou won $fameGained fame.\nNow it's your turn to decide who's gonna win the war.",
+                        fightResult = true
+                )
+            }
+
+            fameReceived = fameGained
+            log.init().addOnCompleteListener {
+                message.fightID = log.id.toString()
+                Data.player.writeInbox(enemiesName, message)
+            }
+        }
+
         /**
          * validates the current state of the fight - no longer valid enemies and counter length
          */
-        private fun prepareRound(): Boolean{
+        fun prepareRound(reward: Reward?): Boolean{
             initialize()
             removeInvalid()
 
@@ -330,12 +403,24 @@ object FightSystem{
                 currentAlly?.chosenSpell = null
                 currentEnemy?.chosenSpell = null
             }
-            return allies.isEmpty() || enemies.isEmpty()
+            return when {
+                allies.isEmpty() -> {
+                    endFight(FighterType.Enemy, reward)
+                    true
+                }
+                enemies.isEmpty() -> {
+                    endFight(FighterType.Ally, reward)
+                    true
+                }
+                else -> {
+                    false
+                }
+            }
         }
 
-        fun processOfflineRound(): Boolean {
+        fun processOfflineRound(reward: Reward?): Boolean {
             roundCounter++
-            val result = prepareRound()
+            val result = prepareRound(reward)
             if(result) return result
 
             var currentAlly = when {
@@ -405,11 +490,7 @@ object FightSystem{
                     if(roundCounter >= currentFighter.sourcePlayer!!.chosenSpellsDefense.size || currentFighter.sourcePlayer!!.chosenSpellsDefense[roundCounter] == null){
 
                         /*every player has his own index of his chosen spells, which has to be checked and managed,
-                         just as the generic round.roundcounter, which is used until possible
-
-                         checked 06-11-2019, needs to be tested furthermore
-                         */
-
+                         just as the generic round.roundcounter, which is used until possible*/
                         currentFighter.chosenSpellsIndex = if(currentFighter.chosenSpellsIndex ?: 0 >= 20 || currentFighter.sourcePlayer!!.chosenSpellsDefense[currentFighter.chosenSpellsIndex ?: 0] == null){
                             0
                         }else {
@@ -443,6 +524,10 @@ object FightSystem{
             var roundCounter: Int = 0
     ): Serializable {
         var whoStarts: FighterType = if(nextInt(0, 2) == 0) FighterType.Enemy else FighterType.Ally
+
+        fun chooseWhoStarts(){
+            whoStarts = if(nextInt(0, 2) == 0) FighterType.Enemy else FighterType.Ally
+        }
     }
 
     class VisualComponent(
@@ -462,7 +547,7 @@ object FightSystem{
             shownFighterUUID = fighter.uuid
             healthComponent.init((fighter.sourcePlayer?.health ?: fighter.sourceNPC?.health!!).toInt())
             healthComponent.update(fighter.health.toInt())
-            energyComponent.init((fighter.sourcePlayer?.learnedSpells?.maxBy { it?.energy ?: 0 } ?: fighter.sourceNPC?.allowedSpells?.maxBy { it.energy }!!).energy)
+            energyComponent.init(fighter.sourcePlayer?.learnedSpells?.maxBy { it?.energy ?: 0 }?.energy ?: fighter.sourceNPC?.allowedSpells?.maxBy { it.energy }!!.energy)
             energyComponent.update(fighter.energy)
             stunComponent.init(100)
             stunComponent.update(fighter.stun)
@@ -471,7 +556,7 @@ object FightSystem{
             imageView.setImageResource(fighter.drawable)
             imageView.setBackgroundResource(fighter.drawableBg)
 
-            var start = 0f
+            val start: Float
 
             val target = if(team == FighterType.Enemy){
                 start = dm.widthPixels.toFloat()
@@ -513,24 +598,24 @@ object FightSystem{
 
         fun init(newValue: Int) {
             maximum = newValue
-            textValue.setHTMLText("$newValue / $newValue")
+            textValue.setHTMLText("${GameFlow.numberFormatString(newValue)} / ${GameFlow.numberFormatString(newValue)}")
             progressValue.max = newValue
             progressValue.progress = newValue
         }
 
         fun update(newValue: Int){
             if(animationLimiter == null || animationLimiter?.isRunning == false){
-                ValueAnimator.ofInt(if(progressValue.progress == newValue) 0 else progressValue.progress, newValue).apply{                                  //Animating the differences in progress bar
+                ValueAnimator.ofInt(progressValue.progress, newValue).apply{                                  //Animating the differences in progress bar
                     duration = 600
                     addUpdateListener {
                         progressValue.progress = it.animatedValue as Int
-                        textValue.setHTMLText("${it.animatedValue as Int}")
+                        textValue.setHTMLText(GameFlow.numberFormatString(it.animatedValue as Int))
                     }
                     addListener(object : Animator.AnimatorListener {
                         override fun onAnimationStart(animation: Animator) {}
 
                         override fun onAnimationEnd(animation: Animator) {
-                            textValue.setHTMLText("$newValue / $maximum")
+                            textValue.setHTMLText("${GameFlow.numberFormatString(newValue)} / ${GameFlow.numberFormatString(maximum)}")
                         }
 
                         override fun onAnimationCancel(animation: Animator) {}

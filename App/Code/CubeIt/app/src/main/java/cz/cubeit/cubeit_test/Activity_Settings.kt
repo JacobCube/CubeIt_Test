@@ -4,13 +4,9 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Rect
 import android.os.*
-import androidx.appcompat.app.AppCompatActivity
-import android.util.DisplayMetrics
 import android.view.*
 import android.view.animation.AnimationUtils
-import android.widget.FrameLayout
 import android.widget.SeekBar
 import androidx.core.content.res.ResourcesCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -24,10 +20,7 @@ import android.os.VibrationEffect
 import android.text.method.PasswordTransformationMethod
 
 
-class ActivitySettings : AppCompatActivity(){
-
-    var displayY = 0.0
-    private lateinit var frameLayoutMenu: FrameLayout
+class ActivitySettings : SystemFlow.GameActivity(R.layout.activity_settings, ActivityType.Settings, true, R.id.imageViewActivitySettings, R.color.colorSecondary){
     private val RC_SIGN_IN = 9001
     private var newPasswordShown = false
 
@@ -57,66 +50,16 @@ class ActivitySettings : AppCompatActivity(){
         this.overridePendingTransition(0,0)
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
-        frameLayoutMenu.getGlobalVisibleRect(viewRect)
-
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenu.y <= (displayY * 0.83).toFloat()) {
-
-            ValueAnimator.ofFloat(frameLayoutMenu.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenu.y/displayY * 160).toLong()
-                addUpdateListener {
-                    frameLayoutMenu.y = it.animatedValue as Float
-                }
-                start()
-            }
-
-        }
-        return super.dispatchTouchEvent(ev)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         setContentView(R.layout.activity_settings)
 
         switchNotificationsInbox.isChecked = Data.player.notificationsInbox
         switchNotificationsEvent.isChecked = Data.player.notificationsEvent
         switchNotificationsFaction.isChecked = Data.player.notificationsFaction
         switchVibrateEffects.isChecked = Data.player.vibrateEffects
-        switchSounds.isChecked = Data.player.music
+        switchSettingsMusic.isChecked = Data.player.music
         switchAppearOnTop.isChecked = Data.player.appearOnTop
-
-
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        displayY = dm.heightPixels.toDouble()
-
-        frameLayoutMenu = frameLayoutMenuSettings
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuSettings, Fragment_Menu_Bar.newInstance(R.id.imageViewActivitySettings, R.id.frameLayoutMenuSettings, R.id.homeButtonBackSettings, R.id.imageViewMenuUpSettings)).commitNow()
-        frameLayoutMenuSettings.y = dm.heightPixels.toFloat()
-
-        val displayY = dm.heightPixels.toDouble()
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
-        }
 
         seekBarSettingsTextSize.progress = (Data.player.textSize - 16f).toInt()
         textViewSettingsSeekBar.textSize = Data.player.textSize
@@ -144,12 +87,12 @@ class ActivitySettings : AppCompatActivity(){
             if(++galleryCounter >= gallery.size) galleryCounter = 0
             textViewSettingsTextFont.text = gallery[galleryCounter]
             Data.player.textFont = gallery[galleryCounter]
-            textViewSettingsTextFont.typeface = ResourcesCompat.getFont(this, Data.fontGallery[Data.player.textFont]!!)
-            textViewSettingsSeekBar.typeface = ResourcesCompat.getFont(this, Data.fontGallery[Data.player.textFont]!!)
+            textViewSettingsTextFont.typeface = ResourcesCompat.getFont(this, Data.fontGallery[Data.player.textFont] ?: 0)
+            textViewSettingsSeekBar.typeface = ResourcesCompat.getFont(this, Data.fontGallery[Data.player.textFont] ?: 0)
             SystemFlow.writeFileText(this@ActivitySettings, "textFont${Data.player.username}.data", Data.player.textFont)
         }
 
-        switchSounds.setOnCheckedChangeListener { _, isChecked ->
+        switchSettingsMusic.setOnCheckedChangeListener { _, isChecked ->
             val svc = Intent(this, Data.bgMusic::class.java)
             if(isChecked){
                 startService(svc)
@@ -159,6 +102,14 @@ class ActivitySettings : AppCompatActivity(){
             }
             Data.player.music = isChecked
         }
+        switchSettingsSoundEffects.setOnCheckedChangeListener { _, isChecked ->
+            Data.player.soundEffects = isChecked
+        }
+
+        if(Data.player.vibrationEasterEgg){
+            buttonSettingsVibrate.visibility = View.VISIBLE
+            editTextSettingsVibrate.visibility = View.VISIBLE
+        }
 
         var easterEggCounter = 0
         switchVibrateEffects.setOnCheckedChangeListener { _, isChecked ->
@@ -166,9 +117,10 @@ class ActivitySettings : AppCompatActivity(){
             SystemFlow.writeFileText(this, "vibrateEffect${Data.player.username}.data", isChecked.toString())
 
             if(isChecked){
-                if(easterEggCounter >= 5){
+                if(easterEggCounter >= 5 && !Data.player.vibrationEasterEgg){
                     buttonSettingsVibrate.visibility = View.VISIBLE
                     editTextSettingsVibrate.visibility = View.VISIBLE
+                    Data.player.vibrationEasterEgg = true
                     Snackbar.make(switchVibrateEffects, "Morse vibrations easter egg unlocked!", Snackbar.LENGTH_LONG).show()
                 }else {
                     easterEggCounter++
@@ -289,16 +241,16 @@ class ActivitySettings : AppCompatActivity(){
             Data.player.notificationsEvent = isChecked
         }
 
-        imageViewSettingsBugIcon.layoutParams.height = (displayY/10 * 1.8).toInt()
-        imageViewSettingsBugIcon.layoutParams.width = (displayY/10 * 1.8).toInt()
+        imageViewSettingsBugIcon.layoutParams.height = (dm.heightPixels / 10 * 1.8).toInt()
+        imageViewSettingsBugIcon.layoutParams.width = (dm.heightPixels / 10 * 1.8).toInt()
         imageViewSettingsBugIcon.y = 0f
-        frameLayoutBugReport.layoutParams.height = (displayY*0.82 - imageViewSettingsBugIcon.layoutParams.height).toInt()
+        frameLayoutBugReport.layoutParams.height = (dm.heightPixels * 0.82 - imageViewSettingsBugIcon.layoutParams.height).toInt()
         frameLayoutBugReport.y =  0f - frameLayoutBugReport.layoutParams.height
 
         imageViewSettingsBugIcon.setOnClickListener {
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutBugReport, Fragment_Bug_report()).commitNow()
 
-            if(imageViewSettingsBugIcon.y == (displayY*0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat()){
+            if(imageViewSettingsBugIcon.y == (dm.heightPixels * 0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat()){
                 ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, 0f    /*imageViewBugIcon.layoutParams.width.toFloat()*/).apply{
                     duration = 800
                     addUpdateListener {
@@ -308,7 +260,7 @@ class ActivitySettings : AppCompatActivity(){
                     start()
                 }
             }else{
-                ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, (displayY*0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
+                ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, (dm.heightPixels * 0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
                     duration = 800
                     addUpdateListener {
                         imageViewSettingsBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width
@@ -320,7 +272,7 @@ class ActivitySettings : AppCompatActivity(){
         }
     }
 
-    fun firebaseAuthWithGoogle(acct: GoogleSignInAccount){
+    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount){
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
 
         Data.player.userSession.linkWithCredential(credential).addOnCompleteListener {

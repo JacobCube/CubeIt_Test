@@ -1,53 +1,12 @@
 package cz.cubeit.cubeit_test
 
 import android.animation.ValueAnimator
-import android.content.Context
 import android.graphics.BitmapFactory
-import android.graphics.Rect
 import android.os.Bundle
-import android.os.Handler
-import androidx.appcompat.app.AppCompatActivity
-import android.util.DisplayMetrics
 import android.util.Log
-import android.view.MotionEvent
-import android.view.View
-import android.view.WindowManager
 import kotlinx.android.synthetic.main.activity_story.*
 
-class Activity_Story: AppCompatActivity(){
-
-    var displayY = 0.0
-    var displayX = 0.0
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val viewRect = Rect()
-        frameLayoutMenuStory.getGlobalVisibleRect(viewRect)
-
-        if (!viewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && frameLayoutMenuStory.y <= (displayY * 0.83).toFloat()) {
-
-            ValueAnimator.ofFloat(frameLayoutMenuStory.y, displayY.toFloat()).apply {
-                duration = (frameLayoutMenuStory.y/displayY * 160).toLong()
-                addUpdateListener {
-                    frameLayoutMenuStory.y = it.animatedValue as Float
-                }
-                start()
-            }
-        }
-        return super.dispatchTouchEvent(ev)
-    }
+class Activity_Story: SystemFlow.GameActivity(R.layout.activity_story, ActivityType.Story, true, R.id.imageViewStoryBg){
 
     override fun onPause() {
         super.onPause()
@@ -56,26 +15,8 @@ class Activity_Story: AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
-        setContentView(R.layout.activity_story)
 
-        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutMenuStory, Fragment_Menu_Bar.newInstance(R.id.imageViewStoryBg, R.id.frameLayoutMenuStory, R.id.homeButtonBackStory, R.id.imageViewMenuUpStory)).commit()
         supportFragmentManager.beginTransaction().replace(R.id.frameLayoutStoryOverview, Fragment_Story_Overview()).commit()
-
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                Handler().postDelayed({hideSystemUI()},1000)
-            }
-        }
-
-        val dm = DisplayMetrics()
-        val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(dm)
-        displayY = dm.heightPixels.toDouble()
-        displayX = dm.widthPixels.toDouble()
-
-        frameLayoutMenuStory.y = displayY.toFloat()
-        frameLayoutStoryOverview.x = (frameLayoutStoryQuest.width - frameLayoutStoryOverview.width).toFloat()
 
         System.gc()
         val opts = BitmapFactory.Options()

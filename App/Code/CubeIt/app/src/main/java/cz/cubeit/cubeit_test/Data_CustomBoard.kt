@@ -62,7 +62,7 @@ object CustomBoard: Serializable {
 
     class BoardList(
             var list: MutableList<*> = mutableListOf<String>(),
-            var captured: Date = java.util.Calendar.getInstance().time,
+            var captured: Date = Calendar.getInstance().time,
             var type: BoardType = BoardType.Players
     ): Serializable {
 
@@ -88,7 +88,7 @@ object CustomBoard: Serializable {
 
         fun setUpNew(list: MutableList<*>, context: Context){
             this.list = list
-            this.captured = java.util.Calendar.getInstance().time
+            this.captured = Calendar.getInstance().time
 
             SystemFlow.writeObject(context, "boardList${this.type}.data", this)
         }
@@ -112,7 +112,7 @@ object CustomBoard: Serializable {
                 return true
             }
 
-            val currentTime = java.util.Calendar.getInstance().time
+            val currentTime = Calendar.getInstance().time
             val diff = kotlin.math.abs(currentTime.time - captured.time)
 
             Log.d("isLoadable", "diff ${diff / 1000 / 60} boundary ${GenericDB.balance.loadBoardMinuteDelay + 15}")

@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import kotlinx.android.synthetic.main.fragment_game_properties_bar.view.*
 
 class FragmentGamePropertiesBar : Fragment() {
@@ -38,6 +39,10 @@ class FragmentGamePropertiesBar : Fragment() {
         val coords = intArrayOf(0, 0)
         tempView.textViewGamePropertiesXp.getLocationOnScreen(coords)
         return Coordinates(coords[0].toFloat(), coords[1].toFloat())
+    }
+
+    fun getActionBackground(): ImageView {
+        return tempView.imageViewGamePropertiesActionBg
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -80,7 +85,7 @@ class FragmentGamePropertiesBar : Fragment() {
                 ObjectAnimator.ofInt(tempView.progressBarGamePropertiesXp.progress, oldMax).apply{
                     duration = 400
                     addUpdateListener {
-                        tempView.textViewGamePropertiesCubix.setHTMLText((it.animatedValue as Int).toString() + " / " + tempView.progressBarGamePropertiesXp.max)
+                        tempView.textViewGamePropertiesXp.setHTMLText((it.animatedValue as Int).toString() + " / " + tempView.progressBarGamePropertiesXp.max)
                         tempView.progressBarGamePropertiesXp.progress = it.animatedValue as Int
                     }
                     start()
@@ -92,7 +97,7 @@ class FragmentGamePropertiesBar : Fragment() {
                     ObjectAnimator.ofInt(0, Data.player.experience).apply{
                         duration = 400
                         addUpdateListener {
-                            tempView.textViewGamePropertiesCubix.setHTMLText((it.animatedValue as Int).toString() + " / " + tempView.progressBarGamePropertiesXp.max)
+                            tempView.textViewGamePropertiesXp.setHTMLText((it.animatedValue as Int).toString() + " / " + tempView.progressBarGamePropertiesXp.max)
                             tempView.progressBarGamePropertiesXp.progress = it.animatedValue as Int
                         }
                         start()
@@ -102,7 +107,7 @@ class FragmentGamePropertiesBar : Fragment() {
                 ObjectAnimator.ofInt(tempView.progressBarGamePropertiesXp.progress, Data.player.experience).apply{
                     duration = 400
                     addUpdateListener {
-                        tempView.textViewGamePropertiesCubix.setHTMLText((it.animatedValue as Int).toString() + " / " + tempView.progressBarGamePropertiesXp.max)
+                        tempView.textViewGamePropertiesXp.setHTMLText((it.animatedValue as Int).toString() + " / " + tempView.progressBarGamePropertiesXp.max)
                         tempView.progressBarGamePropertiesXp.progress = it.animatedValue as Int
                     }
                     start()
