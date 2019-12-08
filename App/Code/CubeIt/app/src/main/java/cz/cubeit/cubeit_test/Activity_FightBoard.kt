@@ -5,7 +5,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -363,7 +365,6 @@ class ActivityFightBoard: SystemFlow.GameActivity(R.layout.activity_fight_board,
                 }
             }
 
-            //CustomBoard.playerListReturn =
             (listViewBoardRecords.adapter as FightBoardPlayerList).notifyDataSetChanged()
         }
 
@@ -374,6 +375,7 @@ class ActivityFightBoard: SystemFlow.GameActivity(R.layout.activity_fight_board,
             val viewPop:View = layoutInflater.inflate(R.layout.pop_up_board_filter, null, false)
             window.elevation = 0.0f
             window.contentView = viewPop
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
             val spinner: Spinner = viewPop.spinnerBoardFilterCharClass
             val username: EditText = viewPop.editTextBoardFilterUsername
@@ -390,9 +392,7 @@ class ActivityFightBoard: SystemFlow.GameActivity(R.layout.activity_fight_board,
                     R.array.charclasses,
                     R.layout.spinner_inbox_item
             ).also { adapter ->
-                // Specify the layout to use when the list of choices appears
                 adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
-                // Apply the adapter to the spinner
                 spinner.adapter = adapter
             }
 

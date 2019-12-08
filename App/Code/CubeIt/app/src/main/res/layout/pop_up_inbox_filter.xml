@@ -111,14 +111,15 @@
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
     <cz.cubeit.cubeit_test.CustomEditText
-        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxFilterReceiver"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:ems="10"
         android:hint="Receiver"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="text"
         android:nextFocusLeft="@+id/editTextInboxFilterSubject"
         android:nextFocusRight="@+id/editTextInboxFilterSubject"
@@ -134,15 +135,16 @@
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
     <cz.cubeit.cubeit_test.CustomEditText
-        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxFilterDateTo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:ems="10"
         android:focusable="false"
         android:hint="until"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="date|datetime"
         android:nextFocusLeft="@+id/spinnerInboxFilterCategory"
         android:nextFocusRight="@+id/spinnerInboxFilterCategory"
@@ -195,15 +197,17 @@
     <Spinner
         android:id="@+id/spinnerInboxFilterCategory"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:background="@null"
         android:nextFocusLeft="@+id/editTextInboxFilterSender"
         android:nextFocusRight="@+id/editTextInboxFilterSender"
         android:nextFocusUp="@+id/editTextInboxFilterSender"
         android:nextFocusDown="@+id/editTextInboxFilterSender"
         android:nextFocusForward="@+id/editTextInboxFilterSender"
-        app:layout_constraintBottom_toTopOf="@+id/guideline154"
+        android:popupBackground="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
@@ -232,14 +236,15 @@
         app:layout_constraintTop_toTopOf="@+id/guideline157" />
 
     <cz.cubeit.cubeit_test.CustomEditText
-        android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxFilterContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:ems="10"
         android:hint="Content contains"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="text"
         android:nextFocusLeft="@+id/buttonAccept"
         android:nextFocusRight="@+id/buttonAccept"

@@ -424,6 +424,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
                 window.contentView = viewPop
                 window.isOutsideTouchable = true
                 window.isFocusable = false
+                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             }
 
             override fun onClick(x: Float, y: Float) {

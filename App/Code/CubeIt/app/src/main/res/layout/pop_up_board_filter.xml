@@ -36,10 +36,13 @@
 
     <ImageView
         android:id="@+id/imageViewBoardFilterClose"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
         android:src="@drawable/close_image"
         android:tint="@color/red_error"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintBottom_toTopOf="@+id/guideline61"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline60"
@@ -51,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.9" />
+        app:layout_constraintGuide_percent="0.92" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline61"
@@ -64,7 +67,6 @@
         android:id="@+id/editTextBoardFilterUsername"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:ems="10"
@@ -81,15 +83,13 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/quideline153"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline311"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
     <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextBoardFilterLevelBottom"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:ems="10"
@@ -106,7 +106,7 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline154"
         app:layout_constraintEnd_toStartOf="@+id/guideline153"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline311"
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
 
     <cz.cubeit.cubeit_test.CustomEditText
@@ -161,14 +161,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
+        app:layout_constraintGuide_percent="0.59" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline153"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.25" />
+        app:layout_constraintGuide_percent="0.34" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline311"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/quideline153"
@@ -202,7 +209,6 @@
         android:id="@+id/checkBoxBoardFilterActive"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
         android:nextFocusLeft="@+id/checkBoxBoardFilterActive"
         android:nextFocusRight="@+id/checkBoxBoardFilterActive"
         android:nextFocusUp="@+id/checkBoxBoardFilterActive"
@@ -212,22 +218,23 @@
         android:textColor="@color/loginColor"
         app:layout_constraintBottom_toBottomOf="@+id/editTextBoardFilterLevelBottom"
         app:layout_constraintEnd_toStartOf="@+id/guideline60"
-        app:layout_constraintHorizontal_bias="0.39"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/editTextBoardFilterLevelBottom"
         app:layout_constraintVertical_bias="0.0" />
 
     <Spinner
         android:id="@+id/spinnerBoardFilterCharClass"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="2dp"
+        android:layout_marginTop="4dp"
+        android:background="@null"
+        android:popupBackground="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center_vertical"
         android:textColor="@color/loginColor"
-        app:layout_constraintBottom_toTopOf="@+id/guideline157"
-        app:layout_constraintStart_toStartOf="@+id/editTextBoardFilterLevelBottom"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="@+id/guideline311"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

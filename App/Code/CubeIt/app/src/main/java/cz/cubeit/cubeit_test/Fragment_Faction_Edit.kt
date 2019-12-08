@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.row_faction_invitation.view.*
 
 
 class Fragment_Faction_Edit : Fragment() {
-    var inviteAllies: MutableList<String> = Data.player.allies.toTypedArray().toMutableList()
+    var inviteAllies: MutableList<String> = mutableListOf()
     lateinit var viewTemp: View
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
@@ -44,6 +44,10 @@ class Fragment_Faction_Edit : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewTemp = inflater.inflate(R.layout.fragment_faction_edit, container, false)
 
+        for(i in Data.player.socials.filter { it.type == SocialItemType.Ally }){
+            inviteAllies.add(i.username)
+        }
+
         return viewTemp
     }
 
@@ -53,7 +57,7 @@ class Fragment_Faction_Edit : Fragment() {
     }
 
 
-    class FactionMemberListEdit(val parent: Fragment_Faction_Edit, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true, val resources: Resources) : BaseAdapter() {
+    class FactionMemberListEdit(val parent: Fragment_Faction_Edit, var collection: MutableList<String> = mutableListOf(), val add: Boolean = true, val resources: Resources) : BaseAdapter() {
 
         override fun getCount(): Int {
             return collection.size

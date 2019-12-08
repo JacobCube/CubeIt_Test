@@ -1281,8 +1281,7 @@ open class Player(
             field = value
         }
     var online: Boolean = true
-    var allies: MutableList<String> = mutableListOf("MexxFM")
-    var inviteBy: String? = null
+    var invitedBy: String? = null
     var profilePicDrawableIn: String = "00000"
     @Exclude @Transient var profilePicDrawable: Int = 0
         @Exclude get(){
@@ -1299,7 +1298,7 @@ open class Player(
     @Transient @Exclude var textSize: Float = 16f
     @Transient @Exclude var textFont: String = "average_sans"
     @Transient @Exclude var vibrateEffects: Boolean = true
-    @Transient @Exclude var socials: MutableList<SocialItem> = mutableListOf()
+    @Transient @Exclude var socials: MutableList<SocialItem> = mutableListOf(SocialItem(SocialItemType.Ally, "MexxFM"), SocialItem(SocialItemType.Ally, "Support"))
 
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
@@ -1375,12 +1374,27 @@ open class Player(
         }
     }
 
-    fun requestSocialAlly(usernameIn: String, drawableIn: String): Task<Void> {
+    fun requestSocialAlly(usernameIn: String, drawableIn: String = ""): Task<Void> {
         val db = FirebaseFirestore.getInstance()
+
+        this.socials.removeAll { it.username == usernameIn }
         this.socials.add(SocialItem(SocialItemType.Sent, usernameIn, drawableIn))
 
         return db.collection("users").document(usernameIn).collection("Allies").document(this.username)
-                .set(SocialItem(SocialItemType.Received, this.username, profilePicDrawableIn))
+                .set(SocialItem(SocialItemType.Received, this.username, profilePicDrawableIn)).addOnSuccessListener {
+                    Data.player.writeInbox(
+                            usernameIn,
+                            InboxMessage(
+                                    status = MessageStatus.Allies,
+                                    receiver = usernameIn,
+                                    sender = Data.player.username,
+                                    subject = "Ally request from ${Data.player.username}",
+                                    content = "${Data.player.username} wants to become your ally. \n If you accept, ${Data.player.username} can invite you to various events and factions.",
+                                    isInvitation1 = true,
+                                    invitation = Invitation(Data.player.username, " wants to become your ", "ally", InvitationType.ally, 0, "")
+                            )
+                    )
+                }
     }
 
     fun acceptSocialAlly(item: SocialItem, context: Context): Task<DocumentSnapshot> {
@@ -1537,8 +1551,7 @@ open class Player(
         userString["factionName"] = this.factionName
         userString["factionID"] = this.factionID
         userString["factionRole"] = this.factionRole
-        userString["allies"] = this.allies
-        userString["inviteBy"] = this.inviteBy
+        userString["inviteBy"] = this.invitedBy
         userString["profilePicDrawableIn"] = this.profilePicDrawableIn
         userString["gold"] = this.gold
         userString["cubix"] = this.cubix
@@ -1595,8 +1608,7 @@ open class Player(
         userString["factionName"] = this.factionName
         userString["factionID"] = this.factionID
         userString["factionRole"] = this.factionRole
-        userString["allies"] = this.allies
-        userString["inviteBy"] = this.inviteBy
+        userString["inviteBy"] = this.invitedBy
         userString["profilePicDrawableIn"] = this.profilePicDrawableIn
         userString["gold"] = this.gold
         userString["cubix"] = this.cubix
@@ -1950,8 +1962,7 @@ open class Player(
                 this.factionName = loadedPlayer.factionName
                 this.factionID = loadedPlayer.factionID
                 this.factionRole = loadedPlayer.factionRole
-                this.allies = loadedPlayer.allies
-                this.inviteBy = loadedPlayer.inviteBy
+                this.invitedBy = loadedPlayer.invitedBy
                 this.profilePicDrawableIn = loadedPlayer.profilePicDrawableIn
                 this.gold = loadedPlayer.gold
                 this.rocketGameScoreSeconds = loadedPlayer.rocketGameScoreSeconds
@@ -2209,7 +2220,7 @@ enum class SocialItemType{
 data class SocialItem(
         var type: SocialItemType = SocialItemType.Received,
         var username: String,
-        var drawableIn: String
+        var drawableIn: String = ""
 ){
     var capturedAt: Date = Calendar.getInstance().time
     var drawable: Int = 0
@@ -4126,9 +4137,7 @@ enum class FactionRole: Serializable{
 data class FactionMember(
         var username: String = "",
         var role: FactionRole = FactionRole.MEMBER,
-        var level: Int = 1,
-        var allies: MutableList<String> = mutableListOf()
-        //var faction: Faction = Faction("")
+        var level: Int = 1
 ): Comparable<FactionMember>, Serializable{
 
     var captureDate: Date = java.util.Calendar.getInstance().time
@@ -4167,7 +4176,6 @@ data class FactionMember(
         var result = username.hashCode()
         result = 31 * result + role.hashCode()
         result = 31 * result + level
-        result = 31 * result + allies.hashCode()
         result = 31 * result + captureDate.hashCode()
         result = 31 * result + profilePictureID.hashCode()
         result = 31 * result + goldGiven.hashCode()
@@ -4184,7 +4192,6 @@ data class FactionMember(
         if (username != other.username) return false
         if (role != other.role) return false
         if (level != other.level) return false
-        if (allies != other.allies) return false
         if (captureDate != other.captureDate) return false
         if (profilePictureID != other.profilePictureID) return false
         if (goldGiven != other.goldGiven) return false
@@ -4244,7 +4251,7 @@ class Faction(
         }*/
     var externalDescription: String = "This is external description."
     var id: Int = 0
-    var members: HashMap<String, FactionMember> = hashMapOf(this.leader to FactionMember(this.leader, FactionRole.LEADER, 1, Data.player.allies))
+    var members: HashMap<String, FactionMember> = hashMapOf(this.leader to FactionMember(this.leader, FactionRole.LEADER, 1))
     var allyFactions: HashMap<String, String> = hashMapOf()
     var enemyFactions: HashMap<String, String> = hashMapOf()
     var pendingInvitationsPlayer: MutableList<String> = mutableListOf()
@@ -4506,7 +4513,7 @@ class Invitation(
             InvitationType.faction -> {
                 if(Data.player.factionID == null){
                     db.collection("factions").document(this.factionID.toString()).update("pendingInvitationsPlayer", FieldValue.arrayRemove(Data.player.username))
-                    db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level, Data.player.allies)))
+                    db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level)))
                     Data.player.factionRole = FactionRole.MEMBER
                     Data.player.factionID = this.factionID
                     Data.player.factionName = this.factionName

@@ -64,8 +64,12 @@ class Fragment_Board_Stats_Profile : Fragment() {
                     startActivity(intent)
                 }
             }
-            if(Data.player.allies.contains(playerProfile.username)) view.imageViewProfileStatsAlly.visibility = View.GONE
-            if(Data.player.factionID == null || Data.player.factionRole == FactionRole.MEMBER || playerProfile.factionID != null || Data.player.faction!!.pendingInvitationsPlayer.contains(playerProfile.username)) view.imageViewProfileStatsFaction.visibility = View.GONE
+            if(Data.player.socials.any { it.username == playerProfile.username }){
+                view.imageViewProfileStatsAlly.visibility = View.GONE
+            }
+            if(Data.player.factionID == null || Data.player.factionRole == FactionRole.MEMBER || playerProfile.factionID != null || Data.player.faction!!.pendingInvitationsPlayer.contains(playerProfile.username)){
+                view.imageViewProfileStatsFaction.visibility = View.GONE
+            }
         }
 
         view.imageViewProfileStatsFaction.setOnClickListener {
@@ -78,8 +82,7 @@ class Fragment_Board_Stats_Profile : Fragment() {
 
         view.imageViewProfileStatsAlly.setOnClickListener {
             view.imageViewProfileStatsAlly.visibility = View.GONE
-            Data.player.allies.add(playerProfile.username)
-            Data.player.writeInbox(playerProfile.username, InboxMessage(status = MessageStatus.Allies, receiver = playerProfile.username, sender = Data.player.username, subject = "Ally request from ${Data.player.username}", content = "${Data.player.username} wants to become your ally. \n If you accept, ${Data.player.username} can invite you to various events and factions.", isInvitation1 = true, invitation = Invitation(Data.player.username, " wants to become your ", "ally", InvitationType.ally, 0, "")))
+            Data.player.requestSocialAlly(playerProfile.username)
         }
 
         view.profile_stats_fight.setOnClickListener {

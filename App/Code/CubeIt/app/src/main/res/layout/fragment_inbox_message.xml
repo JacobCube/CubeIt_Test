@@ -36,11 +36,12 @@
         android:nextFocusRight="@id/editTextInboxContent"
         android:nextFocusDown="@id/editTextInboxContent"
         android:nextFocusForward="@id/editTextInboxContent"
+        android:padding="4dp"
         android:textColor="@color/colorSecondary"
         android:textColorHint="@color/colorSecondary"
         app:layout_constraintEnd_toStartOf="@+id/guideline110"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageSender" />
 
     <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextInboxReciever"
@@ -49,6 +50,7 @@
         android:layout_marginEnd="2dp"
         android:background="@drawable/bg_basic_logincolor_dark"
         android:ems="10"
+        android:padding="4dp"
         android:hint="Reciever"
         android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
@@ -70,6 +72,7 @@
         android:layout_marginTop="4dp"
         android:background="@drawable/bg_basic_logincolor_dark"
         android:ems="10"
+        android:padding="4dp"
         android:gravity="start"
         android:hint="Message"
         android:imeOptions="flagNoExtractUi"
@@ -93,7 +96,10 @@
         android:id="@+id/spinnerInboxPriority"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="4dp"
+        android:padding="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/bg_basic_logincolor_dark_press"
         android:minHeight="20dp"
         android:spinnerMode="dropdown"
         app:layout_constraintEnd_toEndOf="parent"
@@ -178,9 +184,8 @@
         android:layout_marginStart="2dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
-        android:background="@drawable/bg_basic_logincolor_dark"
-        android:text="time"
-        android:textColor="@color/colorSecondary"
+        android:textColor="@color/loginColor"
+        android:textStyle="bold"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/editTextInboxContent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -193,6 +198,7 @@
         android:layout_height="wrap_content"
         android:text="TextView"
         android:visibility="gone"
+        android:textColor="@color/loginColor"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="@+id/guideline110"
         app:layout_constraintTop_toTopOf="@+id/guideline148"
@@ -233,6 +239,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_basic_logincolor_dark"
         android:text="from Player"
+        android:padding="4dp"
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -292,7 +299,6 @@
         android:id="@+id/imageViewInboxOpenMenu"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
         android:adjustViewBounds="true"
         android:tint="@color/loginColor"
         android:visibility="gone"
@@ -302,16 +308,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:drawable/ic_dialog_dialer"
         tools:visibility="visible" />
-
-    <ImageView
-        android:id="@+id/imageViewInboxMessageDropDown"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/spinnerInboxPriority"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="@+id/spinnerInboxPriority"
-        app:layout_constraintTop_toTopOf="@+id/spinnerInboxPriority"
-        app:srcCompat="@drawable/arrow_down" />
 
     <CheckBox
         android:id="@+id/checkBoxInboxMessageVibrate"
@@ -323,6 +319,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         android:textStyle="bold"
+        android:textColor="@color/loginColor"
         app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="@+id/guideline110"
         app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageTime"

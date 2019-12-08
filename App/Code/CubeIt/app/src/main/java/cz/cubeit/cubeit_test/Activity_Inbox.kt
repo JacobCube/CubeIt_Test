@@ -235,6 +235,7 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
                 val viewPop: View = layoutInflater.inflate(R.layout.pop_up_inbox_filter, null, false)
                 window.elevation = 0.0f
                 window.contentView = viewPop
+                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
                 val dateFrom: EditText = viewPop.editTextInboxFilterDateFrom
                 val dateTo: EditText = viewPop.editTextInboxFilterDateTo
@@ -261,7 +262,6 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
                 }
 
                 dateTo.setOnClickListener {
-
                     val calendar = Calendar.getInstance()
                     val yy = calendar.get(Calendar.YEAR)
                     val mm = calendar.get(Calendar.MONTH)
@@ -278,9 +278,7 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
                         R.array.inbox_category,
                         R.layout.spinner_inbox_item
                 ).also { adapter ->
-                    // Specify the layout to use when the list of choices appears
                     adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
-                    // Apply the adapter to the spinner
                     spinnerCategory.adapter = adapter
                 }
 
@@ -406,7 +404,7 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
         if(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox) != null)supportFragmentManager.beginTransaction().remove(supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)!!).commitNow()
 
         if(!intent.extras?.getString("receiver").isNullOrEmpty()){
-            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "write", messageReceiver = intent.extras?.getString("receiver")!!)).commit()
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "write", message = InboxMessage(receiver = intent.extras?.getString("receiver") ?: ""))).commit()
         }
     }
 
@@ -511,7 +509,7 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
             super.notifyDataSetChanged()
         }
 
-        @SuppressLint("ClickableViewAccessibility")
+        @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
         override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
             val rowMain: View
 
@@ -559,7 +557,7 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
             } else View.GONE
 
             viewHolder.textViewInboxSender.text = activity.currentCategory.messages[position].sender
-            viewHolder.textViewInboxMessagesReceiver.text = "to: " + if(activity.currentCategory.messages[position].receiver != Data.player.username) activity.currentCategory.messages[position].receiver else "me"
+            viewHolder.textViewInboxMessagesReceiver.text = "to: ${if(activity.currentCategory.messages[position].receiver != Data.player.username) activity.currentCategory.messages[position].receiver else "me"}"
             if(activity.currentCategory.messages[position].status == MessageStatus.New){
                 viewHolder.imageViewInboxMessagesBg.setBackgroundColor(Color.GRAY)
             }else{
@@ -574,7 +572,7 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
                         viewHolder.checkBoxInboxMessagesAction.isChecked = !viewHolder.checkBoxInboxMessagesAction.isChecked
                     }else {
                         activity.chosenMail = activity.currentCategory.messages[position]
-                        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", messagePriority = activity.currentCategory.messages[position].priority, messageObject = activity.currentCategory.messages[position].subject, messageContent = activity.currentCategory.messages[position].content, messageSender = activity.currentCategory.messages[position].sender)).commit()
+                        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", message = activity.currentCategory.messages[position])).commit()
 
                         if(activity.currentCategory.messages[position].status == MessageStatus.New){
                             activity.currentCategory.messages[position].changeStatus(MessageStatus.Read, activity)

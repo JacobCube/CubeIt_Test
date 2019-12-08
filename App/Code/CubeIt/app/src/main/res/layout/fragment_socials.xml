@@ -91,12 +91,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/bg_basic_white"
-        android:text="asdasd"
-        android:visibility="gone"
+        android:hint="add user"
         app:layout_constraintEnd_toEndOf="@+id/recyclerViewFragmentSocials"
         app:layout_constraintStart_toStartOf="@+id/guideline132"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentSocialsClose"
-        tools:visibility="visible" />
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentSocialsClose"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline309"
@@ -111,5 +109,22 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.1" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline312"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.17" />
+
+    <ImageView
+        android:id="@+id/imageViewFragmentSocialsAdd"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline312"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerViewFragmentSocials"
+        app:layout_constraintTop_toBottomOf="@+id/tabLayoutSocials"
+        app:srcCompat="@drawable/plus_icon" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

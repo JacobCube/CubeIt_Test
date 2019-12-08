@@ -21,7 +21,7 @@ import kotlinx.android.synthetic.main.row_faction_invitation.view.*
 class Fragment_Faction_Create : Fragment() {
 
     val faction = Faction("Template", Data.player.username)
-    val inviteAllies: MutableList<String> = Data.player.allies.toTypedArray().toMutableList()
+    val inviteAllies: MutableList<String> = mutableListOf()
     lateinit var allies: BaseAdapter
     lateinit var invited: BaseAdapter
     lateinit var viewTemp:View
@@ -47,54 +47,58 @@ class Fragment_Faction_Create : Fragment() {
         allies = (viewTemp.listViewFactionCreateAllies.adapter as FactionMemberList)
         invited = (viewTemp.listViewFactionCreateInvited.adapter as FactionMemberList)
 
-            viewTemp.buttonFactionCreateCreate.setOnClickListener {
-                if(Data.player.factionID == null) {
+        for(i in Data.player.socials.filter { it.type == SocialItemType.Ally }){
+            inviteAllies.add(i.username)
+        }
 
-                    if(viewTemp.editTextFactionCreateName.text!!.isNotBlank() && viewTemp.editTextFactionCreateName!!.text!!.length > 5 && viewTemp.editTextFactionCreateName!!.text!!.length < 13){
+        viewTemp.buttonFactionCreateCreate.setOnClickListener {
+            if(Data.player.factionID == null) {
 
-                        if(viewTemp.editTextFactionCreateTax.text!!.isNotBlank()){
+                if(viewTemp.editTextFactionCreateName.text!!.isNotBlank() && viewTemp.editTextFactionCreateName!!.text!!.length > 5 && viewTemp.editTextFactionCreateName!!.text!!.length < 13){
 
-                            if(viewTemp.editTextFactionCreateTax.text.toString().toInt() >= 0){
-                                if(viewTemp.editTextFactionCreateDescription.text!!.isNotBlank() && viewTemp.editTextFactionCreateDescription.text!!.length < 500){
-                                    viewTemp.buttonFactionCreateCreate.isEnabled = false
-                                    faction.initialize().addOnSuccessListener {
-                                        faction.taxPerDay = viewTemp.editTextFactionCreateTax.toString().toIntOrNull() ?: 0
-                                        faction.name = viewTemp.editTextFactionCreateName.text.toString()
-                                        faction.description = viewTemp.editTextFactionCreateDescription.text.toString()
-                                        faction.openToAllies = viewTemp.checkBoxFactionCreateAllies.isChecked
+                    if(viewTemp.editTextFactionCreateTax.text!!.isNotBlank()){
 
-                                        Data.player.factionRole = FactionRole.LEADER
-                                        Data.player.factionName = faction.name
-                                        Data.player.factionID = faction.id
-                                        Data.player.faction = faction
-                                        faction.create().addOnSuccessListener {
-                                            (activity as Activity_Faction_Base).changePage(1)
-                                        }.continueWith {
-                                            Data.player.uploadPlayer()
-                                        }
+                        if(viewTemp.editTextFactionCreateTax.text.toString().toInt() >= 0){
+                            if(viewTemp.editTextFactionCreateDescription.text!!.isNotBlank() && viewTemp.editTextFactionCreateDescription.text!!.length < 500){
+                                viewTemp.buttonFactionCreateCreate.isEnabled = false
+                                faction.initialize().addOnSuccessListener {
+                                    faction.taxPerDay = viewTemp.editTextFactionCreateTax.toString().toIntOrNull() ?: 0
+                                    faction.name = viewTemp.editTextFactionCreateName.text.toString()
+                                    faction.description = viewTemp.editTextFactionCreateDescription.text.toString()
+                                    faction.openToAllies = viewTemp.checkBoxFactionCreateAllies.isChecked
+
+                                    Data.player.factionRole = FactionRole.LEADER
+                                    Data.player.factionName = faction.name
+                                    Data.player.factionID = faction.id
+                                    Data.player.faction = faction
+                                    faction.create().addOnSuccessListener {
+                                        (activity as Activity_Faction_Base).changePage(1)
+                                    }.continueWith {
+                                        Data.player.uploadPlayer()
                                     }
-                                }else {
-                                    SystemFlow.vibrateAsError(viewTemp.context)
-                                    Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
-                                    viewTemp.editTextFactionCreateDescription.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                                 }
                             }else {
                                 SystemFlow.vibrateAsError(viewTemp.context)
-                                Snackbar.make(viewTemp, "Not allowed!", Snackbar.LENGTH_SHORT).show()
-                                viewTemp.editTextFactionCreateTax.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                                Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
+                                viewTemp.editTextFactionCreateDescription.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                             }
                         }else {
                             SystemFlow.vibrateAsError(viewTemp.context)
-                            Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(viewTemp, "Not allowed!", Snackbar.LENGTH_SHORT).show()
                             viewTemp.editTextFactionCreateTax.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                         }
                     }else {
                         SystemFlow.vibrateAsError(viewTemp.context)
-                        Snackbar.make(viewTemp, "Not allowed!", Snackbar.LENGTH_SHORT).show()
-                        viewTemp.editTextFactionCreateName.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
+                        Snackbar.make(viewTemp, "Field required!", Snackbar.LENGTH_SHORT).show()
+                        viewTemp.editTextFactionCreateTax.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                     }
+                }else {
+                    SystemFlow.vibrateAsError(viewTemp.context)
+                    Snackbar.make(viewTemp, "Not allowed!", Snackbar.LENGTH_SHORT).show()
+                    viewTemp.editTextFactionCreateName.startAnimation(AnimationUtils.loadAnimation(viewTemp.context, R.anim.animation_shaky_short))
                 }
             }
+        }
 
         return viewTemp
     }
@@ -105,7 +109,7 @@ class Fragment_Faction_Create : Fragment() {
     }
 
 
-    class FactionMemberList(val activity: Fragment_Faction_Create, var collection: MutableList<String> = Data.player.allies, val add: Boolean = true) : BaseAdapter() {
+    class FactionMemberList(val activity: Fragment_Faction_Create, var collection: MutableList<String> = mutableListOf(), val add: Boolean = true) : BaseAdapter() {
 
         override fun getCount(): Int {
             return collection.size

@@ -344,11 +344,13 @@ class Fragment_Faction: Fragment(){
         }
 
         viewTemp.buttonFactionApply.setOnClickListener {
-            if(Data.player.factionID == null && currentInstanceOfFaction?.openToAllies ?: false){
+            if(Data.player.factionID == null && currentInstanceOfFaction?.openToAllies == true){
                 val db = FirebaseFirestore.getInstance()
                 var containsAlly = false
 
-                for(i in currentInstanceOfFaction!!.members.values.filter { it.role == FactionRole.MODERATOR || it.role == FactionRole.LEADER }) {
+                //TODO openToAllies functionality (possible solutions: load all allies
+                // from MODERATORs and LEADER, basically just exists() of some sort / manage allies inside of the faction - long term disadvantage (have to be current))
+                /*for(i in currentInstanceOfFaction!!.members.values.filter { it.role == FactionRole.MODERATOR || it.role == FactionRole.LEADER }) {
                     if (i.allies.contains(Data.player.username)) {
                         db.collection("factions").document(this.factionID.toString()).update(mapOf("members.${Data.player.username}" to FactionMember(Data.player.username, FactionRole.MEMBER, Data.player.level, Data.player.allies)))
                         Data.player.factionRole = FactionRole.MEMBER
@@ -358,7 +360,7 @@ class Fragment_Faction: Fragment(){
                         activity?.finish()
                         break
                     }
-                }
+                }*/
                 if(!containsAlly){
                     Data.player.writeInbox(currentInstanceOfFaction!!.recruiter, InboxMessage(status = MessageStatus.Faction, receiver = currentInstanceOfFaction!!.recruiter, sender = Data.player.username, subject = "${Data.player.username} wants to discuss faction position.", content = "Greetings!\nPlayer ${Data.player.username} wants to discuss about joining your faction as a member.\n\nThis is automated message, reply to this message will be sent to ${Data.player.username}"))
                     Snackbar.make(viewTemp, "Automatic message to a recruiter was sent.", Snackbar.LENGTH_SHORT).show()
@@ -562,7 +564,7 @@ class Fragment_Faction: Fragment(){
                 inflater.inflate(R.menu.menu_faction_member, popup.menu)
 
                 val popupMenu = popup.menu
-                popupMenu.findItem(R.id.menu_faction_ally).isVisible = !Data.player.allies.contains(member.username) && member.username != Data.player.username
+                popupMenu.findItem(R.id.menu_faction_ally).isVisible = !Data.player.socials.any { it.username == member.username && (it.type == SocialItemType.Ally || it.type == SocialItemType.Sent) } && member.username != Data.player.username
 
                 if(myFaction && member.username == Data.player.username){
                     popupMenu.findItem(R.id.menu_faction_message).isVisible = false
@@ -588,16 +590,16 @@ class Fragment_Faction: Fragment(){
                     popupMenu.findItem(R.id.menu_faction_warn).isVisible = false
                 }
 
-                popup.setOnMenuItemClickListener {
-                    when(it.title){
+                popup.setOnMenuItemClickListener { menuItem ->
+                    when(menuItem.title){
                         "Message" -> {
                             val intent = Intent(context, Activity_Inbox()::class.java)
                             intent.putExtra("receiver", member.username)
                             context.startActivity(intent)
                         }
                         "Ally" -> {
-                            it.isVisible = false
-                            if(!Data.player.allies.contains(member.username))Data.player.allies.add(member.username)
+                            menuItem.isVisible = false
+                            Data.player.requestSocialAlly(member.username)
                         }
                         "Show profile" -> {
                             val intent = Intent(context, ActivityFightBoard::class.java)

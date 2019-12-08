@@ -12,6 +12,7 @@ import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.PopupMenu
 import androidx.core.graphics.drawable.RoundedBitmapDrawable
@@ -94,6 +95,23 @@ class Fragment_Socials : Fragment() {
         tempView.tabLayoutSocials.getTabAt(1)!!.text = "Sent"
         tempView.tabLayoutSocials.getTabAt(2)!!.text = "Received"
         tempView.tabLayoutSocials.getTabAt(3)!!.text = "Blocked"
+
+        tempView.imageViewFragmentSocialsAdd.setOnClickListener {
+            val enteredUsername = tempView.editTextFragmentSocialsAdd.text.toString()
+            if(!Data.player.socials.any { it.username == enteredUsername } && enteredUsername.isNotEmpty()){
+                when(tempView.tabLayoutSocials.selectedTabPosition){
+                    0, 1, 2 -> {
+                        Data.player.requestSocialAlly(enteredUsername)
+                    }
+                    3 -> {
+                        Data.player.writeSocial(SocialItem(SocialItemType.Blocked, enteredUsername), tempView.context)
+                    }
+                }
+                tempView.editTextFragmentSocialsAdd.setText("")
+            }else {
+                tempView.editTextFragmentSocialsAdd.startAnimation(AnimationUtils.loadAnimation(tempView.context, R.anim.animation_shaky_short))
+            }
+        }
 
         return tempView
     }
