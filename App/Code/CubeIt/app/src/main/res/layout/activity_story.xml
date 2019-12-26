@@ -42,14 +42,14 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/frameLayoutStoryOverview"
+        app:layout_constraintEnd_toStartOf="@+id/recyclerViewStoryOverview"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
 
     <FrameLayout
-        android:id="@+id/frameLayoutStoryOverview"
+        android:id="@+id/recyclerViewStoryOverview"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"

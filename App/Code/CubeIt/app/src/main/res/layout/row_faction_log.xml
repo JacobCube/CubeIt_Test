@@ -7,7 +7,7 @@
     android:paddingBottom="1dp"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowFactionLogTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewRowFactionLogContent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowFactionLogContent"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.83" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowFactionLogName"
         android:layout_width="wrap_content"
         android:layout_height="0dp"

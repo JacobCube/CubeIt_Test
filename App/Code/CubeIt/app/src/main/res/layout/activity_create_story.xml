@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutStory"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:screenOrientation="sensorLandscape">
+
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@color/loginColor_2_dark" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline83"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.22" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline318"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryFieldBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/recyclerViewCreateStoryOverview"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_basic_brown_border" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryMaximize"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline318"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/maximize" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewCreateStoryFieldBg"
+        app:layout_constraintStart_toStartOf="@+id/imageViewCreateStoryFieldBg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_menu_delete" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryExit"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline317"
+        app:layout_constraintDimensionRatio="H,1:2.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/left_arrow" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline317"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.08" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutCreateStorySlides"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewCreateStoryAddSlide"
+        app:layout_constraintStart_toEndOf="@+id/imageViewCreateStorySlideManager"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewCreateStoryFieldBg"
+        app:layout_constraintVertical_bias="0.1"
+        app:tabMode="scrollable"
+        app:tabSelectedTextColor="@color/brown_basic_2"
+        app:tabTextColor="@color/colorSecondary" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryAddSlide"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="4dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:adjustViewBounds="true"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="@+id/tabLayoutCreateStorySlides"
+        app:layout_constraintDimensionRatio="W,1:1"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewCreateStoryFieldBg"
+        app:layout_constraintTop_toTopOf="@+id/tabLayoutCreateStorySlides"
+        app:srcCompat="@drawable/plus_icon" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewCreateStoryOverview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:background="@color/brown_basic_3"
+        android:paddingStart="6dp"
+        android:paddingTop="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline83"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewCreateStoryExit">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewCreateStoryOverview2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingTop="6dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/recyclerViewCreateStoryOverview"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <ImageView
+        android:id="@+id/imageViewCreateStorySlideManager"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="@+id/tabLayoutCreateStorySlides"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/recyclerViewCreateStoryOverview2"
+        app:layout_constraintTop_toTopOf="@+id/tabLayoutCreateStorySlides"
+        app:srcCompat="@drawable/setting3rows" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

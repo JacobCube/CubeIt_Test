@@ -32,7 +32,7 @@
         app:layout_constraintRight_toLeftOf="@+id/guideline4"
         app:layout_constraintTop_toTopOf="@+id/LRguideline3" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewS2Boss1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -4,15 +4,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:background="@drawable/adventure_window">
+    android:layout_height="wrap_content">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline171"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.9" />
+        app:layout_constraintGuide_percent="0.92" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline183"
@@ -25,6 +24,7 @@
         android:id="@+id/imageViewBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:src="@drawable/bg_basic_white_border"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,5:4"
         app:layout_constraintEnd_toEndOf="parent"
@@ -37,23 +37,27 @@
         android:id="@+id/buttonMarketFilterClose"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@android:color/transparent"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/close_image"
+        android:backgroundTint="@color/red_error"
         app:layout_constraintBottom_toTopOf="@+id/guideline183"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="@+id/guideline171"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/buttonMarketFilterApply"
-        android:layout_width="80dp"
-        android:layout_height="50dp"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="160dp"
         android:layout_marginEnd="160dp"
-        style="@style/AppTheme.Button.Dark"
-        android:textColor="@color/bg_basic_white"
-        android:layout_marginBottom="8dp"
         android:text="Apply"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewBg"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -61,7 +65,8 @@
         android:id="@+id/spinnerMarketQuality"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="10dp"
+        android:popupBackground="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
@@ -71,7 +76,8 @@
         android:id="@+id/spinnerMarketClass"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="10dp"
+        android:popupBackground="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline183" />
@@ -80,14 +86,15 @@
         android:id="@+id/spinnerMarketType"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="8dp"
+        android:popupBackground="@android:color/transparent"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketSeller" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextMarketLvlFrom"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -96,14 +103,14 @@
         android:hint="lvl from"
         android:imeOptions="flagNoExtractUi"
         android:inputType="number"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/loginColor"
+        android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinnerMarketType" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextMarketPriceFrom"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -112,14 +119,14 @@
         android:hint="price from"
         android:imeOptions="flagNoExtractUi"
         android:inputType="number"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/loginColor"
+        android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketLvlFrom" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextMarketPriceTo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -128,15 +135,15 @@
         android:hint="price to"
         android:imeOptions="flagNoExtractUi"
         android:inputType="number"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/loginColor"
+        android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toBottomOf="@+id/editTextMarketLvlTo" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextMarketLvlTo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -145,14 +152,14 @@
         android:hint="lvl to"
         android:imeOptions="flagNoExtractUi"
         android:inputType="number"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/loginColor"
+        android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toBottomOf="@+id/spinnerMarketQuality" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextMarketSeller"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -160,8 +167,8 @@
         android:hint="Seller"
         android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/loginColor"
+        android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintHorizontal_bias="0.0"

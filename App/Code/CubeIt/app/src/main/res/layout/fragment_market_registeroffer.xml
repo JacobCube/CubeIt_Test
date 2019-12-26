@@ -23,7 +23,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
             android:id="@+id/editTextMarketRegisterUntilDate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
             app:layout_constraintStart_toStartOf="@+id/guideline187"
             app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterItem" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
             android:id="@+id/editTextMarketRegisterCoins"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
@@ -64,7 +64,7 @@
             app:layout_constraintEnd_toStartOf="@+id/guideline188"
             app:layout_constraintTop_toTopOf="@+id/listViewMarketRegisterInventory" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
             android:id="@+id/editTextMarketRegisterCubeCoins"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
@@ -84,7 +84,7 @@
             app:layout_constraintEnd_toStartOf="@+id/guideline188"
             app:layout_constraintTop_toBottomOf="@+id/editTextMarketRegisterCoins" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
             android:id="@+id/editTextMarketRegisterLowerCoins"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
             app:layout_constraintEnd_toStartOf="@+id/guideline188"
             app:layout_constraintTop_toBottomOf="@+id/textViewMarketRegisterLowerAfterText" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
             android:id="@+id/editTextMarketRegisterLowerCubeCoins"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -184,7 +184,7 @@
             app:layout_constraintEnd_toEndOf="@+id/editTextMarketRegisterUntilDate"
             app:layout_constraintTop_toBottomOf="@+id/editTextMarketRegisterUntilDate" />
 
-        <cz.cubeit.cubeit_test.CustomTextView
+        <cz.cubeit.cubeit.CustomTextView
             android:id="@+id/textViewMarketRegisterTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -264,7 +264,7 @@
             app:layout_constraintStart_toStartOf="@+id/guideline188"
             app:layout_constraintTop_toBottomOf="@+id/imageViewMarketRegisterCubeCoins" />
 
-        <cz.cubeit.cubeit_test.CustomTextView
+        <cz.cubeit.cubeit.CustomTextView
             android:id="@+id/textViewMarketRegisterLowerAfterText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -297,7 +297,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/left_arrow" />
 
-        <cz.cubeit.cubeit_test.CustomTextView
+        <cz.cubeit.cubeit.CustomTextView
             android:id="@+id/textViewMarketRegisterUntilDays"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

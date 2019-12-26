@@ -70,7 +70,7 @@
         app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
         app:layout_constraintTop_toBottomOf="@+id/textViewSettingsSeekBar" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingsTextFont"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -174,7 +174,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.35" />
 
-        <cz.cubeit.cubeit_test.CustomTextView
+        <cz.cubeit.cubeit.CustomTextView
             android:id="@+id/textViewSettingsSeekBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -243,7 +243,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.22" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
             android:id="@+id/editTextSettingNewPassword"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -278,7 +278,7 @@
         app:srcCompat="@android:drawable/ic_menu_view"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingNewPasswordReq"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -304,7 +304,7 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextSettingsVibrate"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextSettingsVibrate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -325,7 +325,7 @@
         app:layout_constraintVertical_bias="0.6"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingsVibrateLog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

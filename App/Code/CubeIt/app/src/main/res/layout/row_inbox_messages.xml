@@ -8,7 +8,7 @@
     android:background="@color/loginColor"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessagesSubject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,7 +21,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessagesSender"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxSentTime"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -49,7 +49,7 @@
         app:layout_constraintStart_toEndOf="@+id/textViewInboxMessagesReceiver"
         app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessagesSubject" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessagesReceiver"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -115,7 +115,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.88" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewQuest"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -129,7 +129,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline61"
         tools:text="test text 123" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewItemStats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -171,7 +171,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewPopAdventureCC"
         app:srcCompat="@drawable/coin_basic" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopAdventureExperience"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -182,7 +182,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/imageViewAdventure2"
         app:layout_constraintEnd_toEndOf="@+id/textViewPopAdventureCC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopAdventureCC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -195,7 +195,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline303"
         app:layout_constraintStart_toEndOf="@+id/imageViewAdventure2" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopAdventureGold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -27,13 +27,13 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/textViewOverviewRowExperience"
+        app:layout_constraintBottom_toTopOf="@+id/textViewStoryOverviewRowExperience"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline143"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewOverviewRowName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -46,7 +46,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline143" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewOverviewRowLength"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -57,8 +57,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewOverviewRowMoney"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewStoryOverviewRowMoney"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
@@ -67,10 +67,10 @@
         android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/textViewOverviewRowExperience" />
+        app:layout_constraintEnd_toStartOf="@+id/textViewStoryOverviewRowExperience" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewOverviewRowExperience"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewStoryOverviewRowExperience"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
@@ -81,7 +81,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewOverviewRowDifficulty"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -108,8 +108,8 @@
         android:layout_marginEnd="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/textViewOverviewRowMoney"
-        app:layout_constraintTop_toTopOf="@+id/textViewOverviewRowMoney"
+        app:layout_constraintEnd_toStartOf="@+id/textViewStoryOverviewRowMoney"
+        app:layout_constraintTop_toTopOf="@+id/textViewStoryOverviewRowMoney"
         app:srcCompat="@drawable/coin_basic" />
 
     <ImageView

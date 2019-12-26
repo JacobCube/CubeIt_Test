@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="1dp"
+    android:padding="1dp"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
@@ -16,6 +16,7 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:background="@drawable/emptyspellslot"
+        android:backgroundTint="@color/loginColor_2"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline4"
         app:layout_constraintStart_toStartOf="@+id/guideline3"
@@ -29,6 +30,7 @@
         android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
+        android:backgroundTint="@color/loginColor_2"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintHorizontal_bias="1.0"
@@ -43,10 +45,12 @@
         android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
+        android:backgroundTint="@color/loginColor_2"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline3"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/rowIconTextSlot3"
@@ -56,6 +60,7 @@
         android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
+        android:backgroundTint="@color/loginColor_2"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline5"
         app:layout_constraintHorizontal_bias="1.0"
@@ -90,92 +95,52 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="1" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowIcon0"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:lines="2"
+        android:textColor="@color/loginColor_2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowIcon1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:lines="2"
+        android:textColor="@color/loginColor_2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline3"
         app:layout_constraintStart_toEndOf="@+id/rowIconTextSlot0"
         app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowIcon2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:lines="2"
+        android:textColor="@color/loginColor_2"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/rowIconTextSlot2"
+        app:layout_constraintEnd_toStartOf="@+id/guideline4"
         app:layout_constraintStart_toStartOf="@+id/guideline3"
         app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowIcon3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:lines="2"
+        android:textColor="@color/loginColor_2"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/rowIconTextSlot3"
+        app:layout_constraintEnd_toStartOf="@+id/guideline5"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
         app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0" />
-
-    <ImageView
-        android:id="@+id/imageViewRowIconTextAction0"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:rotation="90"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:0.8"
-        app:layout_constraintEnd_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0"
-        app:srcCompat="@drawable/three_dots" />
-
-    <ImageView
-        android:id="@+id/imageViewRowIconTextAction1"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:rotation="90"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:0.8"
-        app:layout_constraintEnd_toStartOf="@+id/guideline3"
-        app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot1"
-        app:srcCompat="@drawable/three_dots" />
-
-    <ImageView
-        android:id="@+id/imageViewRowIconTextAction2"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:rotation="90"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:0.8"
-        app:layout_constraintEnd_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot2"
-        app:srcCompat="@drawable/three_dots" />
-
-    <ImageView
-        android:id="@+id/imageViewRowIconTextAction3"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:rotation="90"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:0.8"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot3"
-        app:srcCompat="@drawable/three_dots" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

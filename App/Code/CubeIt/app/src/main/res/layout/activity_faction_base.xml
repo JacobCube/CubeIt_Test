@@ -23,7 +23,7 @@
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@color/loginColor" />
 
-    <cz.cubeit.cubeit_test.StoryViewPager
+    <cz.cubeit.cubeit.StoryViewPager
         android:id="@+id/viewPagerFaction"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -35,20 +35,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    </cz.cubeit.cubeit_test.StoryViewPager>
+    </cz.cubeit.cubeit.StoryViewPager>
 
     <Button
         android:id="@+id/buttonFactionSave"
         style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="20dp"
+        android:layout_marginBottom="4dp"
         android:stateListAnimator="@null"
         android:text="Save"
         android:textSize="18sp"
         android:visibility="gone"
-        tools:layout_editor_absoluteX="590dp"
-        tools:layout_editor_absoluteY="344dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline141"
         tools:visibility="visible" />
 
     <com.google.android.material.tabs.TabLayout

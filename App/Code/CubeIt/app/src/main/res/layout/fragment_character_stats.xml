@@ -9,7 +9,7 @@
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFragmentStats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

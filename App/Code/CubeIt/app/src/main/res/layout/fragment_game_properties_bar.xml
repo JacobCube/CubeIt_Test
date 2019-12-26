@@ -60,7 +60,7 @@
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/coin_basic" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewGamePropertiesCC"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -78,7 +78,7 @@
         app:layout_constraintStart_toEndOf="@+id/imageViewGamePropertiesCC"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewGamePropertiesCubix"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -109,7 +109,7 @@
         app:layout_constraintStart_toEndOf="@+id/imageViewGamePropertiesXp"
         app:layout_constraintTop_toTopOf="@+id/textViewGamePropertiesXp" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewGamePropertiesXp"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -124,7 +124,7 @@
         app:layout_constraintEnd_toEndOf="@+id/progressBarGamePropertiesXp"
         app:layout_constraintTop_toTopOf="@+id/imageViewGamePropertiesXp" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewGamePropertiesLvl"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

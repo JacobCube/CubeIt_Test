@@ -54,7 +54,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.09" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputUsernameReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -85,7 +85,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.28" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputEmailReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -114,7 +114,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.4175" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRegisterPasswordinfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -128,7 +128,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline271"
         app:layout_constraintTop_toBottomOf="@+id/inputPassReg" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRegisterUsernameinfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -142,7 +142,7 @@
         app:layout_constraintEnd_toEndOf="@+id/inputUsernameReg"
         app:layout_constraintTop_toTopOf="@+id/inputUsernameReg" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputPassReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -236,7 +236,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.557" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputRePassReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -292,6 +292,8 @@
         android:id="@+id/imageViewRegisterShowPass"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:tint="@color/login_font"
+        android:tintMode="multiply"
         android:src="@android:drawable/ic_menu_view"
         app:layout_constraintBottom_toTopOf="@+id/texguideline8"
         app:layout_constraintDimensionRatio="H,1:1"

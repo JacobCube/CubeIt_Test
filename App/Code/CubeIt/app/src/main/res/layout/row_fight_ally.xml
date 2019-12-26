@@ -13,6 +13,7 @@
         android:id="@+id/imageViewRowFightallyCard"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="W,1:1.75"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -116,6 +117,13 @@
         app:layout_constraintGuide_percent="0.826" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline314"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.86" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline277"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -185,7 +193,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.55" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowFightallyDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -206,13 +214,14 @@
         android:id="@+id/imageViewRowFightallyChar"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toTopOf="@+id/guideline290"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline278"
         app:layout_constraintTop_toTopOf="@+id/guideline291"
         app:srcCompat="@drawable/menu_character_button_pressed" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowFightallyLvl"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -227,7 +236,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline285"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowFightallyHp"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -243,7 +252,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline281"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowFightallyEnergy"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -266,5 +275,20 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/imageViewRowFightallySpell"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:adjustViewBounds="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline314"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline290"
+        app:srcCompat="@drawable/emptyspellslotlarge"
+        tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>

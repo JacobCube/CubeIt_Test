@@ -8,7 +8,7 @@
     android:paddingTop="1dp"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPosition"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewName"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -32,7 +32,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline75"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewBoardRowFaction"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -44,7 +44,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline170"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFame"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -85,7 +85,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.13" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewBoardLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"

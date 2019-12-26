@@ -387,7 +387,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewHomeMailNew"
         app:srcCompat="@drawable/new_message_bg" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewHomeMailNew"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

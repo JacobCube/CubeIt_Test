@@ -22,14 +22,14 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxSubject"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:background="@drawable/bg_basic_logincolor_dark"
-        android:ems="10"
         android:hint="Subject"
+        android:paddingEnd="4dp"
         android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
         android:nextFocusLeft="@id/editTextInboxContent"
@@ -43,13 +43,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageSender" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxReciever"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
         android:background="@drawable/bg_basic_logincolor_dark"
-        android:ems="10"
         android:padding="4dp"
         android:hint="Reciever"
         android:imeOptions="flagNoExtractUi"
@@ -65,7 +64,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline150"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -97,10 +96,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:padding="4dp"
         android:layout_marginEnd="4dp"
         android:background="@drawable/bg_basic_logincolor_dark_press"
-        android:minHeight="20dp"
+        android:popupBackground="@android:color/transparent"
         android:spinnerMode="dropdown"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline110"
@@ -177,22 +175,22 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.62" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessageTime"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="4dp"
         android:textColor="@color/loginColor"
-        android:textStyle="bold"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/editTextInboxContent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline110"
         app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessageCoins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -233,7 +231,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline147"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessageSender"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -301,28 +299,60 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:tint="@color/loginColor"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/editTextInboxReciever"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline110"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_dialog_dialer"
-        tools:visibility="visible" />
+        app:srcCompat="@android:drawable/ic_dialog_dialer" />
 
     <CheckBox
         android:id="@+id/checkBoxInboxMessageVibrate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
         android:text="Vibrate subject to receiver (easter egg)"
+        android:textColor="@color/loginColor"
+        android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        android:textStyle="bold"
-        android:textColor="@color/loginColor"
         app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="@+id/guideline110"
         app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageTime"
         tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxShowCharacter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewInboxMessageSender"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline150"
+        app:layout_constraintTop_toTopOf="@+id/textViewInboxMessageSender"
+        app:srcCompat="@drawable/menu_character_button"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxSubjectLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:text="0/30"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextInboxSubject"
+        app:layout_constraintEnd_toEndOf="@+id/editTextInboxSubject"
+        app:layout_constraintTop_toTopOf="@+id/editTextInboxSubject" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewInboxContentLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        android:text="0/400"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/editTextInboxSubject" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -78,9 +78,9 @@
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toStartOf="@+id/guideline151"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/filter" />
+        app:srcCompat="@drawable/filter_icon" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputSearchInbox"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -153,7 +153,7 @@
 
     </ListView>
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -178,7 +178,7 @@
 
     </FrameLayout>
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -216,7 +216,7 @@
         app:srcCompat="@android:drawable/ic_menu_delete"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxActionCounter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

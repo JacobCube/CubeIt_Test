@@ -50,7 +50,7 @@
         app:layout_constraintTop_toTopOf="@+id/LRguideline3"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewS3Boss1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

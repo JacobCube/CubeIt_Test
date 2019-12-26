@@ -70,7 +70,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewDialogMGInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -88,7 +88,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textViewDialogMGGenericInfo"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewDialogMGGenericInfo"
         style="bold"
         android:layout_width="0dp"

@@ -7,7 +7,7 @@
     android:paddingBottom="1dp"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxCategory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxCategoryNumber"
         android:layout_width="wrap_content"
         android:layout_height="0dp"

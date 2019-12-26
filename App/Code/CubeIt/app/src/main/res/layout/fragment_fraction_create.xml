@@ -49,7 +49,9 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline209"
         app:layout_constraintEnd_toStartOf="@+id/checkBoxFactionCreateAllies"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+        app:layout_constraintTop_toTopOf="@+id/guideline61" >
+
+    </ListView>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline61"
@@ -65,14 +67,14 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.575" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionCreateName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:background="@drawable/text_bg_dark"
         android:ems="10"
-        android:hint="Name, 6-12 chars"
+        android:hint="Name"
         android:imeOptions="flagNoExtractUi"
         android:inputType="text"
         android:nextFocusLeft="@+id/editTextInboxDateTo"
@@ -88,10 +90,11 @@
         android:textColorHint="@android:color/white"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline61"
+        app:layout_constraintEnd_toStartOf="@+id/buttonFactionCreateCreate"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionCreateTax"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -124,7 +127,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.37" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionCreateDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -171,10 +174,31 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:padding="20dp"
         android:text="Create"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline203" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFactionCreateNameLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:textColor="@color/bg_basic_white"
+        android:text="0/15"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextFactionCreateName"
+        app:layout_constraintEnd_toEndOf="@+id/editTextFactionCreateName"
+        app:layout_constraintTop_toTopOf="@+id/editTextFactionCreateName" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFactionCreateDscLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="2dp"
+        android:text="0/400"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextFactionCreateDescription"
+        app:layout_constraintEnd_toEndOf="@+id/editTextFactionCreateTax" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

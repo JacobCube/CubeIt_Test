@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@drawable/bg_basic_logincolor_dark"
+    android:configChanges="orientation"
+    android:padding="6dp"
+    android:screenOrientation="sensorLandscape">
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextFrameworkPropertiesWidth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="width"
+        android:inputType="number"
+        android:imeOptions="flagNoExtractUi"
+        android:textColor="@color/bg_basic_white"
+        android:textColorHint="@color/bg_basic_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextFrameworkPropertiesHeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:imeOptions="flagNoExtractUi"
+        android:hint="height"
+        android:inputType="number"
+        android:textColor="@color/bg_basic_white"
+        android:textColorHint="@color/bg_basic_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextFrameworkPropertiesWidth" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextFrameworkPropertiesRotation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:hint="rotation"
+        android:inputType="number"
+        android:imeOptions="flagNoExtractUi"
+        android:textColor="@color/bg_basic_white"
+        android:textColorHint="@color/bg_basic_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextFrameworkPropertiesHeight" />
+
+    <Switch
+        android:id="@+id/switchFrameworkPropertiesWidthAnimate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="animate "
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextFrameworkPropertiesRotation" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFrameworkPropertiesWidth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="%"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextFrameworkPropertiesWidth"
+        app:layout_constraintStart_toEndOf="@+id/editTextFrameworkPropertiesWidth"
+        app:layout_constraintTop_toTopOf="@+id/editTextFrameworkPropertiesWidth" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFrameworkPropertiesHeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="%"
+        android:textColor="@color/bg_basic_white"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextFrameworkPropertiesHeight"
+        app:layout_constraintStart_toEndOf="@+id/editTextFrameworkPropertiesHeight"
+        app:layout_constraintTop_toTopOf="@+id/editTextFrameworkPropertiesHeight" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewFrameworkPropertiesBringOnTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:padding="3dp"
+        android:background="@drawable/bg_transparent_press"
+        android:text="Bring on top"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchFrameworkPropertiesWidthAnimate" />
+</androidx.constraintlayout.widget.ConstraintLayout>

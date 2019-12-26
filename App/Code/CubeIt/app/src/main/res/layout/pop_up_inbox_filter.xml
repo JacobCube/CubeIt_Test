@@ -63,7 +63,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxFilterDateFrom"
         android:layout_width="0dp"
@@ -87,7 +87,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxFilterSender"
         android:layout_width="0dp"
@@ -110,7 +110,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterReceiver"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -134,7 +134,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterDateTo"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -201,18 +201,18 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
-        android:background="@null"
         android:nextFocusLeft="@+id/editTextInboxFilterSender"
         android:nextFocusRight="@+id/editTextInboxFilterSender"
         android:nextFocusUp="@+id/editTextInboxFilterSender"
         android:nextFocusDown="@+id/editTextInboxFilterSender"
         android:nextFocusForward="@+id/editTextInboxFilterSender"
+        android:background="@null"
         android:popupBackground="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:imeOptions="flagNoExtractUi"
         android:id="@+id/editTextInboxFilterSubject"
         android:layout_width="0dp"
@@ -235,7 +235,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline157" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterContent"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -5,6 +5,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:configChanges="orientation"
+    app:layout_constraintDimensionRatio="H,5:4"
+    android:minWidth="150dp"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
@@ -48,7 +50,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.835" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewDialogInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -64,16 +66,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline26"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/guideline26" />
 
     <ImageView
         android:id="@+id/imageViewDialogClose"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:adjustViewBounds="true"
         android:tint="@android:color/holo_red_dark"
         app:layout_constraintBottom_toTopOf="@+id/guideline26"
-        android:adjustViewBounds="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline27"
         app:layout_constraintTop_toTopOf="parent"

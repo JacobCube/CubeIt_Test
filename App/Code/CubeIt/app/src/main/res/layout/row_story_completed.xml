@@ -8,7 +8,7 @@
     android:paddingBottom="2dp"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -22,28 +22,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewOverviewRowMoney"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewStoryOverviewRowMoney"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="@color/bg_basic_white"
         android:text="TextView"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/imageViewRowStoryCompletedCoin"
-        app:layout_constraintTop_toBottomOf="@+id/textViewShortDescription" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewStoryOverViewShortDescription" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewOverviewRowExperience"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewStoryOverviewRowExperience"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="TextView"
         android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/imageViewRowStoryCompletedXp"
-        app:layout_constraintTop_toBottomOf="@+id/textViewShortDescription" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewStoryOverViewShortDescription" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewShortDescription"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewStoryOverViewShortDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="start"
@@ -91,9 +91,9 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewOverviewRowMoney"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewStoryOverviewRowMoney"
         app:layout_constraintStart_toStartOf="@+id/guideline162"
-        app:layout_constraintTop_toTopOf="@+id/textViewOverviewRowMoney"
+        app:layout_constraintTop_toTopOf="@+id/textViewStoryOverviewRowMoney"
         app:srcCompat="@drawable/coin_basic" />
 
     <ImageView
@@ -103,8 +103,22 @@
         android:layout_marginStart="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintStart_toEndOf="@+id/textViewOverviewRowMoney"
-        app:layout_constraintTop_toTopOf="@+id/textViewOverviewRowMoney"
+        app:layout_constraintStart_toEndOf="@+id/textViewStoryOverviewRowMoney"
+        app:layout_constraintTop_toTopOf="@+id/textViewStoryOverviewRowMoney"
         app:srcCompat="@drawable/xp" />
+
+    <ImageView
+        android:id="@+id/imageViewStoryOverViewRowClick"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.85"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,7 +8,7 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "cz.cubeit.cubeit_test"
+        applicationId "cz.cubeit.cubeit"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 59

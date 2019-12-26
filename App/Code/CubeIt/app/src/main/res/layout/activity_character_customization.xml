@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCharacterDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -30,7 +30,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/viewPagerCharacterCustomization" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewStatsCustomization"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -42,7 +42,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline32"
         app:layout_constraintTop_toTopOf="@+id/viewPagerCharacterCustomization" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCurrentCharacter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

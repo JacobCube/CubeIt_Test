@@ -29,7 +29,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowName"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowPrice"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -55,7 +55,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline180"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowUntilDate"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -83,7 +83,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.84" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowSeller"
         android:layout_width="0dp"
         android:layout_height="0dp"

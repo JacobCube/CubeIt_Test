@@ -83,7 +83,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.2" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -100,7 +100,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline206"
         app:layout_constraintTop_toBottomOf="@+id/textViewFactionTitle" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -160,7 +160,7 @@
         app:layout_constraintEnd_toStartOf="@+id/buttonFactionEnemy"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionInfoDesc"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -172,7 +172,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline211"
         app:layout_constraintTop_toTopOf="@+id/textViewFactionDescription" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionGold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -183,7 +183,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline206"
         app:layout_constraintTop_toTopOf="@+id/guideline205" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionGold"
         android:layout_width="80dp"
         android:layout_height="wrap_content"
@@ -243,7 +243,7 @@
 
     </ListView>
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionMemberDesc"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -45,7 +45,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowSpelllChoosing"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -58,7 +58,7 @@
         app:layout_constraintStart_toStartOf="@+id/button1Choosing"
         app:layout_constraintTop_toTopOf="@+id/button1Choosing" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRowSpelllChoosing2"
         android:layout_width="0dp"
         android:layout_height="0dp"

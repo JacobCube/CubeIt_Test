@@ -16,7 +16,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0"/>
+        app:layout_constraintVertical_bias="1.0" />
 
     <FrameLayout
         android:id="@+id/loginPopUpBackground"
@@ -108,7 +108,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputEmailLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -139,7 +139,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.63" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputPassLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -156,7 +156,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline112"
         app:layout_constraintTop_toTopOf="@+id/Texguideline8" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/resetPass"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -192,6 +192,8 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:src="@android:drawable/ic_menu_view"
+        android:tint="@color/login_font"
+        android:tintMode="multiply"
         app:layout_constraintBottom_toTopOf="@+id/guideline5"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline274"
@@ -282,7 +284,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline5"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/loginVersionInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -317,7 +319,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.80" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewLoginOfflineInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -347,8 +349,10 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/emptyspellslot"
         android:adjustViewBounds="true"
+        android:src="@drawable/book_icon_press"
         app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline184"
         app:layout_constraintStart_toStartOf="parent"
@@ -360,6 +364,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
         android:adjustViewBounds="true"
+        android:background="@drawable/emptyspellslot"
         app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline184"
         app:layout_constraintStart_toStartOf="parent"

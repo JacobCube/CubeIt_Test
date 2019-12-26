@@ -32,6 +32,11 @@
     <color name="red_error">#ff0033</color>
     <color name="colorSecondaryDark">#766D2A</color>
 
+    <color name="brown_basic_1">#b29a86</color>
+    <color name="brown_basic_2">#8e735a</color>
+    <color name="brown_basic_3">#684c35</color>
+    <color name="brown_basic_4">#47290e</color>
+
     <color name="fight_offline_sides">#9ADCC0</color>
     <color name="fight_offline_bar">#7CC1A4</color>
     <color name="fight_offline_dark_bg">#439B76</color>

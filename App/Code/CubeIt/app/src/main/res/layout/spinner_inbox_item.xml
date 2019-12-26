@@ -12,6 +12,8 @@
     android:padding="6dp"
     android:singleLine="true"
     android:textAlignment="inherit"
+    android:paddingBottom="0.5dp"
+    android:paddingTop="0.5dp"
     android:textStyle="bold"
     android:textColor="@android:color/white"
     android:textSize="14sp"

@@ -10,11 +10,11 @@
     android:screenOrientation="sensorLandscape">
 
 
-    <cz.cubeit.cubeit_test.StoryViewPager
+    <cz.cubeit.cubeit.StoryViewPager
         android:id="@+id/viewPagerStoryQuest"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorGrey"
+        android:background="@color/loginColor_2_dark_light"
         android:clickable="false"
         android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -22,6 +22,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    </cz.cubeit.cubeit_test.StoryViewPager>
+    </cz.cubeit.cubeit.StoryViewPager>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -42,8 +42,8 @@
         app:layout_constraintStart_toStartOf="@+id/guideline7"
         app:layout_constraintTop_toTopOf="@+id/guideline233" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewShopItemInfo"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewCharacterItemInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/stats_info"
@@ -94,14 +94,14 @@
         android:animationResolution="@android:integer/config_longAnimTime"
         android:max="100"
         android:progress="100"
-        android:progressDrawable="@drawable/progress_experience"
+        android:progressDrawable="@drawable/progress_experience_character"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/guideline142"
         app:layout_constraintEnd_toEndOf="@+id/textViewCharacterXp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline129" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCharacterLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -117,7 +117,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCharacterXp"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -263,7 +263,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline137"
         app:layout_constraintStart_toStartOf="@+id/guideline252"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/menu_character_icon" />
+        app:srcCompat="@drawable/contacts" />
 
     <FrameLayout
         android:id="@+id/frameLayoutCharacterProfile"

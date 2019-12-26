@@ -1,47 +1,56 @@
 {
   "project_info": {
-    "project_number": "829397353515",
-    "firebase_url": "https://cubeit-test-build.firebaseio.com",
-    "project_id": "cubeit-test-build",
-    "storage_bucket": "cubeit-test-build.appspot.com"
+    "project_number": "525230004192",
+    "firebase_url": "https://cubeit-build1.firebaseio.com",
+    "project_id": "cubeit-build1",
+    "storage_bucket": "cubeit-build1.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:829397353515:android:9243ca7e0ac37edd4b966e",
+        "mobilesdk_app_id": "1:525230004192:android:ae9ec7824127e908",
         "android_client_info": {
-          "package_name": "cz.cubeit.cubeit_test"
+          "package_name": "cz.cubeit.cubeit"
         }
       },
       "oauth_client": [
         {
-          "client_id": "829397353515-nj0bbavmqsadkod1d8m6lrnjdntb861o.apps.googleusercontent.com",
+          "client_id": "525230004192-tm3b3cg31vp489bvul0emsrn6cgqf8d5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "cz.cubeit.cubeit_test",
+            "package_name": "cz.cubeit.cubeit",
             "certificate_hash": "de1f0056f8ee5f3f8387fbe6812bf3a2820b0103"
           }
         },
         {
-          "client_id": "829397353515-sca9453m6uh8o4cprnh6g95om7aef3oq.apps.googleusercontent.com",
+          "client_id": "525230004192-3frb2oj3or99dj4fd8f0442gg57rko3e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "cz.cubeit.cubeit",
+            "certificate_hash": "2e113d9b7d3565a01ad683e7689cd372c1137aec"
+          }
+        },
+        {
+          "client_id": "525230004192-thpig9en4a3gjvm8pfscikjrq2skiajq.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAMTSGVdP1Pv4OdGZc_JDhdYHESH6ZT-fU"
+          "current_key": "AIzaSyCANJ69qXXylHJJcIZNjEIwvJKPcXpsI2A"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "829397353515-sca9453m6uh8o4cprnh6g95om7aef3oq.apps.googleusercontent.com",
+              "client_id": "525230004192-thpig9en4a3gjvm8pfscikjrq2skiajq.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-6702397158556685~2072013545"
     }
   ],
   "configuration_version": "1"

@@ -241,7 +241,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline34"
         app:layout_constraintTop_toTopOf="@+id/guideline31" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewEnemyLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -252,7 +252,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline96"
         app:layout_constraintTop_toTopOf="@+id/guideline43" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPlayerLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -580,7 +580,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.465" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPlayerHealth"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -594,7 +594,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline90"
         app:layout_constraintTop_toTopOf="@+id/guideline38" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewEnemyHealth"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -608,7 +608,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline86"
         app:layout_constraintTop_toTopOf="@+id/guideline38" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -622,7 +622,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPlayerEnergy"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -637,7 +637,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline41"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewEnemyEnergy"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -650,7 +650,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline87"
         app:layout_constraintTop_toTopOf="@+id/guideline41" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSpellSpecs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

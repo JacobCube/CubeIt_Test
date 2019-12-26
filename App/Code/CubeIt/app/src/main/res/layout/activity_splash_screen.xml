@@ -77,7 +77,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.163" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewLoadingLog"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -89,7 +89,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -183,7 +183,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline121"
         app:layout_constraintTop_toTopOf="@+id/imageViewSplash" />
 
-    <cz.cubeit.cubeit_test.RocketGame
+    <cz.cubeit.cubeit.RocketGame
         android:id="@+id/imageViewSplashRocket"
         android:layout_width="100dp"
         android:layout_height="0dp"
@@ -196,7 +196,7 @@
         app:srcCompat="@drawable/rocket_0"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -207,7 +207,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewSplashLevel"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -220,7 +220,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashTimeEffect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -258,7 +258,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewLoadingLog"
         app:srcCompat="@drawable/coin_basic" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashCoins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

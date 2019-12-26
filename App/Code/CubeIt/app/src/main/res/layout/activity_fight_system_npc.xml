@@ -66,7 +66,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline196NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline43NPC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewDescriptionNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -224,7 +224,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline34NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline31NPC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewEnemyLevelNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -236,7 +236,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline96NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline43NPC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPlayerLevelNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -564,7 +564,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.465" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPlayerHealthNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -578,7 +578,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline90NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline38NPC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewEnemyHealthNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -592,7 +592,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline86NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline38NPC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewErrorNPC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -606,7 +606,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPlayerEnergyNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -621,7 +621,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline41NPC"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewEnemyEnergyNPC"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -634,7 +634,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline87NPC"
         app:layout_constraintTop_toTopOf="@+id/guideline41NPC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSpellSpecsNPC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

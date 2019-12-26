@@ -21,7 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineRound"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline235"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -90,7 +90,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline255"
         app:srcCompat="@drawable/character_7" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineCharacterName2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -101,7 +101,7 @@
         app:layout_constraintEnd_toStartOf="@+id/recyclerViewUniversalFightOfflineRecordsEnemy"
         app:layout_constraintStart_toStartOf="@+id/imageViewUniversalFightOfflineCharacterEnemy" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineCharacterName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -180,7 +180,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineStunAlly"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineStunAlly"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -223,7 +223,7 @@
         app:layout_constraintStart_toStartOf="@+id/imageViewUniversalFightOfflineEnergyAlly"
         app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineEnergyAlly" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineEnergyAlly"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -267,7 +267,7 @@
         app:layout_constraintStart_toStartOf="@+id/imageViewUniversalFightOfflineHPAlly"
         app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineHPAlly" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineHPAlly"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -310,7 +310,7 @@
         app:layout_constraintStart_toStartOf="@+id/textViewUniversalFightOfflineStunEnemy"
         app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineStunEnemy" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineStunEnemy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -355,7 +355,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineEnergyEnemy"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineEnergyEnemy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -399,7 +399,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline259"
         app:layout_constraintTop_toTopOf="@+id/textViewUniversalFightOfflineHPEnemy" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewUniversalFightOfflineHPEnemy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -573,7 +573,6 @@
         android:layout_height="0dp"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        android:layout_marginBottom="4dp"
         android:background="@drawable/emptyspellslot"
         android:clickable="true"
         android:focusable="true"
