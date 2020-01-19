@@ -265,8 +265,8 @@ class ActivityAdventure : SystemFlow.GameActivity(R.layout.activity_adventure, A
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         viewPop.layoutPopupQuest.apply {
-            minWidth = (dm.heightPixels * 0.85).toInt()
-            minHeight = (dm.heightPixels * 0.85).toInt()
+            minWidth = (dm.heightPixels * 0.9).toInt()
+            minHeight = (dm.heightPixels * 0.9).toInt()
         }
 
         //viewPop.imageViewAdventure.setImageResource(R.drawable.question_mark)       //enemy image
@@ -419,8 +419,8 @@ class ActivityAdventure : SystemFlow.GameActivity(R.layout.activity_adventure, A
         }
         textViewStats.visibility = View.GONE
         viewPopQuest.layoutPopupQuest.apply {
-            minWidth = (usedActivity.dm.heightPixels * 0.85).toInt()
-            minHeight = (usedActivity.dm.heightPixels * 0.85).toInt()
+            minWidth = (usedActivity.dm.heightPixels * 0.9).toInt()
+            minHeight = (usedActivity.dm.heightPixels * 0.9).toInt()
         }
 
         textViewQuest.setHTMLText(quest.getStats())

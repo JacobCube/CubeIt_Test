@@ -68,6 +68,15 @@ class Fragment_Register : Fragment() {
             }
         }
 
+        view.switchRegisterInvited.setOnCheckedChangeListener { _, isChecked ->
+            tempView.editTextRegisterInvitation.visibility = if(isChecked){
+                View.VISIBLE
+            }else {
+                tempView.editTextRegisterInvitation.setHTMLText("")
+                View.GONE
+            }
+        }
+
         view.buttonRegister.setOnClickListener {
             val intentSplash = Intent(view.context, Activity_Splash_Screen::class.java)
             Data.loadingStatus = LoadingStatus.LOGGING
@@ -120,6 +129,7 @@ class Fragment_Register : Fragment() {
                                                         user.updateProfile(UserProfileChangeRequest.Builder().setDisplayName(view.inputUsernameReg.text.toString()).build()).continueWithTask {
                                                             tempPlayer.createPlayer(auth.currentUser!!.uid, view.inputUsernameReg.text.toString()).addOnSuccessListener {
                                                                 Data.player.username = view.inputUsernameReg.text.toString()
+                                                                Data.player.invitedBy = view.editTextRegisterInvitation.text?.toString() ?: ""
                                                                 Data.loadingStatus = LoadingStatus.REGISTERED
                                                                 //Activity().overridePendingTransition(R.anim.animation_character_customization,R.anim.animation_character_customization)
                                                             }

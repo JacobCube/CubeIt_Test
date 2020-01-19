@@ -11,11 +11,11 @@ class Fragment_FrameworkPropertiesOptions : Fragment() {
     var tempView: View? = null
 
     companion object{
-        fun newInstance(rotation: Boolean = false, switch: Boolean = false, component: SystemFlow.FrameworkComponent): Fragment_FrameworkPropertiesOptions{
+        fun newInstance(rotation: Boolean = false, animate: Boolean = false, component: SystemFlow.FrameworkComponent): Fragment_FrameworkPropertiesOptions{
             val fragment = Fragment_FrameworkPropertiesOptions()
             val args = Bundle()
             args.putBoolean("rotation", rotation)
-            args.putBoolean("switch", switch)
+            args.putBoolean("animate", animate)
             args.putSerializable("component", component)
             fragment.arguments = args
             return fragment
@@ -28,7 +28,16 @@ class Fragment_FrameworkPropertiesOptions : Fragment() {
                 tempView?.editTextFrameworkPropertiesHeight,
                 tempView?.textViewFrameworkPropertiesBringOnTop,
                 tempView?.editTextFrameworkPropertiesRotation,
-                tempView?.switchFrameworkPropertiesWidthAnimate
+                tempView?.switchFrameworkPropertiesAnimate,
+                tempView?.textViewFrameworkPropertiesRemove,
+                tempView?.editTextFrameWorkPropertiesContent,
+                tempView?.spinnerFrameWorkPropertiesFont,
+                tempView?.imageViewFrameworkPropertiesBg,
+                tempView?.imageViewFrameworkPropertiesPallete,
+                tempView?.switchFrameworkPropertiesBackground,
+                tempView?.imageViewFrameworkPropertiesPalleteBg,
+                tempView?.imageViewFrameworkPropertiesWidthLock,
+                tempView?.imageViewFrameworkPropertiesHeightLock
         )
     }
 
@@ -40,14 +49,25 @@ class Fragment_FrameworkPropertiesOptions : Fragment() {
             tempView?.editTextFrameworkPropertiesWidth?.setHTMLText((component.width).toString())
             tempView?.editTextFrameworkPropertiesHeight?.setHTMLText((component.height).toString())
             tempView?.editTextFrameworkPropertiesRotation?.setHTMLText((component.rotationAngle.toInt()).toString())
-            tempView?.switchFrameworkPropertiesWidthAnimate?.isChecked = component.animate
+            tempView?.switchFrameworkPropertiesAnimate?.isChecked = component.animate
+            tempView?.editTextFrameWorkPropertiesContent?.setHTMLText(component.textContent)
+            tempView?.switchFrameworkPropertiesBackground?.isChecked = component.hasBackground
+            tempView?.imageViewFrameworkPropertiesPalleteBg?.isEnabled = component.hasBackground
+        }
+
+        if(component?.type == SystemFlow.FrameworkComponentType.Text || component?.type == SystemFlow.FrameworkComponentType.Dialog){
+            tempView?.editTextFrameWorkPropertiesContent?.visibility = View.VISIBLE
+            tempView?.switchFrameworkPropertiesBackground?.visibility = View.VISIBLE
+            tempView?.imageViewFrameworkPropertiesPalleteBg?.visibility = View.VISIBLE
+            tempView?.spinnerFrameWorkPropertiesFont?.visibility = View.VISIBLE
+            tempView?.imageViewFrameworkPropertiesPallete?.visibility = View.VISIBLE
         }
 
         if(arguments?.getBoolean("rotation", false) == false){
             tempView?.editTextFrameworkPropertiesRotation?.visibility = View.GONE
         }
-        if(arguments?.getBoolean("switch", false) == false){
-            tempView?.switchFrameworkPropertiesWidthAnimate?.visibility = View.GONE
+        if(arguments?.getBoolean("animate", false) == false){
+            tempView?.switchFrameworkPropertiesAnimate?.visibility = View.GONE
         }
 
         return tempView

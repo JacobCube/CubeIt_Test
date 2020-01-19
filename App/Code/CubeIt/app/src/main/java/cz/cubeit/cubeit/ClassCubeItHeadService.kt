@@ -18,7 +18,7 @@ import android.widget.ImageView
 import android.animation.ValueAnimator
 
 
-class ClassCubeItHeadService : Service() {              //TODO adventure timer
+class ClassCubeItHeadService : Service() {              //TODO adventure quest time
     private var mWindowManager: WindowManager? = null
     private var nWindowManager: WindowManager? = null
     private var mCubeItHeadView: View? = null

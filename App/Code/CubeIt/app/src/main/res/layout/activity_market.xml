@@ -295,7 +295,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/listViewMarketItems"
         app:layout_constraintEnd_toStartOf="@+id/guideline85"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline173"
+        app:layout_constraintTop_toTopOf="@+id/textViewMarketBarItemLvl"
         tools:visibility="gone">
 
     </FrameLayout>

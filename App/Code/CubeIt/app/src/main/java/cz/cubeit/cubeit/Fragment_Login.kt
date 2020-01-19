@@ -513,7 +513,7 @@ class FragmentLogin : Fragment() {
                                                         Data.loadGlobalData(activity).addOnSuccessListener {
                                                             if (GenericDB.AppInfo.appVersion > BuildConfig.VERSION_CODE) {
                                                                 Data.loadingStatus = LoadingStatus.CLOSELOADING
-                                                                Handler().postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", activity!!) }, 100)
+                                                                Handler().postDelayed({ showNotification("Error", "Your version is too old, download more recent one. (Alpha versioned ${GenericDB.AppInfo.appVersion})", activity) }, 100)
                                                             } else {
                                                                 signInToUser(user, activity)
                                                             }
@@ -573,8 +573,18 @@ class FragmentLogin : Fragment() {
                                 viewTemp.loginPopUpBackground.foreground.alpha = 0
                             }
 
+                            popView.switchPopRegisterInvited.setOnCheckedChangeListener { _, isChecked ->
+                                popView.editTextPopRegisterInvitation.visibility = if(isChecked){
+                                    View.VISIBLE
+                                }else {
+                                    popView.editTextPopRegisterInvitation.setHTMLText("")
+                                    View.GONE
+                                }
+                            }
+
                             popView.editTextPopRegisterName.addTextChangedListener(object : TextWatcher {
-                                override fun afterTextChanged(s: Editable?) {}
+                                override fun afterTextChanged(s: Editable?) {
+                                }
 
                                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -596,7 +606,7 @@ class FragmentLogin : Fragment() {
                             viewP.editTextPopRegisterName.addTextChangedListener(object : TextWatcher {
                                 override fun afterTextChanged(s: Editable?) {
                                     if(popWindow?.isShowing == true){
-                                        if (viewP.editTextPopRegisterName.text!!.isNotBlank() && viewP.editTextPopRegisterName.text!!.length in 6..16) {
+                                        if ((viewP.editTextPopRegisterName.text ?: "").isNotBlank() && viewP.editTextPopRegisterName.text?.length ?: 0 in 6..16) {
                                             docRef.document(viewP.editTextPopRegisterName.text.toString()).get().addOnSuccessListener {
                                                 if (it.exists()) {
                                                     viewP.textViewPopRegisterError.visibility = View.VISIBLE
@@ -606,10 +616,10 @@ class FragmentLogin : Fragment() {
                                                     viewP.textViewPopRegisterError.visibility = View.GONE
                                                 }
                                             }
-                                        } else {
+                                        }/* else {
                                             SystemFlow.vibrateAsError(viewP.context)
                                             viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation_shaky_short))
-                                        }
+                                        }*/
                                     }
                                 }
 
@@ -649,7 +659,7 @@ class FragmentLogin : Fragment() {
                                                 viewTemp.loginPopUpBackground.foreground.alpha = 150
                                             }
                                             viewP.textViewPopRegisterError.visibility = View.VISIBLE
-                                            viewP.textViewPopRegisterError.text = "Given username already exist."
+                                            viewP.textViewPopRegisterError.text = "Given username already exists."
                                             SystemFlow.vibrateAsError(viewP.context)
                                             viewP.editTextPopRegisterName.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation_shaky_short))
 
@@ -667,6 +677,7 @@ class FragmentLogin : Fragment() {
                                                 user!!.updateProfile(UserProfileChangeRequest.Builder().setDisplayName(viewP.editTextPopRegisterName.text.toString()).build()).continueWithTask {
                                                     tempPlayer.createPlayer(user.uid, viewP.editTextPopRegisterName.text.toString()).addOnSuccessListener {
                                                         Data.player.username = viewP.editTextPopRegisterName.text.toString()
+                                                        Data.player.invitedBy = popView.editTextPopRegisterInvitation.text?.toString() ?: ""
 
                                                         db.collection("GenericDB").document("AppInfo").get().addOnSuccessListener { itGeneric ->
 

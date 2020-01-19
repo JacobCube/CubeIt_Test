@@ -15,7 +15,6 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewPopUpInfoDsc"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -28,7 +27,6 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
         android:text="textxxxxxxxxxxxxxx\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\n"
@@ -36,7 +34,8 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline302"
         app:layout_constraintEnd_toStartOf="@+id/guideline159"
         app:layout_constraintStart_toEndOf="@+id/imageViewPopUpInfoItem"
-        app:layout_constraintTop_toTopOf="@+id/guideline300" />
+        app:layout_constraintTop_toTopOf="@+id/guideline300"
+        app:layout_constraintVertical_bias="0.0" />
 
     <ImageView
         android:id="@+id/imageViewPopUpInfoItem"
@@ -59,7 +58,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.84" />
+        app:layout_constraintGuide_percent="0.87" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline300"
@@ -93,10 +92,6 @@
         android:id="@+id/imageViewPopUpInfoPin"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="1dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="1dp"
-        android:layout_marginBottom="2dp"
         android:adjustViewBounds="true"
         android:rotation="180"
         android:tint="@color/progress_energy"

@@ -294,6 +294,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.8"
             app:layout_constraintStart_toStartOf="@+id/guideline187"
+            android:tint="@color/colorSecondary"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/left_arrow" />
 

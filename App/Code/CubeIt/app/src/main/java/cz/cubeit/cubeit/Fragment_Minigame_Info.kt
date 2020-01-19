@@ -64,7 +64,7 @@ class Fragment_Minigame_Info : Fragment() {
             if(!MiniGameScore(type = minigame.type).findMyBoard().findLocal(view.context)){
                 MiniGameScore(type = minigame.type).findMyBoard().setUpNew(mutableListOf<MiniGameScore>(), view.context)
             }else {
-                Log.d("I found local!", MiniGameScore(type = minigame.type).findMyBoard().list.toJSON())
+                Log.d("I found local!", MiniGameScore(type = minigame.type).findMyBoard().list.toGlobalDataJSON())
             }
             (view.recyclerViewFragmentInfoScore.adapter as OfflineMGScoreboard).updateScores(MiniGameScore(type = minigame.type).findMyBoard().list as MutableList<MiniGameScore>)
         }

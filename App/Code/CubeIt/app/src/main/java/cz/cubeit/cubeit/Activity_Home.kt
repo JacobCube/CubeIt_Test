@@ -22,9 +22,13 @@ import android.widget.PopupMenu
 import android.widget.Toast
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.Query
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Response
+import java.io.IOException
 import java.lang.ref.WeakReference
 
-class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityType.Home, false) {
+class ActivityHome : SystemFlow.GameActivity(contentLayoutId = R.layout.activity_home, activityType = ActivityType.Home, hasMenu = false, hasSwipeDown = false) {
 
     lateinit var genericContext: Context
 
@@ -37,9 +41,29 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                 //context leakage solution
 
                 return if(context != null){
+                    val db = FirebaseFirestore.getInstance()
 
-                    if(Data.inboxSnapshotHome == null){                     //inbox messages realtime listener
-                        val db = FirebaseFirestore.getInstance()
+                    //realtime admin messaging
+                    if(Data.adminMessagesSnapshotHome == null){
+                        val docRefAdminMessage = db.collection("Server").document("GlobalLiveMessage")
+                        Data.adminMessagesSnapshotHome = docRefAdminMessage.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                            if (e != null) {
+                                return@addSnapshotListener
+                            }
+
+                            if (snapshot != null && snapshot.exists()) {
+                                Log.d("snapshot_listener", "is null, initializing")
+                                val snackbar = snapshot.toObject(SystemFlow.CubeItSnackbar::class.java) ?: SystemFlow.CubeItSnackbar()
+                                if(snackbar.showMessage){
+                                    Log.d("snapshot_listener", "showing cubiet snackbar")
+                                    SystemFlow.makeCubeItSnackbar(SystemFlow.currentGameActivity ?: context, snackbar.content, snackbar.durationMillis, snackbar.hasBackground, snackbar.realBackground, snackbar.realTextColor)
+                                }
+                            }
+                        }
+                    }
+
+                    //inbox messages realtime listener
+                    if(Data.inboxSnapshotHome == null){
                         Data.inbox.sortByDescending { it.sentTime }
                         val docRef = db.collection("users").document(Data.player.username).collection("Inbox").orderBy("id", Query.Direction.DESCENDING)
                         Data.inboxSnapshotHome = docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
@@ -88,8 +112,7 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                         }
                     }
 
-                    if(Data.serverSnapshotHome == null){
-                        val db = FirebaseFirestore.getInstance()                                                        //listens to every server status change
+                    if(Data.serverSnapshotHome == null){                                               //listens to every server status change
                         val docRef = db.collection("Server").document("Generic")
                         docRef.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                             if (snapshot != null && snapshot.exists()) {
@@ -147,6 +170,7 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
 
     var dialog: AlertDialog? = null
     var signOut: Boolean = false
+    var STORY_LOBBY_CODE = 1000
 
     private val lifecycleListener: SystemFlow.LifecycleListener by lazy{
         SystemFlow.LifecycleListener(this)
@@ -165,6 +189,25 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d("onActivityResult", "requestCode: $requestCode, resultCode: $resultCode")
+        when(resultCode){
+            //story_lobby left swipe
+            1001 -> {
+                val intent = Intent(this, Activity_Story()::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+            //story_lobby right swipe
+            1002 -> {
+                val intent = Intent(this, Activity_Create_Story_Overview()::class.java)
+                startActivity(intent)
+                this.overridePendingTransition(0,0)
+            }
+        }
+    }
+
     @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -172,6 +215,10 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
         setContentView(R.layout.activity_home)
 
         //Data.uploadGlobalData()
+
+        //Data.player.createFightRequest()
+
+        Data.loggedInitialize(this)
 
         val tempActivity = this
         genericContext = this
@@ -299,25 +346,16 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                 }
             })
 
-            imageViewHomeStory.setOnLongClickListener {
-                imageViewHomeStory.isEnabled = false
-                Handler().postDelayed({
-                    imageViewHomeStory.isEnabled = true
-                }, 150)
-
-                val intent = Intent(this, Activity_Create_Story()::class.java)
-                startActivity(intent)
-                this.overridePendingTransition(0,0)
-                true
-            }
             imageViewHomeStory.setOnClickListener {
                 imageViewHomeStory.isEnabled = false
                 Handler().postDelayed({
                     imageViewHomeStory.isEnabled = true
                 }, 150)
 
-                val intent = Intent(this, Activity_Story()::class.java)
-                startActivity(intent)
+                val intent = Intent(this, Activity_Story_Lobby()::class.java)
+                intent.putExtra("left", R.drawable.background1)
+                intent.putExtra("right", R.drawable.background5)
+                startActivityForResult(intent, STORY_LOBBY_CODE)
                 this.overridePendingTransition(0,0)
             }
 
@@ -327,7 +365,7 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                     imageViewHomeBoard.isEnabled = true
                 }, 150)
 
-                val intent = Intent(this, cz.cubeit.cubeit.ActivityFightBoard::class.java)
+                val intent = Intent(this, ActivityFightBoard::class.java)
                 startActivity(intent)
                 this.overridePendingTransition(0,0)
             }
@@ -348,7 +386,7 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                     imageViewHomeCharacter.isEnabled = true
                 }, 150)
 
-                val intent = Intent(this, cz.cubeit.cubeit.Activity_Character::class.java)
+                val intent = Intent(this, Activity_Character::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 this.overridePendingTransition(0,0)
@@ -359,7 +397,7 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                     imageViewHomeSettings.isEnabled = true
                 }, 150)
 
-                val intent = Intent(this, cz.cubeit.cubeit.ActivitySettings::class.java)
+                val intent = Intent(this, ActivitySettings::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 this.overridePendingTransition(0,0)
@@ -370,7 +408,7 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                     imageViewHomeShop.isEnabled = true
                 }, 150)
 
-                val intent = Intent(this, cz.cubeit.cubeit.Activity_Shop::class.java)
+                val intent = Intent(this, Activity_Shop::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 this.overridePendingTransition(0,0)
@@ -381,7 +419,7 @@ class ActivityHome : SystemFlow.GameActivity(R.layout.activity_home, ActivityTyp
                     imageViewHomeAdventure.isEnabled = true
                 }, 150)
 
-                val intent = Intent(this, cz.cubeit.cubeit.ActivityAdventure::class.java)
+                val intent = Intent(this, ActivityAdventure::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 this.overridePendingTransition(0,0)

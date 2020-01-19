@@ -13,6 +13,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.media.AudioAttributes
 import android.media.MediaPlayer
@@ -30,29 +31,45 @@ import android.view.animation.Animation
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.solver.widgets.Rectangle
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.UploadTask
+import kotlinx.android.synthetic.main.popup_dialog_recyclerview.view.*
+import kotlinx.android.synthetic.main.row_5_icons.view.*
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.*
 import java.util.*
 import kotlin.math.*
 import kotlin.random.Random.Default.nextInt
 
-object SystemFlow{
+object SystemFlow {
     var factionChange: Boolean = false
+    var gameActivityTraces: MutableList<GameActivity> = mutableListOf()
+    var currentGameActivity: GameActivity? = null
+        get() {
+            return if (gameActivityTraces.last().isDestroyed) null else gameActivityTraces.last()
+        }
 
     open class GameActivity(
             private val contentLayoutId: Int,
             private val activityType: ActivityType,
             private val hasMenu: Boolean,
             private val menuID: Int = 0,
-            private val menuUpColor: Int? = null
-    ): AppCompatActivity(contentLayoutId){
+            private val menuUpColor: Int? = null,
+            private val isViewPager: Boolean = false,
+            private val hasSwipeDown: Boolean = true
+    ) : AppCompatActivity(contentLayoutId) {
 
         val dm = DisplayMetrics()
         var frameLayoutMenuBar: FrameLayout? = null
@@ -75,7 +92,7 @@ object SystemFlow{
             return visualizeReward(this, startingPoint, reward, existingPropertiesBar)
         }
 
-        fun clearFocus(){
+        fun clearFocus() {
             val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
             var view = currentFocus
             if (view == null) {
@@ -89,6 +106,72 @@ object SystemFlow{
             if (hasFocus) hideSystemUI()
         }
 
+        private fun showMenuBar() {
+            if (hasMenu && frameLayoutMenuBar != null) {
+                ValueAnimator.ofFloat(frameLayoutMenuBar?.y
+                        ?: 0f, (dm.heightPixels * 0.83).toFloat()).apply {
+                    duration = 600
+                    addUpdateListener {
+                        frameLayoutMenuBar?.y = it.animatedValue as Float
+                    }
+                    start()
+                }
+            }
+        }
+
+        private fun solidMenuBar(): Boolean {
+            return frameLayoutMenuBar?.y == (dm.heightPixels - (frameLayoutMenuBar?.height
+                    ?: 0)).toFloat()
+        }
+
+        fun hideMenuBar() {
+            if (hasMenu && frameLayoutMenuBar != null) {
+                ValueAnimator.ofFloat(frameLayoutMenuBar?.y
+                        ?: 0f, dm.heightPixels.toFloat()).apply {
+                    duration = 600
+                    addUpdateListener {
+                        frameLayoutMenuBar?.y = it.animatedValue as Float
+                    }
+                    start()
+                }
+            }
+        }
+
+        private fun initMenuBar(layoutID: Int) {
+            if (hasMenu && frameLayoutMenuBar != null) {
+                frameLayoutMenuBar?.post {
+                    menuFragment = Fragment_Menu_Bar.newInstance(layoutID, frameLayoutMenuBar?.id
+                            ?: 0, imageViewSwipeDown?.id ?: 0, imageViewMenuUp?.id ?: 0)
+
+                    supportFragmentManager.beginTransaction()
+                            .replace(parentViewGroup.findViewWithTag<FrameLayout>("frameLayoutMenuBar$activityType").id, menuFragment!!, "menuBarFragment$activityType").commitAllowingStateLoss()
+
+                    Handler().postDelayed({
+                        menuFragment?.setUpSecondAction(View.OnClickListener { if (propertiesBar.isShown) propertiesBar.hide() else propertiesBar.show() })
+                    }, 500)
+                }
+            }
+        }
+
+        fun bringControlsToFront() {
+            frameLayoutMenuBar?.bringToFront()
+            imageViewSwipeDown?.bringToFront()
+            imageViewMenuUp?.bringToFront()
+        }
+
+        fun hasMenu(): Boolean {
+            return hasMenu && frameLayoutMenuBar != null
+        }
+
+        var eventType = 0
+        var initialTouchY = 0f
+        var initialTouchX = 0f
+        var originalYMenu = frameLayoutMenuBar?.y ?: dm.heightPixels.toFloat()
+        var originalY = 0f
+
+        var menuAnimator = ValueAnimator()
+        var iconAnimator = ValueAnimator()
+
         val lastRecognizedPointer = Coordinates(0f, 0f)
         override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
             val menuViewRect = Rect()
@@ -98,70 +181,125 @@ object SystemFlow{
 
             if (!menuViewRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) && !menuViewRect.contains(lastRecognizedPointer.x.toInt(), lastRecognizedPointer.y.toInt()) && frameLayoutMenuBar?.y ?: 0f <= (dm.heightPixels * 0.83).toFloat() && ev.action == MotionEvent.ACTION_UP && solidMenuBar() && !propertyBarViewRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
                 hideMenuBar()
+                Log.d("hideMenuBar", "called")
             }
-
-            if(ev.action == MotionEvent.ACTION_DOWN){
+            if (ev.action == MotionEvent.ACTION_DOWN) {
                 lastRecognizedPointer.apply(ev.x, ev.y)
             }
+
+            //swipe down to exit + menu controlling
+            when (ev.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    originalYMenu = frameLayoutMenuBar?.y ?: dm.heightPixels.toFloat()
+                    //get the touch location
+                    initialTouchY = ev.rawY
+                    initialTouchX = ev.rawX
+                    originalY = imageViewSwipeDown?.y ?: ((-dm.heightPixels * 0.175).toFloat())
+
+                    eventType = when {
+                        ev.rawY <= dm.heightPixels * 0.2 -> {
+                            if (iconAnimator.isRunning) iconAnimator.pause()
+                            imageViewSwipeDown?.bringToFront()
+                            if (hasSwipeDown) 1 else 0
+                        }
+                        ev.rawY >= dm.heightPixels * 0.7 -> {
+                            if (menuAnimator.isRunning) menuAnimator.pause()
+                            frameLayoutMenuBar?.bringToFront()
+                            if (hasMenu) 2 else 0
+                        }
+                        else -> {
+                            0
+                        }
+                    }
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (!(eventType == 0 || isViewPager)) {
+                        if ((originalY + (ev.rawY - initialTouchY).toInt()) <= (dm.heightPixels * 0.5)) {
+                            iconAnimator = ValueAnimator.ofFloat(imageViewSwipeDown?.y
+                                    ?: 0f, -(dm.heightPixels * 0.18).toFloat()).apply {
+                                duration = 600
+                                addUpdateListener {
+                                    imageViewSwipeDown?.y = it.animatedValue as Float
+                                }
+                                start()
+                            }
+                        } else {
+                            val intent = Intent(this, ActivityHome::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            startActivity(intent)
+                        }
+
+                        if (frameLayoutMenuBar?.y ?: 0f >= (dm.heightPixels * 0.9)) {
+                            menuAnimator = ValueAnimator.ofFloat(frameLayoutMenuBar?.y
+                                    ?: 0f, (dm.heightPixels).toFloat()).apply {
+                                duration = 600
+                                addUpdateListener {
+                                    frameLayoutMenuBar?.y = (it.animatedValue as Float)
+                                }
+                                start()
+                            }
+                        } else {
+                            menuAnimator = ValueAnimator.ofFloat(frameLayoutMenuBar?.y
+                                    ?: 0f, (dm.heightPixels - (frameLayoutMenuBar?.height
+                                    ?: 0)).toFloat()).apply {
+                                duration = 600
+                                addUpdateListener {
+                                    frameLayoutMenuBar?.y = (it.animatedValue as Float)
+                                }
+                                start()
+                            }
+                        }
+                    }
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (!(eventType == 0 || isViewPager)) {
+                        if (abs(ev.rawY - initialTouchY) > 10f) {
+                            when (eventType) {
+                                1 -> {
+                                    imageViewSwipeDown?.apply {
+                                        y = (originalY + (ev.rawY - initialTouchY)) / 3
+                                        alpha = (((originalY + (ev.rawY - initialTouchY).toInt()) / (dm.heightPixels * 1.175 / 100) / 100) * 3).toFloat()
+                                        rotation = (0.9 * (originalY + (initialTouchY - ev.rawY).toInt() / ((dm.heightPixels / 2) / 100))).toFloat()
+                                        Log.d("systemflow_color", (2.55 * abs(min((originalY + (ev.rawY - initialTouchY)).toInt(), (dm.heightPixels / 10 * 5)) / ((dm.heightPixels / 10 * 5) / 100) - 100)).toString())
+                                        //drawable.setColorFilter(Color.rgb(255, 255, min((2.55 * abs((originalY + (ev.rawY - initialTouchY)).toInt() / ((dm.heightPixels / 10 * 5) / 100) - 100)).toInt(), 255)), PorterDuff.Mode.MULTIPLY)
+                                        if ((originalY + (ev.rawY - initialTouchY).toInt()) > (dm.heightPixels * 0.5)) {
+                                            drawable.setColorFilter(resources.getColor(R.color.colorSecondary), PorterDuff.Mode.SRC_ATOP)
+                                        } else drawable.clearColorFilter()
+                                        requestLayout()
+                                    }
+                                }
+                                2 -> {
+                                    if (menuAnimator.isRunning) {
+                                        menuAnimator.cancel()
+                                    }
+                                    frameLayoutMenuBar?.y = max((originalYMenu + ((initialTouchY - ev.rawY) * (-1))), (dm.heightPixels * 0.825).toFloat())
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
             return super.dispatchTouchEvent(ev) && ev.action == MotionEvent.ACTION_UP
         }
 
         override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-            if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP){
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
                 respondOnMediaButton(this)
             }
             return super.onKeyDown(keyCode, event)
         }
 
-        fun showMenuBar(){
-            if(hasMenu && frameLayoutMenuBar != null){
-                ValueAnimator.ofFloat(frameLayoutMenuBar?.y ?: 0f, (dm.heightPixels * 0.83).toFloat()).apply {
-                    duration = 600
-                    addUpdateListener {
-                        frameLayoutMenuBar?.y = it.animatedValue as Float
-                    }
-                    start()
-                }
-            }
-        }
-
-        fun solidMenuBar(): Boolean{
-            return frameLayoutMenuBar?.y == (dm.heightPixels - (frameLayoutMenuBar?.height ?: 0)).toFloat()
-        }
-
-        fun hideMenuBar(){
-            if(hasMenu && frameLayoutMenuBar != null){
-                ValueAnimator.ofFloat(frameLayoutMenuBar?.y ?: 0f, dm.heightPixels.toFloat()).apply {
-                    duration = 600
-                    addUpdateListener {
-                        frameLayoutMenuBar?.y = it.animatedValue as Float
-                    }
-                    start()
-                }
-            }
-        }
-
-        fun initMenuBar(layoutID: Int){
-            if(hasMenu && frameLayoutMenuBar != null){
-                frameLayoutMenuBar?.post {
-                    menuFragment = Fragment_Menu_Bar.newInstance(layoutID, frameLayoutMenuBar?.id ?: 0, imageViewSwipeDown?.id ?: 0, imageViewMenuUp?.id ?: 0)
-
-                    supportFragmentManager.beginTransaction()
-                            .replace(parentViewGroup.findViewWithTag<FrameLayout>("frameLayoutMenuBar$activityType").id, menuFragment!!, "menuBarFragment$activityType").commitAllowingStateLoss()
-
-                    Handler().postDelayed({
-                        menuFragment?.setUpSecondAction(View.OnClickListener { if(propertiesBar.isShown) propertiesBar.hide() else propertiesBar.show() })
-                    }, 500)
-                }
-            }
-        }
-
-        fun hasMenu(): Boolean{
-            return hasMenu && frameLayoutMenuBar != null
+        override fun onDestroy() {
+            super.onDestroy()
+            imageViewSwipeDown?.setImageResource(0)
+            imageViewMenuUp?.setImageResource(0)
         }
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
+            gameActivityTraces.add(this)
             hideSystemUI()
             setContentView(contentLayoutId)
             val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -172,16 +310,15 @@ object SystemFlow{
 
             window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
                 if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                    Handler().postDelayed({hideSystemUI()},1000)
+                    Handler().postDelayed({ hideSystemUI() }, 1000)
                 }
             }
             parentViewGroup.post {
                 clearFocus()
             }
 
-            if(hasMenu){
+            if (hasMenu) {
                 frameLayoutMenuBar = FrameLayout(this)
-                imageViewSwipeDown = ImageView(this)
                 imageViewMenuUp = ImageView(this)
 
                 parentViewGroup.post {
@@ -190,19 +327,9 @@ object SystemFlow{
                         layoutParams.height = ((dm.heightPixels * 0.175).toInt())
                         layoutParams.width = dm.widthPixels
                         y = (dm.heightPixels).toFloat()
+                        elevation = 10f
                         tag = "frameLayoutMenuBar$activityType"
                         id = View.generateViewId()                  //generate new ID, since adding fragment requires IDs
-                    }
-                    imageViewSwipeDown?.apply {
-                        layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
-                        layoutParams.height = ((dm.heightPixels * 0.175).toInt())
-                        layoutParams.width = ((dm.heightPixels * 0.175).toInt())
-                        x = (dm.widthPixels * 0.5 - dm.heightPixels * 0.175).toFloat()
-                        y = -(dm.heightPixels * 0.175).toFloat()
-                        setImageResource(R.drawable.home_button)
-                        setBackgroundResource(R.drawable.emptyspellslotlarge)
-                        tag = "imageViewSwipeDown$activityType"
-                        id = View.generateViewId()
                     }
 
                     imageViewMenuUp?.apply {
@@ -211,28 +338,57 @@ object SystemFlow{
                         layoutParams.width = ((dm.widthPixels * 0.07).toInt())
                         x = (dm.widthPixels - (dm.widthPixels * 0.07) - 4f).toFloat()
                         y = dm.heightPixels - (dm.widthPixels * 0.07).toFloat()
+                        elevation = 9f
                         tag = "imageViewMenuUp$activityType"
                         id = View.generateViewId()
                         setBackgroundResource(R.drawable.arrow_up)
-                        background?.setColorFilter(resources.getColor(menuUpColor ?: R.color.loginColor), PorterDuff.Mode.SRC_ATOP)
+                        background?.setColorFilter(resources.getColor(menuUpColor
+                                ?: R.color.loginColor), PorterDuff.Mode.SRC_ATOP)
+
+                        setOnClickListener {
+                            showMenuBar()
+                        }
                     }
                     parentViewGroup.apply {
-                        addView(imageViewSwipeDown)
                         addView(imageViewMenuUp)
                         addView(frameLayoutMenuBar)
                         invalidate()
                     }
-
-                    frameLayoutMenuBar?.post {
-                        imageViewSwipeDown?.background?.setColorFilter(resources.getColor(R.color.loginColor), PorterDuff.Mode.SRC_ATOP)
-                    }
                     initMenuBar(menuID)
+                }
+            }
+            if (hasSwipeDown) {
+                parentViewGroup.post {
+                    imageViewSwipeDown = ImageView(this)
+
+                    imageViewSwipeDown?.apply {
+                        layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+                        layoutParams.height = ((dm.heightPixels * 0.175).toInt())
+                        layoutParams.width = ((dm.heightPixels * 0.175).toInt())
+                        pivotX = (dm.heightPixels * 0.0875).toFloat()
+                        pivotY = (dm.heightPixels * 0.0875).toFloat()
+                        x = (dm.widthPixels * 0.5 - dm.heightPixels * 0.0875).toFloat()
+                        y = -(dm.heightPixels * 0.175).toFloat()
+                        setImageResource(R.drawable.home_button)
+                        setBackgroundResource(R.drawable.circle_white)
+                        elevation = 10f
+                        tag = "imageViewSwipeDown$activityType"
+                        id = View.generateViewId()
+                    }
+
+                    parentViewGroup.apply {
+                        addView(imageViewSwipeDown)
+                        invalidate()
+                    }
+                    Handler().postDelayed({
+                        imageViewSwipeDown?.background?.setColorFilter(resources.getColor(R.color.loginColor), PorterDuff.Mode.SRC_ATOP)
+                    }, 200)
                 }
             }
         }
     }
 
-    fun showSocials(activity: GameActivity): FrameLayout{
+    fun showSocials(activity: GameActivity): FrameLayout {
         val parent: ViewGroup = activity.window.decorView.findViewById(android.R.id.content)
         val frameLayoutSocials = FrameLayout(activity)
         val fragmentSocials = Fragment_Socials()
@@ -252,7 +408,7 @@ object SystemFlow{
         parent.addView(frameLayoutSocials)
         parent.invalidate()
         frameLayoutSocials.post {
-            (activity as AppCompatActivity).supportFragmentManager.beginTransaction().replace(parent.findViewWithTag<FrameLayout>("frameLayoutSocials").id, fragmentSocials, "frameLayoutSocials").commitAllowingStateLoss()
+            activity.supportFragmentManager.beginTransaction().replace(parent.findViewWithTag<FrameLayout>("frameLayoutSocials").id, fragmentSocials, "frameLayoutSocials").commitAllowingStateLoss()
         }
 
         return frameLayoutSocials
@@ -263,8 +419,8 @@ object SystemFlow{
      * @since Alpha 0.5.0.2, DEV version
      * @author Jakub Kostka
      */
-    fun playComponentSound(context: Context, raw: Int = R.raw.creeper){
-        if(!Data.player.soundEffects) return
+    fun playComponentSound(context: Context, raw: Int = R.raw.creeper) {
+        if (!Data.player.soundEffects) return
 
         val attributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
@@ -279,7 +435,7 @@ object SystemFlow{
 
         sounds.setOnLoadCompleteListener { soundPool, sampleId, status ->
             Log.d("sounds_status", status.toString())
-            if(status == 0){
+            if (status == 0) {
                 sounds.play(componentSound, 1f, 1f, 1, 0, 1f)
             }
         }
@@ -323,14 +479,17 @@ object SystemFlow{
     class StoryDragListener(val v: View?, val width: Int, val height: Int, val rotation: Float, val drawable: Drawable? = null) : View.DragShadowBuilder(v) {
 
         //creates new instance of the drawable, so it doesn't pass the reference of the ImageView and messes it up
-        private val shadow = (view as? ImageView)?.drawable?.constantState?.newDrawable() ?: drawable      //v.context.getDrawable(drawable)
-        private var minSize = hypot(((v?.width ?: width) / 2).toDouble(), ((v?.height ?: height) / 2).toDouble()) * 2
+        private val shadow = (view as? ImageView)?.drawable?.constantState?.newDrawable()?.mutate()
+                ?: drawable?.mutate()
+        private var minSize = hypot(((v?.width ?: width) / 2).toDouble(), ((v?.height
+                ?: height) / 2).toDouble()) * 2
 
         // Defines a callback that sends the drag shadow dimensions and touch point back to the
         // system.
         override fun onProvideShadowMetrics(size: Point, touch: Point) {
 
-            minSize = hypot(((v?.width ?: width) / 2).toDouble(), ((v?.height ?: height) / 2).toDouble()) * 2
+            minSize = hypot(((v?.width ?: width) / 2).toDouble(), ((v?.height
+                    ?: height) / 2).toDouble()) * 2
 
             touch.set((minSize / 2).toInt(), (minSize / 2).toInt())
             shadow?.setBounds(
@@ -352,8 +511,8 @@ object SystemFlow{
         }
     }
 
-    fun vibrateAsError(context: Context, length: Long = 20){
-        if(Data.player.vibrateEffects){
+    fun vibrateAsError(context: Context, length: Long = 20) {
+        if (Data.player.vibrateEffects) {
             val v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 v!!.vibrate(VibrationEffect.createOneShot(length, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -366,23 +525,23 @@ object SystemFlow{
     data class MorseVibration(
             val timing: MutableList<Long>,
             val amplitudes: MutableList<Int>
-    ){
+    ) {
         var handlers: MutableList<Handler> = mutableListOf()
 
-        fun addChar(timing: MutableList<Long>, amplitudes: MutableList<Int>){
+        fun addChar(timing: MutableList<Long>, amplitudes: MutableList<Int>) {
             this.timing.addAll(timing)
             this.amplitudes.addAll(amplitudes)
         }
 
-        fun detachHandlers(){
-            for(i in handlers){
+        fun detachHandlers() {
+            for (i in handlers) {
                 i.removeCallbacksAndMessages(null)
             }
         }
     }
 
     //TODO vytvoř obdobu visualize reward baru nabízející vypnutí hudby, změny hlasitosti atd.
-    fun respondOnMediaButton(context: Context){
+    fun respondOnMediaButton(context: Context) {
         Toast.makeText(context, "Shhhhh!", Toast.LENGTH_SHORT).show()
     }
 
@@ -395,11 +554,11 @@ object SystemFlow{
         val dah: Long = 200     //174
         val morseMap = hashMapOf(
                 'a' to longArrayOf(dit, soundSpace, dah, soundSpace),
-                'b' to longArrayOf(dah, soundSpace, dit,soundSpace, dit,soundSpace, dit, soundSpace),
-                'c' to longArrayOf(dah,soundSpace, dit,soundSpace, dah,soundSpace, dit, soundSpace),
-                'd' to longArrayOf(dah,soundSpace, dit,soundSpace, dit, soundSpace),
+                'b' to longArrayOf(dah, soundSpace, dit, soundSpace, dit, soundSpace, dit, soundSpace),
+                'c' to longArrayOf(dah, soundSpace, dit, soundSpace, dah, soundSpace, dit, soundSpace),
+                'd' to longArrayOf(dah, soundSpace, dit, soundSpace, dit, soundSpace),
                 'e' to longArrayOf(dit, soundSpace),
-                'f' to longArrayOf(dit,soundSpace, dit,soundSpace, dah,soundSpace, dit, soundSpace),
+                'f' to longArrayOf(dit, soundSpace, dit, soundSpace, dah, soundSpace, dit, soundSpace),
                 'g' to longArrayOf(dah, soundSpace, dah, soundSpace, dit, soundSpace),
                 'h' to longArrayOf(dit, soundSpace, dit, soundSpace, dit, soundSpace, dit, soundSpace),
                 'i' to longArrayOf(dit, soundSpace, dit, soundSpace),
@@ -408,11 +567,11 @@ object SystemFlow{
                 'l' to longArrayOf(dit, soundSpace, dah, soundSpace, dit, soundSpace, dit, soundSpace),
                 'm' to longArrayOf(dah, soundSpace, dah, soundSpace),
                 'n' to longArrayOf(dah, soundSpace, dit, soundSpace),
-                'o' to longArrayOf(dah, soundSpace, dah,soundSpace, dah, soundSpace),
-                'p' to longArrayOf(dit, soundSpace, dah,soundSpace, dah, soundSpace, dit, soundSpace),
-                'q' to longArrayOf(dah, soundSpace, dah,soundSpace, dit, soundSpace, dah, soundSpace),
-                'r' to longArrayOf(dit, soundSpace, dah ,soundSpace,dit, soundSpace),
-                's' to longArrayOf(dit, soundSpace, dit,soundSpace, dit, soundSpace),
+                'o' to longArrayOf(dah, soundSpace, dah, soundSpace, dah, soundSpace),
+                'p' to longArrayOf(dit, soundSpace, dah, soundSpace, dah, soundSpace, dit, soundSpace),
+                'q' to longArrayOf(dah, soundSpace, dah, soundSpace, dit, soundSpace, dah, soundSpace),
+                'r' to longArrayOf(dit, soundSpace, dah, soundSpace, dit, soundSpace),
+                's' to longArrayOf(dit, soundSpace, dit, soundSpace, dit, soundSpace),
                 't' to longArrayOf(dah, soundSpace),
                 'u' to longArrayOf(dit, soundSpace, dit, soundSpace, dah, soundSpace),
                 'w' to longArrayOf(dit, soundSpace, dah, soundSpace, dah, soundSpace),
@@ -423,26 +582,27 @@ object SystemFlow{
 
         var lengthPrevious: Long = 100
         val morse = MorseVibration(mutableListOf(dah), mutableListOf(0))
-        for(i in text.toLowerCase(Locale.ENGLISH)){
+        for (i in text.toLowerCase(Locale.ENGLISH)) {
             val newHandler = Handler()
             morse.handlers.add(newHandler)
-            if(i == ' '){
+            if (i == ' ') {
                 morse.addChar(mutableListOf(gapWordLength), mutableListOf(0))
 
                 lengthPrevious += gapWordLength
                 newHandler.postDelayed({
                     textView?.setHTMLText("${textView.text} ")
                 }, lengthPrevious)
-            }else {
+            } else {
                 val amplitudes = mutableListOf<Int>()
-                for(j in 0 until (morseMap[i]?.toMutableList() ?: mutableListOf()).size / 2){
+                for (j in 0 until (morseMap[i]?.toMutableList() ?: mutableListOf()).size / 2) {
                     amplitudes.add(255)
                     amplitudes.add(0)
                 }
                 morse.addChar(morseMap[i]?.toMutableList() ?: mutableListOf(), amplitudes)
                 morse.addChar(mutableListOf(gapLetterLength), mutableListOf(0))
 
-                lengthPrevious += (morseMap[i]?.toMutableList() ?: mutableListOf()).sum() + gapLetterLength
+                lengthPrevious += (morseMap[i]?.toMutableList()
+                        ?: mutableListOf()).sum() + gapLetterLength
                 newHandler.postDelayed({
                     textView?.setHTMLText("${textView.text}$i")
                 }, lengthPrevious)
@@ -462,39 +622,39 @@ object SystemFlow{
      * @since Alpha 0.5.0.1
      * @author Jakub Kostka
      */
-    fun resolveLayoutLocation(activity: Activity, x: Float, y: Float, viewX: Int, viewY: Int): Coordinates{     //calculates the best location of dynamicly sized pop-up window and dynamicly placed click location
+    fun resolveLayoutLocation(activity: Activity, x: Float, y: Float, viewX: Int, viewY: Int): Coordinates {     //calculates the best location of dynamicly sized pop-up window and dynamicly placed click location
         val parent = activity.window.decorView.rootView
 
         return Coordinates(
-                if(x >= parent.width - x){
-                    if(x - viewX < 0){
+                if (x >= parent.width - x) {
+                    if (x - viewX < 0) {
                         0f
-                    }else {
+                    } else {
                         x - viewX
                     }
-                }else {
-                    if(x > parent.width){
+                } else {
+                    if (x > parent.width) {
                         parent.width.toFloat()
-                    }else {
+                    } else {
                         x
                     }
                 },
 
-                if(y in parent.height / 2 * 0.8 .. parent.height / 2 * 1.2){
+                if (y in parent.height / 2 * 0.8..parent.height / 2 * 1.2) {
                     ((parent.height / 2) - (viewY / 2)).toFloat()
 
-                }else if(y >= parent.height / 2){
-                    if(y - viewY < 0){
+                } else if (y >= parent.height / 2) {
+                    if (y - viewY < 0) {
                         0f
-                    }else {
+                    } else {
                         Log.d("viewY", viewY.toString())
                         y - viewY
                     }
-                }else {
+                } else {
                     Log.d("y-viewY2", (y + viewY).toString() + " / " + parent.height.toString())
-                    if(y + viewY > parent.height){
+                    if (y + viewY > parent.height) {
                         parent.height - viewY.toFloat()
-                    }else {
+                    } else {
                         y
                     }
                 }
@@ -514,26 +674,26 @@ object SystemFlow{
     class GamePropertiesBar(
             val activity: GameActivity,
             val duration: Long? = null
-    ){
+    ) {
         private val parent: ViewGroup = activity.window.decorView.findViewById(android.R.id.content)
         val fragmentBar = FragmentGamePropertiesBar()
         val frameLayoutBar: FrameLayout = FrameLayout(parent.context)
         var isShown = false
         var attached = false
 
-        fun updateProperties(){
-            if(!isShown){
+        fun updateProperties() {
+            if (!isShown) {
                 show()?.addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         fragmentBar.animateChanges()
                     }
                 })
-            }else fragmentBar.animateChanges()
+            } else fragmentBar.animateChanges()
         }
 
         @SuppressLint("ClickableViewAccessibility")
         fun attach(): ValueAnimator? {
-            if(attached) return null
+            if (attached) return null
 
             attached = true
 
@@ -563,9 +723,9 @@ object SystemFlow{
                             originalX = frameLayoutBar.x
                         }
                         MotionEvent.ACTION_UP -> {
-                            if(clickableTemp){
+                            if (clickableTemp) {
                                 this@GamePropertiesBar.hide()
-                            }else {
+                            } else {
                                 Data.requestedBarX = frameLayoutBar.x
                             }
                         }
@@ -591,10 +751,10 @@ object SystemFlow{
             parent.addView(frameLayoutBar)
             parent.invalidate()
             frameLayoutBar.post {
-                (activity as AppCompatActivity).supportFragmentManager.beginTransaction().replace(parent.findViewWithTag<FrameLayout>("frameLayoutBar").id, fragmentBar, "barFragment").commitAllowingStateLoss()
+                activity.supportFragmentManager.beginTransaction().replace(parent.findViewWithTag<FrameLayout>("frameLayoutBar").id, fragmentBar, "barFragment").commitAllowingStateLoss()
             }
 
-            if(duration != null){
+            if (duration != null) {
                 Handler().postDelayed({
                     this.detach()
                 }, duration)
@@ -607,11 +767,11 @@ object SystemFlow{
          * animation not promised
          */
         fun hide(): ValueAnimator? {
-            if(!isShown) return null
+            if (!isShown) return null
 
             isShown = false
 
-            return ObjectAnimator.ofFloat(frameLayoutBar.y, (-(activity.dm.heightPixels * 0.1).toFloat())).apply{
+            return ObjectAnimator.ofFloat(frameLayoutBar.y, (-(activity.dm.heightPixels * 0.1).toFloat())).apply {
                 duration = 600
                 addUpdateListener {
                     frameLayoutBar.y = it.animatedValue as Float
@@ -624,13 +784,13 @@ object SystemFlow{
          * animation not promised
          */
         fun show(): ValueAnimator? {
-            if(isShown) return null
+            if (isShown) return null
 
-            return if(!attached){
+            return if (!attached) {
                 attach()
-            }else {
+            } else {
                 isShown = true
-                ObjectAnimator.ofFloat((-(activity.dm.heightPixels * 0.1)).toFloat(), 0f).apply{
+                ObjectAnimator.ofFloat((-(activity.dm.heightPixels * 0.1)).toFloat(), 0f).apply {
                     duration = 600
                     addUpdateListener {
                         frameLayoutBar.y = it.animatedValue as Float
@@ -640,8 +800,8 @@ object SystemFlow{
             }
         }
 
-        fun detach(){
-            if(!attached) return
+        fun detach() {
+            if (!attached) return
 
             hide()?.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
@@ -653,6 +813,31 @@ object SystemFlow{
         }
     }
 
+    fun loadBitmapFromView(v: View): Bitmap {
+        val b = Bitmap.createBitmap(
+        v.width, v.height, Bitmap.Config.ARGB_8888)
+         val c = Canvas(b)
+         v.layout(0, 0, v.width, v.height)
+         v.draw(c)
+      return b
+     }
+
+    /**
+     * Call for uploading of an Bitmap to Google Firebase storage by specified identifier of the pathway
+     * currently working only for production server
+     */
+    fun uploadBitmapToStorage(bitmap: Bitmap, fileIdentifier: String, imageIdentifier: String): UploadTask {
+        val storage = FirebaseStorage.getInstance()
+
+        val storageRef = storage.getReferenceFromUrl("gs://cubeit-build1.appspot.com")
+        val finalStorageRef = storageRef.child("$fileIdentifier/$imageIdentifier.jpg")
+
+        val byteStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteStream)
+
+        return storageRef.putBytes(byteStream.toByteArray())
+    }
+
     /**
      * Animation overlay, primarily used to show damage dealt by any action in fight.
      *
@@ -662,7 +847,7 @@ object SystemFlow{
      * @since Alpha 0.5.0.2, DEV version
      * @author Jakub Kostka
      */
-    fun makeActionText(activity: GameActivity, startingPoint: Coordinates, text: String, color: Int = R.color.loginColor, sizeType: CustomTextView.SizeType = CustomTextView.SizeType.adaptive): ObjectAnimator{
+    fun makeActionText(activity: GameActivity, startingPoint: Coordinates, text: String, color: Int = R.color.loginColor, sizeType: CustomTextView.SizeType = CustomTextView.SizeType.adaptive): ObjectAnimator {
         val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
 
         val textView = CustomTextView(activity)
@@ -676,11 +861,11 @@ object SystemFlow{
         }
 
         parent.addView(textView)
-        textView.post {
 
+        textView.post {
             textView.x = startingPoint.x + textView.width / 2
             textView.invalidate()
-            ObjectAnimator.ofFloat(startingPoint.y - textView.height / 2, (startingPoint.y - textView.height / 2) / 4).apply{
+            ObjectAnimator.ofFloat(startingPoint.y - textView.height / 2, (startingPoint.y - textView.height / 2) / 4).apply {
                 duration = 600
                 addUpdateListener {
                     textView.y = it.animatedValue as Float
@@ -691,6 +876,109 @@ object SystemFlow{
                     override fun onAnimationEnd(animation: Animator) {
                         parent.removeView(textView)
                         Log.d("makeActionText", "post-ended, x: ${textView.x}, y: ${textView.y}, width: ${textView.width}, height: ${textView.height}")
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {}
+
+                    override fun onAnimationRepeat(animation: Animator) {}
+                })
+                start()
+            }
+        }
+
+        return ObjectAnimator()
+    }
+
+    class CubeItSnackbar(
+            var background: String = "",
+            var content: String = "",
+            var durationMillis: Long = 4000,
+            var hasBackground: Boolean = false,
+            var showMessage: Boolean = false,
+            var textColor: String = "white"
+
+    ) : Serializable {
+        var realBackground: Int = R.color.loginColor_4
+            get() = colorNameMap[background] ?: R.color.loginColor_4
+        var realTextColor: Int = R.color.bg_basic_white
+            get() = colorNameMap[textColor] ?: R.color.bg_basic_white
+    }
+
+    /**
+     * Animation overlay, primarily used to show important texts from game or server.
+     *
+     * @property activity: Activity - used for display metrics and attaching generated views on the activity's main viewGroup
+     * @property durationMillis: Long - milliseconds as a duration of text being shown, animations are excluded from this property
+     *
+     * @return ObjectAnimator. Override onAnimationEnd method to end the animation properly, or use native method ObjectAnimator.cancel().
+     * @since Alpha 0.5.0.4, DEV version
+     * @author Jakub Kostka
+     */
+    @SuppressLint("ResourceAsColor")
+    fun makeCubeItSnackbar(activity: GameActivity, text: String, durationMillis: Long = 4000, hasBackground: Boolean = false, backgroundColor: Int = colorNameMap["black"]
+            ?: 0, textColor: Int = colorNameMap["white"]
+            ?: 0, sizeType: CustomTextView.SizeType = CustomTextView.SizeType.title): ObjectAnimator {
+        val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
+
+        val textView = CustomTextView(activity)
+        textView.apply {
+            fontSizeType = sizeType
+            layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)
+
+            elevation = 100f
+            y = activity.dm.heightPixels.toFloat()
+            x = 0f
+            visibility = View.VISIBLE
+            setTypeface(null, Typeface.BOLD)
+            width = activity.dm.widthPixels
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            setHTMLText("<b>$text</b>")
+            tag = "cubeitsnackbar$text"
+            setTextColor(textColor)
+
+            if (hasBackground) {
+                setBackgroundResource(R.drawable.bg_basic_white)
+                setPadding(16, 8, 16, 8)
+            } else setPadding(8, 0, 8, 0)
+        }
+
+        parent?.removeView(parent.findViewWithTag<CustomTextView>("cubeitsnackbar$text"))
+        parent.addView(textView)
+
+        textView.post {
+            if (hasBackground) textView.background?.setColorFilter(backgroundColor, PorterDuff.Mode.SRC_ATOP)
+
+            val disappearAnim = ObjectAnimator.ofFloat(((activity.dm.heightPixels * 0.5) - textView.height / 2).toFloat(), 0f).apply {
+                duration = 1200
+                startDelay = durationMillis
+                addUpdateListener {
+                    textView.y = it.animatedValue as Float
+                    textView.alpha = (it.animatedValue as Float) / ((activity.dm.heightPixels * 0.5) - textView.height / 2).toFloat()
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {}
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        parent.removeView(textView)
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {}
+
+                    override fun onAnimationRepeat(animation: Animator) {}
+                })
+            }
+
+            ObjectAnimator.ofFloat(activity.dm.heightPixels.toFloat(), ((activity.dm.heightPixels * 0.5) - textView.height / 2).toFloat()).apply {
+                duration = 800
+                addUpdateListener {
+                    textView.y = it.animatedValue as Float
+                    //textView.alpha = 1 - (it.animatedValue as Float - activity.dm.heightPixels) / abs(((activity.dm.heightPixels * 0.5) - textView.height / 2).toFloat() - activity.dm.heightPixels)
+                }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {}
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        disappearAnim.start()
                     }
 
                     override fun onAnimationCancel(animation: Animator) {}
@@ -723,9 +1011,9 @@ object SystemFlow{
         val floatingXps: MutableList<ImageView> = mutableListOf()
         val floatingCubix: MutableList<ImageView> = mutableListOf()
 
-        fun process(){
-            if((reward?.cubeCoins ?: 0) > 0){
-                for(i in 0 until nextInt(3, 7)){
+        fun process() {
+            if ((reward?.cubeCoins ?: 0) > 0) {
+                for (i in 0 until nextInt(3, 7)) {
                     val currentCoin = ImageView(activity)
 
                     floatingCoins.add(i, ImageView(activity))
@@ -747,13 +1035,13 @@ object SystemFlow{
                     val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
 
                     //travel animation CC
-                    val travelXCC = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().x).apply{
+                    val travelXCC = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().x).apply {
                         duration = 600
                         addUpdateListener {
                             currentCoin.x = it.animatedValue as Float
                         }
                     }
-                    val travelYCC = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().y).apply{
+                    val travelYCC = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsCubeCoins().y).apply {
                         duration = 600
                         addUpdateListener {
                             currentCoin.y = it.animatedValue as Float
@@ -765,7 +1053,7 @@ object SystemFlow{
                                 parent.removeView(currentCoin)
                                 propertiesBar.updateProperties()
                                 Handler().postDelayed({
-                                    if(propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
+                                    if (propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
                                 }, 620)
                             }
 
@@ -776,14 +1064,14 @@ object SystemFlow{
                     }
 
                     //spread animation CC
-                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
+                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply {
                         duration = 200
                         addUpdateListener {
                             currentCoin.x = it.animatedValue as Float
                         }
                         start()
                     }
-                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
+                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply {
                         duration = 200
                         addUpdateListener {
                             currentCoin.y = it.animatedValue as Float
@@ -805,8 +1093,8 @@ object SystemFlow{
                 }
             }
 
-            if((reward?.experience ?: 0) > 0){
-                for(i in 0 until nextInt(3, 7)){
+            if ((reward?.experience ?: 0) > 0) {
+                for (i in 0 until nextInt(3, 7)) {
                     val currentXp = ImageView(activity)
 
                     floatingXps.add(i, ImageView(activity))
@@ -828,13 +1116,13 @@ object SystemFlow{
                     val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
 
                     //travel animation XP
-                    val travelXXP = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsExperience().x).apply{
+                    val travelXXP = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsExperience().x).apply {
                         duration = 700
                         addUpdateListener {
                             currentXp.x = it.animatedValue as Float
                         }
                     }
-                    val travelYXP = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsExperience().y).apply{
+                    val travelYXP = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsExperience().y).apply {
                         duration = 700
                         addUpdateListener {
                             currentXp.y = it.animatedValue as Float
@@ -846,7 +1134,7 @@ object SystemFlow{
                                 parent.removeView(currentXp)
                                 propertiesBar.updateProperties()
                                 Handler().postDelayed({
-                                    if(propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
+                                    if (propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
                                 }, 700)
                             }
 
@@ -857,14 +1145,14 @@ object SystemFlow{
                     }
 
                     //spread animation XP
-                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
+                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply {
                         duration = 300
                         addUpdateListener {
                             currentXp.x = it.animatedValue as Float
                         }
                         start()
                     }
-                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
+                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply {
                         duration = 300
                         addUpdateListener {
                             currentXp.y = it.animatedValue as Float
@@ -886,8 +1174,8 @@ object SystemFlow{
                 }
             }
 
-            if((reward?.cubix ?: 0) > 0){
-                for(i in 0 until nextInt(3, 7)){
+            if ((reward?.cubix ?: 0) > 0) {
+                for (i in 0 until nextInt(3, 7)) {
                     val currentCubix = ImageView(activity)
 
                     floatingCubix.add(i, ImageView(activity))
@@ -909,13 +1197,13 @@ object SystemFlow{
                     val newY = nextInt((startingPoint.y - (activityWidth * 0.075)).toInt(), (startingPoint.y + (activityWidth * 0.075)).toInt()).toFloat()
 
                     //travel animation Cubix
-                    val travelXCubix = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsCubix().x).apply{
+                    val travelXCubix = ObjectAnimator.ofFloat(newX, propertiesBar.fragmentBar.getGlobalCoordsCubix().x).apply {
                         duration = 700
                         addUpdateListener {
                             currentCubix.x = it.animatedValue as Float
                         }
                     }
-                    val travelYCubix = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsCubix().y).apply{
+                    val travelYCubix = ObjectAnimator.ofFloat(newY, propertiesBar.fragmentBar.getGlobalCoordsCubix().y).apply {
                         duration = 700
                         addUpdateListener {
                             currentCubix.y = it.animatedValue as Float
@@ -927,7 +1215,7 @@ object SystemFlow{
                                 parent.removeView(currentCubix)
                                 propertiesBar.updateProperties()
                                 Handler().postDelayed({
-                                    if(propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
+                                    if (propertiesBar.isShown && existingPropertiesBar == null) propertiesBar.detach()
                                 }, 700)
                             }
 
@@ -938,14 +1226,14 @@ object SystemFlow{
                     }
 
                     //spread animation Cubix
-                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply{
+                    ObjectAnimator.ofFloat(startingPoint.x, newX).apply {
                         duration = 300
                         addUpdateListener {
                             currentCubix.x = it.animatedValue as Float
                         }
                         start()
                     }
-                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply{
+                    ObjectAnimator.ofFloat(startingPoint.y, newY).apply {
                         duration = 300
                         addUpdateListener {
                             currentCubix.y = it.animatedValue as Float
@@ -968,20 +1256,20 @@ object SystemFlow{
             }
 
             Handler().postDelayed({
-                reward?.receive()
+                reward?.receive(null, activity)
             }, 400)
         }
 
-        if(propertiesBar.isShown){
+        if (propertiesBar.isShown) {
             process()
-        }else {
+        } else {
             propertiesBar.attach()?.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     process()
                 }
             })
         }
-        return ObjectAnimator.ofFloat(0f, 0f).apply{
+        return ObjectAnimator.ofFloat(0f, 0f).apply {
             duration = 1500
             start()
         }
@@ -1026,7 +1314,7 @@ object SystemFlow{
 
         parent.addView(loadingBg)
         parent.addView(loadingImage)
-        if(cancelable){
+        if (cancelable) {
             val loadingCancel = Button(context, null, 0, R.style.AppTheme_Button)
             loadingCancel.apply {
                 tag = "customLoadingCancel"
@@ -1040,7 +1328,7 @@ object SystemFlow{
             parent.addView(loadingCancel)
         }
 
-        val rotateAnimation: ObjectAnimator = ObjectAnimator.ofFloat(loadingImage ,
+        val rotateAnimation: ObjectAnimator = ObjectAnimator.ofFloat(loadingImage,
                 "rotation", 0f, 360f)
 
         rotateAnimation.addListener(object : AnimatorListenerAdapter() {
@@ -1049,7 +1337,7 @@ object SystemFlow{
                 super.onAnimationEnd(animation)
                 parent.removeView(parent.findViewWithTag<ImageView>("customLoadingImage"))
                 parent.removeView(parent.findViewWithTag<FrameLayout>("customLoadingBg"))
-                if(cancelable) parent.removeView(parent.findViewWithTag<Button>("customLoadingCancel"))
+                if (cancelable) parent.removeView(parent.findViewWithTag<Button>("customLoadingCancel"))
             }
 
             /*override fun onAnimationStart(animation: Animator?) {
@@ -1061,7 +1349,7 @@ object SystemFlow{
         rotateAnimation.duration = 900
         rotateAnimation.repeatCount = Animation.INFINITE
 
-        if(startAutomatically) loadingImage.post {
+        if (startAutomatically) loadingImage.post {
             rotateAnimation.start()
         }
 
@@ -1073,28 +1361,49 @@ object SystemFlow{
             val editTextHeight: EditText? = null,
             val textViewBringOnTop: CustomTextView? = null,
             val editTextRotation: EditText? = null,
-            val switchAnimate: Switch? = null
-    ): Serializable
+            val switchAnimate: Switch? = null,
+            val textViewDelete: CustomTextView? = null,
+            val editTextContent: CustomEditText? = null,
+            val spinnerFont: Spinner? = null,
+            val imageViewBg: ImageView? = null,
+            val textColorManager: ImageView? = null,
+            val switchTextBg: Switch? = null,
+            val textBgColorManager: ImageView? = null,
+            val imageViewWidthLock: ImageView? = null,
+            val imageViewHeightLock: ImageView? = null
+    ) : Serializable
 
-    fun attachPropertiesOptions(maximized: Boolean, component: FrameworkComponent, view: View, activity: GameActivity, anchorCoordinates: Coordinates, rotation: Boolean = false, switch: Boolean = false): FrameLayout{      //TODO test
+    enum class PropertiesOptionsGravity{
+        CENTER,
+        LEFT,
+        RIGHT
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun attachPropertiesOptions(component: FrameworkComponent, view: View, activity: GameActivity, anchorCoordinates: Coordinates, rotation: Boolean = false, switch: Boolean = false, gravity: PropertiesOptionsGravity): FrameLayout {      //TODO test
         val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
         val frameLayout = FrameLayout(activity)
 
         parent.removeView(parent.findViewWithTag("PropertiesOptionsPopUp"))
 
         val generatedID = View.generateViewId()
+
+        var initialX = 0f
+        var initialY = 0f
         frameLayout.apply {
             layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)
             x = anchorCoordinates.x
             y = anchorCoordinates.y
             id = generatedID
+            elevation = 2f
             tag = "PropertiesOptionsPopUp"
         }
 
         parent.addView(frameLayout)
 
-        frameLayout.post {                  //add editTexts' listeners
-            if(parent.findViewWithTag<FrameLayout>("PropertiesOptionsPopUp")?.id == null) return@post
+        frameLayout.post {
+            //add editTexts' listeners
+            if (parent.findViewWithTag<FrameLayout>("PropertiesOptionsPopUp")?.id == null) return@post
 
             val fragment = Fragment_FrameworkPropertiesOptions.newInstance(rotation, switch, component)
             activity.supportFragmentManager
@@ -1104,85 +1413,401 @@ object SystemFlow{
 
             //val fragment = activity.supportFragmentManager.findFragmentById(parent.findViewWithTag<FrameLayout>("PropertiesOptionsPopUp").id)
             Handler().postDelayed({
-                if(anchorCoordinates.x + frameLayout.width > activity.dm.widthPixels){
-                    ObjectAnimator.ofFloat(frameLayout.x, frameLayout.x - frameLayout.width - view.width).apply {
+                val properties = fragment.getPropertiesOptions()
+
+                //move framelayout around
+                frameLayout.setOnTouchListener { v, event ->
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            initialX = event.x
+                            initialY = event.y
+                        }
+                        MotionEvent.ACTION_MOVE -> {
+                            frameLayout.x = event.rawX - initialX
+                            frameLayout.y = event.rawY - initialY
+                            frameLayout.requestLayout()
+                        }
+                    }
+                    true
+                }
+
+                //ratio locker
+                if(component.lockedOn == FrameworkComponentLocker.WIDTH){
+                    properties.imageViewWidthLock?.alpha = 1f
+                    properties.editTextHeight?.isEnabled = false
+                }else if(component.lockedOn == FrameworkComponentLocker.HEIGHT){
+                    properties.imageViewHeightLock?.alpha = 1f
+                    properties.editTextWidth?.isEnabled = false
+                }
+                properties.imageViewWidthLock?.setOnClickListener {
+                    if(component.lockedOn == FrameworkComponentLocker.WIDTH){
+                        component.lockedOn = FrameworkComponentLocker.NONE
+                        properties.imageViewWidthLock.alpha = 0.2f
+                        properties.editTextHeight?.isEnabled = true
+                    }else {
+                        properties.imageViewHeightLock?.alpha = 0.2f
+                        properties.imageViewWidthLock.alpha = 1f
+                        properties.editTextWidth?.isEnabled = true
+                        properties.editTextHeight?.isEnabled = false
+                        component.lockedOn = FrameworkComponentLocker.WIDTH
+                    }
+                    component.update(activity)
+                    properties.editTextWidth?.setText(component.width.toString())
+                }
+                properties.imageViewHeightLock?.setOnClickListener {
+                    if(component.lockedOn == FrameworkComponentLocker.HEIGHT){
+                        component.lockedOn = FrameworkComponentLocker.NONE
+                        properties.imageViewHeightLock.alpha = 0.2f
+                        properties.editTextWidth?.isEnabled = true
+                    }else {
+                        properties.imageViewWidthLock?.alpha = 0.2f
+                        properties.imageViewHeightLock.alpha = 1f
+                        properties.editTextHeight?.isEnabled = true
+                        properties.editTextWidth?.isEnabled = false
+                        component.lockedOn = FrameworkComponentLocker.HEIGHT
+                    }
+                    component.update(activity)
+                    properties.editTextHeight?.setText(component.height.toString())
+                }
+
+                //text and backrgound color pickers
+                properties.switchTextBg?.setOnCheckedChangeListener { _, isChecked ->
+                    properties.textBgColorManager?.isEnabled = isChecked
+                    component.hasBackground = isChecked
+                    component.update(activity)
+                }
+                properties.textBgColorManager?.setOnClickListener {
+                    val viewP = activity.layoutInflater.inflate(R.layout.popup_dialog_recyclerview, null, false)
+                    val window = PopupWindow(viewP, (activity.dm.heightPixels * 1.2).toInt(), activity.dm.heightPixels)
+                    window.isOutsideTouchable = false
+                    window.isFocusable = true
+                    window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+                    viewP.textViewDialogRecyclerSampleText.visibility = View.VISIBLE
+                    viewP.buttonDialogRecyclerOk.visibility = View.VISIBLE
+                    viewP.textViewDialogRecyclerSampleText.setTextColor(colorNameMap[component.textColor]
+                            ?: R.color.black)
+
+                    viewP.buttonDialogRecyclerOk.setOnClickListener {
+                        val chosenColor = (viewP.recyclerViewDialogRecycler.adapter as? DialogColorPickerRecyclerView)?.innerChosenColor
+                                ?: ""
+                        viewP.textViewDialogRecyclerSampleText.setTextColor(colorNameMap[chosenColor]
+                                ?: R.color.black)
+                        Log.d("choosing_color", "chosen color is $chosenColor")
+                        component.backgroundColor = chosenColor
+                        window.dismiss()
+                    }
+                    viewP.recyclerViewDialogRecycler.apply {
+                        layoutManager = LinearLayoutManager(activity)
+                        adapter = DialogColorPickerRecyclerView(component.backgroundColor, viewP.textViewDialogRecyclerSampleText)
+                    }
+                    viewP.imageViewDialogRecyclerClose.setOnClickListener {
+                        window.dismiss()
+                    }
+                    window.setOnDismissListener {
+                        component.update(activity)
+                    }
+                    window.showAtLocation(viewP, Gravity.CENTER, 0, 0)
+                }
+                properties.textColorManager?.setOnClickListener {
+                    val viewP = activity.layoutInflater.inflate(R.layout.popup_dialog_recyclerview, null, false)
+                    val window = PopupWindow(viewP, (activity.dm.heightPixels * 1.2).toInt(), activity.dm.heightPixels)
+                    window.isOutsideTouchable = false
+                    window.isFocusable = true
+                    window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+                    viewP.textViewDialogRecyclerSampleText.visibility = View.VISIBLE
+                    viewP.buttonDialogRecyclerOk.visibility = View.VISIBLE
+                    viewP.textViewDialogRecyclerSampleText.setTextColor(colorNameMap[component.textColor]
+                            ?: R.color.black)
+
+                    viewP.buttonDialogRecyclerOk.setOnClickListener {
+                        val chosenColor = (viewP.recyclerViewDialogRecycler.adapter as? DialogColorPickerRecyclerView)?.innerChosenColor
+                                ?: ""
+                        viewP.textViewDialogRecyclerSampleText.setTextColor(colorNameMap[chosenColor]
+                                ?: R.color.black)
+                        Log.d("choosing_color", "chosen color is $chosenColor")
+                        component.textColor = chosenColor
+                        window.dismiss()
+                    }
+                    viewP.recyclerViewDialogRecycler.apply {
+                        layoutManager = LinearLayoutManager(activity)
+                        adapter = DialogColorPickerRecyclerView(component.textColor, viewP.textViewDialogRecyclerSampleText)
+                    }
+                    viewP.imageViewDialogRecyclerClose.setOnClickListener {
+                        window.dismiss()
+                    }
+                    window.setOnDismissListener {
+                        component.update(activity)
+                    }
+                    window.showAtLocation(viewP, Gravity.CENTER, 0, 0)
+                }
+
+                //control buttons
+                properties.textViewBringOnTop?.setOnClickListener {
+                    (activity as? Activity_Create_Story)?.bringComponentToFront(component)
+                    component.view?.bringToFront()
+                    frameLayout.bringToFront()
+                }
+                properties.textViewDelete?.setOnClickListener {
+                    (activity as? Activity_Create_Story)?.apply {
+                        removeComponent(component)
+                        removeCurrentPropertiesOptions()
+                    }
+                }
+
+                //font size type
+                if (component.type == FrameworkComponentType.Text) {
+                    properties.editTextContent?.visibility = View.VISIBLE
+                    properties.spinnerFont?.visibility = View.VISIBLE
+
+                    ArrayAdapter.createFromResource(
+                            activity,
+                            R.array.font_size,
+                            R.layout.spinner_inbox_item
+                    ).also { adapter ->
+                        adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
+                        properties.spinnerFont?.adapter = adapter
+                    }
+                }
+                properties.spinnerFont?.setSelection(when (component.fontSizeType) {
+                    CustomTextView.SizeType.small -> 0
+                    CustomTextView.SizeType.smallTitle -> 2
+                    CustomTextView.SizeType.title -> 3
+                    else -> 1        //position 1
+                })
+                properties.spinnerFont?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                        component.fontSizeType = when (position) {
+                            0 -> CustomTextView.SizeType.small
+                            2 -> CustomTextView.SizeType.smallTitle
+                            3 -> CustomTextView.SizeType.title
+                            else -> CustomTextView.SizeType.adaptive        //position 1
+                        }
+                        component.update(activity)
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>) {
+                    }
+                }
+
+                //edittexts listeners
+                properties.editTextContent?.addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        component.textContent = s?.toString() ?: ""
+                        component.update(activity)
+                        parent.invalidate()
+                    }
+
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        properties.editTextContent.requestLayout()
+                    }
+                })
+
+                properties.editTextWidth?.addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                    }
+
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        component.width = if (s.isNullOrEmpty()) {
+                            60
+                        } else (min(max(properties.editTextWidth.text.toString().toIntOrNull()
+                                ?: 60, 0), 100))
+                        component.update(activity)
+                        parent.invalidate()
+
+                        if(component.lockedOn == FrameworkComponentLocker.WIDTH) properties.editTextHeight?.setText(component.height.toString())
+                    }
+                })
+
+                properties.editTextHeight?.addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                    }
+
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        component.height = if (s.isNullOrEmpty()) {
+                            60
+                        } else (min(max(properties.editTextHeight.text.toString().toIntOrNull()
+                                ?: 60, 0), 100))
+                        component.update(activity)
+                        parent.invalidate()
+
+                        if(component.lockedOn == FrameworkComponentLocker.HEIGHT) properties.editTextWidth?.setText(component.width.toString())
+                    }
+                })
+
+                properties.editTextRotation?.addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                    }
+
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        component.rotationAngle = if (s.isNullOrEmpty()) {
+                            0f
+                        } else (properties.editTextRotation.text.toString().toIntOrNull()
+                                ?: 0).toFloat()
+                        component.update(activity)
+                        parent.invalidate()
+                    }
+                })
+
+                properties.switchAnimate?.setOnCheckedChangeListener { _, isChecked ->
+                    component.animate = isChecked
+                }
+            }, 50)
+            Handler().postDelayed({
+                val travelXTo = when {
+                    anchorCoordinates.x + frameLayout.width > activity.dm.widthPixels -> {
+                        (activity.dm.widthPixels - frameLayout.width).toFloat()
+                    }
+                    gravity == PropertiesOptionsGravity.LEFT -> {
+                        frameLayout.x - frameLayout.width
+                    }
+                    gravity == PropertiesOptionsGravity.CENTER -> {
+                        frameLayout.x - view.width / 2
+                    }
+                    else -> {
+                        frameLayout.x
+                    }
+                }
+                ObjectAnimator.ofFloat(frameLayout.x, travelXTo).apply {
+                    duration = 200
+                    addUpdateListener {
+                        frameLayout.x = it.animatedValue as Float
+                    }
+                    start()
+                }
+
+                if (anchorCoordinates.y + frameLayout.height > activity.dm.heightPixels) {
+                    ObjectAnimator.ofFloat(frameLayout.y, activity.dm.heightPixels.toFloat() - frameLayout.height).apply {
+                        duration = 200
+                        addUpdateListener {
+                            frameLayout.y = it.animatedValue as Float
+                        }
+                        start()
+                    }
+                }
+            }, 250)
+            Handler().postDelayed({
+                if (frameLayout.y < 0) {
+                    ObjectAnimator.ofFloat(frameLayout.y, 0f).apply {
+                        duration = 200
+                        addUpdateListener {
+                            frameLayout.y = it.animatedValue as Float
+                        }
+                        start()
+                    }
+                }
+                if (frameLayout.x < 0) {
+                    ObjectAnimator.ofFloat(frameLayout.x, 0f).apply {
                         duration = 200
                         addUpdateListener {
                             frameLayout.x = it.animatedValue as Float
                         }
                         start()
                     }
-                    //frameLayout.x = frameLayout.x - frameLayout.width - view.width
                 }
-
-                val properties = fragment.getPropertiesOptions()
-
-                properties.textViewBringOnTop?.setOnClickListener{
-                    view.bringToFront()
-                    frameLayout.bringToFront()
-                }
-
-                properties.editTextWidth?.addTextChangedListener(object : TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        component.width = if(s.isNullOrEmpty()){
-                            35
-                        }else (min(max(properties.editTextWidth.text.toString().toIntOrNull() ?: 35, 0), 100))
-                        view.layoutParams.width = (activity.dm.widthPixels * (if(maximized) 1.0 else 0.78) * component.width / 100).toInt()
-                        parent.invalidate()
-                    }
-
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
-
-                properties.editTextHeight?.addTextChangedListener(object : TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        component.height = if(s.isNullOrEmpty()){
-                            35
-                        }else (min(max(properties.editTextHeight.text.toString().toIntOrNull() ?: 35, 0), 100))
-                        view.layoutParams.height = (activity.dm.heightPixels * (if(maximized) 1.0 else 0.78) * component.height / 100).toInt()
-                        parent.invalidate()
-                    }
-
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
-
-                properties.editTextRotation?.addTextChangedListener(object : TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        component.rotationAngle = if(s.isNullOrEmpty()){
-                            0f
-                        }else (properties.editTextRotation.text.toString().toIntOrNull() ?: 0).toFloat()
-                        view.rotation = component.rotationAngle
-                        parent.invalidate()
-                    }
-
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
-
-                properties.switchAnimate?.setOnCheckedChangeListener { _, isChecked ->
-                    component.animate = isChecked
-                }
-            }, 200)
+                frameLayout.bringToFront()
+            }, 450)
         }
 
         return frameLayout
     }
 
-    fun attachRecyclerPopUp(activity: GameActivity, anchorCoordinates: Coordinates): RecyclerView{
+    private class DialogColorPickerRecyclerView(chosenColor: String, var sampleText: CustomTextView, val colors: MutableList<String> = colorNameMap.keys.toMutableList()) :
+            RecyclerView.Adapter<DialogColorPickerRecyclerView.CategoryViewHolder>() {
+
+        var innerChosenColor: String = chosenColor
+        var inflater: View? = null
+
+        class CategoryViewHolder(
+                val rowIconSlot1: ImageView,
+                val rowIconSlot2: ImageView,
+                val rowIconSlot3: ImageView,
+                val rowIconSlot4: ImageView,
+                val rowIconSlot5: ImageView,
+                inflater: View,
+                val viewGroup: ViewGroup
+        ) : RecyclerView.ViewHolder(inflater)
+
+        override fun getItemCount() = colors.size / 5 + 1
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
+            inflater = LayoutInflater.from(parent.context).inflate(R.layout.row_5_icons, parent, false)
+            return CategoryViewHolder(
+                    inflater!!.rowIconSlot1,
+                    inflater!!.rowIconSlot2,
+                    inflater!!.rowIconSlot3,
+                    inflater!!.rowIconSlot4,
+                    inflater!!.rowIconSlot5,
+                    inflater
+                            ?: LayoutInflater.from(parent.context).inflate(R.layout.row_5_icons, parent, false),
+                    parent
+            )
+        }
+
+        override fun onBindViewHolder(viewHolder: CategoryViewHolder, position: Int) {
+            val indexAdapter: Int = if (position == 0) 0 else {
+                position * 5
+            }
+
+            class Node(
+                    image: ImageView,
+                    index: Int
+            ) {
+                init {
+                    image.apply {
+                        if (index < colors.size) {
+                            setColorFilter(colorNameMap[colors[index]] ?: R.color.black)
+
+                            alpha = if (innerChosenColor == colors[index]) {
+                                setPadding(8, 8, 8, 8)
+                                0.5f
+                            } else {
+                                setPadding(0, 0, 0, 0)
+                                1f
+                            }
+
+                            setOnClickListener {
+                                innerChosenColor = colors[index]
+                                setPadding(8, 8, 8, 8)
+                                sampleText.setTextColor(colorNameMap[colors[index]]
+                                        ?: R.color.black)
+                                notifyDataSetChanged()
+                            }
+                        } else {
+                            visibility = View.GONE
+                        }
+                    }
+                }
+            }
+
+            Node(viewHolder.rowIconSlot1, indexAdapter)
+            Node(viewHolder.rowIconSlot2, indexAdapter + 1)
+            Node(viewHolder.rowIconSlot3, indexAdapter + 2)
+            Node(viewHolder.rowIconSlot4, indexAdapter + 3)
+            Node(viewHolder.rowIconSlot5, indexAdapter + 4)
+        }
+    }
+
+    fun attachRecyclerPopUp(activity: GameActivity, anchorCoordinates: Coordinates): RecyclerView {
         val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
 
         val recycler = RecyclerView(activity)
         recycler.apply {
+            isVerticalFadingEdgeEnabled = true
             layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
-            if(anchorCoordinates.y >= activity.dm.heightPixels * 0.5){
+            if (anchorCoordinates.y >= activity.dm.heightPixels * 0.5) {
                 layoutParams.height = activity.dm.heightPixels
                 y = 0f
-            }else {
+            } else {
                 layoutParams.height = (activity.dm.heightPixels - anchorCoordinates.y).toInt()
                 y = anchorCoordinates.y
             }
@@ -1194,12 +1819,13 @@ object SystemFlow{
         return recycler
     }
 
-    fun calculateRotatedCoordinates(originalCoords: Coordinates, centerCoords: Coordinates, rotationAngle: Float): Coordinates{
+    fun calculateRotatedCoordinates(originalCoords: Coordinates, centerCoords: Coordinates, rotationAngle: Float): Coordinates {
         val tempX = originalCoords.x - centerCoords.x
         val tempY = originalCoords.y - centerCoords.y
 
-        return Coordinates(((tempX * cos(Math.toRadians(rotationAngle.toDouble())) - tempY*sin(Math.toRadians(rotationAngle.toDouble()))).toFloat()), ((tempX * sin(Math.toRadians(rotationAngle.toDouble())) + tempY*cos(Math.toRadians(rotationAngle.toDouble()))).toFloat()))
+        return Coordinates(((tempX * cos(Math.toRadians(rotationAngle.toDouble())) - tempY * sin(Math.toRadians(rotationAngle.toDouble()))).toFloat()), ((tempX * sin(Math.toRadians(rotationAngle.toDouble())) + tempY * cos(Math.toRadians(rotationAngle.toDouble()))).toFloat()))
     }
+
     fun getPointRotated(coords: Coordinates, rotationAngle: Float, centerCoords: Coordinates): Coordinates {
         // Xos, Yos // the coordinates of your center point of rect
         // R      // the angle you wish to rotate
@@ -1211,97 +1837,156 @@ object SystemFlow{
         return Coordinates(rotatedX.toFloat(), rotatedY.toFloat())
     }
 
-    enum class FrameworkComponentType: Serializable{
+    enum class FrameworkComponentType : Serializable {
         Monolog,
         Dialog,
-        Image
+        Image,
+        Text
     }
 
-    class FrameworkComponentTemplate(
+    enum class FrameworkComponentLocker: Serializable {
+        WIDTH,
+        HEIGHT,
+        NONE
+    }
+
+    data class FrameworkComponentTemplate(
             var title: String = "Image",
             var description: String = "Images from game library",
             var type: FrameworkComponentType = FrameworkComponentType.Image,
             var drawablesIn: MutableList<String> = mutableListOf(),
-            var drawableIconIn: String = "00000",
-            var recommendedSizes: MutableList<Coordinates> = mutableListOf(
-                    Coordinates(100f, 50f),
-                    Coordinates(100f, 75f),
-                    Coordinates(100f, 25f),
-                    Coordinates(75f, 50f),
-                    Coordinates(75f, 75f),
-                    Coordinates(50f, 100f),
-                    Coordinates(50f, 75f),
-                    Coordinates(50f, 50f),
-                    Coordinates(50f, 25f),
-                    Coordinates(25f, 100f),
-                    Coordinates(25f, 50f),
-                    Coordinates(25f, 25f)
-            )
-    ){
+            var drawableIconIn: String = "00000"
+    ) {
         var drawables: MutableList<Int> = mutableListOf()
-            get(){
+            get() {
                 field.clear()
-                for(i in drawablesIn){
-                    field.add(drawableStorage[i] ?: 0)
+                for (i in drawablesIn) {
+                    field.add(drawableStorage[i] ?: R.drawable.bubledialogshop)
                 }
                 return field
             }
-        var drawableIcon: Int = R.drawable.boss_icon
-            get(){
-                return drawableStorage[drawableIconIn] ?: R.drawable.boss_icon
+        var drawableIcon: Int = R.drawable.bubledialogshop
+            get() {
+                return drawableStorage[drawableIconIn] ?: R.drawable.bubledialogshop
             }
     }
 
-    class FrameworkComponent(
+    data class FrameworkComponent(
             var type: FrameworkComponentType = FrameworkComponentType.Image,
             var coordinates: Coordinates = Coordinates(0f, 0f),             //in percentage, max 100
-            var width: Int = 35,             //in percentage, max 100
-            var height: Int = 35,             //in percentage, max 100
+            var width: Int = 60,             //in percentage, max 100
+            var height: Int = 60,             //in percentage, max 100
             var drawableIn: String = "00000",
             var rotationAngle: Float = 0f,             //in degrees, max 360
             var name: String = "",
-            var description: String = "",
-            var animate: Boolean = false        //not fully decided yet, animated appearance of text is an option
-    ): Serializable{
+            var textContent: String = "enter text here",
+            var animate: Boolean = false,        //not fully decided yet, animated appearance of text is an option
+            var fontSizeType: CustomTextView.SizeType = CustomTextView.SizeType.adaptive,
+            var textColor: String = "black",
+            var hasBackground: Boolean = false,
+            var backgroundColor: String = "white",
+            var innerIndex: Int = 0
+    ) : Serializable {
         var innerId: String = UUID.randomUUID().toString()
+        var lockedEditor: Boolean = false
+
+        @Exclude
+        fun copy(): FrameworkComponent {
+            return FrameworkComponent(
+                    type = this.type,
+                    coordinates = Coordinates(this.coordinates.x, this.coordinates.y),
+                    width = this.width,
+                    height = this.height,
+                    drawableIn = this.drawableIn,
+                    rotationAngle = this.rotationAngle,
+                    name = this.name,
+                    textContent = this.textContent,
+                    animate = this.animate,
+                    fontSizeType = this.fontSizeType,
+                    textColor = this.textColor,
+                    innerIndex = this.innerIndex
+            )
+        }
 
         //call calculateRealMetrics() to refresh the values
+        @Exclude var lockedOn: FrameworkComponentLocker = FrameworkComponentLocker.NONE
         @Exclude @Transient var realWidth: Int = 0
             @Exclude get
         @Exclude @Transient var realHeight: Int = 0
             @Exclude get
         @Exclude @Transient var realCoordinates = Coordinates(0f, 0f)
             @Exclude get
+        @Exclude @Transient var absoluteCoordinates = Coordinates(0f, 0f)
+            @Exclude get(){
+                val coords = intArrayOf(0, 0)
+                this.view?.getLocationOnScreen(coords)
+                return Coordinates(coords[0].toFloat(), coords[1].toFloat())
+            }
         @Exclude @Transient var view: View? = null
             @Exclude get
         @Exclude @Transient var created: Boolean = false
             @Exclude get
         @Exclude @Transient var drawable: Int = 0
-            @Exclude get(){
-                return drawableStorage[drawableIn] ?: android.R.drawable.ic_menu_report_image
+            @Exclude get() {
+                return drawableStorage[drawableIn] ?: R.drawable.bubledialogshop
             }
 
-        fun getCoordinatesFromReal(activity: GameActivity, maximized: Boolean = false){
-            coordinates.x = ((realCoordinates.x - activity.dm.widthPixels * (if(maximized) 0.0 else 0.22)) / activity.dm.widthPixels / (if(maximized) 1.0 else 0.78) * 100).toFloat()
-            coordinates.y = (realCoordinates.y / activity.dm.heightPixels / (if(maximized) 1.0 else 0.78) * 100).toFloat()
+        fun getCoordinatesFromReal(activity: GameActivity) {
+            val layoutWidth = (activity as? Activity_Create_Story)?.layoutWidth ?: 1
+            val layoutHeight = (activity as? Activity_Create_Story)?.layoutHeight ?: 1
+            coordinates.x = (realCoordinates.x / layoutWidth * 100).toFloat()
+            coordinates.y = (realCoordinates.y / layoutHeight * 100).toFloat()
+
+            Log.d("getCoordinatesFromReal", "x: $layoutWidth, y: $layoutHeight")
         }
 
-        fun resolveSizeByDrawable(activity: GameActivity, maximized: Boolean = false){
-            val drawableRatio = (activity.resources.getDrawable(drawable)?.intrinsicHeight?.toDouble() ?: 1.0) / (activity.resources.getDrawable(drawable)?.intrinsicWidth?.toDouble() ?: 1.0)
-            val metricsRatio = activity.dm.widthPixels.toDouble() / activity.dm.heightPixels.toDouble()
-            this.height = (this.width * drawableRatio * metricsRatio).toInt()
-            calculateRealMetrics(activity, maximized)
+        fun resolveSizeByDrawable(activity: GameActivity) {
+            val layoutWidth = (activity as? Activity_Create_Story)?.layoutWidth ?: 1
+            val layoutHeight = (activity as? Activity_Create_Story)?.layoutHeight ?: 1
+
+            val heightRatio = (activity.resources.getDrawable(drawable)?.intrinsicHeight?.toDouble()
+                    ?: 1.0) / (activity.resources.getDrawable(drawable)?.intrinsicWidth?.toDouble()
+                    ?: 1.0)
+            val heightMetricsRatio = layoutWidth.toDouble() / layoutHeight.toDouble()
+
+            val widthRatio = (activity.resources.getDrawable(drawable)?.intrinsicWidth?.toDouble()
+                    ?: 1.0) / (activity.resources.getDrawable(drawable)?.intrinsicHeight?.toDouble()
+                    ?: 1.0)
+            val widthMetricsRatio = layoutHeight.toDouble() / layoutWidth.toDouble()
+
+            if (heightRatio < 1) {
+                this.height = (this.width * heightRatio * heightMetricsRatio).toInt()
+            } else {
+                this.width = (this.height * widthRatio * widthMetricsRatio).toInt()
+            }
+            calculateRealMetrics(activity)
         }
 
-        fun calculateRealMetrics(activity: GameActivity, maximized: Boolean){
-            Log.d("calculateRealMetrics", "maximazed: $maximized")
-            this.realCoordinates.x = max((if(maximized) activity.dm.widthPixels * 0.22 else 0.0), min(activity.dm.widthPixels.toDouble(), ((activity.dm.widthPixels * (coordinates.x.toDouble() / 100) * (if(maximized) 1.0 else 0.78)) + if(maximized) 0.0 else activity.dm.widthPixels * 0.22))).toFloat()
-            this.realCoordinates.y = max(0.0, min(activity.dm.heightPixels * (if(maximized) 1.0 else 0.78), (activity.dm.heightPixels * (coordinates.y.toDouble() / 100) * (if(maximized) 1.0 else 0.78)))).toFloat()
+        fun calculateRealMetrics(activity: GameActivity) {
+            val layoutWidth = (activity as? Activity_Create_Story)?.layoutWidth ?: 1
+            val layoutHeight = (activity as? Activity_Create_Story)?.layoutHeight ?: 1
+            this.realCoordinates = Coordinates(0f, 0f)
+            val heightRatio = (activity.resources.getDrawable(drawable)?.intrinsicHeight?.toDouble()
+                    ?: 1.0) / (activity.resources.getDrawable(drawable)?.intrinsicWidth?.toDouble()
+                    ?: 1.0)
+            val heightMetricsRatio = layoutWidth.toDouble() / layoutHeight.toDouble()
 
-            this.realWidth = (activity.dm.widthPixels * (width.toDouble() / 100) * (if(maximized) 1.0 else 0.78)).toInt()
-            this.realHeight = (activity.dm.heightPixels * (height.toDouble() / 100) * (if(maximized) 1.0 else 0.78)).toInt()
-            /*this.realWidth = max(1.0, min(activity.dm.widthPixels * (if(maximized) 1.0 else 0.78), (activity.dm.widthPixels * (width.toDouble() / 100) * (if(maximized) 1.0 else 0.78)))).toInt()
-            this.realHeight = max(1.0, min(activity.dm.heightPixels * (if(maximized) 1.0 else 0.78), (activity.dm.heightPixels * (height.toDouble() / 100) * (if(maximized) 1.0 else 0.78)))).toInt()*/
+            val widthRatio = (activity.resources.getDrawable(drawable)?.intrinsicWidth?.toDouble()
+                    ?: 1.0) / (activity.resources.getDrawable(drawable)?.intrinsicHeight?.toDouble()
+                    ?: 1.0)
+            val widthMetricsRatio = layoutHeight.toDouble() / layoutWidth.toDouble()
+
+            if(lockedOn == FrameworkComponentLocker.WIDTH){
+                height = (width * heightRatio/*(drawableHeightRatio / 10)*/ * heightMetricsRatio).toInt()
+            }else if(lockedOn == FrameworkComponentLocker.HEIGHT){
+                width = (height * widthRatio /*(drawableHeightRatio / 10)*/ * widthMetricsRatio).toInt()
+            }
+
+            this.realWidth = (layoutWidth * (max(0, min(width, 100)).toDouble() / 100)).toInt()
+            this.realHeight = (layoutHeight * (max(0, min(height, 100)).toDouble() / 100)).toInt()
+
+            this.realCoordinates.x = (max(0.0, min((layoutWidth - realWidth).toDouble(), layoutWidth * coordinates.x.toDouble() / 100))).toFloat()
+            this.realCoordinates.y = (max(0.0, min((layoutHeight - realHeight).toDouble(), layoutHeight * coordinates.y.toDouble() / 100))).toFloat()
         }
 
         fun findMyView(activity: GameActivity): View? {
@@ -1311,16 +1996,36 @@ object SystemFlow{
             return view
         }
 
-        fun update(activity: GameActivity, maximized: Boolean = false){
-            Log.d("component_update_0", "width: $width, height: $height")
-            calculateRealMetrics(activity, maximized)
+        fun update(activity: GameActivity) {
+            calculateRealMetrics(activity)
 
             findMyView(activity)
-            if(view == null){
+            if (view == null) {
                 created = true
                 createView(activity)
-            }else {
+            } else {
                 view?.apply {
+                    (this as? CustomTextView)?.apply {
+                        setHTMLText(textContent)
+                        fontSizeType = this@FrameworkComponent.fontSizeType
+                        setTextColor(colorNameMap[this@FrameworkComponent.textColor]
+                                ?: R.color.black)
+                        when {
+                            this@FrameworkComponent.hasBackground -> {
+                                setPadding(4, 4, 4, 4)
+                                setBackgroundColor(colorNameMap[this@FrameworkComponent.backgroundColor]
+                                        ?: R.color.black)
+                            }
+                            (activity as? Activity_Create_Story)?.currentComponentID == this@FrameworkComponent.innerId -> {
+                                setPadding(8, 8, 8, 8)
+                                setBackgroundResource(R.drawable.framework_frame_white)
+                            }
+                            else -> {
+                                setPadding(0, 0, 0, 0)
+                                setBackgroundResource(0)
+                            }
+                        }
+                    }
                     layoutParams?.width = realWidth
                     layoutParams?.height = realHeight
                     rotation = rotationAngle
@@ -1329,7 +2034,7 @@ object SystemFlow{
                     pivotX = (realWidth / 2).toFloat()
                     pivotY = (realHeight / 2).toFloat()
                 }
-                //view?.invalidate()
+                view?.invalidate()
                 view?.requestLayout()
             }
         }
@@ -1337,24 +2042,28 @@ object SystemFlow{
         private fun spacing(event: MotionEvent): Float {
             val x = event.getX(0) - event.getX(1)
             val y = event.getY(0) - event.getY(1)
-            val s= x * x + y * y
+            val s = x * x + y * y
             return sqrt(s)
         }
+
         private fun spacingX(event: MotionEvent): Float {
             val x = event.getX(0) - event.getX(1)
-            val s= x * x
+            val s = x * x
             return sqrt(s)
         }
+
         private fun spacingY(event: MotionEvent): Float {
             val y = event.getY(0) - event.getY(1)
-            val s= y * y
+            val s = y * y
             return sqrt(s)
         }
+
         private fun midPoint(point: PointF, event: MotionEvent) {
             val x = event.getX(0) + event.getX(1)
             val y = event.getY(0) + event.getY(1)
             point.set(x / 2, y / 2)
         }
+
         private fun rotation(event: MotionEvent): Float {
             val deltaX = (event.getX(0) - event.getX(1))
             val deltaY = (event.getY(0) - event.getY(1))
@@ -1362,13 +2071,15 @@ object SystemFlow{
             return Math.toDegrees(radians).toFloat()
         }
 
-        fun createView(activity: GameActivity){
-            var maximized = (activity as? Activity_Create_Story)?.maximized ?: false
-            if(created){
-                calculateRealMetrics(activity, maximized)
-            }else {
-                resolveSizeByDrawable(activity, maximized)
-                Log.d("component_createView", "resolveSizeByDrawable")
+        fun createView(activity: GameActivity) {
+            //var maximized = (activity as? Activity_Create_Story)?.maximized ?: false
+            val layoutWidth = (activity as? Activity_Create_Story)?.layoutWidth ?: 1
+            val layoutHeight = (activity as? Activity_Create_Story)?.layoutHeight ?: 1
+
+            if (created) {
+                calculateRealMetrics(activity)
+            } else {
+                resolveSizeByDrawable(activity)
             }
 
             val CODE_NONE = 0
@@ -1377,6 +2088,11 @@ object SystemFlow{
             val CODE_ZOOMX = 3
             val CODE_ZOOMY = 4
             val CODE_ZOOMXY = 5
+
+            val CODE_ONE_POINTER_LEFT = 101
+            val CODE_ONE_POINTER_RIGHT = 102
+            val CODE_ONE_POINTER_TOP = 103
+            val CODE_ONE_POINTER_BOTTOM = 104
 
             var zoomMode = CODE_NONE
             val matrix = Matrix()
@@ -1401,23 +2117,72 @@ object SystemFlow{
             var lastRealHeight = realHeight
             var validClick = false
             var pointerEvent = false
+            var onePointerEvent = false
 
-            view = ImageView(activity)
+            val backgroundHandler = Handler()
+            val validClickHandler = Handler()
+            val startDragHandler = Handler()
+
+            var initialX = 0f
+            var initialY = 0f
+
+            view = when (this.type) {
+                FrameworkComponentType.Image -> {
+                    ImageView(activity)
+                }
+                FrameworkComponentType.Text -> {
+                    CustomTextView(activity)
+                }
+                else -> {
+                    ImageView(activity)
+                }
+            }
             view?.apply {
                 layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
                 layoutParams.width = realWidth
                 layoutParams.height = realHeight
-                layout(0, 0, realWidth, realHeight)
+                //layout(0, 0, realWidth, realHeight)
                 x = realCoordinates.x
                 y = realCoordinates.y
                 tag = innerId
+                rotation = rotationAngle
+                isClickable = true
+                isEnabled = true
+                z = 0f
+                elevation = 0f
                 (this as? ImageView)?.setImageResource(this@FrameworkComponent.drawable)
                 (this as? ImageView)?.scaleType = ImageView.ScaleType.FIT_XY
+                (this as? CustomTextView)?.apply {
+                    setHTMLText(textContent)
+                    fontSizeType = this@FrameworkComponent.fontSizeType
+                    setTextColor(colorNameMap[this@FrameworkComponent.textColor] ?: R.color.black)
+                }
+                when {
+                    this@FrameworkComponent.hasBackground -> {
+                        setPadding(4, 4, 4, 4)
+                        setBackgroundColor(colorNameMap[this@FrameworkComponent.backgroundColor]
+                                ?: R.color.black)
+                    }
+                    (activity as? Activity_Create_Story)?.currentComponentID == this@FrameworkComponent.innerId -> {
+                        setPadding(8, 8, 8, 8)
+                        setBackgroundResource(R.drawable.framework_frame_white)
+                    }
+                    else -> {
+                        setPadding(0, 0, 0, 0)
+                        setBackgroundResource(0)
+                    }
+                }
 
                 setOnTouchListener { v, event ->
-                    when(event.actionMasked){
+                    if ((activity as? Activity_Create_Story)?.draggedComponent?.innerId == this@FrameworkComponent.innerId || lockedEditor) {
+                        (activity as? Activity_Create_Story)?.removeCurrentPropertiesOptions()
+                        return@setOnTouchListener false
+                    }
+
+                    when (event.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {
                             pointerEvent = false
+                            onePointerEvent = false
                             zoomMode = CODE_NONE
                             currentMode = CODE_DRAG
                             oldDistance = 1f
@@ -1429,13 +2194,18 @@ object SystemFlow{
                             originalWidth = this@FrameworkComponent.width
                             originalHeight = this@FrameworkComponent.height
 
+                            initialX = event.rawX
+                            initialY = event.rawY
+
                             validClick = true
-                            Handler().postDelayed({
+                            validClickHandler.removeCallbacksAndMessages(null)
+                            validClickHandler.postDelayed({
                                 validClick = false
                             }, 100)
 
-                            Handler().postDelayed({
-                                if(currentMode == CODE_DRAG){         //long click performed without interruption
+                            startDragHandler.removeCallbacksAndMessages(null)
+                            startDragHandler.postDelayed({
+                                if (currentMode == CODE_DRAG && event.pointerCount == 1) {         //long click performed without interruption
                                     findMyView(activity)
 
                                     val item = ClipData.Item(drawableIn)
@@ -1443,12 +2213,12 @@ object SystemFlow{
                                             "storyComponent",
                                             arrayOf(drawableIn),
                                             item)
-                                    calculateRealMetrics(activity, maximized)
+                                    calculateRealMetrics(activity)
                                     (activity as? Activity_Create_Story)?.draggedComponent = this@FrameworkComponent
-                                    (activity as? Activity_Create_Story)?.removeCurrentPropertiesOptions()
+                                    (activity as? Activity_Create_Story)?.removeCurrentPropertiesOptions(false)
                                     vibrateAsError(activity)
 
-                                    val myShadow = StoryDragListener(view, realWidth, realHeight, rotationAngle)
+                                    val myShadow = StoryDragListener(view, realWidth, realHeight, rotationAngle, activity.getDrawable(R.color.bg_basic_white))
                                     view?.startDrag(
                                             dragData,   // the data to be dragged
                                             myShadow,   // the drag shadow builder
@@ -1458,13 +2228,14 @@ object SystemFlow{
                                 }
                             }, 600)
                         }
+
                         MotionEvent.ACTION_POINTER_DOWN -> {
                             pointerEvent = true
                             oldDistance = spacing(event)
                             Log.d("spacing", spacing(event).toString())
                             oldDistanceX = spacingX(event)
                             oldDistanceY = spacingY(event)
-                            if(oldDistance > max(lastRealWidth, lastRealHeight) * 0.05){
+                            if (oldDistance > max(lastRealWidth, lastRealHeight) * 0.05) {
                                 savedMatrix.set(matrix)
                                 midPoint(mid, event)
                                 currentMode = CODE_ZOOM
@@ -1473,8 +2244,28 @@ object SystemFlow{
                             d = rotation(event)
                         }
                         MotionEvent.ACTION_UP -> {
-                            if(validClick){         //click performed
-                                (activity as? Activity_Create_Story)?.addPropertiesOptions(this@FrameworkComponent)
+                            if (validClick && this.isClickable) {         //click performed
+                                (activity as? Activity_Create_Story)?.apply {
+                                    addPropertiesOptions(this@FrameworkComponent)
+                                    relayoutIndexing()
+                                }
+                                isClickable = false
+                                Handler().postDelayed({
+                                    this.isClickable = true
+                                }, 200)
+
+                                view?.bringToFront()
+                                if ((activity as? Activity_Create_Story)?.showBoundaries == true) {
+                                    (view as? CustomTextView)?.setBackgroundResource(R.drawable.framework_frame_white)
+                                    (view as? ImageView)?.apply {
+                                        setPadding(8, 8, 8, 8)
+                                        setBackgroundResource(R.drawable.framework_frame_white)
+                                    }
+                                    /*backgroundHandler.removeCallbacksAndMessages(null)
+                                    backgroundHandler.postDelayed({
+                                        view?.setBackgroundResource(0)
+                                    }, 1500)*/
+                                }
                             }
                             currentMode = CODE_NONE
                         }
@@ -1483,43 +2274,122 @@ object SystemFlow{
                             lastEvent = null
                         }
                         MotionEvent.ACTION_MOVE -> {
-                            when(currentMode){
-                                CODE_ZOOM -> {
-                                    val newDistance = spacing(event)
-                                    val newDistanceX = spacingX(event)
-                                    val newDistanceY = spacingY(event)
+                            if ((activity as? Activity_Create_Story)?.currentComponentID != this@FrameworkComponent.innerId) return@setOnTouchListener false
 
-                                    val xyRatio = newDistanceX * (realHeight.toDouble() / realWidth.toDouble() * activity.dm.heightPixels.toDouble() / activity.dm.widthPixels.toDouble()) / newDistanceY
-                                    if(newDistance > max(lastRealWidth, lastRealHeight) * 0.05){
-                                        //matrix.set(savedMatrix)
-                                        scale = newDistance / oldDistance
-                                        scaleX = newDistanceX / oldDistanceX
-                                        scaleY = newDistanceY / oldDistanceY
-                                        //matrix.postScale(scale, scale, mid.x, mid.y)
-                                        if(zoomMode == CODE_NONE){
-                                            zoomMode = when {
-                                                abs(1.0 - xyRatio) < 0.6 -> {
-                                                    CODE_ZOOMXY
+                            if (event.pointerCount > 1) {
+                                when (currentMode) {
+                                    CODE_ZOOM -> {
+                                        val newDistance = spacing(event)
+                                        val newDistanceX = spacingX(event)
+                                        val newDistanceY = spacingY(event)
+
+                                        val xyRatio = newDistanceX * (realHeight.toDouble() / realWidth.toDouble() * layoutHeight.toDouble() / layoutWidth.toDouble()) / newDistanceY
+                                        if (newDistance > max(lastRealWidth, lastRealHeight) * 0.05) {
+                                            //matrix.set(savedMatrix)
+                                            scale = newDistance / oldDistance
+                                            scaleX = newDistanceX / oldDistanceX
+                                            scaleY = newDistanceY / oldDistanceY
+                                            //matrix.postScale(scale, scale, mid.x, mid.y)
+                                            if (zoomMode == CODE_NONE) {
+                                                zoomMode = when {
+                                                    abs(1.0 - xyRatio) < 0.7 -> {
+                                                        CODE_ZOOMXY
+                                                    }
+                                                    newDistanceX > newDistanceY -> {
+                                                        CODE_ZOOMX
+                                                    }
+                                                    else -> CODE_ZOOMY
                                                 }
-                                                newDistanceX > newDistanceY -> {
-                                                    CODE_ZOOMX
-                                                }
-                                                else -> CODE_ZOOMY
+                                            }
+                                        }
+                                        /*if(lastEvent != null && event.pointerCount == 2 || event.pointerCount == 3){  ROTATION
+                                            newRotation = rotation(event)
+                                            r = newRotation - d
+                                            val values = FloatArray(9)
+                                            matrix.getValues(values)
+                                            val tx = values[2]
+                                            val ty = values[5]
+                                            val sx = values[0]
+                                            val xc = realWidth / 2 * sx
+                                            val yc = realHeight / 2 * sx
+                                            matrix.postRotate(r, tx + xc, ty + yc)
+                                        }*/
+                                    }
+                                }
+
+                            } else {
+                                //maximized = (activity as? Activity_Create_Story)?.maximized ?: false
+
+                                val distanceX = event.rawX - initialX
+                                val distanceY = event.rawY - initialY
+                                val additionalPercX = (distanceX / (layoutWidth) * 100)
+                                val additionalPercY = ((distanceY / layoutHeight) * 100)
+
+                                if (currentMode > 100) {      //above code 100 identify one pointer events only      //TODO corner mode + its lifecycle
+                                    when (currentMode) {
+                                        CODE_ONE_POINTER_LEFT -> {
+                                            this@FrameworkComponent.width = max(0, min(100, (originalWidth - additionalPercX).toInt()))
+                                            calculateRealMetrics(activity)
+
+                                            realCoordinates.x += (lastRealWidth - realWidth)
+                                            getCoordinatesFromReal(activity)
+                                        }
+                                        CODE_ONE_POINTER_RIGHT -> {
+                                            this@FrameworkComponent.width = max(0, min(100, (originalWidth + additionalPercX).toInt()))
+                                        }
+                                        CODE_ONE_POINTER_TOP -> {
+                                            this@FrameworkComponent.height = max(0, min(100, (originalHeight.toDouble() - additionalPercY).toInt()))
+                                            calculateRealMetrics(activity)
+
+                                            realCoordinates.y += (lastRealHeight - realHeight)
+                                            getCoordinatesFromReal(activity)
+                                        }
+                                        CODE_ONE_POINTER_BOTTOM -> {
+                                            this@FrameworkComponent.height = max(0, min(100, (originalHeight.toDouble() + additionalPercY).toInt()))
+                                        }
+                                    }
+                                } else {
+                                    this@FrameworkComponent.calculateRealMetrics(activity)
+
+                                    //todo má to staré layout metrics + rectangulars neodpovídají
+                                    val leftRect = Rectangle()
+                                    leftRect.setBounds(absoluteCoordinates.x.toInt(), absoluteCoordinates.y.toInt(), (realWidth.toDouble() * 0.25).toInt(), realHeight)
+
+                                    val rightRect = Rectangle()
+                                    rightRect.setBounds((absoluteCoordinates.x + realWidth.toDouble() * 0.75).toInt(), absoluteCoordinates.y.toInt(), (realWidth.toDouble() * 0.25).toInt(), realHeight)
+
+                                    val topRect = Rectangle()
+                                    topRect.setBounds(absoluteCoordinates.x.toInt(), absoluteCoordinates.y.toInt(), realWidth, (realHeight.toDouble() * 0.25).toInt())
+
+                                    val bottomRect = Rectangle()
+                                    bottomRect.setBounds(absoluteCoordinates.x.toInt(), (absoluteCoordinates.y + realHeight.toDouble() * 0.75).toInt(), realWidth, (realHeight.toDouble() * 0.25).toInt())
+
+                                    when {
+                                        leftRect.contains(event.rawX.toInt(), event.rawY.toInt()) -> {
+                                            if (abs(distanceX) > 10f && abs(distanceX) > abs(distanceY)) {
+                                                onePointerEvent = true
+                                                currentMode = CODE_ONE_POINTER_LEFT
+                                            }
+                                        }
+                                        rightRect.contains(event.rawX.toInt(), event.rawY.toInt()) -> {
+                                            if (abs(distanceX) > 10f && abs(distanceX) > abs(distanceY)) {
+                                                onePointerEvent = true
+                                                currentMode = CODE_ONE_POINTER_RIGHT
+                                            }
+                                        }
+                                        topRect.contains(event.rawX.toInt(), event.rawY.toInt()) -> {
+                                            if (abs(distanceY) > 10f && abs(distanceY) > abs(distanceX)) {
+                                                onePointerEvent = true
+                                                currentMode = CODE_ONE_POINTER_TOP
+                                            }
+                                        }
+                                        bottomRect.contains(event.rawX.toInt(), event.rawY.toInt()) -> {
+                                            if (abs(distanceY) > 10f && abs(distanceY) > abs(distanceX)) {
+                                                onePointerEvent = true
+                                                currentMode = CODE_ONE_POINTER_BOTTOM
                                             }
                                         }
                                     }
-                                    /*if(lastEvent != null && event.pointerCount == 2 || event.pointerCount == 3){  ROTATION
-                                        newRotation = rotation(event)
-                                        r = newRotation - d
-                                        val values = FloatArray(9)
-                                        matrix.getValues(values)
-                                        val tx = values[2]
-                                        val ty = values[5]
-                                        val sx = values[0]
-                                        val xc = realWidth / 2 * sx
-                                        val yc = realHeight / 2 * sx
-                                        matrix.postRotate(r, tx + xc, ty + yc)
-                                    }*/
                                 }
                             }
                         }
@@ -1528,32 +2398,68 @@ object SystemFlow{
                     /*(view as? ImageView)?.imageMatrix = matrix
                     bitmap = Bitmap.createBitmap(realWidth, realHeight, Bitmap.Config.RGB_565)*/
 
-                    if(pointerEvent){
-                        maximized = (activity as? Activity_Create_Story)?.maximized ?: false
-                        with(this@FrameworkComponent){
-                            //Log.d("pointerEvent=true", "before update, width: $width, height: $height, scaleX: $scaleX, scaleY: $scaleY, zoomMode: $zoomMode, originalWidth: $originalWidth, originalHeight: $originalHeight")
-                            width = min(100, (originalWidth.toDouble() * when(zoomMode){
-                                CODE_ZOOMX -> scaleX
-                                CODE_ZOOMXY -> scale
-                                else -> 1f
-                            }).toInt())
-                            height = min(100, (originalHeight.toDouble() * when(zoomMode){
-                                CODE_ZOOMY -> scaleY
-                                CODE_ZOOMXY -> scale
-                                else -> 1f
-                            }).toInt())
-                            rotationAngle = min(360f, r)
-                            calculateRealMetrics(activity, maximized)
-                            realCoordinates.x += (lastRealWidth - realWidth) / 2
-                            realCoordinates.y += (lastRealHeight - realHeight) / 2
-                            getCoordinatesFromReal(activity, maximized)           //bug? test out more TODO
-                            update(activity, maximized)
+                    if ((activity as? Activity_Create_Story)?.currentComponentID == this@FrameworkComponent.innerId) {
+                        if (pointerEvent) {
+                            //maximized = (activity as? Activity_Create_Story)?.maximized ?: false
+                            with(this@FrameworkComponent) {
+                                //Log.d("pointerEvent=true", "before update, width: $width, height: $height, scaleX: $scaleX, scaleY: $scaleY, zoomMode: $zoomMode, originalWidth: $originalWidth, originalHeight: $originalHeight")
+                                width = min(100, (originalWidth.toDouble() * when (zoomMode) {
+                                    CODE_ZOOMX -> scaleX
+                                    CODE_ZOOMXY -> scale
+                                    else -> 1f
+                                }).toInt())
+                                height = min(100, (originalHeight.toDouble() * when (zoomMode) {
+                                    CODE_ZOOMY -> scaleY
+                                    CODE_ZOOMXY -> scale
+                                    else -> 1f
+                                }).toInt())
+                                //rotationAngle = min(360f, r)
+                                calculateRealMetrics(activity)
+                                realCoordinates.x += (lastRealWidth - realWidth) / 2
+                                realCoordinates.y += (lastRealHeight - realHeight) / 2
+                                getCoordinatesFromReal(activity)
+                                update(activity)
 
-                            Log.d("pointerEvent=true", "after update, width: $width, height: $height, scaleX: $scaleX, scaleY: $scaleY, zoomMode: $zoomMode, originalWidth: $originalWidth, originalHeight: $originalHeight")
+                                (activity as? Activity_Create_Story)?.removeCurrentPropertiesOptions(false)
+                                /*if((activity as? Activity_Create_Story)?.showBoundaries == true){
+                                    (view as? CustomTextView)?.setBackgroundColor(Color.WHITE)
+                                    backgroundHandler.removeCallbacksAndMessages(null)
+                                    backgroundHandler.postDelayed({
+                                        view?.setBackgroundResource(0)
+                                    }, 400)
+                                }*/
+                            }
+
+                            lastRealWidth = realWidth
+                            lastRealHeight = realHeight
+                        } else if (onePointerEvent) {
+                            update(activity)
+                            lastRealWidth = realWidth
+                            lastRealHeight = realHeight
+
+                            (activity as? Activity_Create_Story)?.removeCurrentPropertiesOptions(false)
+                            /*if((activity as? Activity_Create_Story)?.showBoundaries == true){
+                                (view as? CustomTextView)?.setBackgroundColor(Color.WHITE)
+                                backgroundHandler.removeCallbacksAndMessages(null)
+                                backgroundHandler.postDelayed({
+                                    view?.setBackgroundResource(0)
+                                }, 400)
+                            }*/
                         }
+                        (activity as? Activity_Create_Story)?.apply {
+                            textViewCreateStoryName?.setHTMLText("<b>width: ${this@FrameworkComponent.width}%, height: ${this@FrameworkComponent.height}%</b>")
 
-                        lastRealWidth = realWidth
-                        lastRealHeight = realHeight
+                            if(imageViewCreateStoryMaximize?.visibility != View.GONE){
+                                textViewCreateStoryName?.visibility = View.VISIBLE
+                                imageViewCreateStoryMaximize?.visibility = View.GONE
+                            }
+
+                            slideNameHandler.removeCallbacksAndMessages(null)
+                            slideNameHandler.postDelayed({
+                                imageViewCreateStoryMaximize?.visibility = View.VISIBLE
+                                textViewCreateStoryName?.visibility = View.GONE
+                            }, 1000)
+                        }
                     }
 
                     /*val canvas = Canvas(bitmap)
@@ -1681,7 +2587,7 @@ object SystemFlow{
         val bytes = ByteArrayOutputStream()
         inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
         val path = MediaStore.Images.Media.insertImage(context.contentResolver, inImage, title, description)
-        return Uri.parse(path?:"")
+        return Uri.parse(path ?: "")
     }
 
     @Throws(IOException::class)
@@ -1691,7 +2597,11 @@ object SystemFlow{
         val fos = context.openFileOutput(fileName, Context.MODE_PRIVATE)
         val oos = ObjectOutputStream(fos)
         oos.reset()
-        oos.writeObject(objectG)
+        try {
+            oos.writeObject(objectG)
+        }catch (e1: NotSerializableException){
+            Log.e("WriteObject returned: ", e1.localizedMessage)
+        }
         oos.flush()
         oos.close()
         fos.close()
@@ -1706,11 +2616,11 @@ object SystemFlow{
         val fis = context.openFileInput(fileName)
         return if (file.readText() != "") {
             val ois = ObjectInputStream(fis)
-            try{
+            try {
                 ois.readObject()
-            }catch(e1: java.io.NotSerializableException){
+            } catch (e1: NotSerializableException) {
                 return 0
-            }catch (e2: InvalidClassException){
+            } catch (e2: InvalidClassException) {
                 return 0
             }
         } else {
@@ -1744,5 +2654,29 @@ object SystemFlow{
             Log.d("ExceptionFormatterError", "Failed to format exception, falling back to source")
             errorIn
         }
+    }
+
+    /**
+     * @sample clientPostData("MyUrl.com", "content I'm about to send (JSON ideally)", object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+            }
+            override fun onResponse(call: Call, response: Response) {
+            }
+            })
+     * @author Jakub Kostka, Czechia
+     * @since Alpha 0.5.0.4
+     * @param callback handler for results
+     *  implement as following:
+     */
+    fun clientPostData(url: String, content: String, callback: Callback) {
+        val okHttpClient = OkHttpClient()
+        val requestBody = content.toRequestBody("application/json".toMediaTypeOrNull())
+        Log.d("requestBody", requestBody.contentLength().toString())
+        val request = Request.Builder()
+                .method("POST", requestBody)
+                .url(url)
+                .build()
+        request.headers.newBuilder().add("Accept: application/json")
+        okHttpClient.newCall(request).enqueue(callback)
     }
 }

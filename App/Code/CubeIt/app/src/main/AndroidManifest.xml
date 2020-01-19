@@ -35,6 +35,12 @@
             android:name="cz.cubeit.cubeit.SystemFlow$GameActivity"
             android:screenOrientation="sensorLandscape"/>
         <activity
+            android:name="cz.cubeit.cubeit.Activity_Create_Story_Overview"
+            android:screenOrientation="sensorLandscape"/>
+        <activity
+            android:name="cz.cubeit.cubeit.Activity_Story_Lobby"
+            android:screenOrientation="sensorLandscape"/>
+        <activity
             android:name="cz.cubeit.cubeit.ActivityHome"
             android:screenOrientation="sensorLandscape"/>
         <activity

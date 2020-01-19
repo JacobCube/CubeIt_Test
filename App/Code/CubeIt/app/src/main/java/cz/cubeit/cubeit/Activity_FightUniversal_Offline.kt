@@ -667,7 +667,7 @@ class ActivityFightUniversalOffline: SystemFlow.GameActivity(R.layout.activity_f
 
                 if(!windowPop.isShowing && !viewPinned){
                     viewP.textViewPopUpInfoDsc.setHTMLText(chosenSpell?.getStats() ?: "")
-                    viewP.imageViewPopUpInfoItem.setBackgroundResource(R.drawable.emptyspellslot)
+                    viewP.imageViewPopUpInfoItem.setBackgroundResource(R.drawable.circle_white)
                     viewP.imageViewPopUpInfoItem.setImageResource(chosenSpell?.drawable ?: R.drawable.basicattack)
 
                     windowPop.showAsDropDown(activity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())

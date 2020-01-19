@@ -21,11 +21,11 @@ class Fragment_Bug_report : Fragment() {
 
         ArrayAdapter.createFromResource(
                 view.context,
-                R.array.bug_report.apply {ForegroundColorSpan(Color.YELLOW)},
-                android.R.layout.simple_spinner_item
+                R.array.bug_report,
+                R.layout.spinner_inbox_item
         ).also { adapter ->
             // Specify the layout to use when the list of choices appears
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            adapter.setDropDownViewResource(R.layout.spinner_inbox_item)
             // Apply the adapter to the spinner
             view.spinnerBugReport.adapter = adapter
         }
@@ -41,7 +41,7 @@ class Fragment_Bug_report : Fragment() {
                         view.editTextDetailedMessage.setBackgroundResource(R.color.loginColor)
 
                         val emailIntent = Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                                "mailto", "teamcubeit@gmail.com", null))
+                                "mailto", "admin@gmail.com", null))
                         emailIntent.putExtra(Intent.EXTRA_SUBJECT, view.spinnerBugReport.selectedItem.toString())
                         emailIntent.putExtra(Intent.EXTRA_TEXT, view.editTextShortDescription.text.toString() +"\n\n" + view.editTextDetailedMessage.text.toString())
                         startActivity(Intent.createChooser(emailIntent, "Send report..."))

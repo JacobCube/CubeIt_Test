@@ -20,14 +20,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listViewInboxCategories"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline77"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewInboxIcon"></ListView>
+        app:layout_constraintTop_toBottomOf="@+id/imageViewInboxIcon"></androidx.recyclerview.widget.RecyclerView>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline76"
@@ -139,7 +139,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/email_icon" />
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listViewInboxMessages"
         android:layout_width="0dp"
         android:background="@color/loginColor_2"
@@ -151,7 +151,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline77"
         app:layout_constraintTop_toTopOf="@+id/guideline76">
 
-    </ListView>
+    </androidx.recyclerview.widget.RecyclerView>
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxError"
@@ -174,7 +174,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/listViewInboxMessages"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/listViewInboxMessages"
-        app:layout_constraintTop_toTopOf="@+id/listViewInboxMessages">
+        app:layout_constraintTop_toTopOf="@+id/listViewInboxMessages"
+        tools:visibility="gone">
 
     </FrameLayout>
 
@@ -199,7 +200,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@+id/guideline151"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewInboxActionDelete"
         app:layout_constraintTop_toTopOf="@+id/guideline76"
         app:srcCompat="@android:drawable/ic_menu_set_as"
         tools:visibility="visible" />
@@ -234,6 +235,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
+        android:alpha="0.8"
         android:tint="@color/bg_basic_white"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionDelete"
@@ -242,6 +244,20 @@
         app:layout_constraintTop_toTopOf="@+id/imageViewInboxActionDelete"
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/head_close"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imageViewInboxActionSelectAll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
+        android:alpha="0.7"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionMoveTo"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewInboxActionMoveTo"
+        app:layout_constraintTop_toTopOf="@+id/imageViewInboxActionMoveTo"
+        app:srcCompat="?attr/actionModeSelectAllDrawable"
         tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

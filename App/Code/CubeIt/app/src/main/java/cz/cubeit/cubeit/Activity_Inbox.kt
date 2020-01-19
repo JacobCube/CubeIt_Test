@@ -16,6 +16,8 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.*
 import android.util.Log
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,8 +30,8 @@ import java.util.*
 
 class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, ActivityType.Inbox, false){
 
-    lateinit var messagesAdapter: Adapter
-    lateinit var categories: Adapter
+    lateinit var messagesAdapter: RecyclerView
+    lateinit var categories: RecyclerView
     var currentCategory:InboxCategory = InboxCategory()
     lateinit var chosenMail: InboxMessage
     var onTop: Boolean = false
@@ -44,10 +46,12 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
             if(!field && imageViewInboxActionDelete.visibility != View.GONE){
                 imageViewInboxActionDelete.visibility = View.GONE
                 imageViewInboxActionMoveTo.visibility = View.GONE
+                imageViewInboxActionSelectAll.visibility = View.GONE
                 textViewInboxActionCounter.visibility = View.GONE
                 imageViewInboxActionCloseEditMode.visibility = View.GONE
             }else if(field && imageViewInboxActionDelete.visibility != View.VISIBLE){
                 imageViewInboxActionDelete.visibility = View.VISIBLE
+                imageViewInboxActionSelectAll.visibility = View.VISIBLE
                 imageViewInboxActionMoveTo.visibility = View.VISIBLE
                 textViewInboxActionCounter.visibility = View.VISIBLE
                 imageViewInboxActionCloseEditMode.visibility = View.VISIBLE
@@ -93,8 +97,8 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
         if(!forceCategory){
             currentCategory = Data.inboxCategories[currentCategory.status]!!
         }
-        (categories as AdapterInboxCategories).notifyDataSetChanged()
-        (messagesAdapter as AdapterInboxMessages).refreshMessages(forceCategory)
+        (categories.adapter as AdapterInboxCategories).notifyDataSetChanged()
+        (messagesAdapter.adapter as AdapterInboxMessages).refreshMessages(forceCategory)
 
     }
 
@@ -135,6 +139,11 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
                 }
                 window.showAtLocation(viewP, Gravity.CENTER,0,0)
             }
+        }
+        imageViewInboxActionSelectAll.setOnClickListener {
+            editModeMessages.clear()
+            editModeMessages.addAll(currentCategory.messages)
+            refreshCategory()
         }
         imageViewInboxActionMoveTo.setOnClickListener { view ->
             if(editModeMessages.size >= 1){
@@ -220,14 +229,28 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
                     inboxList.messages = inboxList.messages.filter { it.content.contains(editTextInboxSearch.text!!) || it.subject.contains(editTextInboxSearch.text!!) || it.sender.contains(editTextInboxSearch.text!!) }.toMutableList()
                 }
                 currentCategory = inboxList
-                (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
+                (listViewInboxMessages.adapter as AdapterInboxMessages).refreshAdapter()
             }
 
-            listViewInboxMessages.adapter = AdapterInboxMessages(Data.inbox, frameLayoutInbox, supportFragmentManager, this, textViewInboxActionCounter, textViewInboxError)
-            listViewInboxCategories.adapter = AdapterInboxCategories(listViewInboxMessages.adapter, frameLayoutInbox, supportFragmentManager, this)
-
-            categories = listViewInboxCategories.adapter
-            messagesAdapter = listViewInboxMessages.adapter
+            listViewInboxMessages.apply {
+                layoutManager = LinearLayoutManager(this@Activity_Inbox)
+                adapter = AdapterInboxMessages(
+                        supportFragmentManager,
+                        this@Activity_Inbox,
+                        textViewInboxActionCounter,
+                        textViewInboxError
+                )
+            }
+            messagesAdapter = listViewInboxMessages
+            listViewInboxCategories.apply {
+                layoutManager = LinearLayoutManager(this@Activity_Inbox)
+                adapter = AdapterInboxCategories(
+                        listViewInboxMessages,
+                        supportFragmentManager,
+                        this@Activity_Inbox
+                )
+            }
+            categories = listViewInboxCategories
 
             imageViewInboxFilter.setOnClickListener { view ->
 
@@ -390,7 +413,7 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
                         }
                         Data.refreshInbox(this)
                         init()
-                        (listViewInboxMessages.adapter as AdapterInboxMessages).notifyDataSetChanged()
+                        (listViewInboxMessages.adapter as AdapterInboxMessages).refreshAdapter()
                         (listViewInboxCategories.adapter as AdapterInboxCategories).notifyDataSetChanged()
                         Data.inboxChanged = false
                         Log.d("newinbox2", "correct")
@@ -408,8 +431,76 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
         }
     }
 
-    //TODO přepsat do recyclerView
-    class AdapterInboxCategories(var adapterMessages:Adapter, val frameLayoutInbox: FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox) : BaseAdapter() {
+    private class AdapterInboxCategories(var adapterMessages: RecyclerView, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox) :
+            RecyclerView.Adapter<AdapterInboxCategories.CategoryViewHolder>() {
+
+        var inflater: View? = null
+
+        class CategoryViewHolder(
+                var textViewInboxCategory: TextView,
+                val imageViewInboxCategoryNew:ImageView,
+                var imageViewInboxCategoryBg: ImageView,
+                val textViewInboxCategoryNumber:TextView,
+                inflater: View,
+                val viewGroup: ViewGroup
+        ): RecyclerView.ViewHolder(inflater)
+
+        override fun getItemCount() = Data.inboxCategories.size
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
+            inflater = LayoutInflater.from(parent.context).inflate(R.layout.row_inbox_category, parent, false)
+            return CategoryViewHolder(
+                    inflater!!.textViewInboxCategory,
+                    inflater!!.imageViewInboxCategoryNew,
+                    inflater!!.imageViewInboxCategoryBg,
+                    inflater!!.textViewInboxCategoryNumber,
+                    inflater ?: LayoutInflater.from(parent.context).inflate(R.layout.row_inbox_category, parent, false),
+                    parent
+            )
+        }
+
+        override fun onBindViewHolder(viewHolder: CategoryViewHolder, position: Int) {
+            val inboxCategories = Data.inboxCategories.values.toMutableList()
+            inboxCategories.sortBy { it.id }
+
+            viewHolder.textViewInboxCategory.text = inboxCategories[position].name
+            viewHolder.textViewInboxCategoryNumber.text = inboxCategories[position].messages.size.toString()
+
+            var isNew = false
+            for(message in inboxCategories[position].messages){
+                if(message.status == MessageStatus.New){
+                    isNew = true
+                    viewHolder.imageViewInboxCategoryNew.apply {
+                        setColorFilter(inboxCategories[position].color)
+                        alpha = 1f
+                    }
+                    break
+                }
+            }
+            if(!isNew){
+                viewHolder.imageViewInboxCategoryNew.setImageResource(0)
+            }
+
+            if(inboxCategories[position] != activity.currentCategory) viewHolder.imageViewInboxCategoryBg.setBackgroundColor(Color.TRANSPARENT)
+
+            viewHolder.imageViewInboxCategoryBg.setOnClickListener {
+                supportFragmentManager.beginTransaction().apply {
+                    supportFragmentManager.findFragmentById(R.id.frameLayoutInbox)?.let { it1 -> remove(it1) }
+                    setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
+                    commitNow()
+                }
+
+                activity.currentCategory = inboxCategories[position]
+                activity.editMode = false
+                (adapterMessages.adapter as AdapterInboxMessages).refreshAdapter()
+                notifyDataSetChanged()
+                viewHolder.imageViewInboxCategoryBg.setBackgroundColor(Color.GRAY)
+            }
+        }
+    }
+
+    /*
+    class AdapterInboxCategoriesX() : BaseAdapter() {
 
         override fun getCount(): Int {
             return Data.inboxCategories.size
@@ -480,9 +571,130 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
         }
 
         private class ViewHolder(var textViewInboxCategory: TextView, val imageViewInboxCategoryNew:ImageView, var imageViewInboxCategoryBg: ImageView, val textViewInboxCategoryNumber:TextView)
+    }*/
+
+
+    private class AdapterInboxMessages(val supportFragmentManager: FragmentManager, val activity: Activity_Inbox, val textViewInboxActionCounter: TextView, val textViewInboxError: CustomTextView) :
+            RecyclerView.Adapter<AdapterInboxMessages.CategoryViewHolder>() {
+
+        var inflater: View? = null
+
+        fun refreshAdapter() {
+            activity.currentCategory = Data.inboxCategories[activity.currentCategory.status]!!
+            this.notifyDataSetChanged()
+        }
+
+        fun refreshMessages(forceCategory: Boolean = false) {
+            if(!forceCategory){
+                activity.currentCategory = Data.inboxCategories[activity.currentCategory.status]!!
+            }
+            activity.currentCategory.messages.sortByDescending { it.sentTime }
+            super.notifyDataSetChanged()
+        }
+
+        class CategoryViewHolder(
+                var textViewInboxSender: CustomTextView,
+                var textViewInboxSentTime: CustomTextView,
+                var textViewInboxMessages: CustomTextView,
+                var imageViewInboxMessagesBg: ImageView,
+                val textViewInboxMessagesReceiver: CustomTextView,
+                val checkBoxInboxMessagesAction: CheckBox,
+                inflater: View,
+                val viewGroup: ViewGroup
+        ): RecyclerView.ViewHolder(inflater)
+
+        override fun getItemCount() = activity.currentCategory.messages.size
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
+            inflater = LayoutInflater.from(parent.context).inflate(R.layout.row_inbox_messages, parent, false)
+            //rowMain.textViewInboxMessagesSender, rowMain.textViewInboxSentTime, rowMain.textViewInboxMessagesSubject, rowMain.imageViewInboxMessagesBg, rowMain.textViewInboxMessagesReceiver, rowMain.checkBoxInboxMessagesAction
+            return CategoryViewHolder(
+                    inflater!!.textViewInboxMessagesSender,
+                    inflater!!.textViewInboxSentTime,
+                    inflater!!.textViewInboxMessagesSubject,
+                    inflater!!.imageViewInboxMessagesBg,
+                    inflater!!.textViewInboxMessagesReceiver,
+                    inflater!!.checkBoxInboxMessagesAction,
+                    inflater ?: LayoutInflater.from(parent.context).inflate(R.layout.row_inbox_messages, parent, false),
+                    parent
+            )
+        }
+
+        @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
+        override fun onBindViewHolder(viewHolder: CategoryViewHolder, position: Int) {
+            textViewInboxError.visibility = if(activity.currentCategory.messages.size > 0) View.GONE else View.VISIBLE
+
+            viewHolder.textViewInboxMessages.setHTMLText(if(activity.currentCategory.messages[position].fightResult != null){
+                if(activity.currentCategory.messages[position].fightResult!!){
+                    "<font color='green'> ${activity.currentCategory.messages[position].subject}</font>"
+                }else {
+                    "<font color='red'> ${activity.currentCategory.messages[position].subject}</font>"
+                }
+            }else {
+                activity.currentCategory.messages[position].subject
+            })
+
+            viewHolder.textViewInboxSentTime.text = activity.currentCategory.messages[position].sentTime.formatToString()
+            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                .toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
+            } else {
+                activity.currentCategory.messages[position].sentTime.toString()
+            }*/
+
+            viewHolder.checkBoxInboxMessagesAction.setOnCheckedChangeListener { _, isChecked ->
+                if(isChecked){
+                    if(!activity.editModeMessages.any { it.id == activity.currentCategory.messages[position].id }) activity.editModeMessages.add(activity.currentCategory.messages[position])
+                }else{
+                    activity.editModeMessages.remove(activity.currentCategory.messages[position])
+                }
+                textViewInboxActionCounter.text = activity.editModeMessages.size.toString()
+            }
+
+            viewHolder.checkBoxInboxMessagesAction.isChecked = activity.editModeMessages.any { it.id == activity.currentCategory.messages[position].id }
+
+            viewHolder.checkBoxInboxMessagesAction.visibility = if(activity.editMode){
+                View.VISIBLE
+            } else View.GONE
+
+            viewHolder.textViewInboxSender.text = activity.currentCategory.messages[position].sender
+            viewHolder.textViewInboxMessagesReceiver.text = "to: ${if(activity.currentCategory.messages[position].receiver != Data.player.username) activity.currentCategory.messages[position].receiver else "me"}"
+            if(activity.currentCategory.messages[position].status == MessageStatus.New){
+                viewHolder.imageViewInboxMessagesBg.setBackgroundColor(Color.GRAY)
+            }else{
+                viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
+            }
+
+            viewHolder.imageViewInboxMessagesBg.isClickable = true
+            viewHolder.imageViewInboxMessagesBg.setOnTouchListener(object : Class_OnSwipeTouchListener(activity, viewHolder.imageViewInboxMessagesBg, true) {
+                override fun onClick(x: Float, y: Float) {
+                    super.onClick(x, y)
+                    if(activity.editMode){
+                        viewHolder.checkBoxInboxMessagesAction.isChecked = !viewHolder.checkBoxInboxMessagesAction.isChecked
+                    }else {
+                        activity.chosenMail = activity.currentCategory.messages[position]
+                        supportFragmentManager.beginTransaction().replace(R.id.frameLayoutInbox, FragmentInboxMessage.newInstance(msgType = "read", message = activity.currentCategory.messages[position])).commit()
+
+                        if(activity.currentCategory.messages[position].status == MessageStatus.New){
+                            activity.currentCategory.messages[position].changeStatus(MessageStatus.Read, activity)
+                            Data.refreshInbox(activity, true)
+                            viewHolder.imageViewInboxMessagesBg.setBackgroundColor(0)
+                            (activity.categories as AdapterInboxCategories).notifyDataSetChanged()
+                        }
+                        notifyDataSetChanged()
+                    }
+                }
+
+                override fun onLongClick() {
+                    super.onLongClick()
+                    activity.editMode = !activity.editMode
+                    if(activity.editMode) viewHolder.checkBoxInboxMessagesAction.isChecked = true
+                    this@AdapterInboxMessages.notifyDataSetChanged()
+                }
+            })
+        }
     }
 
-    class AdapterInboxMessages(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, val supportFragmentManager: FragmentManager, val activity: Activity_Inbox, val textViewInboxActionCounter: TextView, val textViewInboxError: CustomTextView) : BaseAdapter() {
+    /*class AdapterInboxMessagesX(val messages:MutableList<InboxMessage>, var frameLayoutInbox:FrameLayout, ) : BaseAdapter() {
 
         override fun getCount(): Int {
             textViewInboxError.visibility = if(activity.currentCategory.messages.size > 0) View.GONE else View.VISIBLE
@@ -523,7 +735,6 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
             } else rowMain = convertView
             val viewHolder = rowMain.tag as ViewHolder
 
-            Log.d("fightresult", activity.currentCategory.messages[position].fightResult.toString())
             viewHolder.textViewInboxMessages.setHTMLText(if(activity.currentCategory.messages[position].fightResult != null){
                 if(activity.currentCategory.messages[position].fightResult!!){
                     "<font color='green'> ${activity.currentCategory.messages[position].subject}</font>"
@@ -533,7 +744,6 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
             }else {
                 activity.currentCategory.messages[position].subject
             })
-            //viewHolder.textViewInboxSentTime.text = currentCategory.messages[position].sentTime.toString()
 
             viewHolder.textViewInboxSentTime.text = activity.currentCategory.messages[position].sentTime.formatToString()
             /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -597,5 +807,5 @@ class Activity_Inbox : SystemFlow.GameActivity(R.layout.activity_inbox, Activity
         }
 
         private class ViewHolder(var textViewInboxSender:TextView, var textViewInboxSentTime:TextView, var textViewInboxMessages: CustomTextView, var imageViewInboxMessagesBg: ImageView, val textViewInboxMessagesReceiver:TextView, val checkBoxInboxMessagesAction: CheckBox)
-    }
+    }*/
 }

@@ -103,7 +103,6 @@
         android:max="100"
         android:progress="50"
         android:progressDrawable="@drawable/progress_experience"
-        android:rotation="180"
         app:layout_constraintBottom_toBottomOf="@+id/textViewGamePropertiesXp"
         app:layout_constraintEnd_toEndOf="@+id/imageViewGamePropertiesBg"
         app:layout_constraintStart_toEndOf="@+id/imageViewGamePropertiesXp"

@@ -35,10 +35,10 @@ class Fragment_Story_info : Fragment() {
         System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        val enemies = quest?.slides?.mapNotNull { it.enemy } ?: listOf()
+        //val enemies = quest?.slides?.mapNotNull { it.enemy } ?: listOf()
         var currentEnemyIndex = 0
-        view.imageViewStoryInfoEnemy.setImageBitmap(BitmapFactory.decodeResource(resources, enemies.firstOrNull()?.drawable ?: 0, opts))
-        view.imageViewStoryInfoEnemy.isEnabled = enemies.isNotEmpty()
+        /*view.imageViewStoryInfoEnemy.setImageBitmap(BitmapFactory.decodeResource(resources, enemies.firstOrNull()?.drawable ?: 0, opts))
+        view.imageViewStoryInfoEnemy.isEnabled = enemies.isNotEmpty()*/
 
         val parent = activity as SystemFlow.GameActivity
         val viewP = parent.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
@@ -106,7 +106,7 @@ class Fragment_Story_info : Fragment() {
 
         val tempActivity = activity as SystemFlow.GameActivity
 
-        view.imageViewStoryInfoEnemy.setOnTouchListener(object: Class_HoldTouchListener(view.imageViewStoryInfoEnemy, false, 0f, false){
+        /*view.imageViewStoryInfoEnemy.setOnTouchListener(object: Class_HoldTouchListener(view.imageViewStoryInfoEnemy, false, 0f, false){
             override fun onStartHold(x: Float, y: Float) {
                 super.onStartHold(x, y)
                 viewP.textViewPopUpInfoDsc.setHTMLText(enemies[currentEnemyIndex].getStats())
@@ -138,7 +138,7 @@ class Fragment_Story_info : Fragment() {
             }
         })
 
-        /*view.imageViewStoryInfoEnemy.setOnTouchListener(object: Class_DragOutTouchListener(view.imageViewStoryInfoEnemy, false, false, view.imageViewStoryInfoEnemy, parent, false) {
+        *//*view.imageViewStoryInfoEnemy.setOnTouchListener(object: Class_DragOutTouchListener(view.imageViewStoryInfoEnemy, false, false, view.imageViewStoryInfoEnemy, parent, false) {
             override fun onClick() {
                 super.onClick()
 
@@ -148,12 +148,12 @@ class Fragment_Story_info : Fragment() {
                 super.solidHold(x, y)
 
             }
-        })*/
+        })*//*
 
         view.textViewStoryInfoQuest.setHTMLText(quest?.getStats() ?: "Quest not found.")
         view.textViewStoryInfoQuestDescription.setHTMLText(quest?.description ?: "Quest not found.")
         view.textViewStoryInfoQuestEnemies.setHTMLText(if(enemies.size > 1) "${enemies.size} enemies" else enemies.firstOrNull()?.name ?: "")
-        view.textViewStoryInfoEnemyDescription.setHTMLText(enemies.firstOrNull()?.description ?: "")
+        view.textViewStoryInfoEnemyDescription.setHTMLText(enemies.firstOrNull()?.description ?: "")*/
 
         if(quest?.reward?.item != null){
             view.imageViewStoryInfoItem.apply {

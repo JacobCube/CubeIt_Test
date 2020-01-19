@@ -14,7 +14,6 @@
         android:id="@+id/imageViewFactionBgFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/factionBg"
         android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -163,11 +162,12 @@
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionInfoDesc"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_basic_logincolor3"
+        android:gravity="center_horizontal"
         android:text="level : 1\n xp: 500/ 5000\n tax: 5000/ day"
         android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline205"
         app:layout_constraintEnd_toStartOf="@+id/guideline203"
         app:layout_constraintStart_toStartOf="@+id/guideline211"
         app:layout_constraintTop_toTopOf="@+id/textViewFactionDescription" />

@@ -955,7 +955,7 @@ class FightSystemNPC : AppCompatActivity() {              //In order to pass the
 
         if(Data.activeQuest!!.result == ActiveQuest.Result.WAITING){
             Data.activeQuest!!.complete(if(completed) ActiveQuest.Result.WON else ActiveQuest.Result.LOST).addOnSuccessListener {
-                if(completed) reward?.receive()
+                if(completed) reward?.receive(null, this)
 
                 Data.activeQuest = null
             }

@@ -87,7 +87,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.11" />
+        app:layout_constraintGuide_percent="0.105" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline68"
@@ -338,6 +338,7 @@
         style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:stateListAnimator="@null"
         android:layout_marginStart="8dp"
         android:text="sign out of Google"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewLoginGoogleSignIn"
@@ -349,22 +350,26 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/emptyspellslot"
+        android:layout_marginEnd="4dp"
         android:adjustViewBounds="true"
+        android:background="@drawable/circle_white"
+        android:padding="8dp"
         android:src="@drawable/book_icon_press"
         app:layout_constraintDimensionRatio="W,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline184"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewLoginOfflineMG" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline1"
+        app:layout_constraintStart_toStartOf="@+id/guideline184"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/imageViewLoginOfflineMG"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
         android:adjustViewBounds="true"
-        android:background="@drawable/emptyspellslot"
+        android:background="@drawable/circle_white"
+        android:padding="10dp"
+        android:src="@drawable/minigame_icon"
         app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline184"
         app:layout_constraintStart_toStartOf="parent"

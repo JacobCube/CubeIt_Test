@@ -29,7 +29,7 @@ import kotlin.system.exitProcess
 
 var textViewLog: WeakReference<TextView>? = null
 
-class Activity_Splash_Screen: SystemFlow.GameActivity(R.layout.activity_splash_screen, ActivityType.SplashScreen, false){
+class Activity_Splash_Screen: SystemFlow.GameActivity(R.layout.activity_splash_screen, ActivityType.SplashScreen, hasMenu = false, hasSwipeDown = false){
 
     var keepSplash: Boolean = false
     var rocketTimer: TimerTask? = null

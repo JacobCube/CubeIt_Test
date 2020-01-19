@@ -22,7 +22,7 @@ class Activity_Story: SystemFlow.GameActivity(R.layout.activity_story, ActivityT
         opts.inScaled = false
         imageViewStoryBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.story_bg, opts))
 
-        Data.storyQuests.add(StoryQuest(
+        /*Data.storyQuests.add(StoryQuest(
                 id = "0002",
                 name = "Quest name",
                 chapter = 1,
@@ -39,8 +39,7 @@ class Activity_Story: SystemFlow.GameActivity(R.layout.activity_story, ActivityT
                                 difficulty = 0,
                                 templateID = "0",
                                 innerInstanceID = "0002",
-                                images = mutableListOf(StoryImage("90000", 0, 0), StoryImage("90001", 0, 0)),
-                                enemy = NPC().generate(7, Data.player)
+                                images = mutableListOf(StoryImage("90000", 0, 0), StoryImage("90001", 0, 0))
                         )
 
                         ,StorySlide(
@@ -52,7 +51,7 @@ class Activity_Story: SystemFlow.GameActivity(R.layout.activity_story, ActivityT
                         enemy = NPC().generate(7, Data.player)
                 )
                 )
-        ))
+        ))*/
     }
 
     fun startStory(): Boolean{

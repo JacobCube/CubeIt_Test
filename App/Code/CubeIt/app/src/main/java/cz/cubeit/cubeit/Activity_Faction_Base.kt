@@ -28,7 +28,13 @@ class Activity_Faction_Base: SystemFlow.GameActivity(R.layout.activity_faction_b
 
     override fun onDestroy() {
         super.onDestroy()
+        imageViewFactionBg.setImageResource(0)
         Log.d("Action_base", "has been determined")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        finish()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +46,7 @@ class Activity_Faction_Base: SystemFlow.GameActivity(R.layout.activity_faction_b
         System.gc()
         val opts = BitmapFactory.Options()
         opts.inScaled = false
-        imageViewFactionBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.color.loginColor, opts))
+        imageViewFactionBg.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.background0, opts))
 
         viewPagerFactionTemp.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 

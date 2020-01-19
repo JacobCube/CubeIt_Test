@@ -18,6 +18,7 @@ import com.google.firebase.auth.*
 import kotlinx.android.synthetic.main.activity_settings.*
 import android.os.VibrationEffect
 import android.text.method.PasswordTransformationMethod
+import com.google.firebase.analytics.FirebaseAnalytics
 
 
 class ActivitySettings : SystemFlow.GameActivity(R.layout.activity_settings, ActivityType.Settings, true, R.id.imageViewActivitySettings, R.color.colorSecondary){
@@ -123,6 +124,11 @@ class ActivitySettings : SystemFlow.GameActivity(R.layout.activity_settings, Act
                     editTextSettingsVibrate.visibility = View.VISIBLE
                     Data.player.vibrationEasterEgg = true
                     Snackbar.make(switchVibrateEffects, "Morse vibrations easter egg unlocked!", Snackbar.LENGTH_LONG).show()
+
+                    val bundle = Bundle()
+                    bundle.putString(FirebaseAnalytics.Param.CHARACTER, Data.player.username)
+                    bundle.putInt(FirebaseAnalytics.Param.LEVEL, Data.player.level)
+                    FirebaseAnalytics.getInstance(this).logEvent("EASTER_EGG_MORSE", bundle)
                 }else {
                     easterEggCounter++
                 }
@@ -245,13 +251,13 @@ class ActivitySettings : SystemFlow.GameActivity(R.layout.activity_settings, Act
         imageViewSettingsBugIcon.layoutParams.height = (dm.heightPixels / 10 * 1.8).toInt()
         imageViewSettingsBugIcon.layoutParams.width = (dm.heightPixels / 10 * 1.8).toInt()
         imageViewSettingsBugIcon.y = 0f
-        frameLayoutBugReport.layoutParams.height = (dm.heightPixels * 0.82 - imageViewSettingsBugIcon.layoutParams.height).toInt()
+        frameLayoutBugReport.layoutParams.height = (dm.heightPixels - imageViewSettingsBugIcon.layoutParams.height)
         frameLayoutBugReport.y =  0f - frameLayoutBugReport.layoutParams.height
 
         imageViewSettingsBugIcon.setOnClickListener {
             supportFragmentManager.beginTransaction().replace(R.id.frameLayoutBugReport, Fragment_Bug_report()).commitNow()
 
-            if(imageViewSettingsBugIcon.y == (dm.heightPixels * 0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat()){
+            if(imageViewSettingsBugIcon.y == (dm.heightPixels - imageViewSettingsBugIcon.layoutParams.height).toFloat()){
                 ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, 0f    /*imageViewBugIcon.layoutParams.width.toFloat()*/).apply{
                     duration = 800
                     addUpdateListener {
@@ -261,7 +267,7 @@ class ActivitySettings : SystemFlow.GameActivity(R.layout.activity_settings, Act
                     start()
                 }
             }else{
-                ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, (dm.heightPixels * 0.82 - imageViewSettingsBugIcon.layoutParams.height).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
+                ValueAnimator.ofFloat(imageViewSettingsBugIcon.y, (dm.heightPixels - imageViewSettingsBugIcon.layoutParams.height).toFloat() /*- imageViewBugIcon.layoutParams.width*/).apply{
                     duration = 800
                     addUpdateListener {
                         imageViewSettingsBugIcon.y = it.animatedValue as Float  //- imageViewBugIcon.layoutParams.width

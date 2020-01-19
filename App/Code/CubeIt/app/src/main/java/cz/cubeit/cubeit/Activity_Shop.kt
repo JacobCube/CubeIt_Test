@@ -65,6 +65,17 @@ class Activity_Shop : SystemFlow.GameActivity(R.layout.activity_shop, ActivityTy
 
         var animationRefresh = ValueAnimator()
 
+        imageViewActivityShopBack.setOnClickListener {
+            onBackPressed()
+        }
+
+        imageViewActivityShopCharacter.setOnClickListener {
+            val intent = Intent(this, Activity_Character::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            this.overridePendingTransition(0,0)
+        }
+
         shopOfferRefresh.setOnClickListener {refresh: View ->
             val moneyReq = Data.player.level * 10
 

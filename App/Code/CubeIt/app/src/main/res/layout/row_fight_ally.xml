@@ -289,6 +289,6 @@
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline290"
-        app:srcCompat="@drawable/emptyspellslotlarge"
+        app:srcCompat="@drawable/circle_white"
         tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>

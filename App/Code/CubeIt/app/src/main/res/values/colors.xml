@@ -32,6 +32,11 @@
     <color name="red_error">#ff0033</color>
     <color name="colorSecondaryDark">#766D2A</color>
 
+    <color name="blue">#2196F3</color>
+    <color name="green">#4CAF50</color>
+    <color name="orange">#FF9800</color>
+    <color name="purple">#9C27B0</color>
+
     <color name="brown_basic_1">#b29a86</color>
     <color name="brown_basic_2">#8e735a</color>
     <color name="brown_basic_3">#684c35</color>

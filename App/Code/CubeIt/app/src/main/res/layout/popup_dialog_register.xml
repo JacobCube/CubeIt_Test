@@ -113,4 +113,26 @@
         app:layout_constraintEnd_toEndOf="@+id/editTextPopRegisterName"
         app:layout_constraintTop_toTopOf="@+id/editTextPopRegisterName" />
 
+    <Switch
+        android:id="@+id/switchPopRegisterInvited"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="I'm invited"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPopRegisterYes"
+        app:layout_constraintTop_toTopOf="@+id/buttonPopRegisterYes" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextPopRegisterInvitation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edittext_login_bg"
+        android:hint="username"
+        android:imeOptions="flagNoExtractUi"
+        android:paddingStart="4dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/switchPopRegisterInvited"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchPopRegisterInvited"
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

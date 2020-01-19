@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/brown_basic_2"
+    android:elevation="0dp"
+    android:screenOrientation="sensorLandscape">
+
+    <TextView
+        android:id="@+id/textViewCreateStoryOoverviewBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_basic_brown3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewCreateStoryOverviewNew"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tabLayoutCreateStoryOverview" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewCreateStoryOverview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewCreateStoryOverviewNew"
+        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOoverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/editTextCreateStoryOverview"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutCreateStoryOverview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline324"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewCreateStoryOverviewNew"
+        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOoverviewBg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabBackground="@drawable/tab_brown4_top"
+        app:tabGravity="center"
+        app:tabMode="scrollable"
+        app:tabPaddingEnd="6dp"
+        app:tabPaddingStart="6dp"
+        app:tabSelectedTextColor="@color/brown_basic_4"
+        app:tabTextColor="@color/colorSecondary" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextCreateStoryOverview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:imeOptions="flagNoExtractUi"
+        android:hint="Name / description / author"
+        android:textColorHint="@color/brown_basic_4"
+        android:textColor="@color/colorSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/guideline318"
+        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOoverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/tabLayoutCreateStoryOverview" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryOverviewFilter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:tint="@color/brown_basic_4"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextCreateStoryOverview"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/imageViewCreateStoryOverviewSearch"
+        app:layout_constraintTop_toTopOf="@+id/editTextCreateStoryOverview"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/filter_icon" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryOverviewSearch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:tint="@color/brown_basic_4"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextCreateStoryOverview"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toEndOf="@+id/editTextCreateStoryOverview"
+        app:layout_constraintTop_toTopOf="@+id/editTextCreateStoryOverview"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/search_icon" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryOverviewNew"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerViewCreateStoryOverview"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/plus_icon" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline318"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline324"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.11" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

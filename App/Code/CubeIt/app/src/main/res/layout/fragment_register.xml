@@ -112,13 +112,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.4175" />
+        app:layout_constraintGuide_percent="0.415" />
 
     <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRegisterPasswordinfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center"
         android:text="required 7+ characters"
@@ -199,7 +198,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.69" />
+        app:layout_constraintGuide_percent="0.695" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline9"
@@ -275,6 +274,13 @@
         app:layout_constraintGuide_percent="0.84" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline320"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.955" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline17"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -300,5 +306,32 @@
         app:layout_constraintEnd_toStartOf="@+id/texguideline6"
         app:layout_constraintStart_toStartOf="@+id/texguideline2"
         app:layout_constraintTop_toTopOf="@+id/guideline11" />
+
+    <Switch
+        android:id="@+id/switchRegisterInvited"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="I'm invited"
+        app:layout_constraintBottom_toTopOf="@+id/guideline273"
+        app:layout_constraintEnd_toStartOf="@+id/texguideline6"
+        app:layout_constraintStart_toStartOf="@+id/guideline271"
+        app:layout_constraintTop_toBottomOf="@+id/textViewRegisterPasswordinfo" />
+
+    <cz.cubeit.cubeit.CustomEditText
+        android:id="@+id/editTextRegisterInvitation"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:imeOptions="flagNoExtractUi"
+        android:background="@drawable/edittext_login_bg"
+        android:hint="username"
+        android:paddingStart="4dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline320"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10"
+        app:layout_constraintStart_toStartOf="@+id/guideline9"
+        app:layout_constraintTop_toTopOf="@+id/guideline273"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

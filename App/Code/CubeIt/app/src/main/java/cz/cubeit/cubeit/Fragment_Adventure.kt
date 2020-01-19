@@ -162,8 +162,8 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
             window.isFocusable = true
 
             viewPop.layoutPopupQuest.apply {
-                minWidth = (activityTemp.dm.heightPixels * 0.75).toInt()
-                minHeight = (activityTemp.dm.heightPixels * 0.75).toInt()
+                minWidth = (activityTemp.dm.heightPixels * 0.9).toInt()
+                minHeight = (activityTemp.dm.heightPixels * 0.9).toInt()
             }
             viewPop.imageViewAdventure.visibility = View.VISIBLE
             viewPop.textViewQuest.setHTMLText(Data.player.currentSurfaces[index].boss!!.description)
@@ -183,21 +183,27 @@ class Fragment_Adventure : Fragment() {         //TODO automatické generování
             }
             viewPop.textViewPopAdventureCC.text = GameFlow.numberFormatString(Data.player.currentSurfaces[index].boss?.reward?.cubeCoins ?: 0)
             viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${GameFlow.numberFormatString(Data.player.currentSurfaces[index].boss?.reward?.experience ?: 0)}")
-            viewPop.textViewPopAdventureGold.setHTMLText("<font color='#FFDF00'><b>g</b></font> ${GameFlow.numberFormatString(Data.player.currentSurfaces[index].boss?.reward?.gold ?: 0)}")
+
+            if((Data.player.currentSurfaces[index].boss?.reward?.gold ?: 0) > 0){
+                viewPop.imageViewPopAdventureCubix.visibility = View.VISIBLE
+                viewPop.textViewPopAdventureCubix.setHTMLText(GameFlow.numberFormatString(Data.player.currentSurfaces[index].boss?.reward?.gold ?: 0))
+            }
 
             viewPop.buttonAccept.setOnClickListener {       //TODO boss fight
-                if(Data.player.currentSurfaces[index].boss != null){
-                    val intent = Intent(viewTemp.context, ActivityFightUniversalOffline()::class.java)
-                    intent.putParcelableArrayListExtra("enemies", arrayListOf(
-                            Data.player.currentSurfaces[index].boss!!.toFighter(FightSystem.FighterType.Enemy)
-                    ))
-                    intent.putParcelableArrayListExtra("allies", arrayListOf(
-                            Data.player.toFighter(FightSystem.FighterType.Ally)
-                    ))
-                    intent.putExtra("reward", Data.player.currentSurfaces[index].boss?.reward)
-                    intent.putExtra("bossFightSurface", index)
-                    startActivity(intent)
-                }else Toast.makeText(viewTemp.context, "Something went wrong!", Toast.LENGTH_SHORT).show()
+                if(Data.activeQuest == null){
+                    if(Data.player.currentSurfaces[index].boss != null){
+                        val intent = Intent(viewTemp.context, ActivityFightUniversalOffline()::class.java)
+                        intent.putParcelableArrayListExtra("enemies", arrayListOf(
+                                Data.player.currentSurfaces[index].boss!!.toFighter(FightSystem.FighterType.Enemy)
+                        ))
+                        intent.putParcelableArrayListExtra("allies", arrayListOf(
+                                Data.player.toFighter(FightSystem.FighterType.Ally)
+                        ))
+                        intent.putExtra("reward", Data.player.currentSurfaces[index].boss?.reward)
+                        intent.putExtra("bossFightSurface", index)
+                        startActivity(intent)
+                    }else Toast.makeText(viewTemp.context, "Something went wrong!", Toast.LENGTH_SHORT).show()
+                }
             }
 
             viewPop.buttonCloseDialog.setOnClickListener {

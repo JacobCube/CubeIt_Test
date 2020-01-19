@@ -48,6 +48,7 @@
         android:dividerHeight="0.5dp"
         android:footerDividersEnabled="true"
         android:headerDividersEnabled="true"
+        android:fadingEdge="vertical"
         android:scrollbarSize="@null"
         android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -306,8 +306,8 @@ class AdventureQuestsOverview(
         rowMain.isClickable = true                  //to enable its usage in HoldTouchListener
         rowMain.isEnabled = true
         viewP.layoutPopupInfo.apply {
-            minWidth = (activity.dm.heightPixels * 0.65).toInt()
-            minHeight = (activity.dm.heightPixels * 0.65).toInt()
+            minWidth = (activity.dm.heightPixels * 0.9).toInt()
+            minHeight = (activity.dm.heightPixels * 0.9).toInt()
         }
         viewP.imageViewPopUpInfoPin.visibility = View.GONE
         viewHolder.imageViewAdventureOverviewClick.setOnTouchListener(object: Class_HoldTouchListener(rowMain, false, displayX, true){

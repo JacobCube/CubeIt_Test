@@ -7,16 +7,14 @@ import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.media.MediaPlayer
-import android.os.Build
-import android.os.Handler
-import android.os.Parcel
-import android.os.Parcelable
+import android.os.*
 import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -30,6 +28,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.*
@@ -38,6 +37,10 @@ import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.*
 import kotlinx.android.synthetic.main.popup_decor_info_dialog.view.layoutPopupInfo
 import kotlinx.android.synthetic.main.popup_silent_info_dialog.view.*
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Response
+import java.io.IOException
 import java.io.InvalidClassException
 import java.io.Serializable
 import java.security.MessageDigest
@@ -145,7 +148,7 @@ fun Date.formatToString(): String {
 /**
  * @return if returns null no colliding coordinates could be found
  */
-fun List<Coordinates>.findCollidingPoint(rect: Rectangle): Coordinates?{
+fun Collection<Coordinates>.findCollidingPoint(rect: Rectangle): Coordinates?{
     var collidingCoordinates: Coordinates? = null
     for(i in this){
         if(rect.contains(i.x.toInt(), i.y.toInt())){
@@ -155,12 +158,12 @@ fun List<Coordinates>.findCollidingPoint(rect: Rectangle): Coordinates?{
     return collidingCoordinates
 }
 
-fun Any.toJSON(): String{
+fun Any.toGlobalDataJSON(): String{
     return GsonBuilder().disableHtmlEscaping().create().toJson(this).replace(".0,",",").replace(".0}", "}").replace("null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null", "")
 }
 
 @Throws(IllegalAccessException::class, ClassCastException::class)
-fun Any.toSHA256(): String{            //algoritmus pro porovnání lokálních dat s daty ze serveru
+fun Any.toSHA256(): String{                 //algoritmus pro porovnání lokálních dat s daty ze serveru
     val input: Any = when(this){            //parent/child (inheritence) třídy mají rozdílné chování při rozkladu na části, tento postup to vrací do parent podoby
         is Weapon, is Wearable, is Runes -> {
             (this as Item).toItem()
@@ -189,7 +192,7 @@ fun Any.toSHA256(): String{            //algoritmus pro porovnání lokálních 
         else -> this
     }
 
-    var jsonString = input.toJSON()
+    var jsonString = input.toGlobalDataJSON()
     if(jsonString.isNotEmpty() && jsonString[0] != '['){
         jsonString = "[$jsonString]"
     }
@@ -341,6 +344,28 @@ var drawableStorage = hashMapOf(
         , "10000002" to R.drawable.bubledialogshop
 )
 
+var colorNameMap: HashMap<String, Int> = hashMapOf(
+        "white" to Color.WHITE,
+        "silver" to 0xFFC0C0C0.toInt(),
+        "darkgray" to Color.DKGRAY,
+        "lightgray" to Color.LTGRAY,
+        "black" to Color.BLACK,
+        "red" to Color.RED,
+        "green" to Color.GREEN,
+        "cyan" to Color.CYAN,
+        "olive" to 0xFF808000.toInt(),
+        "navy" to 0xFF000080.toInt(),
+        "blue" to Color.BLUE,
+        "aqua" to 0xFF00FFFF.toInt(),
+        "yellow" to Color.YELLOW,
+        "magenta" to Color.MAGENTA,
+        "fuchsia" to 0xFFFF00FF.toInt(),
+        "purple" to 0xFF800080.toInt(),
+        "lime" to 0xFF00FF00.toInt(),
+        "maroon" to 0xFF800000.toInt(),
+        "teal" to 0xFF008080.toInt()
+)
+
 /*fun showPinnedPop(activity: Activity, item: Spell, listener: Class_DragOutTouchListener): PopupWindow{
     val viewP = activity.layoutInflater.inflate(R.layout.popup_decor_info_dialog, null, false)
     val windowPop = PopupWindow(activity)
@@ -402,7 +427,7 @@ var drawableStorage = hashMapOf(
 
     if(!windowPop.isShowing){
         viewP.textViewPopUpInfo.setHTMLText(item.getStats())
-        viewP.imageViewPopUpInfoItem.setBackgroundResource(R.drawable.emptyspellslot)
+        viewP.imageViewPopUpInfoItem.setBackgroundResource(R.drawable.circle_white)
         viewP.imageViewPopUpInfoItem.setImageResource(item.drawable)
 
         windowPop.showAsDropDown(activity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
@@ -470,10 +495,10 @@ fun View.setUpOnHoldDecorPop(activity: SystemFlow.GameActivity, item: Item){
 
     viewP.imageViewPopUpInfoBg.setOnTouchListener(dragListener)
     //viewP.textViewPopUpInfoDrag.setOnTouchListener(dragListener)
-    viewP.imageViewPopUpInfoItem.setOnTouchListener(dragListener)
+    //viewP.imageViewPopUpInfoItem.setOnTouchListener(dragListener)
     viewP.layoutPopupInfo.apply {
-        minHeight = (activity.dm.heightPixels * 0.65).toInt()
-        minWidth = (activity.dm.heightPixels * 0.65).toInt()
+        minHeight = (activity.dm.heightPixels * 0.7).toInt()
+        minWidth = (activity.dm.heightPixels * 0.7).toInt()
     }
 
 
@@ -484,9 +509,11 @@ fun View.setUpOnHoldDecorPop(activity: SystemFlow.GameActivity, item: Item){
 
             viewP.textViewPopUpInfoDsc.setHTMLText(item.getStatsCompare())
             //viewP.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec. UNSPECIFIED))
-            val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, (activity.dm.heightPixels * 0.65).toInt(), (activity.dm.heightPixels * 0.65).toInt()/*viewP.measuredWidth, viewP.measuredHeight*/)
+            val coordinates = SystemFlow.resolveLayoutLocation(activity, x, y, (activity.dm.heightPixels * 0.7).toInt(), (activity.dm.heightPixels * 0.7).toInt()/*viewP.measuredWidth, viewP.measuredHeight*/)
 
-            if(!Data.loadingActiveQuest && !windowPop.isShowing && !viewPinned){
+            if(!Data.loadingActiveQuest && !viewPinned){
+                if(!windowPop.isShowing) windowPop.dismiss()
+
                 viewP.textViewPopUpInfoDsc.setHTMLText(item.getStatsCompare())
                 viewP.imageViewPopUpInfoItem.setBackgroundResource(item.getBackground())
                 viewP.imageViewPopUpInfoItem.setImageResource(item.drawable)
@@ -563,7 +590,7 @@ fun View.setUpOnHoldSilentPop(activity: SystemFlow.GameActivity, item: Item? = n
 
             if(!Data.loadingActiveQuest && !windowPop.isShowing){
                 viewP.textViewSilentPopInfoDsc.setHTMLText(item?.getStatsCompare() ?: spell?.getStats() ?: "Error, wrong input")
-                viewP.imageViewSilentPopInfoItem.setBackgroundResource(item?.getBackground() ?: R.drawable.emptyspellslot ?: 0)
+                viewP.imageViewSilentPopInfoItem.setBackgroundResource(item?.getBackground() ?: R.drawable.circle_white ?: 0)
                 viewP.imageViewSilentPopInfoItem.setImageResource(item?.drawable ?: spell?.drawable ?: 0)
 
                 windowPop.showAsDropDown(activity.window.decorView.rootView, coordinates.x.toInt(), coordinates.y.toInt())
@@ -578,6 +605,31 @@ fun View.setUpOnHoldSilentPop(activity: SystemFlow.GameActivity, item: Item? = n
 }
 
 object Data {
+
+    object FrameworkData {
+        var drafts: MutableList<StoryQuest> = mutableListOf()
+
+        var myStoryQuests: MutableList<StoryQuest> = mutableListOf()
+
+        var downloadedStoryQuests: MutableList<StoryQuest> = mutableListOf()
+
+
+        fun saveDraft(storyQuest: StoryQuest, context: Context){
+            drafts.removeAll { it.id == storyQuest.id }
+            drafts.add(storyQuest)
+            SystemFlow.writeObject(context, "drafts${player.username}.data", drafts)
+        }
+        fun saveMyStoryQuest(storyQuest: StoryQuest, context: Context){
+            myStoryQuests.removeAll { it.id == storyQuest.id }
+            myStoryQuests.add(storyQuest)
+            SystemFlow.writeObject(context, "customStoryQuests${player.username}.data", myStoryQuests)
+        }
+        fun saveDownloadedStoryQuest(storyQuest: StoryQuest, context: Context){
+            downloadedStoryQuests.removeAll { it.id == storyQuest.id }
+            downloadedStoryQuests.add(storyQuest)
+            SystemFlow.writeObject(context, "downloadedStoryQuests.data", downloadedStoryQuests)
+        }
+    }
 
     var player: Player = Player()
 
@@ -622,13 +674,13 @@ object Data {
                     "Image",
                     "Images from our library",
                     SystemFlow.FrameworkComponentType.Image,
-                    mutableListOf("90000", "90001", "90002", "90003", "90004", "90005"),
+                    drawableStorage.keys.toMutableList(),
                     "10000001"
             ),
             SystemFlow.FrameworkComponentTemplate(
                     "Dialog",
-                    "Dialog window",
-                    SystemFlow.FrameworkComponentType.Image,
+                    "Dialog components",
+                    SystemFlow.FrameworkComponentType.Text,
                     mutableListOf("10000002"),
                     "10000002"
             )
@@ -701,7 +753,7 @@ object Data {
 
     fun initialize(context: Context){
         if(SystemFlow.readObject(context, "miniGameScores.data") != 0){
-            miniGameScores = SystemFlow.readObject(context, "miniGameScores.data") as MutableList<MiniGameScore>
+            miniGameScores = (SystemFlow.readObject(context, "miniGameScores.data") as? MutableList<MiniGameScore>) ?: mutableListOf()
         }
 
         /*if(SystemFlow.readFileText(context, "inboxNew${player.username}") != "0"){
@@ -709,6 +761,20 @@ object Data {
             inboxChanged = inboxChangedString.subSequence(0, inboxChangedString.indexOf(',')).toString().toBoolean()
             inboxChangedMessages = inboxChangedString.subSequence(inboxChangedString.indexOf(',') + 1, inboxChangedString.length).toString().toInt()
         }*/
+    }
+
+    fun loggedInitialize(context: Context){
+        //Framework data local storage
+        if(SystemFlow.readObject(context, "drafts${player.username}.data") != 0){
+            FrameworkData.drafts = (SystemFlow.readObject(context, "drafts${player.username}.data") as? MutableList<StoryQuest>)?.distinctBy { it.id }?.toMutableList() ?: mutableListOf()
+            Log.d("FrameworkData_drafts", FrameworkData.drafts.size.toString())
+        }
+        if(SystemFlow.readObject(context, "customStoryQuests${player.username}.data") != 0){
+            FrameworkData.myStoryQuests = (SystemFlow.readObject(context, "customStoryQuests${player.username}.data") as? MutableList<StoryQuest>)?.distinctBy { it.id }?.toMutableList() ?: mutableListOf()
+        }
+        if(SystemFlow.readObject(context, "downloadedStoryQuests.data") != 0){
+            FrameworkData.downloadedStoryQuests = (SystemFlow.readObject(context, "downloadedStoryQuests.data") as? MutableList<StoryQuest>)?.distinctBy { it.id }?.toMutableList() ?: mutableListOf()
+        }
     }
 
     fun refreshInbox(context: Context, toDb: Boolean = false){
@@ -740,6 +806,7 @@ object Data {
     var inboxChangedMessages: Int = 0
 
     var inboxSnapshotHome: ListenerRegistration? = null
+    var adminMessagesSnapshotHome: ListenerRegistration? = null
     var serverSnapshotHome: ListenerRegistration? = null
     var inboxSnapshot: ListenerRegistration? = null
     var factionSnapshot: ListenerRegistration? = null
@@ -784,9 +851,11 @@ object Data {
             inboxSnapshot?.remove()
             inboxSnapshotHome?.remove()
             serverSnapshotHome?.remove()
+            adminMessagesSnapshotHome?.remove()
             serverSnapshotHome = null
             inboxSnapshotHome = null
             inboxSnapshot = null
+            adminMessagesSnapshotHome = null
             factionSnapshot = null
 
             loadingStatus = if(closeApp){
@@ -841,7 +910,7 @@ object Data {
             GenericDB.balance.itemGenRatio = GenericDB.balance.itemGenRatio.toList().sortedBy { it.first }.toMap()
 
             if(globalDataChecksums[GlobalDataType.balance]?.equals(GenericDB.balance) == false){         //balance
-                Log.d("old_balance", GenericDB.balance.toJSON())
+                Log.d("old_balance", GenericDB.balance.toGlobalDataJSON())
                 textView?.text = context.resources.getString(R.string.loading_log, "Balance rates")
                 globalDataChecksums[GlobalDataType.balance]?.task = db.collection("GenericDB").document("Balance").get().addOnSuccessListener {
 
@@ -1070,7 +1139,7 @@ object Data {
         val surfacesRef = db.collection("surfaces")
         val balanceRef = db.collection("GenericDB").document("Balance")
 
-        /*for(i in 0 until Data.storyQuests.size){                                     //stories
+        for(i in 0 until Data.storyQuests.size){                                     //stories
             storyRef.document(Data.storyQuests[i].id)
                     .set(storyQuests[i]
                     ).addOnSuccessListener {
@@ -1078,8 +1147,8 @@ object Data {
                     }.addOnFailureListener {
                         Log.d("story", "${it.cause}")
                     }
-        }*/
-        /*for (i in 0 until charClasses.size) {                                     //charclasses
+        }
+        for (i in 0 until charClasses.size) {                                     //charclasses
             charClassRef.document(charClasses[i].id)
                     .set(charClasses[i]
                     ).addOnSuccessListener {
@@ -1096,7 +1165,7 @@ object Data {
                     }.addOnFailureListener {
                         Log.d("spellclasses", "${it.cause}")
                     }
-        }*/
+        }
         for (i in 0 until itemClasses.size) {                                     //items
             itemsRef.document(itemClasses[i].id)
                     .set(hashMapOf<String, Any?>(
@@ -1118,7 +1187,7 @@ object Data {
                         Log.d("npcs", "${it.cause}")
                     }
         }*/
-        /*Log.d("charclasses", surfaces.size.toString())
+        Log.d("charclasses", surfaces.size.toString())
         for (i in surfaces.indices) {                                     //surfaces
             surfacesRef.document(i.toString())
                     .set(surfaces[i]
@@ -1129,7 +1198,7 @@ object Data {
                     }
         }
 
-        balanceRef.set(GenericDB.balance).addOnSuccessListener {        //balance
+        /*balanceRef.set(GenericDB.balance).addOnSuccessListener {        //balance
             Log.d("COMPLETED balance", GenericDB.balance.toJSON())
             Log.d("COMPLETED balance", GenericDB.balance.toString())
         }.addOnFailureListener {
@@ -1266,7 +1335,9 @@ enum class ActivityType: Serializable{
     OfflineMG,
     Spells,
     SplashScreen,
-    FightReward
+    FightReward,
+    StoryLobby,
+    CreateStoryOverview
 }
 
 open class Player(
@@ -1293,7 +1364,7 @@ open class Player(
     var experience: Int = 0
         set(value){
             field = value
-            val neededXp = (this.level * 0.75 * (this.level * GenericDB.balance.playerXpRequiredLvlUpRate)).toInt()
+            val neededXp = (this.level * this.level * GenericDB.balance.playerXpRequiredLvlUpRate).toInt()
             if (field >= neededXp && this.username != "player"
                     && Data.loadingStatus != LoadingStatus.LOGGING
                     && Data.loadingStatus != LoadingStatus.REGISTERED) {
@@ -1361,6 +1432,7 @@ open class Player(
     var gold: Int = 0
     var rocketGameScoreSeconds: Double = 0.0
     var vibrationEasterEgg: Boolean = false
+    var favoriteStories: MutableList<String> = mutableListOf()
 
     //@Transient @Exclude var chosenEnemyOffline: FightSystem.Fighter? = null //CO-OP offline fight system
     @Transient @Exclude lateinit var userSession: FirebaseUser // User session - used when writing to database (think of it as an auth key) - do not serialize!
@@ -1368,6 +1440,23 @@ open class Player(
     @Transient @Exclude var textFont: String = "average_sans"
     @Transient @Exclude var vibrateEffects: Boolean = true
     @Transient @Exclude var socials: MutableList<SocialItem> = mutableListOf(SocialItem())
+
+    fun createFightRequest(){
+        userSession.getIdToken(true).addOnCompleteListener {
+            try {
+                SystemFlow.clientPostData("https://us-central1-cubeit-test-build.cloudfunctions.net/postTest", "{\"a\":\"${it.result?.token.toString()}\"}", object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        Log.d("Home_OKHTTP", "request failed")
+                    }
+                    override fun onResponse(call: Call, response: Response) {
+                        Log.d("Home_OKHTTP", "request resulted in response: ${response.body?.string()}")
+                    }
+                })
+            } catch (e: IOException) {
+                e.printStackTrace()  // handle error
+            }
+        }
+    }
 
     fun init(context: Context){
         if(SystemFlow.readFileText(context, "textSize${Data.player.username}.data") != "0") textSize = SystemFlow.readFileText(context, "textSize${Data.player.username}.data").toFloat()
@@ -1765,6 +1854,7 @@ open class Player(
             val db = FirebaseFirestore.getInstance()
             val docRef = db.collection("factions").document(this.factionID.toString())
 
+            this.faction = null
             this.factionRole = null
             this.factionID = null
             this.factionName = null
@@ -2859,17 +2949,25 @@ data class Reward(
         return this
     }
 
-    fun receive(menuFragment: Fragment_Menu_Bar? = null) {
+    fun receive(menuFragment: Fragment_Menu_Bar? = null, context: Context) {
         if(this.item != null && !Data.player.inventory.contains(null)){
             Data.player.cubeCoins += this.item!!.priceCubeCoins
         }else {
             Data.player.inventory[Data.player.inventory.indexOf(null)] = this.item
         }
 
+        val oldLvl = Data.player.level
         Data.player.cubeCoins += this.cubeCoins
         Data.player.experience += this.experience
         Data.player.gold += this.gold
         Data.player.cubix += this.cubix
+
+        if(Data.player.level > oldLvl){
+            val bundle = Bundle()
+            bundle.putString(FirebaseAnalytics.Param.CHARACTER, Data.player.username)
+            bundle.putInt(FirebaseAnalytics.Param.LEVEL, Data.player.level)
+            FirebaseAnalytics.getInstance(context).logEvent(FirebaseAnalytics.Event.LEVEL_UP, bundle)
+        }
 
         clear()
         menuFragment?.refresh()
@@ -3053,8 +3151,24 @@ data class Weapon(
         priceCubix
 )
 
-class StoryQuest(
-        var id: String = UUID.randomUUID().toString(),
+data class StoryFight(
+    val difficulty: Int = 1,
+    var attachedToSlideIndex: Int = 0,
+    var id: String = UUID.randomUUID().toString(),
+    val generateNPC: Boolean = false,                   //TODO let user create his own NPC otherwise
+    val charClassIn: Int = 1,
+    val drawableIn: String = "",
+    val drawableBgIn: String = ""
+){
+    @Exclude @Transient var charClass: CharClass = CharClass()
+        @Exclude get() = Data.charClasses[charClassIn]
+    @Exclude @Transient var drawable: Int = 0
+        @Exclude get() = drawableStorage[drawableIn] ?: 0
+    @Exclude @Transient var drawableBg: Int = 0
+        @Exclude get() = drawableStorage[drawableBgIn] ?: 0
+}
+
+data class StoryQuest(
         var name: String = "Story #1",
         var description: String = "",
         var shortDescription: String = "",
@@ -3068,10 +3182,11 @@ class StoryQuest(
 ) : Serializable {
     var reward = Reward(difficulty)
     var locked: Boolean = false
+    var id: String = UUID.randomUUID().toString()
 
     @Transient @Exclude var index: Int = 0
         @Exclude get(){
-            return (id.toInt() + (chapter * 10))
+            return 0//(id.toInt() + (chapter * 10))
         }
 
     @Exclude fun getStats(): String {
@@ -3087,6 +3202,20 @@ class StoryQuest(
                     7 -> "<font color='#FFE500'>Evil</font>"
                     else -> "Error: Collection is out of its bounds! <br/> report this to support team, please."
                 } + ", required level: ${this.reqLevel}"
+    }
+
+    @Exclude fun getTechnicalStats(): String {
+        return "$name, req. level: ${if(reqLevel <= Data.player.level) "<font color='green'>" else "<font color='red'>"}<b>$reqLevel</b></font><br/>slides: ${slides.size}<br/>$shortDescription"
+    }
+
+    private fun drawSlideOnActivity(activity: SystemFlow.GameActivity, slideNumber: Int, layoutWidth: Int, layoutHeight: Int){
+        val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
+        for(i in this.slides[slideNumber].components.sortedBy { it.innerIndex }){
+            i.update(activity)
+        }
+
+        this.slides[slideNumber].components.sortByDescending { it.innerIndex }
+        parent.requestLayout()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -3134,7 +3263,7 @@ class StoryQuest(
  * Decisions are based on statically entered IDs.
  *      resulting ID contains base index - index of current slide + decision array index with space of 00 nulls for visual separation
  */
-class StoryDecision(
+data class StoryDecision(
         var index: String = "001",
         var options: MutableList<String> = mutableListOf("Default option")
 ){
@@ -3152,24 +3281,29 @@ enum class StoryDialogEffectType{
     None
 }
 
-class StoryDialog(
+data class StoryDialog(
     var source: String = "",
     var content: String = "",
     var effectedImageIndex: Int? = null,     //in case of wanted action to the dialog (darkening, focusing on one image etc.)
     var effectedImageType: StoryDialogEffectType = StoryDialogEffectType.None       //helper variable for recognision of type of wanted action
 )
 
-class StorySlide(
+data class StorySlide(
         var templateID: String = "0",
+        var name: String = "slide1",
+        var slideIndex: Int = 0,
+        var slideNumber: Int = 0,
         var innerInstanceID: String = UUID.randomUUID().toString(),
         var textContent: MutableList<StoryDialog> = mutableListOf(),        //from OLDER version
         var images: MutableList<StoryImage> = mutableListOf(),      //from OLDER version
         var components: MutableList<SystemFlow.FrameworkComponent> = mutableListOf(),
         var difficulty: Int = 0,
-        var enemy: NPC? = null,
+        var fight: StoryFight? = null,
         var skippable: Boolean = false,
         var decision: StoryDecision? = null
 ) : Serializable {
+
+    @Exclude var currentBitmaps = hashMapOf<String, Bitmap>()
 
     override fun hashCode(): Int {
         var result = templateID.hashCode()
@@ -3177,7 +3311,6 @@ class StorySlide(
         result = 31 * result + textContent.hashCode()
         result = 31 * result + images.hashCode()
         result = 31 * result + difficulty
-        result = 31 * result + (enemy.hashCode())
         return result
     }
 
@@ -3192,11 +3325,30 @@ class StorySlide(
         if (textContent != other.textContent) return false
         if (images != other.images) return false
         if (difficulty != other.difficulty) return false
-        if (enemy != other.enemy) return false
 
         return true
     }
+    fun copy(position: Int, storyQuest: StoryQuest): StorySlide{
+        val textContents = mutableListOf<StoryDialog>()
+        textContents.addAll(this.textContent.toTypedArray())
+        val componentsTemp = mutableListOf<SystemFlow.FrameworkComponent>()
+        for(i in components){
+            componentsTemp.add(i.copy())
+        }
 
+        val story = StorySlide(
+                slideNumber = storyQuest.slides.maxBy { it.slideNumber }!!.slideNumber + 1,
+                slideIndex = position + 1,
+                textContent = textContents,              //getting rid of reference
+                components = componentsTemp,
+                difficulty = this.difficulty,
+                fight = this.fight,
+                skippable = this.skippable,
+                decision = this.decision
+        )
+        story.name = "slide" + story.slideNumber
+        return story
+    }
 }
 
 class StoryImage(
@@ -3746,7 +3898,7 @@ open class NPC(
     }
 }
 
-class Boss(
+data class Boss(
         override var id: String = "",
         override var inDrawable: String = nextInt(50000, 50008).toString(),
         override var inBgDrawable: String = "95000",
@@ -3905,7 +4057,7 @@ class Boss(
     }
 }
 
-class Quest(
+data class Quest(
         val id: String = "0001",
         var name: String = "",
         var description: String = "",
@@ -4017,10 +4169,11 @@ class CustomTextView : TextView {
     }
 
     init {
-
         if(this.typeface.isBold && !boldTemp){
             boldTemp = true
         }
+
+        this.isVerticalFadingEdgeEnabled = true
 
         this.typeface = ResourcesCompat.getFont(context, Data.fontGallery[Data.player.textFont]!!)
 
@@ -4101,6 +4254,7 @@ class CustomEditText : androidx.appcompat.widget.AppCompatEditText {
             boldTemp = true
         }
 
+        this.isVerticalFadingEdgeEnabled = true
         this.typeface = ResourcesCompat.getFont(context, Data.fontGallery[Data.player.textFont]!!)
         this.movementMethod = ScrollingMovementMethod()
         this.scrollBarSize = 0
@@ -4383,7 +4537,7 @@ data class FactionMember(
     }
 }
 
-class FactionActionLog(
+data class FactionActionLog(
         var caller: String = "Leader",
         var action: String = " promoted ",
         var receiver: String = "leader"
@@ -4416,12 +4570,12 @@ class FactionActionLog(
     }
 }
 
-class FactionChatComponent(
+data class FactionChatComponent(
         var caller: String = "",
         var content: String = ""
 )
 
-class Faction(
+data class Faction(
         var name: String = "template",
         var leader: String = Data.player.username
 ): Serializable{
@@ -4678,7 +4832,7 @@ class Faction(
     }
 }
 
-class Invitation(
+data class Invitation(
         var caller: String = "no one?",
         var message: String = " invited you to faction ",
         var subject: String = "Horde",
@@ -4772,7 +4926,7 @@ enum class ServerStatus{
     restarting
 }
 
-class MiniGameScore(
+data class MiniGameScore(
         var length: Double = 0.0,     //in seconds
         var user: String = "MexxFM",
         var type: MinigameType = MinigameType.RocketGame
@@ -4793,7 +4947,7 @@ class MiniGameScore(
 
     fun capture(context: Context){
         Data.miniGameScores.add(this)
-        Log.d("minigamesscores", Data.miniGameScores.toJSON())
+        Log.d("minigamesscores", Data.miniGameScores.toGlobalDataJSON())
         SystemFlow.writeObject(context, "miniGameScores.data", Data.miniGameScores)
     }
 
@@ -4839,7 +4993,7 @@ class MiniGameScore(
     }
 }
 
-class HitBoxPoint(
+data class HitBoxPoint(
     var percentagePointX: Double = 0.5,
     var percentagePointY: Double = 0.5
 ){
@@ -4854,7 +5008,7 @@ class HitBoxPoint(
     }
 }
 
-class HitBox(
+data class HitBox(
     val hitBoxPoints: MutableList<HitBoxPoint> = mutableListOf(),
     val resourceIn: String? = null
 ){
@@ -5296,7 +5450,7 @@ class RocketGame constructor(
     }
 }
 
-class ComponentCoordinates(
+data class ComponentCoordinates(
         var x: Float = 0f,
         var y: Float = 0f,
         var widthBound: Int = 0,

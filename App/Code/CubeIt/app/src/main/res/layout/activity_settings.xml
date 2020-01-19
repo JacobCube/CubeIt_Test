@@ -256,6 +256,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="6dp"
             android:paddingBottom="5dp"
+            android:imeOptions="flagNoExtractUi"
             android:textColor="@color/bg_basic_white"
             android:textColorHint="@color/loginColor_4"
             android:visibility="gone"
@@ -335,18 +336,17 @@
         app:layout_constraintEnd_toEndOf="@+id/editTextSettingsVibrate"
         app:layout_constraintStart_toStartOf="@+id/editTextSettingsVibrate" />
 
-    <FrameLayout
-        android:id="@+id/frameLayoutBugReport"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/colorSecondary"
-        android:padding="1dp"
-        app:layout_constraintBottom_toTopOf="@+id/imageViewSettingsBugIcon"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline82"
-        app:layout_constraintTop_toTopOf="parent">
+        <FrameLayout
+            android:id="@+id/frameLayoutBugReport"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="1dp"
+            app:layout_constraintBottom_toTopOf="@+id/imageViewSettingsBugIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline82"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </FrameLayout>
+        </FrameLayout>
 
     <ImageView
         android:id="@+id/imageViewSettingsBugIcon"

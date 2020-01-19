@@ -24,6 +24,13 @@
         <item><FONT COLOR='#C0B02D\'>Spam</FONT></item>
     </string-array>
 
+    <string-array name="font_size">
+        <item>small</item>
+        <item>normal</item>
+        <item>small title</item>
+        <item>title</item>
+    </string-array>
+
     <string-array name="charclasses">
         <item>Character</item>
         <item>Vampire</item>

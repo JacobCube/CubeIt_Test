@@ -108,7 +108,7 @@
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline75"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/emptyspellslot" />
+        app:srcCompat="@drawable/circle_white" />
 
     <ImageView
         android:id="@+id/rowFightBoard"

@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:screenOrientation="sensorLandscape">
 
-
     <ImageView
         android:id="@+id/imageViewFactionBg"
         android:layout_width="0dp"
@@ -27,7 +26,6 @@
         android:id="@+id/viewPagerFaction"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/loginColor"
         android:clickable="false"
         android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"

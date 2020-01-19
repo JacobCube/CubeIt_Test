@@ -860,7 +860,7 @@ class ActivityFightSystem : AppCompatActivity() {              //In order to pas
             viewPop.textViewPopAdventureExperience.setHTMLText("<font color='#4d6dc9'><b>xp</b></font> ${if(reward?.experience == null)0 else reward.experience}")
             viewPop.textViewPopAdventureCC.text = "${if(reward?.cubeCoins == null)0 else reward.cubeCoins}"
 
-            if(winner.username == Data.player.username) reward?.receive()
+            //if(winner.username == Data.player.username) reward?.receive()
 
             window.isOutsideTouchable = false
             window.isFocusable = true

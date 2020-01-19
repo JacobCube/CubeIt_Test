@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class Fragment_Market_RegisterOffer : Fragment() {
-
     val createdOffer = MarketOffer()
     var cubeCoinsTimer: TimerTask? = null
     var cubixTimer: TimerTask? = null
