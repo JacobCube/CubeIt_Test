@@ -24,7 +24,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextFrameworkPropertiesWidth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
         app:layout_constraintStart_toStartOf="@+id/imageViewFrameworkPropertiesBg"
         app:layout_constraintTop_toTopOf="@+id/imageViewFrameworkPropertiesBg" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextFrameworkPropertiesHeight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         app:layout_constraintStart_toStartOf="@+id/editTextFrameworkPropertiesWidth"
         app:layout_constraintTop_toBottomOf="@+id/editTextFrameworkPropertiesWidth" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextFrameworkPropertiesRotation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -89,7 +89,7 @@
         app:layout_constraintTop_toBottomOf="@+id/spinnerFrameWorkPropertiesFont"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFrameworkPropertiesWidth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -101,7 +101,7 @@
         app:layout_constraintStart_toEndOf="@+id/editTextFrameworkPropertiesWidth"
         app:layout_constraintTop_toTopOf="@+id/editTextFrameworkPropertiesWidth" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFrameworkPropertiesHeight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -113,7 +113,7 @@
         app:layout_constraintStart_toEndOf="@+id/editTextFrameworkPropertiesHeight"
         app:layout_constraintTop_toTopOf="@+id/editTextFrameworkPropertiesHeight" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFrameworkPropertiesBringOnTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -128,7 +128,7 @@
         app:layout_constraintStart_toStartOf="@+id/switchFrameworkPropertiesAnimate"
         app:layout_constraintTop_toBottomOf="@+id/switchFrameworkPropertiesAnimate" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFrameworkPropertiesRemove"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -142,7 +142,7 @@
         app:layout_constraintStart_toStartOf="@+id/textViewFrameworkPropertiesBringOnTop"
         app:layout_constraintTop_toBottomOf="@+id/textViewFrameworkPropertiesBringOnTop" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextFrameWorkPropertiesContent"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -166,7 +166,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:padding="4dp"
-        android:paddingEnd="8dp"
         android:popupBackground="@android:color/transparent"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="@+id/editTextFrameWorkPropertiesContent"

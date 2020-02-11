@@ -127,7 +127,6 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:tag="character"
-        android:src="@drawable/character_5"
         app:layout_constraintBottom_toTopOf="@+id/guideline99"
         app:layout_constraintEnd_toStartOf="@+id/profile_EquipItem4"
         app:layout_constraintHorizontal_bias="0.0"
@@ -135,7 +134,7 @@
         android:onClick="onCharacterClicked"
         app:layout_constraintTop_toBottomOf="@+id/profile_textViewInfoCharacter" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/profile_textViewInfoCharacter"
         android:layout_width="0dp"
         android:textStyle="bold"
@@ -186,7 +185,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewCharacterProfile"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

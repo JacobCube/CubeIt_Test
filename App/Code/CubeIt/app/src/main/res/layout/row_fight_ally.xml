@@ -193,7 +193,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.55" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowFightallyDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -221,7 +221,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline291"
         app:srcCompat="@drawable/menu_character_button_pressed" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowFightallyLvl"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -236,7 +236,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline285"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowFightallyHp"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -252,7 +252,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline281"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowFightallyEnergy"
         android:layout_width="wrap_content"
         android:layout_height="0dp"

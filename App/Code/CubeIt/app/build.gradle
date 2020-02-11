@@ -8,7 +8,7 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "cz.cubeit.cubeit"
+        applicationId "cz.cubeit.cubeit_test"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 62
@@ -39,29 +39,30 @@ android {
 
 dependencies {
     def multidex_version = "2.0.1"
+    implementation 'com.github.kungfucat:ViewPagerTransformerLibrary:v1.2.0'
     implementation 'com.squareup.okhttp3:okhttp:4.3.0'
     implementation "com.squareup.okhttp3:okhttp:4.3.0"
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
     implementation "androidx.multidex:multidex:$multidex_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.core:core:1.1.0'
+    implementation 'androidx.core:core:1.2.0'
     implementation "androidx.drawerlayout:drawerlayout:1.0.0"
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'com.google.firebase:firebase-storage:19.1.0'
+    implementation 'com.google.firebase:firebase-storage:19.1.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation 'com.google.firebase:firebase-core:17.2.2'
-    implementation 'com.google.firebase:firebase-firestore:21.3.1'
+    implementation 'com.google.firebase:firebase-firestore:21.4.0'
     implementation 'com.google.firebase:firebase-auth:19.2.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
-    annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.1.0'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.50"
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.2.0'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.61"
 }
 
 apply plugin: 'com.google.gms.google-services'

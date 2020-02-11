@@ -23,8 +23,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline164"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline222"
-        app:layout_constraintTop_toBottomOf="@+id/textViewStoryInfoQuestEnemies"
-        app:srcCompat="@drawable/character_5" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewStoryInfoQuestEnemies" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline163"
@@ -61,7 +60,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.3" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryInfoQuest"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -76,7 +75,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryInfoQuestDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -106,7 +105,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.95" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryInfoQuestEnemies"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -134,7 +133,7 @@
         app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/emptyslot" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryInfoCubix"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -147,7 +146,7 @@
         app:layout_constraintStart_toEndOf="@+id/imageView2"
         app:layout_constraintTop_toBottomOf="@+id/textViewStoryInfoXP" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryInfoCC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -160,7 +159,7 @@
         app:layout_constraintStart_toEndOf="@+id/imageView3"
         app:layout_constraintTop_toTopOf="@+id/guideline164" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryInfoXP"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -198,7 +197,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewStoryInfoCC"
         app:srcCompat="@drawable/coin_basic" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryInfoEnemyDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"

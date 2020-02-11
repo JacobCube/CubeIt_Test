@@ -7,20 +7,22 @@
     android:paddingBottom="1dp"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewInboxCategory"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:text="TextView"
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/textViewInboxCategoryNumber"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewInboxCategoryNumber"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -56,14 +58,11 @@
         android:id="@+id/imageViewInboxCategoryBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:alpha="0.25"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="fitXY"
+        android:alpha="0.6"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:color/transparent" />
+        app:srcCompat="@drawable/bg_transparent_press" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

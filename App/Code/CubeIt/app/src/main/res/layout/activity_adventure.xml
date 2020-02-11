@@ -45,7 +45,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewQuestProgress"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -128,7 +128,7 @@
         app:srcCompat="@drawable/rocket_0"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewAdventurePlaneEnergy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -139,7 +139,7 @@
         app:layout_constraintTop_toTopOf="@+id/imageViewAdventureMyPlane"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewAdventurePlaneState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

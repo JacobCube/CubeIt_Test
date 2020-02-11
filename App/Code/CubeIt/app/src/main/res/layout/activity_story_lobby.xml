@@ -50,7 +50,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/background1" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewStoryLobbyTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

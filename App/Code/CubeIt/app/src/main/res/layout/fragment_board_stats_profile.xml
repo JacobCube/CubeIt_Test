@@ -29,7 +29,7 @@
             app:layout_constraintStart_toStartOf="@+id/textViewProfileLevel"
             app:layout_constraintTop_toTopOf="@+id/guideline79" />
 
-        <cz.cubeit.cubeit.CustomTextView
+        <cz.cubeit.cubeit_test.CustomTextView
             android:id="@+id/textViewProfileXp"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -43,7 +43,7 @@
             app:layout_constraintStart_toStartOf="@+id/textViewProfileLevel"
             app:layout_constraintTop_toTopOf="@+id/guideline79" />
 
-        <cz.cubeit.cubeit.CustomTextView
+        <cz.cubeit.cubeit_test.CustomTextView
             android:id="@+id/textViewProfileLevel"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -59,7 +59,7 @@
             app:layout_constraintStart_toEndOf="@+id/imageViewProfileMail"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <cz.cubeit.cubeit.CustomTextView
+        <cz.cubeit.cubeit_test.CustomTextView
             android:id="@+id/profile_stats"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -72,7 +72,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/guideline219" />
 
-        <cz.cubeit.cubeit.CustomTextView
+        <cz.cubeit.cubeit_test.CustomTextView
             android:id="@+id/profile_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -192,7 +192,7 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.8" />
 
-        <cz.cubeit.cubeit.CustomTextView
+        <cz.cubeit.cubeit_test.CustomTextView
             android:id="@+id/textViewProfileStatsFaction"
             android:layout_width="0dp"
             android:layout_height="0dp"

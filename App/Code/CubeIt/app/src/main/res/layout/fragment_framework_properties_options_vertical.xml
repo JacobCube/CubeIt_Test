@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:configChanges="orientation"
+    android:fillViewport="true"
+    android:screenOrientation="sensorLandscape">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutFrameworkPropertiesOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_basic_logincolor_dark"
+        android:clickable="true"
+        android:configChanges="orientation"
+        android:focusable="true"
+        android:paddingEnd="6dp"
+        android:paddingBottom="6dp">
+
+        <ImageView
+            android:id="@+id/imageViewFrameworkPropertiesBg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <cz.cubeit.cubeit_test.CustomEditText
+            android:id="@+id/editTextFrameworkPropertiesWidth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:hint="width"
+            android:imeOptions="flagNoExtractUi"
+            android:inputType="number"
+            android:textColor="@color/bg_basic_white"
+            android:textColorHint="@color/bg_basic_white"
+            app:layout_constraintEnd_toEndOf="@+id/imageViewFrameworkPropertiesBg"
+            app:layout_constraintHorizontal_bias="0.40"
+            app:layout_constraintStart_toStartOf="@+id/imageViewFrameworkPropertiesBg"
+            app:layout_constraintTop_toTopOf="@+id/imageViewFrameworkPropertiesBg" />
+
+        <cz.cubeit.cubeit_test.CustomEditText
+            android:id="@+id/editTextFrameworkPropertiesHeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:hint="height"
+            android:imeOptions="flagNoExtractUi"
+            android:inputType="number"
+            android:textColor="@color/bg_basic_white"
+            android:textColorHint="@color/bg_basic_white"
+            app:layout_constraintStart_toStartOf="@+id/editTextFrameworkPropertiesWidth"
+            app:layout_constraintTop_toBottomOf="@+id/editTextFrameworkPropertiesWidth" />
+
+        <cz.cubeit.cubeit_test.CustomEditText
+            android:id="@+id/editTextFrameworkPropertiesRotation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:hint="rotation"
+            android:imeOptions="flagNoExtractUi"
+            android:inputType="number"
+            android:textColor="@color/bg_basic_white"
+            android:textColorHint="@color/bg_basic_white"
+            app:layout_constraintStart_toStartOf="@+id/editTextFrameworkPropertiesHeight"
+            app:layout_constraintTop_toBottomOf="@+id/editTextFrameworkPropertiesHeight" />
+
+        <Switch
+            android:id="@+id/switchFrameworkPropertiesAnimate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="animate "
+            android:textColor="@color/bg_basic_white"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/editTextFrameworkPropertiesRotation"
+            app:layout_constraintTop_toBottomOf="@+id/editTextFrameworkPropertiesRotation" />
+
+        <Switch
+            android:id="@+id/switchFrameworkPropertiesBackground"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="background "
+            android:textColor="@color/bg_basic_white"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@+id/spinnerFrameWorkPropertiesFont"
+            app:layout_constraintTop_toBottomOf="@+id/spinnerFrameWorkPropertiesFont"
+            tools:visibility="visible" />
+
+        <cz.cubeit.cubeit_test.CustomTextView
+            android:id="@+id/textViewFrameworkPropertiesWidth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:text="%"
+            android:textColor="@color/bg_basic_white"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextFrameworkPropertiesWidth"
+            app:layout_constraintStart_toEndOf="@+id/editTextFrameworkPropertiesWidth"
+            app:layout_constraintTop_toTopOf="@+id/editTextFrameworkPropertiesWidth" />
+
+        <cz.cubeit.cubeit_test.CustomTextView
+            android:id="@+id/textViewFrameworkPropertiesHeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:text="%"
+            android:textColor="@color/bg_basic_white"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextFrameworkPropertiesHeight"
+            app:layout_constraintStart_toEndOf="@+id/editTextFrameworkPropertiesHeight"
+            app:layout_constraintTop_toTopOf="@+id/editTextFrameworkPropertiesHeight" />
+
+        <cz.cubeit.cubeit_test.CustomTextView
+            android:id="@+id/textViewFrameworkPropertiesBringOnTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_transparent_press"
+            android:gravity="center"
+            android:imeOptions="actionDone"
+            android:padding="10dp"
+            android:text="Bring on top"
+            android:textColor="@color/bg_basic_white"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/imageViewFrameworkPropertiesBg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editTextFrameWorkPropertiesContent" />
+
+        <cz.cubeit.cubeit_test.CustomTextView
+            android:id="@+id/textViewFrameworkPropertiesRemove"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_transparent_press_red"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="delete"
+            android:textColor="@color/bg_basic_white"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/textViewFrameworkPropertiesBringOnTop"
+            app:layout_constraintStart_toStartOf="@+id/textViewFrameworkPropertiesBringOnTop"
+            app:layout_constraintTop_toBottomOf="@+id/textViewFrameworkPropertiesBringOnTop" />
+
+        <cz.cubeit.cubeit_test.CustomEditText
+            android:id="@+id/editTextFrameWorkPropertiesContent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:hint="text content"
+            android:imeOptions="actionDone"
+            android:textColor="@color/bg_basic_white"
+            android:textColorHint="@color/loginColor_3"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/imageViewFrameworkPropertiesBg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/switchFrameworkPropertiesBackground"
+            tools:visibility="visible" />
+
+        <Spinner
+            android:id="@+id/spinnerFrameWorkPropertiesFont"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:padding="4dp"
+            android:paddingEnd="8dp"
+            android:popupBackground="@android:color/transparent"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/switchFrameworkPropertiesAnimate"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/imageViewFrameworkPropertiesPallete"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/spinnerFrameWorkPropertiesFont"
+            app:layout_constraintDimensionRatio="H,1:1"
+            app:layout_constraintStart_toEndOf="@+id/spinnerFrameWorkPropertiesFont"
+            app:layout_constraintTop_toTopOf="@+id/spinnerFrameWorkPropertiesFont"
+            app:layout_constraintVertical_bias="0.0"
+            app:srcCompat="@drawable/color_pallete" />
+
+        <ImageView
+            android:id="@+id/imageViewFrameworkPropertiesPalleteBg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/switchFrameworkPropertiesBackground"
+            app:layout_constraintDimensionRatio="H,1:1"
+            app:layout_constraintStart_toEndOf="@+id/switchFrameworkPropertiesBackground"
+            app:layout_constraintTop_toTopOf="@+id/switchFrameworkPropertiesBackground"
+            app:srcCompat="@drawable/color_pallete"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/imageViewFrameworkPropertiesWidthLock"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:alpha="0.2"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewFrameworkPropertiesWidth"
+            app:layout_constraintDimensionRatio="H,1:1"
+            app:layout_constraintStart_toEndOf="@+id/textViewFrameworkPropertiesWidth"
+            app:layout_constraintTop_toTopOf="@+id/textViewFrameworkPropertiesWidth"
+            app:srcCompat="@android:drawable/ic_lock_idle_lock" />
+
+        <ImageView
+            android:id="@+id/imageViewFrameworkPropertiesHeightLock"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:alpha="0.2"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewFrameworkPropertiesHeight"
+            app:layout_constraintDimensionRatio="H,1:1"
+            app:layout_constraintStart_toEndOf="@+id/textViewFrameworkPropertiesHeight"
+            app:layout_constraintTop_toTopOf="@+id/textViewFrameworkPropertiesHeight"
+            app:srcCompat="@android:drawable/ic_lock_idle_lock" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

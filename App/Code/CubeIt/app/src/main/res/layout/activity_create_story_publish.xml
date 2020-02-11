@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutStory"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/brown_basic_3"
+    android:elevation="0dp"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryPublishBack"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline317"
+        app:layout_constraintDimensionRatio="H,1:2.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/left_arrow" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline317"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.08" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline327"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryPublishViewPager"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline326"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline317"
+        app:srcCompat="@drawable/bg_basic_brown4" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryPublishInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:text='Click on \"To review\" on each slide to create images'
+        android:textColor="@color/brown_basic_2"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewCreateStoryPublishViewPager"
+        app:layout_constraintEnd_toEndOf="@+id/viewPagerCreateStoryPublish"
+        app:layout_constraintStart_toStartOf="@+id/imageViewCreateStoryPublishViewPager"
+        app:layout_constraintTop_toTopOf="@+id/imageViewCreateStoryPublishViewPager"
+        app:layout_constraintVertical_bias="0.26" />
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewPagerCreateStoryPublish"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewCreateStoryPublishViewPager"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewCreateStoryPublishViewPager"
+        app:layout_constraintStart_toStartOf="@+id/imageViewCreateStoryPublishViewPager"
+        app:layout_constraintTop_toTopOf="@+id/imageViewCreateStoryPublishViewPager"/>
+
+    <ImageView
+        android:id="@+id/imageViewCreateStoryPublishBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/bg_basic_brown2"
+        app:layout_constraintBottom_toTopOf="@+id/buttonCreateStoryPublish"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline326"
+        app:layout_constraintTop_toTopOf="@+id/guideline317" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline326"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline328"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.87" />
+
+    <Spinner
+        android:id="@+id/spinnerCreateStoryPublish"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:minHeight="20dp"
+        android:popupBackground="@android:color/transparent"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toStartOf="@+id/guideline328"
+        app:layout_constraintStart_toStartOf="@+id/editTextCreateStoryPublishName"
+        app:layout_constraintTop_toBottomOf="@+id/editTextCreateStoryPublishName" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextCreateStoryPublishName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/bg_basic_brown3"
+        android:hint="name"
+        android:lines="1"
+        android:padding="6dp"
+        android:imeOptions="flagNoExtractUi"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_2"
+        app:layout_constraintEnd_toStartOf="@+id/guideline328"
+        app:layout_constraintStart_toStartOf="@+id/imageViewCreateStoryPublishBg"
+        app:layout_constraintTop_toTopOf="@+id/guideline327" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextCreateStoryPublishDescription"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/bg_basic_brown3"
+        android:gravity="start"
+        android:hint="description"
+        android:imeOptions="flagNoExtractUi"
+        android:lines="6"
+        android:padding="6dp"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_2"
+        app:layout_constraintBottom_toTopOf="@+id/guideline329"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewCreateStoryPublishBg"
+        app:layout_constraintStart_toStartOf="@+id/imageViewCreateStoryPublishBg"
+        app:layout_constraintTop_toBottomOf="@+id/switchCreateStoryPublishEditable" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextCreateStoryPublishLimit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="2dp"
+        android:background="@drawable/bg_basic_brown3"
+        android:inputType="number"
+        android:hint="level"
+        android:imeOptions="flagNoExtractUi"
+        android:lines="1"
+        android:padding="6dp"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_2"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/guideline328"
+        app:layout_constraintStart_toEndOf="@+id/switchCreateStoryPublishLimit"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerCreateStoryPublish"
+        tools:visibility="visible" />
+
+    <Button
+        android:id="@+id/buttonCreateStoryPublish"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="publish"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline326" />
+
+    <Switch
+        android:id="@+id/switchCreateStoryPublishLimit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="limit by level "
+        android:textColor="@color/brown_basic_4"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextCreateStoryPublishLimit"
+        app:layout_constraintStart_toStartOf="@+id/spinnerCreateStoryPublish"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerCreateStoryPublish"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Switch
+        android:id="@+id/switchCreateStoryPublishEditable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="editable "
+        android:textColor="@color/brown_basic_4"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/spinnerCreateStoryPublish"
+        app:layout_constraintTop_toBottomOf="@+id/switchCreateStoryPublishLimit" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline329"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.85" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

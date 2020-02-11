@@ -103,7 +103,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.93" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewMarketOfferDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"

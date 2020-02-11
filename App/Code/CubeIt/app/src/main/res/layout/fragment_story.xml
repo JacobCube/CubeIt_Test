@@ -2,26 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layoutFragmentCharacterStats"
+    android:id="@+id/layoutFragmentStory"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
     android:configChanges="orientation"
+    android:tag="layoutFragmentStory"
     android:screenOrientation="sensorLandscape">
 
 
-    <cz.cubeit.cubeit.StoryViewPager
-        android:id="@+id/viewPagerStoryQuest"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/loginColor_2_dark_light"
-        android:clickable="false"
-        android:focusable="false"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </cz.cubeit.cubeit.StoryViewPager>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

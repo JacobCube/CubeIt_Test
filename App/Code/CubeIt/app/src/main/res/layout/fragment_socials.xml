@@ -85,7 +85,7 @@
         app:tabTextColor="@color/bg_basic_white"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFragmentSocialsError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -99,7 +99,7 @@
         app:layout_constraintVertical_bias="0.05"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextFragmentSocialsAdd"
         android:layout_width="0dp"
         android:layout_height="0dp"

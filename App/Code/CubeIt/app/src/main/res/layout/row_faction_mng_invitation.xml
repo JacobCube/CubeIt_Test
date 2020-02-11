@@ -8,7 +8,7 @@
     android:background="@color/loginColor_2"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFactionManageRowName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

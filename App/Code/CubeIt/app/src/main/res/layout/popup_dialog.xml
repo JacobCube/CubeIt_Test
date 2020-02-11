@@ -50,7 +50,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.835" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewDialogInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

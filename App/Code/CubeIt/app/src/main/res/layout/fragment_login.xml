@@ -108,7 +108,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/inputEmailLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -139,7 +139,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.63" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/inputPassLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -156,7 +156,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline112"
         app:layout_constraintTop_toTopOf="@+id/Texguideline8" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/resetPass"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -284,7 +284,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline5"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/loginVersionInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -319,7 +319,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.80" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewLoginOfflineInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -354,7 +354,6 @@
         android:adjustViewBounds="true"
         android:background="@drawable/circle_white"
         android:padding="8dp"
-        android:src="@drawable/book_icon_press"
         app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline1"
         app:layout_constraintStart_toStartOf="@+id/guideline184"
@@ -369,7 +368,6 @@
         android:adjustViewBounds="true"
         android:background="@drawable/circle_white"
         android:padding="10dp"
-        android:src="@drawable/minigame_icon"
         app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline184"
         app:layout_constraintStart_toStartOf="parent"

@@ -63,7 +63,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextBoardFilterUsername"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -86,7 +86,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline311"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextBoardFilterLevelBottom"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -109,7 +109,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline311"
         app:layout_constraintTop_toTopOf="@+id/quideline153" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextBoardFilterPosition"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -132,7 +132,7 @@
         app:layout_constraintStart_toStartOf="@+id/checkBoxBoardFilterActive"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextBoardFilterLevelTop"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -4,21 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_basic_logincolor3"
-    android:padding="4dp"
+    android:paddingBottom="6dp"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit.CustomTextView
+    <ImageView
+        android:id="@+id/imageViewRowCreateStoryOverviewBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.8"
+        android:src="@drawable/bg_basic_logincolor3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:0.4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowCreateStoryOverviewInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="4dp"
         android:gravity="center_horizontal"
         android:textColor="@color/loginColor"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewRowCreateStoryOverviewBg"
         app:layout_constraintDimensionRatio="H,"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewRowCreateStoryOverviewBg"
         app:layout_constraintStart_toStartOf="@+id/guideline325"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/imageViewRowCreateStoryOverviewBg" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline325"
@@ -27,24 +39,16 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.7" />
 
-    <ImageView
-        android:id="@+id/imageViewRowCreateStoryOverviewImage"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewPagerRowCreateStoryOverview"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline325"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewRowCreateStoryOverviewBg"
+        app:layout_constraintEnd_toStartOf="@+id/textViewRowCreateStoryOverviewInfo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/character_0" />
-
-    <ImageView
-        android:id="@+id/imageViewRowCreateStoryOverviewBg"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="H,1:0.3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/imageViewRowCreateStoryOverviewBg" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

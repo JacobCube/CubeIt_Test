@@ -10,7 +10,7 @@
     android:screenOrientation="sensorLandscape">
 
     <TextView
-        android:id="@+id/textViewCreateStoryOoverviewBg"
+        android:id="@+id/textViewCreateStoryOverviewBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
@@ -24,11 +24,12 @@
         android:id="@+id/recyclerViewCreateStoryOverview"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="6dp"
-        android:layout_marginEnd="6dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:fadeScrollbars="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/imageViewCreateStoryOverviewNew"
-        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOoverviewBg"
+        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOverviewBg"
         app:layout_constraintTop_toBottomOf="@+id/editTextCreateStoryOverview"
         app:layout_constraintVertical_bias="1.0" />
 
@@ -41,7 +42,7 @@
         android:layout_marginEnd="15dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline324"
         app:layout_constraintEnd_toStartOf="@+id/imageViewCreateStoryOverviewNew"
-        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOoverviewBg"
+        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOverviewBg"
         app:layout_constraintTop_toTopOf="parent"
         app:tabBackground="@drawable/tab_brown4_top"
         app:tabGravity="center"
@@ -51,18 +52,18 @@
         app:tabSelectedTextColor="@color/brown_basic_4"
         app:tabTextColor="@color/colorSecondary" />
 
-    <cz.cubeit.cubeit.CustomEditText
+    <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextCreateStoryOverview"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="12dp"
         android:layout_marginTop="4dp"
-        android:imeOptions="flagNoExtractUi"
         android:hint="Name / description / author"
-        android:textColorHint="@color/brown_basic_4"
+        android:imeOptions="flagNoExtractUi"
         android:textColor="@color/colorSecondary"
+        android:textColorHint="@color/brown_basic_4"
         app:layout_constraintEnd_toStartOf="@+id/guideline318"
-        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOoverviewBg"
+        app:layout_constraintStart_toStartOf="@+id/textViewCreateStoryOverviewBg"
         app:layout_constraintTop_toBottomOf="@+id/tabLayoutCreateStoryOverview" />
 
     <ImageView
@@ -116,6 +117,125 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.11" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryOverviewPlay"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press"
+        android:gravity="center_horizontal"
+        android:padding="8dp"
+        android:text="play"
+        android:textColor="@color/green"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewCreateStoryOverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewCreateStoryOverviewNew"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryOverviewPublish"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press"
+        android:gravity="center_horizontal"
+        android:padding="8dp"
+        android:text="publish"
+        android:textColor="@color/green"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewCreateStoryOverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCreateStoryOverviewPlay"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryOverviewEdit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press"
+        android:gravity="center_horizontal"
+        android:padding="8dp"
+        android:text="edit"
+        android:textColor="@color/loginColor"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewCreateStoryOverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCreateStoryOverviewPublish"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryOverviewFavorite"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press"
+        android:gravity="center_horizontal"
+        android:padding="8dp"
+        android:text="favorite"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewCreateStoryOverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCreateStoryOverviewEdit"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryOverviewShare"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press"
+        android:gravity="center_horizontal"
+        android:padding="8dp"
+        android:text="share"
+        android:textColor="@color/loginColor"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewCreateStoryOverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCreateStoryOverviewFavorite"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryOverviewDelete"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press_red"
+        android:gravity="center_horizontal"
+        android:padding="8dp"
+        android:text="delete"
+        android:textColor="@color/red_error"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewCreateStoryOverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCreateStoryOverviewShare"
+        tools:visibility="visible" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewCreateStoryOverviewContact"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press"
+        android:gravity="center_horizontal"
+        android:padding="8dp"
+        android:text="contact"
+        android:textColor="@color/loginColor"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewCreateStoryOverviewBg"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCreateStoryOverviewDelete"
+        tools:visibility="visible" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

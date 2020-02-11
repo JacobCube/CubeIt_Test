@@ -7,112 +7,112 @@
     android:padding="1dp"
     android:screenOrientation="sensorLandscape">
 
-    <ImageView
-        android:id="@+id/rowIconSlot3"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@color/loginColor_2"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/circle_white"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline4"
-        app:layout_constraintStart_toStartOf="@+id/guideline3"
-        app:layout_constraintTop_toTopOf="parent" />
+  <ImageView
+      android:id="@+id/rowIconSlot3"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:backgroundTint="@color/loginColor_2"
+      android:clickable="true"
+      android:focusable="true"
+      android:scaleType="fitCenter"
+      android:src="@drawable/circle_white"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline4"
+      app:layout_constraintStart_toStartOf="@+id/guideline3"
+      app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/rowIconSlot1"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@color/loginColor_2"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/circle_white"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline2"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+  <ImageView
+      android:id="@+id/rowIconSlot1"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:backgroundTint="@color/loginColor_2"
+      android:clickable="true"
+      android:focusable="true"
+      android:src="@drawable/circle_white"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline2"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/rowIconSlot2"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@color/loginColor_2"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/circle_white"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline3"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
+  <ImageView
+      android:id="@+id/rowIconSlot2"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:backgroundTint="@color/loginColor_2"
+      android:clickable="true"
+      android:focusable="true"
+      android:src="@drawable/circle_white"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline3"
+      app:layout_constraintStart_toStartOf="@+id/guideline2"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:visibility="visible" />
 
-    <ImageView
-        android:id="@+id/rowIconSlot4"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@color/loginColor_2"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/circle_white"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline322"
-        app:layout_constraintStart_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="parent" />
+  <ImageView
+      android:id="@+id/rowIconSlot4"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:backgroundTint="@color/loginColor_2"
+      android:clickable="true"
+      android:focusable="true"
+      android:src="@drawable/circle_white"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline322"
+      app:layout_constraintStart_toStartOf="@+id/guideline4"
+      app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/rowIconSlot5"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@color/loginColor_2"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/circle_white"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline322"
-        app:layout_constraintTop_toTopOf="parent" />
+  <ImageView
+      android:id="@+id/rowIconSlot5"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:backgroundTint="@color/loginColor_2"
+      android:clickable="true"
+      android:focusable="true"
+      android:src="@drawable/circle_white"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="@+id/guideline322"
+      app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.20" />
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline2"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.20" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.4" />
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline3"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.4" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.60" />
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline4"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.60" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline322"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.80" />
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline322"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.80" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="1" />
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline5"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

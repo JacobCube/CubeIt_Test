@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:tag="fragmentAdventureConstraint">
+
+
+    <ImageView
+        android:id="@+id/imageViewFragmentAdventureBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@color/colorSecondary" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutFragmentAdventureLock"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.8"
+        android:background="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible"></FrameLayout>
+
+    <ImageView
+        android:id="@+id/imageViewFragmentAdventureLock"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline331"
+        app:layout_constraintDimensionRatio="W,1:1"
+        android:tint="@color/bg_basic_white"
+        android:alpha="0.7"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline330"
+        app:srcCompat="@drawable/lock" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewFragmentAdventureLock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="You must be level ? or higher to enter this area."
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewFragmentAdventureLock"
+        app:layout_constraintStart_toStartOf="@+id/imageViewFragmentAdventureLock"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentAdventureLock" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline330"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.24" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline331"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.44" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

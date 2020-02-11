@@ -70,7 +70,7 @@
         app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
         app:layout_constraintTop_toBottomOf="@+id/textViewSettingsSeekBar" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewSettingsTextFont"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -174,7 +174,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.35" />
 
-        <cz.cubeit.cubeit.CustomTextView
+        <cz.cubeit.cubeit_test.CustomTextView
             android:id="@+id/textViewSettingsSeekBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -243,7 +243,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.22" />
 
-        <cz.cubeit.cubeit.CustomEditText
+        <cz.cubeit.cubeit_test.CustomEditText
             android:id="@+id/editTextSettingNewPassword"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -279,7 +279,7 @@
         app:srcCompat="@android:drawable/ic_menu_view"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewSettingNewPasswordReq"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -305,7 +305,7 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextSettingsVibrate"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomEditText
+        <cz.cubeit.cubeit_test.CustomEditText
         android:id="@+id/editTextSettingsVibrate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -326,7 +326,7 @@
         app:layout_constraintVertical_bias="0.6"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewSettingsVibrateLog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -360,6 +360,36 @@
         app:srcCompat="@drawable/bug_icon"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteY="0dp" />
+
+        <cz.cubeit.cubeit_test.CustomTextView
+            android:id="@+id/textViewSettingsGenerateUUID"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="2dp"
+            android:text="click the button to generate an UUID"
+            android:textColor="@color/loginColor_3"
+            android:textIsSelectable="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline199"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewSettingFontRight"
+            tools:visibility="visible" />
+
+        <Button
+            android:id="@+id/buttonSettingsGenerateUUID"
+            style="@style/AppTheme.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null"
+            android:text="generate"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline199"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="visible" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

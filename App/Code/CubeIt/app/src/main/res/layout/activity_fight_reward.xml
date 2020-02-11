@@ -43,10 +43,9 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline299"
         app:layout_constraintEnd_toStartOf="@+id/guideline141"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewFightRewardCharName"
-        app:srcCompat="@drawable/character_0" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewFightRewardCharName" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFightRewardTitle"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -69,7 +68,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline141" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFightRewardCC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -81,7 +80,7 @@
         app:layout_constraintBottom_toTopOf="@+id/buttonFightRewardReceive"
         app:layout_constraintEnd_toStartOf="@+id/imageViewFightRewardXp" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFightRewardXp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -92,7 +91,7 @@
         app:layout_constraintBottom_toTopOf="@+id/buttonFightRewardReceive"
         app:layout_constraintEnd_toEndOf="@+id/buttonFightRewardReceive" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFightRewardCharName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -124,7 +123,7 @@
         app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/xp" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewFightRewardDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"

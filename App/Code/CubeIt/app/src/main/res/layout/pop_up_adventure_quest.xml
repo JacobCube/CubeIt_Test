@@ -59,7 +59,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/buttonAccept"
         app:layout_constraintTop_toBottomOf="@+id/imageViewAdventure"
-        app:layout_constraintVertical_bias="1.0"
+        app:layout_constraintVertical_bias="0.2"
         tools:visibility="visible" />
 
     <Button
@@ -123,7 +123,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.57" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewQuest"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -137,7 +137,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline61"
         tools:text="test text 123" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewItemStats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -179,7 +179,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewPopAdventureCC"
         app:srcCompat="@drawable/coin_basic" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewPopAdventureExperience"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -190,7 +190,7 @@
         app:layout_constraintEnd_toEndOf="@+id/textViewPopAdventureCC"
         app:layout_constraintTop_toBottomOf="@+id/textViewPopAdventureCC" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewPopAdventureCC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -204,7 +204,7 @@
         app:layout_constraintStart_toEndOf="@+id/imageViewAdventure2"
         app:layout_constraintTop_toTopOf="@+id/imageViewAdventure2" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewPopAdventureCubix"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

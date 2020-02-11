@@ -10,8 +10,10 @@
     <color name="attack_bg">#CC3932</color>
     <color name="progress_hp">#B31914</color>
     <color name="progress_energy">#FFBE07</color>
-    <color name="loginColor">#1E1C27</color>
-    <color name="loginColor_2">#383849</color>
+    <color name="loginColor">#241F3C</color>
+    <color name="loginColor_old">#1E1C27</color>
+    <color name="loginColor_2">#46466B</color>
+    <color name="loginColor_2_old">#383849</color>
     <color name="loginColor_2_dark">#484553</color>
     <color name="loginColor_2_dark_light">#34323C</color>
     <color name="loginColor_2_darker">#292736</color>

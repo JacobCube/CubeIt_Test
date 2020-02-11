@@ -22,7 +22,7 @@
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@color/loginColor" />
 
-    <cz.cubeit.cubeit.StoryViewPager
+    <cz.cubeit.cubeit_test.StoryViewPager
         android:id="@+id/viewPagerFaction"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -33,7 +33,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    </cz.cubeit.cubeit.StoryViewPager>
+    </cz.cubeit.cubeit_test.StoryViewPager>
 
     <Button
         android:id="@+id/buttonFactionSave"

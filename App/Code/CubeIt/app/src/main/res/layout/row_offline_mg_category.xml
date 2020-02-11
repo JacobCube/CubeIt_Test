@@ -8,7 +8,7 @@
     android:paddingBottom="1dp"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowOfflineMgName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowOfflineMgNew"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

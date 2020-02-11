@@ -95,7 +95,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="1" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowIcon0"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowIcon1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -119,7 +119,7 @@
         app:layout_constraintStart_toEndOf="@+id/rowIconTextSlot0"
         app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowIcon2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -131,7 +131,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline3"
         app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot0" />
 
-    <cz.cubeit.cubeit.CustomTextView
+    <cz.cubeit.cubeit_test.CustomTextView
         android:id="@+id/textViewRowIcon3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
