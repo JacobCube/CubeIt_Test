@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_logincolor_left_border"
+    android:configChanges="orientation"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:fadingEdge="vertical"
+    android:paddingLeft="4dp"
+    android:scrollbars="none"
+    android:paddingRight="4dp"
+    android:screenOrientation="sensorLandscape"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/imageViewStoryActionBarForward"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintDimensionRatio="H,1:1"
+            android:background="@drawable/bg_transparent_press_basic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewStoryActionBarCount"
+            app:srcCompat="@android:drawable/ic_media_ff" />
+
+        <cz.cubeit.cubeit_test.CustomTextView
+            android:id="@+id/textViewStoryActionBarCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center_horizontal"
+            android:maxLines="2"
+            android:text="1/1"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imageViewStoryActionBarSave"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintDimensionRatio="H,1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:background="@drawable/bg_transparent_press_basic"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewStoryActionBarBackward"
+            app:srcCompat="@android:drawable/ic_menu_save" />
+
+        <ImageView
+            android:id="@+id/imageViewStoryActionBarBackward"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintDimensionRatio="H,1:1"
+            android:background="@drawable/bg_transparent_press_basic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewStoryActionBarForward"
+            app:srcCompat="@android:drawable/ic_media_rew" />
+
+        <ImageView
+            android:id="@+id/imageViewStoryActionBarHelp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintDimensionRatio="H,1:1"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@drawable/bg_transparent_press_basic"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewStoryActionBarSave"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+
+        <cz.cubeit.cubeit_test.CustomTextView
+            android:id="@+id/textViewStoryActionBarExit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_transparent_press_red"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="exit"
+            android:textColor="@color/red_error"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewStoryActionBarHelp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

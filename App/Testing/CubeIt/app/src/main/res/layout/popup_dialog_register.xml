@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minHeight="225dp"
+    android:configChanges="orientation"
+    app:layout_constraintDimensionRatio="H,1.5:1"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewPopUpDialogRegisterBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1.5:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/form_login_empty" />
+
+    <TextView
+        android:id="@+id/textViewPopRegisterError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Given username already exists."
+        android:textColor="@color/red_error"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/buttonPopRegisterYes"
+        app:layout_constraintEnd_toEndOf="@+id/buttonPopRegisterYes"
+        app:layout_constraintStart_toStartOf="@+id/buttonPopRegisterYes"
+        tools:visibility="visible" />
+
+    <Button
+        android:id="@+id/buttonPopRegisterYes"
+        style="@style/AppTheme.Button.Dark"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:fontFamily="@font/average_sans"
+        android:text="@android:string/ok"
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline26"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.2" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline27"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.92" />
+
+    <ImageView
+        android:id="@+id/buttonCloseDialogRegister"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:adjustViewBounds="true"
+        android:tint="@android:color/holo_red_dark"
+        app:layout_constraintBottom_toTopOf="@+id/guideline26"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline27"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/close_image" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextPopRegisterName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:ems="10"
+        android:imeOptions="flagNoExtractUi"
+        android:hint="@string/username"
+        android:inputType="textPersonName"
+        app:layout_constraintBottom_toTopOf="@+id/textViewPopRegisterError"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewPopRegisterTitle" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewPopRegisterTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="How shall we address you?"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewPopUpDialogRegisterBg"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline26" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewPopRegisterLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:text="0/10"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextPopRegisterName"
+        app:layout_constraintEnd_toEndOf="@+id/editTextPopRegisterName"
+        app:layout_constraintTop_toTopOf="@+id/editTextPopRegisterName" />
+
+    <Switch
+        android:id="@+id/switchPopRegisterInvited"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="I'm invited"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPopRegisterYes"
+        app:layout_constraintTop_toTopOf="@+id/buttonPopRegisterYes" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextPopRegisterInvitation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edittext_login_bg"
+        android:hint="username"
+        android:imeOptions="flagNoExtractUi"
+        android:paddingStart="4dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/switchPopRegisterInvited"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchPopRegisterInvited"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFragmentCharacterStats"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:configChanges="orientation"
+    android:background="@color/brown_basic_4"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewStoryInfoEnemy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/bg_basic_brown_border"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingTop="6dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline164"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline222"
+        app:layout_constraintTop_toBottomOf="@+id/textViewStoryInfoQuestEnemies" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline163"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline310"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.45" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline222"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.63" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline164"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.6" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline221"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.3" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewStoryInfoQuest"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_basic_brown_border"
+        android:padding="4dp"
+        android:text="Story quest info"
+        app:fontFamily="@font/alegreya_sans_sc"
+        app:layout_constraintBottom_toTopOf="@+id/guideline221"
+        app:layout_constraintEnd_toStartOf="@+id/guideline163"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewStoryInfoQuestDescription"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_basic_brown_border"
+        android:padding="4dp"
+        android:text="Story quest description"
+        app:fontFamily="@font/alegreya_sans_sc"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline310"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline221"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/buttonStoryInfoAccept"
+        style="@style/AppTheme.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Accept"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/textViewStoryInfoEnemyDescription"
+        app:layout_constraintStart_toStartOf="@+id/guideline310"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.95" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewStoryInfoQuestEnemies"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/brown_basic_1"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline222"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="asdasdasdas" />
+
+    <ImageView
+        android:id="@+id/imageViewStoryInfoItem"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toTopOf="@+id/guideline164"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline163"
+        app:layout_constraintStart_toStartOf="@+id/guideline310"
+        app:layout_constraintTop_toTopOf="@+id/guideline221"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/emptyslot" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewStoryInfoCubix"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="2dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:text="0"
+        android:textColor="@color/brown_basic_1"
+        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintTop_toBottomOf="@+id/textViewStoryInfoXP" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewStoryInfoCC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="4dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:text="0"
+        android:textColor="@color/brown_basic_1"
+        app:layout_constraintStart_toEndOf="@+id/imageView3"
+        app:layout_constraintTop_toTopOf="@+id/guideline164" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewStoryInfoXP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="2dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:text="0"
+        android:textColor="@color/brown_basic_1"
+        app:layout_constraintStart_toEndOf="@+id/imageView4"
+        app:layout_constraintTop_toBottomOf="@+id/textViewStoryInfoCC" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewStoryInfoCubix"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline310"
+        app:layout_constraintTop_toTopOf="@+id/textViewStoryInfoCubix"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/crystal" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewStoryInfoCC"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline310"
+        app:layout_constraintTop_toTopOf="@+id/textViewStoryInfoCC"
+        app:srcCompat="@drawable/coin_basic" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewStoryInfoEnemyDescription"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_horizontal"
+        android:padding="4dp"
+        android:text="Some info about me"
+        android:textColor="@color/brown_basic_2"
+        app:fontFamily="@font/alegreya_sans_sc"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline222"
+        app:layout_constraintTop_toTopOf="@+id/guideline164" />
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewStoryInfoXP"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline310"
+        app:layout_constraintTop_toTopOf="@+id/textViewStoryInfoXP"
+        app:srcCompat="@drawable/xp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

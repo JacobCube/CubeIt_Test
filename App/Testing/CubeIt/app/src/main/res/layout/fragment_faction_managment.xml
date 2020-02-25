@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFragmentFractionEdit"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:configChanges="orientation"
+    android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewFactionManageBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline203"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.97" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline61"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.08" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline231"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.3" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline209"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.575" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline152"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.37" />
+
+    <ListView
+        android:id="@+id/listViewFactionManageAllies"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="4dp"
+        android:divider="@null"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@+id/guideline209"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewFactionManagmentAllies" />
+
+    <ListView
+        android:id="@+id/listViewFactionManageEnemies"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="2dp"
+        android:divider="@null"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="@+id/listViewFactionManageAllies"
+        app:layout_constraintTop_toBottomOf="@+id/textViewFactionManagmentEnemies" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewFactionManagmentAllies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Alliance invitations"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+
+    <cz.cubeit.cubeit_test.CustomEditText
+        android:id="@+id/editTextFactionMngExtDesc"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_basic_logincolor_dark_right"
+        android:ems="10"
+        android:fontFamily="@font/average_sans"
+        android:gravity="start"
+        android:hint="External description"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="text"
+        android:paddingStart="5dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="10dp"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@+id/guideline231"
+        app:layout_constraintEnd_toStartOf="@+id/guideline203"
+        app:layout_constraintStart_toStartOf="@+id/guideline152"
+        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+
+    <CheckBox
+        android:id="@+id/checkBoxFactionMngDemocracy"
+        style="@android:style/Widget.Material.CompoundButton.CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
+        android:buttonTint="@color/loginColor"
+        android:text="Democracy"
+        app:layout_constraintStart_toStartOf="@+id/guideline152"
+        app:layout_constraintTop_toTopOf="@+id/guideline231" />
+
+    <cz.cubeit.cubeit_test.CustomTextView
+        android:id="@+id/textViewFactionManagmentEnemies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enemies"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline209" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

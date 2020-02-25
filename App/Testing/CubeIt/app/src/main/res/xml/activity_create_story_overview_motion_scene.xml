@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Transition
+        android:id="@+id/motion_scene_create_story_overview"
+        app:constraintSetStart="@id/motion_scene_story_start"
+        app:constraintSetEnd="@id/motion_scene_story_end"
+        app:duration="600">
+
+        <OnSwipe
+            app:touchAnchorId="@+id/recyclerViewCreateStoryOverview"
+            app:touchAnchorSide="top"
+            app:dragDirection="dragUp" />
+    </Transition>
+
+    <ConstraintSet android:id="@+id/motion_scene_story_start">
+        <Constraint
+            android:id="@+id/tabLayoutCreateStoryOverview"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/guideline324"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="4dp"
+            app:layout_constraintStart_toEndOf="@+id/imageViewCreateStoryOverviewExit"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <Constraint
+            android:id="@+id/imageViewCreateStoryOverviewExit"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="5dp"
+            app:layout_constraintBottom_toBottomOf="@+id/tabLayoutCreateStoryOverview"
+            app:layout_constraintDimensionRatio="H,0.65:1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tabLayoutCreateStoryOverview"/>
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/motion_scene_story_end">
+        <Constraint
+            android:id="@+id/tabLayoutCreateStoryOverview"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageViewCreateStoryOverviewExit"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <Constraint
+            android:id="@+id/imageViewCreateStoryOverviewExit"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="H,0.65:1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tabLayoutCreateStoryOverview"/>
+    </ConstraintSet>
+</MotionScene>
