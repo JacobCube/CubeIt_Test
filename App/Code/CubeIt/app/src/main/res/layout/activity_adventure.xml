@@ -17,15 +17,17 @@
         app:layout_constraintGuide_percent="0.15" />
 
     <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewPagerAdventure"
+        android:id="@+id/viewPagerAdventureSurfaces"
         android:layout_width="0dp"
-        android:layout_height="414dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"></androidx.viewpager.widget.ViewPager>
+        app:layout_constraintVertical_bias="0.0">
+
+    </androidx.viewpager.widget.ViewPager>
 
     <ProgressBar
         android:id="@+id/progressAdventureQuest"
@@ -45,7 +47,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewQuestProgress"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -125,10 +127,9 @@
         app:layout_constraintDimensionRatio="H,1:1.25"
         app:layout_constraintEnd_toStartOf="@+id/guideline108"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/rocket_0"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewAdventurePlaneEnergy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -139,7 +140,7 @@
         app:layout_constraintTop_toTopOf="@+id/imageViewAdventureMyPlane"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewAdventurePlaneState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

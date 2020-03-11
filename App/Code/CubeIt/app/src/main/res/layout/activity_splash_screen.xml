@@ -7,26 +7,20 @@
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
     android:configChanges="orientation"
+    android:background="@color/loginColor"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
         android:id="@+id/imageViewSplash"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@color/loginColor"
+        android:alpha="0.75"
+        android:scaleType="centerCrop"
+        android:src="@color/brown_basic_3"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageViewSplashIcon"
-        android:layout_width="102dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/textViewLoadingLog"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline122"
-        app:layout_constraintStart_toStartOf="@+id/guideline121"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -55,7 +49,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.22" />
+        app:layout_constraintGuide_percent="0.16" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline123"
@@ -63,6 +57,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.89" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline129"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
 
     <ImageView
         android:id="@+id/imageViewSplashText"
@@ -77,30 +78,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.163" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewLoadingLog"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:gravity="center"
         android:textColor="@color/colorSecondary"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline130"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewSplashText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:gravity="center"
-        android:text="We're contacting your parents, stay patient"
-        android:textColor="@color/colorSecondary"
-        android:textSize="21sp"
-        app:layout_constraintBottom_toTopOf="@+id/textViewLoadingLog"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline122"
+        app:layout_constraintStart_toStartOf="@+id/guideline121"
+        app:layout_constraintTop_toBottomOf="@+id/switchSplashScreenType" />
 
     <ImageView
         android:id="@+id/imageViewSplashIG"
@@ -118,13 +105,12 @@
         android:id="@+id/imageViewSplashReddit"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toStartOf="@+id/guideline125"
-        app:layout_constraintStart_toStartOf="@+id/guideline124"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline124"
+        app:layout_constraintStart_toStartOf="@+id/imageViewSplashDiscord"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewSplashDiscord" />
 
     <ImageView
         android:id="@+id/imageViewSplashTwitter"
@@ -151,6 +137,20 @@
         app:layout_constraintStart_toStartOf="@+id/imageViewSplash"
         app:layout_constraintTop_toBottomOf="@+id/imageViewSplashTwitter" />
 
+    <cz.cubeit.cubeit.RocketGame
+        android:id="@+id/imageViewSplashRocket"
+        android:layout_width="100dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/rocketgame_spaceship"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="W,1:1.9"
+        app:layout_constraintEnd_toStartOf="@+id/guideline122"
+        app:layout_constraintStart_toStartOf="@+id/guideline121"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="invisible" />
+
     <Switch
         android:id="@+id/switchSplashScreenLoading"
         android:layout_width="wrap_content"
@@ -168,7 +168,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.94" />
+        app:layout_constraintGuide_percent="0.91" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline166"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95" />
 
     <Switch
         android:id="@+id/switchSplashScreenType"
@@ -176,27 +183,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:checked="false"
-        android:text="Normal"
+        android:text="@string/splash_normal"
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline122"
         app:layout_constraintStart_toStartOf="@+id/guideline121"
         app:layout_constraintTop_toTopOf="@+id/imageViewSplash" />
 
-    <cz.cubeit.cubeit_test.RocketGame
-        android:id="@+id/imageViewSplashRocket"
-        android:layout_width="100dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:src="@drawable/rocket_0"
-        android:visibility="gone"
-        app:layout_constraintDimensionRatio="W,1:1.9"
-        app:layout_constraintStart_toStartOf="@+id/guideline121"
-        app:layout_constraintTop_toTopOf="@+id/imageViewSplashIcon"
-        app:srcCompat="@drawable/rocket_0"
-        tools:visibility="visible" />
-
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -207,7 +201,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewSplashLevel"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -216,11 +210,11 @@
         android:text="Level 1 - "
         android:textColor="@color/colorSecondary"
         android:textSize="18sp"
-        app:layout_constraintStart_toEndOf="@+id/imageViewSplashReddit"
+        app:layout_constraintStart_toEndOf="@+id/textViewSplashTimeEffect"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashTimeEffect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -255,10 +249,10 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textViewLoadingLog"
+        app:layout_constraintTop_toTopOf="@+id/guideline130"
         app:srcCompat="@drawable/coin_basic" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSplashCoins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -267,5 +261,16 @@
         app:layout_constraintBottom_toBottomOf="@+id/imageViewSplashCoins"
         app:layout_constraintStart_toEndOf="@+id/imageViewSplashCoins"
         app:layout_constraintTop_toTopOf="@+id/imageViewSplashCoins" />
+
+    <FrameLayout
+        android:id="@+id/frameLayoutSplashScreenSlides"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline166"
+        app:layout_constraintEnd_toStartOf="@+id/guideline129"
+        app:layout_constraintStart_toStartOf="@+id/guideline125"
+        app:layout_constraintTop_toBottomOf="@+id/textViewLoadingLog">
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

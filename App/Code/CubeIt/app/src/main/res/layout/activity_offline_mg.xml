@@ -28,7 +28,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageViewOfflineMGBack" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewOfflineMGDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -44,7 +44,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline249"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewOfflineMGTitle"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -88,9 +88,10 @@
         android:id="@+id/imageViewOfflineMGBack"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="4dp"
         android:adjustViewBounds="true"
+        android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline250"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

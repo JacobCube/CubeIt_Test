@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:padding="4dp"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
@@ -11,57 +12,79 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitXY"
-        android:src="@color/loginColor"
+        android:src="@drawable/bg_basic_brown4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="0.5dp"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/buttonMarketRowRemove"
-        style="@style/AppTheme.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="2dp"
-        android:text="remove"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowName"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:textStyle="bold"
         android:gravity="center_horizontal"
         android:text="TextView"
-        android:textColor="@color/colorSecondary"
+        android:textColor="@color/brown_basic_1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline178"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewMarketRowPrice"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewMarketRowPriceCC"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:textStyle="bold"
         android:gravity="start"
         android:text="TextView"
-        android:textColor="@color/colorSecondary"
+        android:textColor="@color/brown_basic_1"
         android:textSize="12sp"
         app:fontFamily="@font/average_sans"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageViewMarketRowCoin"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewMarketRowPriceCubix"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:gravity="start"
+        android:text="TextView"
+        android:textStyle="bold"
+        android:textColor="@color/brown_basic_1"
+        android:textSize="12sp"
+        app:fontFamily="@font/average_sans"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageViewMarketRowCubix"
+        app:layout_constraintTop_toBottomOf="@+id/textViewMarketRowPriceCC" />
+
+    <Button
+        android:id="@+id/buttonMarketRowRemove"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="remove"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline180"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.9" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowUntilDate"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:gravity="center_horizontal"
         android:text="TextView"
-        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        android:textColor="@color/brown_basic_1"
         android:textSize="12sp"
         app:fontFamily="@font/average_sans"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -83,13 +106,14 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.84" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewMarketRowSeller"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:gravity="center_horizontal"
+        android:textStyle="bold"
         android:text="TextView"
-        android:textColor="@color/colorSecondary"
+        android:textColor="@color/brown_basic_1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline172"
         app:layout_constraintStart_toStartOf="@+id/guideline178"
@@ -107,7 +131,6 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline120"
         app:layout_constraintStart_toStartOf="@+id/guideline172"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_delete"
         android:focusable="true" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -123,5 +146,25 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.28" />
+
+    <ImageView
+        android:id="@+id/imageViewMarketRowCoin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewMarketRowPriceCC"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline180"
+        app:layout_constraintTop_toTopOf="@+id/textViewMarketRowPriceCC"
+        app:srcCompat="@drawable/coin_basic" />
+
+    <ImageView
+        android:id="@+id/imageViewMarketRowCubix"
+        android:layout_width="13dp"
+        android:layout_height="14dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewMarketRowPriceCubix"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintStart_toStartOf="@+id/guideline180"
+        app:layout_constraintTop_toTopOf="@+id/textViewMarketRowPriceCubix"
+        app:srcCompat="@drawable/cubix" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

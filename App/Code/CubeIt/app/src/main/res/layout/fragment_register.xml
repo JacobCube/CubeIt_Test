@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFragmentRegister"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:ignore="ExtraText">
@@ -54,7 +55,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.09" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputUsernameReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -85,7 +86,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.28" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputEmailReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -114,20 +115,21 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.415" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRegisterPasswordinfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/average_sans"
         android:gravity="center"
         android:text="required 7+ characters"
-        android:textColor="@color/loginColor_2"
+        android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintEnd_toStartOf="@+id/texguideline6"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline271"
-        app:layout_constraintTop_toBottomOf="@+id/inputPassReg" />
+        app:layout_constraintTop_toTopOf="@+id/texguideline8" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewRegisterUsernameinfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -141,7 +143,7 @@
         app:layout_constraintEnd_toEndOf="@+id/inputUsernameReg"
         app:layout_constraintTop_toTopOf="@+id/inputUsernameReg" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputPassReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -174,17 +176,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.44" />
-
-    <ImageView
-        android:id="@+id/arrowAccExists1"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:onClick="onClickArrowLoginRegister"
-        android:src="@drawable/left_arrow"
-        android:tint="@color/leaderboard_first"
-        app:layout_constraintBottom_toTopOf="@+id/guideline69"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/texguideline"
@@ -235,7 +226,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.557" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputRePassReg"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -253,7 +244,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline11" />
 
     <ImageView
-        android:id="@+id/buttonRegister"
+        android:id="@+id/imageViewFragmentRegisterRegister"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_centerInParent="true"
@@ -298,9 +289,9 @@
         android:id="@+id/imageViewRegisterShowPass"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:src="@android:drawable/ic_menu_view"
         android:tint="@color/login_font"
         android:tintMode="multiply"
-        android:src="@android:drawable/ic_menu_view"
         app:layout_constraintBottom_toTopOf="@+id/texguideline8"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/texguideline6"
@@ -309,23 +300,39 @@
 
     <Switch
         android:id="@+id/switchRegisterInvited"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="I'm invited"
+        android:text="I'm invited  "
+        android:textColor="@color/black"
         app:layout_constraintBottom_toTopOf="@+id/guideline273"
         app:layout_constraintEnd_toStartOf="@+id/texguideline6"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline271"
-        app:layout_constraintTop_toBottomOf="@+id/textViewRegisterPasswordinfo" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewRegisterPasswordinfo"
+        app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewRegisterPrivacyPolicy"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:background="@drawable/bg_transparent_press"
+        android:text="By continuing you agree with our terms of service."
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewRegisterForm"
+        app:layout_constraintStart_toStartOf="@+id/imageViewRegisterForm"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewRegisterForm" />
+
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextRegisterInvitation"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
-        android:imeOptions="flagNoExtractUi"
         android:background="@drawable/edittext_login_bg"
         android:hint="username"
+        android:imeOptions="flagNoExtractUi"
         android:paddingStart="4dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline320"
@@ -333,5 +340,18 @@
         app:layout_constraintStart_toStartOf="@+id/guideline9"
         app:layout_constraintTop_toTopOf="@+id/guideline273"
         tools:visibility="visible" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/arrowAccNew1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:background="@drawable/bg_transparent_press_blue"
+        android:onClick="onClickArrowLoginRegister"
+        android:text="Already have an account? Log-in"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

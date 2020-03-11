@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFragmentLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true">
@@ -51,7 +52,6 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:src="@drawable/login_window"
         app:layout_constraintBottom_toTopOf="@+id/guideline14"
         app:layout_constraintEnd_toStartOf="@+id/guideline237"
         app:layout_constraintHorizontal_bias="1.0"
@@ -108,7 +108,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputEmailLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -139,7 +139,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.63" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputPassLogin"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -156,7 +156,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline112"
         app:layout_constraintTop_toTopOf="@+id/Texguideline8" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/resetPass"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -173,18 +173,6 @@
         app:layout_constraintStart_toStartOf="@+id/guideline67"
         app:layout_constraintTop_toTopOf="@+id/Texguideline8"
         app:layout_constraintVertical_bias="0.0" />
-
-    <ImageView
-        android:id="@+id/arrowAccNew0"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:onClick="onClickArrowLoginRegister"
-        android:src="@drawable/right_arrow"
-        android:tint="@color/leaderboard_first"
-        app:layout_constraintBottom_toTopOf="@+id/guideline68"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/imageViewLoginShowPass"
@@ -271,7 +259,7 @@
         app:layout_constraintGuide_percent="0.78" />
 
     <ImageView
-        android:id="@+id/buttonLogin"
+        android:id="@+id/imageViewFragmentLoginLogin"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
@@ -284,7 +272,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline5"
         app:layout_constraintVertical_bias="1.0" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/loginVersionInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -305,11 +293,9 @@
         android:textColor="@color/loginColor_2"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/buttonLogin"
-        app:layout_constraintEnd_toEndOf="@+id/inputPassLogin"
-        app:layout_constraintHorizontal_bias="0.10"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentLoginLogin"
         app:layout_constraintStart_toStartOf="@+id/guideline131"
-        app:layout_constraintTop_toTopOf="@+id/buttonLogin"
+        app:layout_constraintTop_toTopOf="@+id/imageViewFragmentLoginLogin"
         app:layout_constraintVertical_bias="0.15" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -319,7 +305,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.80" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewLoginOfflineInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -338,8 +324,8 @@
         style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:stateListAnimator="@null"
         android:layout_marginStart="8dp"
+        android:stateListAnimator="@null"
         android:text="sign out of Google"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewLoginGoogleSignIn"
         app:layout_constraintStart_toEndOf="@+id/imageViewLoginGoogleSignIn"
@@ -352,7 +338,7 @@
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
         android:adjustViewBounds="true"
-        android:background="@drawable/circle_white"
+        android:background="@drawable/circle_white_press_blue"
         android:padding="8dp"
         app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline1"
@@ -366,7 +352,7 @@
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
         android:adjustViewBounds="true"
-        android:background="@drawable/circle_white"
+        android:background="@drawable/circle_white_press_blue"
         android:padding="10dp"
         app:layout_constraintDimensionRatio="W,1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline184"
@@ -383,5 +369,18 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline297"
         app:layout_constraintStart_toStartOf="@+id/guideline296"
         app:layout_constraintTop_toTopOf="@+id/guideline193" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/arrowAccNew0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press_blue"
+        android:onClick="onClickArrowLoginRegister"
+        android:text="New here? Sign-up"
+        android:padding="6dp"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

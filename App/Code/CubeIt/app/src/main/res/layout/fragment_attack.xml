@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/layoutFragmentAttack"
     android:background="@color/attack_bg"
     android:screenOrientation="sensorLandscape">
 
@@ -119,10 +120,8 @@
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:src="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline263"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -135,26 +134,25 @@
         android:layout_marginBottom="4dp"
         android:adjustViewBounds="true"
         android:tag="1"
-        android:background="@android:color/transparent"
         android:onClick="onClickArrow"
         android:tint="@color/colorSecondary"
         android:src="@drawable/left_arrow"
+        android:background="@drawable/bg_transparent_press_basic"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentAttackBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewIFragmentAttackSpellInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
         android:gravity="center_horizontal"
+        android:padding="6dp"
         android:textColor="@color/bg_basic_white"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentAttackSpellBg"
-        app:layout_constraintEnd_toStartOf="@+id/guideline30"
-        app:layout_constraintStart_toStartOf="@+id/guideline70"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewFragmentAttackSpellBg"
+        app:layout_constraintStart_toStartOf="@+id/imageViewFragmentAttackSpellBg"
         app:layout_constraintTop_toTopOf="@+id/guideline58" />
 
     <ImageView
@@ -193,7 +191,7 @@
 
     <fragment
         android:id="@+id/fragmentFragmentAttackSpellBar"
-        android:name="cz.cubeit.cubeit_test.Fragment_SpellBar"
+        android:name="cz.cubeit.cubeit.Fragment_SpellBar"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -333,23 +333,11 @@
         android:layout_height="0dp"
         android:layout_marginTop="2dp"
         android:adjustViewBounds="true"
-        android:src="@drawable/exit"
+        android:src="@drawable/icon_exit"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline1126"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageViewExitLeave"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:adjustViewBounds="true"
-        android:src="@drawable/left_arrow"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewHomeExit"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintStart_toEndOf="@+id/imageViewHomeExit"
-        app:layout_constraintTop_toTopOf="@+id/imageViewHomeExit"
-        app:layout_constraintVertical_bias="1.0" />
 
     <ImageView
         android:id="@+id/imageViewHomeInbox"
@@ -387,7 +375,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewHomeMailNew"
         app:srcCompat="@drawable/new_message_bg" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewHomeMailNew"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

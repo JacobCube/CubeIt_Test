@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/choosingSpellsLayout"
+    android:id="@+id/layoutFragmentDefense"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
@@ -57,7 +57,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.41" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewIFragmentDefenseSpellInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -93,7 +93,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageViewFragmentDefenseBar" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -130,7 +130,6 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitXY"
-        android:src="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline258"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -160,16 +159,16 @@
 
     <ImageView
         android:id="@+id/buttonFragmentDefenseAttack"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
-        android:tag="0"
         android:layout_marginBottom="4dp"
         android:adjustViewBounds="true"
-        android:background="@android:color/transparent"
         android:onClick="onClickArrow"
         android:src="@drawable/right_arrow"
+        android:tag="0"
+        android:background="@drawable/bg_transparent_press_basic"
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewFragmentDefenseBar"
         app:layout_constraintEnd_toEndOf="@+id/imageViewFragmentDefenseBar"
@@ -186,5 +185,19 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline238"
         app:layout_constraintStart_toStartOf="@+id/guideline18"
         app:layout_constraintTop_toBottomOf="@+id/textViewError" />
+
+    <ImageView
+        android:id="@+id/imageViewFragmentAdventureExit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_transparent_press_basic"
+        android:tint="@color/colorSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/guideline258"
+        app:layout_constraintStart_toStartOf="@+id/imageViewFragmentDefenseBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/left_arrow" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

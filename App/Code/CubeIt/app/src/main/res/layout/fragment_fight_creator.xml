@@ -39,7 +39,7 @@
         app:layout_constraintStart_toStartOf="@+id/numberPickerFightCreatorDifficulty"
         app:layout_constraintTop_toBottomOf="@+id/numberPickerFightCreatorDifficulty" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFightCreatorName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -61,7 +61,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFightCreatorDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
         app:layout_constraintStart_toStartOf="@+id/editTextFightCreatorName"
         app:layout_constraintTop_toBottomOf="@+id/editTextFightCreatorName" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightCreatorDifficulty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -84,7 +84,7 @@
         app:layout_constraintStart_toStartOf="@+id/editTextFightCreatorDescription"
         app:layout_constraintTop_toTopOf="@+id/numberPickerFightCreatorDifficulty" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightCreatorRace"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
         app:layout_constraintStart_toStartOf="@+id/editTextFightCreatorDescription"
         app:layout_constraintTop_toTopOf="@+id/numberPickerFightCreatorRace" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightCreatorGenerate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

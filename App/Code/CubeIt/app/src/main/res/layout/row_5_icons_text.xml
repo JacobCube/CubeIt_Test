@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="1dp"
+    android:screenOrientation="sensorLandscape">
+
+  <ImageView
+      android:id="@+id/rowIconTextSlot3"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:clickable="true"
+      android:focusable="true"
+      android:scaleType="fitCenter"
+      android:background="@drawable/circle_white_press"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline4"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="@+id/guideline3"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+      android:id="@+id/rowIconTextSlot1"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:clickable="true"
+      android:layout_margin="4dp"
+      android:focusable="true"
+      android:background="@drawable/circle_white_press"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline2"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+      android:id="@+id/rowIconTextSlot2"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:clickable="true"
+      android:layout_margin="4dp"
+      android:focusable="true"
+      android:background="@drawable/circle_white_press"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline3"
+      app:layout_constraintStart_toStartOf="@+id/guideline2"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:visibility="visible" />
+
+  <ImageView
+      android:id="@+id/rowIconTextSlot4"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:layout_margin="4dp"
+      android:clickable="true"
+      android:focusable="true"
+      android:background="@drawable/circle_white_press"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toStartOf="@+id/guideline322"
+      app:layout_constraintStart_toStartOf="@+id/guideline4"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+      android:id="@+id/rowIconTextSlot5"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:adjustViewBounds="true"
+      android:clickable="true"
+      android:layout_margin="4dp"
+      android:focusable="true"
+      android:background="@drawable/circle_white_press"
+      app:layout_constraintDimensionRatio="H,1:1"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="@+id/guideline322"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline2"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.20" />
+
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline3"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.4" />
+
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline4"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.60" />
+
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guideline322"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.80" />
+
+  <cz.cubeit.cubeit.CustomTextView
+      android:id="@+id/textViewRowIconText1"
+      android:layout_width="0dp"
+      android:layout_margin="4dp"
+      android:textColor="@color/bg_basic_white"
+      android:textStyle="bold"
+      android:gravity="center"
+      android:layout_height="wrap_content"
+      app:layout_constraintEnd_toStartOf="@+id/guideline2"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot1" />
+
+  <cz.cubeit.cubeit.CustomTextView
+      android:id="@+id/textViewRowIconText2"
+      android:layout_width="0dp"
+      android:layout_margin="4dp"
+      android:layout_height="wrap_content"
+      android:textColor="@color/bg_basic_white"
+      android:textStyle="bold"
+      android:gravity="center"
+      app:layout_constraintEnd_toStartOf="@+id/guideline3"
+      app:layout_constraintStart_toStartOf="@+id/guideline2"
+      app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot1" />
+
+  <cz.cubeit.cubeit.CustomTextView
+      android:id="@+id/textViewRowIconText3"
+      android:layout_width="0dp"
+      android:layout_margin="4dp"
+      android:textColor="@color/bg_basic_white"
+      android:textStyle="bold"
+      android:gravity="center"
+      android:layout_height="wrap_content"
+      app:layout_constraintEnd_toStartOf="@+id/guideline4"
+      app:layout_constraintStart_toStartOf="@+id/guideline3"
+      app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot1" />
+
+  <cz.cubeit.cubeit.CustomTextView
+      android:id="@+id/textViewRowIconText4"
+      android:layout_width="0dp"
+      android:layout_margin="4dp"
+      android:textColor="@color/bg_basic_white"
+      android:textStyle="bold"
+      android:gravity="center"
+      android:layout_height="wrap_content"
+      app:layout_constraintEnd_toStartOf="@+id/guideline322"
+      app:layout_constraintStart_toStartOf="@+id/guideline4"
+      app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot1" />
+
+  <cz.cubeit.cubeit.CustomTextView
+      android:id="@+id/textViewRowIconText5"
+      android:layout_width="0dp"
+      android:layout_margin="4dp"
+      android:textColor="@color/bg_basic_white"
+      android:textStyle="bold"
+      android:gravity="center"
+      android:layout_height="wrap_content"
+      app:layout_constraintStart_toStartOf="@+id/guideline322"
+      app:layout_constraintTop_toBottomOf="@+id/rowIconTextSlot1" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

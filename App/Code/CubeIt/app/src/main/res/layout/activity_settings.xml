@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/loginColor_2_dark_light"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,13 +20,36 @@
         android:id="@+id/imageViewActivitySettings"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@color/brown_basic_3"
+        android:src="@color/brown_basic_4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
+
+        <ImageView
+            android:id="@+id/imageViewSettingBgLeft"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewSettingsTextFont"
+            app:layout_constraintEnd_toEndOf="@+id/switchAppearOnTop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bg_basic_brown2" />
+
+        <ImageView
+            android:id="@+id/imageViewSettingsBgMiddle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/switchNotificationsEvent"
+            app:layout_constraintEnd_toEndOf="@+id/switchNotificationsEvent"
+            app:layout_constraintStart_toStartOf="@+id/switchNotificationsEvent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bg_basic_brown2" />
 
         <Switch
             android:id="@+id/switchNotificationsFaction"
@@ -37,9 +59,7 @@
             android:checked="true"
             android:fontFamily="sans-serif-medium"
             android:text="Faction nofitications"
-            android:textColor="@color/colorSecondary"
-            app:layout_constraintEnd_toStartOf="@+id/guideline239"
-            app:layout_constraintHorizontal_bias="0.0"
+            android:textColor="@color/brown_basic_4"
             app:layout_constraintStart_toStartOf="@+id/switchNotificationsInbox"
             app:layout_constraintTop_toBottomOf="@+id/switchNotificationsInbox"
             tools:checked="true" />
@@ -48,35 +68,36 @@
             android:id="@+id/switchNotificationsEvent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
             android:checked="true"
             android:fontFamily="sans-serif-medium"
+            android:padding="8dp"
             android:text="Special events nofitications"
-            android:textColor="@color/colorSecondary"
-            app:layout_constraintEnd_toStartOf="@+id/guideline239"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@+id/switchNotificationsFaction"
+            android:textColor="@color/brown_basic_4"
+            app:layout_constraintStart_toStartOf="@+id/guideline199"
             app:layout_constraintTop_toBottomOf="@+id/switchNotificationsFaction"
             tools:checked="true" />
 
-    <SeekBar
-        android:id="@+id/seekBarSettingsTextSize"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:max="14"
-        android:progress="0"
-        app:layout_constraintEnd_toStartOf="@+id/guideline199"
-        app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
-        app:layout_constraintTop_toBottomOf="@+id/textViewSettingsSeekBar" />
+        <SeekBar
+            android:id="@+id/seekBarSettingsTextSize"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:max="14"
+            android:progress="0"
+            app:layout_constraintEnd_toEndOf="@+id/imageViewSettingBgLeft"
+            app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
+            app:layout_constraintTop_toBottomOf="@+id/textViewSettingsSeekBar" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingsTextFont"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:gravity="center_horizontal"
-        android:textColor="@color/colorSecondary"
+        android:paddingBottom="10dp"
+        android:textColor="@color/brown_basic_4"
         app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
         app:layout_constraintTop_toBottomOf="@+id/seekBarSettingsTextSize"
         tools:text="attention, all gamers" />
@@ -89,7 +110,7 @@
             android:checked="true"
             android:fontFamily="sans-serif-medium"
             android:text="Inbox notifications"
-            android:textColor="@color/colorSecondary"
+            android:textColor="@color/brown_basic_4"
             app:layout_constraintEnd_toStartOf="@+id/guideline239"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/guideline199"
@@ -103,8 +124,9 @@
             android:layout_marginTop="12dp"
             android:checked="true"
             android:fontFamily="sans-serif-medium"
+            android:paddingEnd="8dp"
             android:text="Bubble after minimization"
-            android:textColor="@color/colorSecondary"
+            android:textColor="@color/brown_basic_4"
             app:layout_constraintEnd_toStartOf="@+id/guideline199"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
@@ -116,11 +138,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:checked="true"
             android:fontFamily="sans-serif-medium"
             android:text="Music"
-            android:textColor="@color/colorSecondary"
+            android:textColor="@color/brown_basic_4"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:checked="true" />
@@ -133,7 +155,7 @@
             android:checked="true"
             android:fontFamily="sans-serif-medium"
             android:text="Sound effects"
-            android:textColor="@color/colorSecondary"
+            android:textColor="@color/brown_basic_4"
             app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
             app:layout_constraintTop_toBottomOf="@+id/switchSettingsMusic"
             tools:checked="true" />
@@ -146,7 +168,7 @@
             android:checked="true"
             android:fontFamily="sans-serif-medium"
             android:text="Vibrate effects"
-            android:textColor="@color/colorSecondary"
+            android:textColor="@color/brown_basic_4"
             app:layout_constraintEnd_toStartOf="@+id/guideline199"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/switchSettingsMusic"
@@ -174,13 +196,13 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.35" />
 
-        <cz.cubeit.cubeit_test.CustomTextView
+        <cz.cubeit.cubeit.CustomTextView
             android:id="@+id/textViewSettingsSeekBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="Text size matters"
-            android:textColor="@color/colorSecondary"
+            android:textColor="@color/brown_basic_4"
             android:textSize="18sp"
             app:layout_constraintEnd_toStartOf="@+id/guideline199"
             app:layout_constraintHorizontal_bias="0.0"
@@ -236,19 +258,19 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextSettingNewPassword"
         tools:visibility="visible" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline192"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.22" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline192"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.27" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
             android:id="@+id/editTextSettingNewPassword"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_basic_logincolor_dark"
+            android:background="@drawable/bg_basic_brown3_border"
             android:hint="New password"
             android:inputType="textPassword"
             android:lines="1"
@@ -257,35 +279,35 @@
             android:paddingEnd="6dp"
             android:paddingBottom="5dp"
             android:imeOptions="flagNoExtractUi"
-            android:textColor="@color/bg_basic_white"
-            android:textColorHint="@color/loginColor_4"
+            android:textColor="@color/brown_basic_1"
+            android:textColorHint="@color/brown_basic_4"
             android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@+id/guideline139"
             app:layout_constraintStart_toStartOf="@+id/guideline239"
             app:layout_constraintTop_toBottomOf="@+id/buttonSettingChangePassword"
             tools:visibility="visible" />
 
-    <ImageView
-        android:id="@+id/imageViewSettingsChangePasswordShow"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginBottom="1dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/editTextSettingNewPassword"
-        app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintEnd_toEndOf="@+id/editTextSettingNewPassword"
-        app:layout_constraintTop_toTopOf="@+id/editTextSettingNewPassword"
-        app:srcCompat="@android:drawable/ic_menu_view"
-        tools:visibility="visible" />
+        <ImageView
+            android:id="@+id/imageViewSettingsChangePasswordShow"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="1dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextSettingNewPassword"
+            app:layout_constraintDimensionRatio="H,1:1"
+            app:layout_constraintStart_toStartOf="@+id/guideline139"
+            app:layout_constraintTop_toTopOf="@+id/editTextSettingNewPassword"
+            app:srcCompat="@android:drawable/ic_menu_view"
+            tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingNewPasswordReq"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="6dp"
         android:text="7+ characters,\nat least 1 number"
-        android:textColor="@color/loginColor_4"
+        android:textColor="@color/brown_basic_1"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/editTextSettingNewPassword"
         app:layout_constraintEnd_toStartOf="@+id/editTextSettingNewPassword"
@@ -305,11 +327,11 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextSettingsVibrate"
         tools:visibility="visible" />
 
-        <cz.cubeit.cubeit_test.CustomEditText
+        <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextSettingsVibrate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_basic_logincolor_dark"
+        android:background="@drawable/bg_basic_brown2"
         android:lines="1"
         android:paddingStart="6dp"
         android:paddingTop="5dp"
@@ -326,7 +348,7 @@
         app:layout_constraintVertical_bias="0.6"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSettingsVibrateLog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -335,6 +357,20 @@
         app:layout_constraintBottom_toTopOf="@+id/editTextSettingsVibrate"
         app:layout_constraintEnd_toEndOf="@+id/editTextSettingsVibrate"
         app:layout_constraintStart_toStartOf="@+id/editTextSettingsVibrate" />
+
+        <cz.cubeit.cubeit.CustomTextView
+            android:id="@+id/textViewSettingsAdvanced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_transparent_press_w_brown_light"
+            android:padding="10dp"
+            android:text="advanced"
+            android:textColor="@color/brown_basic_4"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline239"
+            app:layout_constraintStart_toStartOf="@+id/guideline199" />
 
         <FrameLayout
             android:id="@+id/frameLayoutBugReport"

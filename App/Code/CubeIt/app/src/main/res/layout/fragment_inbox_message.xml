@@ -22,7 +22,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxSubject"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewInboxMessageSender" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxReciever"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline150"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -181,7 +181,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.62" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessageTime"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -196,7 +196,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline110"
         app:layout_constraintTop_toBottomOf="@+id/spinnerInboxPriority" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessageCoins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -236,7 +236,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline147"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxMessageSender"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -339,7 +339,7 @@
         app:srcCompat="@drawable/menu_character_button"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxSubjectLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -350,7 +350,7 @@
         app:layout_constraintEnd_toEndOf="@+id/editTextInboxSubject"
         app:layout_constraintTop_toTopOf="@+id/editTextInboxSubject" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxContentLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

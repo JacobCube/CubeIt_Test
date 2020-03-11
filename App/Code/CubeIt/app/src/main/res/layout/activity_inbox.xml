@@ -27,7 +27,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline77"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewInboxIcon"></androidx.recyclerview.widget.RecyclerView>
+        app:layout_constraintTop_toBottomOf="@+id/imageViewInboxIcon"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline76"
@@ -80,7 +80,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/filter_icon" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/inputSearchInbox"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -153,7 +153,7 @@
 
     </androidx.recyclerview.widget.RecyclerView>
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -179,7 +179,7 @@
 
     </FrameLayout>
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -198,6 +198,7 @@
         android:id="@+id/imageViewInboxActionMoveTo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_transparent_press_basic"
         android:layout_marginTop="8dp"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/imageViewInboxActionDelete"
@@ -207,17 +208,21 @@
 
     <ImageView
         android:id="@+id/imageViewInboxActionDelete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:visibility="gone"
+        android:background="@drawable/bg_transparent_press_red_circle"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionMoveTo"
         app:layout_constraintStart_toStartOf="@+id/guideline151"
         app:layout_constraintTop_toTopOf="@+id/guideline76"
-        app:srcCompat="@android:drawable/ic_menu_delete"
+        app:srcCompat="@drawable/icon_delete"
+        android:tint="@color/bg_basic_white"
+        app:layout_constraintDimensionRatio="H,1:1"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewInboxActionCounter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -237,6 +242,7 @@
         android:layout_marginStart="8dp"
         android:alpha="0.8"
         android:tint="@color/bg_basic_white"
+        android:background="@drawable/bg_transparent_press_basic"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionDelete"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -254,6 +260,7 @@
         android:alpha="0.7"
         android:tint="@color/bg_basic_white"
         android:visibility="gone"
+        android:background="@drawable/bg_transparent_press_basic"
         app:layout_constraintBottom_toBottomOf="@+id/imageViewInboxActionMoveTo"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/imageViewInboxActionMoveTo"

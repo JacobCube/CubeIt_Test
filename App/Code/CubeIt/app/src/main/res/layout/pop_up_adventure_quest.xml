@@ -27,7 +27,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <ImageView
-        android:id="@+id/imageViewAdventure"
+        android:id="@+id/imageViewPopAdventureQuestChar"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
@@ -45,7 +45,7 @@
         tools:visibility="visible" />
 
     <ImageView
-        android:id="@+id/imageViewAdventure2"
+        android:id="@+id/imageViewPopAdventureQuestItem"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
@@ -58,7 +58,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline251"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/buttonAccept"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewAdventure"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewPopAdventureQuestChar"
         app:layout_constraintVertical_bias="0.2"
         tools:visibility="visible" />
 
@@ -123,7 +123,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.57" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewQuest"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -132,12 +132,14 @@
         android:textColor="@android:color/white"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonAccept"
-        app:layout_constraintEnd_toStartOf="@+id/imageViewAdventure2"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewPopAdventureQuestItem"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline60"
         app:layout_constraintTop_toTopOf="@+id/guideline61"
+        app:layout_constraintVertical_bias="1.0"
         tools:text="test text 123" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewItemStats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -179,7 +181,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewPopAdventureCC"
         app:srcCompat="@drawable/coin_basic" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopAdventureExperience"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -190,7 +192,7 @@
         app:layout_constraintEnd_toEndOf="@+id/textViewPopAdventureCC"
         app:layout_constraintTop_toBottomOf="@+id/textViewPopAdventureCC" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopAdventureCC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -198,13 +200,13 @@
         android:text="0"
         android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/imageViewAdventure2"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewPopAdventureQuestItem"
         app:layout_constraintEnd_toStartOf="@+id/guideline303"
         app:layout_constraintHorizontal_bias="0.87"
-        app:layout_constraintStart_toEndOf="@+id/imageViewAdventure2"
-        app:layout_constraintTop_toTopOf="@+id/imageViewAdventure2" />
+        app:layout_constraintStart_toEndOf="@+id/imageViewPopAdventureQuestItem"
+        app:layout_constraintTop_toTopOf="@+id/imageViewPopAdventureQuestItem" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopAdventureCubix"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -224,7 +226,7 @@
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toStartOf="@+id/textViewPopAdventureCubix"
         app:layout_constraintTop_toTopOf="@+id/textViewPopAdventureCubix"
-        app:srcCompat="@drawable/crystal"
+        app:srcCompat="@drawable/cubix"
         tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

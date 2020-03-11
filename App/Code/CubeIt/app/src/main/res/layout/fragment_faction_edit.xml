@@ -6,8 +6,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:configChanges="orientation"
+    android:background="@color/brown_basic_4"
     android:screenOrientation="sensorLandscape">
 
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline152"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_basic_brown2" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline203"
@@ -28,57 +39,55 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.575" />
+        app:layout_constraintGuide_percent="0.55" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline216"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.785" />
+        app:layout_constraintGuide_percent="0.78" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionEditName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:background="@drawable/bg_basic_logincolor_dark_right"
+        android:background="@drawable/bg_basic_brown3"
         android:ems="10"
         android:enabled="false"
+        android:fontFamily="@font/average_sans"
         android:hint="Name"
         android:imeOptions="flagNoExtractUi"
         android:inputType="text"
         android:paddingStart="15dp"
-        android:fontFamily="@font/average_sans"
         android:paddingTop="5dp"
         android:paddingEnd="5dp"
         android:paddingBottom="5dp"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
-        android:textSize="18sp"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_4"
         app:layout_constraintBottom_toTopOf="@+id/guideline61"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionEditTax"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:background="@drawable/bg_basic_logincolor_dark_right"
+        android:background="@drawable/bg_basic_brown3"
         android:ems="10"
+        android:fontFamily="@font/average_sans"
         android:hint="Tax per day"
         android:imeOptions="flagNoExtractUi"
         android:inputType="number"
         android:paddingStart="5dp"
         android:paddingTop="5dp"
         android:paddingEnd="0dp"
-        android:fontFamily="@font/average_sans"
         android:paddingBottom="10dp"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_4"
+        app:layout_constraintEnd_toStartOf="@+id/guideline203"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
@@ -87,15 +96,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.37" />
+        app:layout_constraintGuide_percent="0.38" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionEditDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
-        android:background="@drawable/bg_basic_logincolor_dark_right"
+        android:background="@drawable/bg_basic_brown3"
         android:ems="10"
+        android:fontFamily="@font/average_sans"
         android:gravity="start"
         android:hint="Description"
         android:imeOptions="flagNoExtractUi"
@@ -104,21 +115,20 @@
         android:paddingTop="5dp"
         android:paddingEnd="0dp"
         android:paddingBottom="10dp"
-        android:fontFamily="@font/average_sans"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_4"
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/listViewFactionEditInvited"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline203"
         app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
         app:layout_constraintTop_toBottomOf="@+id/checkBoxFactionEditAllies" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionEditWarnMsg"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_basic_logincolor_dark_right"
+        android:background="@drawable/bg_basic_brown3"
         android:ems="10"
         android:fontFamily="@font/average_sans"
         android:gravity="start"
@@ -129,35 +139,36 @@
         android:paddingTop="5dp"
         android:paddingEnd="0dp"
         android:paddingBottom="10dp"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_4"
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline216"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline203"
         app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
         app:layout_constraintTop_toBottomOf="@+id/editTextFactionEditDescription" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionEditInvitationMsg"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_basic_logincolor_dark_right"
+        android:layout_marginBottom="11dp"
+        android:background="@drawable/bg_basic_brown3"
         android:ems="10"
+        android:fontFamily="@font/average_sans"
         android:gravity="start"
         android:hint="Invitation message"
         android:imeOptions="flagNoExtractUi"
         android:inputType="text"
         android:paddingStart="5dp"
-        android:fontFamily="@font/average_sans"
         android:paddingTop="5dp"
         android:paddingEnd="0dp"
         android:paddingBottom="10dp"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
+        android:textColor="@color/brown_basic_1"
+        android:textColorHint="@color/brown_basic_4"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline203"
         app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
         app:layout_constraintTop_toTopOf="@+id/guideline216" />
 
@@ -166,27 +177,39 @@
         style="@android:style/Widget.Material.CompoundButton.CheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:buttonTint="@color/loginColor"
-        android:text="Open to allies"
+        android:layout_marginTop="4dp"
+        android:buttonTint="@color/brown_basic_4"
+        android:text="open to allies"
+        android:textColor="@color/brown_basic_4"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="@+id/editTextFactionEditTax"
         app:layout_constraintTop_toBottomOf="@+id/editTextFactionEditTax" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionEditAllies"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="To invite"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:text="to invite"
+        android:background="@drawable/bg_basic_brown3_top"
+        android:textColor="@color/brown_basic_1"
         android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline61"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionEditInvited"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Invited"
+        android:textColor="@color/brown_basic_1"
+        android:background="@drawable/bg_basic_brown3_top"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:text="invited"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="parent"
@@ -197,22 +220,23 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="2dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_basic_brown3"
         android:divider="@null"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@+id/guideline209"
-        app:layout_constraintEnd_toStartOf="@+id/checkBoxFactionEditAllies"
+        app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewFactionEditAllies" />
+        app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
     <ListView
         android:id="@+id/listViewFactionEditInvited"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_basic_brown3"
         android:divider="@null"
         android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -220,38 +244,41 @@
         app:layout_constraintStart_toStartOf="@+id/listViewFactionEditAllies"
         app:layout_constraintTop_toBottomOf="@+id/textViewFactionEditInvited" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionEditDscLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
         android:layout_marginBottom="2dp"
         android:text="0/1000"
-        android:textColor="@color/bg_basic_white"
+        android:textColor="@color/brown_basic_4"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/editTextFactionEditDescription"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline203" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionEditWarningLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
         android:layout_marginBottom="2dp"
         android:text="0/500"
-        android:textColor="@color/bg_basic_white"
+        android:textColor="@color/brown_basic_4"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline216"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline203" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionEditInviteLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
         android:layout_marginBottom="2dp"
         android:text="0/500"
-        android:textColor="@color/bg_basic_white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:textColor="@color/brown_basic_4"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextFactionEditInvitationMsg"
+        app:layout_constraintEnd_toStartOf="@+id/guideline203" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

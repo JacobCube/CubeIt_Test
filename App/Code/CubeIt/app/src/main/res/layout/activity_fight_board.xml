@@ -90,7 +90,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@color/loginColor" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextBoardSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -132,7 +132,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.4" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewBoardNickname"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -146,7 +146,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline174"
         app:layout_constraintTop_toTopOf="@+id/guideline76" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewBoardFaction"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -160,7 +160,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline226"
         app:layout_constraintTop_toTopOf="@+id/guideline76" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewBoardPosition"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -173,7 +173,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline77"
         app:layout_constraintTop_toTopOf="@+id/guideline76" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightBoardFame"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -187,7 +187,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline155"
         app:layout_constraintTop_toTopOf="@+id/guideline76" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightBoardLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -280,7 +280,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/filter_icon" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightBoardCompare"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -320,7 +320,7 @@
         app:layout_constraintTop_toTopOf="@+id/textViewFightBoardPage"
         app:srcCompat="@drawable/left_arrow" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightBoardPage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

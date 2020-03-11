@@ -34,7 +34,7 @@
             app:layout_constraintTop_toBottomOf="@+id/textViewStoryActionBarCount"
             app:srcCompat="@android:drawable/ic_media_ff" />
 
-        <cz.cubeit.cubeit_test.CustomTextView
+        <cz.cubeit.cubeit.CustomTextView
             android:id="@+id/textViewStoryActionBarCount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -90,7 +90,7 @@
             app:layout_constraintTop_toBottomOf="@+id/imageViewStoryActionBarSave"
             app:srcCompat="@android:drawable/ic_menu_help" />
 
-        <cz.cubeit.cubeit_test.CustomTextView
+        <cz.cubeit.cubeit.CustomTextView
             android:id="@+id/textViewStoryActionBarExit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

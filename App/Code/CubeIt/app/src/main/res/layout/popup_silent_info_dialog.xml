@@ -23,7 +23,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/bg_basic_logincolor_darkish" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewSilentPopInfoDsc"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -10,11 +10,12 @@
         android:id="@+id/imageViewBoardFilterBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_basic_white_border"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,5:4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        android:background="@drawable/bg_basic_white_border"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
@@ -63,12 +64,11 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextBoardFilterUsername"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
         android:ems="10"
         android:hint="username"
         android:imeOptions="flagNoExtractUi"
@@ -81,17 +81,15 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/quideline153"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="@+id/guideline311"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextBoardFilterLevelBottom"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
         android:ems="10"
         android:hint="lvl from"
         android:imeOptions="flagNoExtractUi"
@@ -104,17 +102,14 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline154"
         app:layout_constraintEnd_toStartOf="@+id/guideline153"
         app:layout_constraintStart_toStartOf="@+id/guideline311"
-        app:layout_constraintTop_toTopOf="@+id/quideline153" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextBoardFilterUsername" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextBoardFilterPosition"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_height="wrap_content"
         android:ems="10"
         android:hint="position"
         android:imeOptions="flagNoExtractUi"
@@ -127,18 +122,16 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/quideline153"
         app:layout_constraintEnd_toEndOf="@+id/checkBoxBoardFilterActive"
         app:layout_constraintStart_toStartOf="@+id/checkBoxBoardFilterActive"
-        app:layout_constraintTop_toTopOf="@+id/guideline61" />
+        app:layout_constraintTop_toTopOf="@+id/editTextBoardFilterUsername" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextBoardFilterLevelTop"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
         android:ems="10"
         android:hint="lvl to"
         android:imeOptions="flagNoExtractUi"
@@ -151,10 +144,9 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline154"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="@+id/guideline153"
-        app:layout_constraintTop_toTopOf="@+id/quideline153" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextBoardFilterUsername" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline152"
@@ -177,34 +169,6 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.1" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/quideline153"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.28" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline157"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.57" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline154"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.44" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline158"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.66" />
-
     <CheckBox
         android:id="@+id/checkBoxBoardFilterActive"
         android:layout_width="wrap_content"
@@ -226,15 +190,15 @@
         android:id="@+id/spinnerBoardFilterCharClass"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:background="@null"
-        android:popupBackground="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center_vertical"
+        android:popupBackground="@android:color/transparent"
         android:textColor="@color/loginColor"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="@+id/guideline311"
-        app:layout_constraintTop_toTopOf="@+id/guideline154" />
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxBoardFilterActive" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

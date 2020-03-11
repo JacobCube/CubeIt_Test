@@ -40,6 +40,7 @@
         android:layout_marginTop="2dp"
         android:layout_marginBottom="2dp"
         android:clickable="true"
+        android:background="@drawable/bg_transparent_press_basic"
         android:focusable="true"
         android:tint="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline317"
@@ -57,6 +58,7 @@
         android:clickable="true"
         android:focusable="true"
         android:rotation="180"
+        android:background="@drawable/bg_transparent_press_basic"
         android:tint="@color/colorSecondary"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline317"
@@ -225,7 +227,7 @@
         app:srcCompat="@drawable/upload_icon"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCreateStoryEditFight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -243,7 +245,7 @@
         app:layout_constraintTop_toTopOf="@+id/switchCreateStoryWithFight"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCreateStoryScreenshot"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -272,7 +274,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/recyclerViewCreateStoryOverview2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="gone">
 
     </FrameLayout>
 

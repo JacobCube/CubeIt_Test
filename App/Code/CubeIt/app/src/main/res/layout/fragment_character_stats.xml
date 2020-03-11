@@ -9,23 +9,26 @@
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFragmentCharacterStats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:textColor="@color/brown_basic_1"
+        android:layout_marginBottom="6dp"
         android:fadingEdge="vertical"
+        android:gravity="center_horizontal"
         android:text="test text"
+        android:textColor="@color/brown_basic_1"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <ImageView
         android:id="@+id/imageViewFragmentStatsLock"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
         android:scaleType="centerInside"
         android:tint="@android:color/white"
         app:layout_constraintDimensionRatio="H,1:1"
@@ -39,6 +42,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.745" />
+        app:layout_constraintGuide_percent="0.8" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

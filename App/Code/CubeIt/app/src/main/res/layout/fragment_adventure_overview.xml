@@ -2,16 +2,17 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFragmentAdventureOverview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/loginColor"
+    android:background="@color/brown_basic_3"
     android:screenOrientation="sensorLandscape">
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listViewAdventureOverview"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="2dp"
+        android:layout_marginStart="5dp"
         android:layout_marginEnd="2dp"
         android:divider="@color/colorSecondary"
         android:dividerHeight="1dp"
@@ -21,74 +22,45 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewAdventureOverviewDifficulty" />
+        app:layout_constraintTop_toBottomOf="@+id/tabLayoutAdventureOverview" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewAdventureOverviewItem"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutAdventureOverview"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="1dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center_horizontal"
-        android:text="item"
-        android:textColor="@color/colorSecondary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline144"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewAdventureOverviewSize"
+        app:layout_constraintEnd_toEndOf="@+id/listViewAdventureOverview"
+        app:layout_constraintStart_toStartOf="@+id/listViewAdventureOverview"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabGravity="fill"
+        app:tabTextColor="@color/brown_basic_1"
+        app:tabMode="scrollable" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewAdventureOverviewDifficulty"
-        android:layout_width="0dp"
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewAdventureOverviewSize"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="1dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center_horizontal"
-        android:text="difficulty"
-        android:textColor="@color/colorSecondary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/guideline52"
+        android:padding="6dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewAdventureOverviewCoins"
+    <ImageView
+        android:id="@+id/imageViewAdventureOverviewUp"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center_vertical"
-        android:text="CC"
-        android:textColor="@color/colorSecondary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/guideline128"
-        app:layout_constraintStart_toEndOf="@+id/imageViewAdventureOverviewCC"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewAdventureOverviewExperience"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center_horizontal"
-        android:text="xp"
-        android:textColor="@color/colorSecondary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/guideline144"
-        app:layout_constraintStart_toStartOf="@+id/guideline128"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="0dp"
+        android:tint="@color/bg_basic_white"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline144"
+        app:layout_constraintTop_toTopOf="@+id/listViewAdventureOverview"
+        app:srcCompat="@drawable/arrow_up" />
 
     <ImageView
         android:id="@+id/imageViewAdventureOverviewCC"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/listViewAdventureOverview"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toStartOf="@+id/guideline52"

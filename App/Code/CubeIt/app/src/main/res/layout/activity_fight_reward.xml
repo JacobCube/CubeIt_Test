@@ -4,8 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/itemborder_very_rare"
     android:screenOrientation="sensorLandscape">
+
+    <ImageView
+        android:id="@+id/imageViewFightRewardBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline141"
@@ -13,6 +22,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.46" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline104"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.79" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline299"
@@ -29,11 +45,21 @@
         app:layout_constraintGuide_percent="0.79" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline304"
+        android:id="@+id/guideline103"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.12" />
+        app:layout_constraintGuide_percent="0.64" />
+
+    <ImageView
+        android:id="@+id/imageViewFightRewardCharbg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline141"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_basic_brown3" />
 
     <ImageView
         android:id="@+id/imageViewFightRewardChar"
@@ -43,64 +69,46 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline299"
         app:layout_constraintEnd_toStartOf="@+id/guideline141"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewFightRewardCharName" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewFightRewardXp" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightRewardTitle"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:gravity="center"
         android:text="Victory"
-        android:textColor="@color/loginColor"
+        android:textColor="@color/loginColor_3"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/guideline304"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline141"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/buttonFightRewardReceive"
-        style="@style/AppTheme.Button.Dark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Receive"
-        app:layout_constraintBottom_toTopOf="@+id/guideline305"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline141" />
-
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightRewardCC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         android:text="0"
-        app:layout_constraintBottom_toTopOf="@+id/buttonFightRewardReceive"
-        app:layout_constraintEnd_toStartOf="@+id/imageViewFightRewardXp" />
+        android:textColor="@color/loginColor_3"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewFightRewardXp"
+        app:layout_constraintTop_toTopOf="@+id/textViewFightRewardXp" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightRewardXp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="4dp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         android:text="0"
-        app:layout_constraintBottom_toTopOf="@+id/buttonFightRewardReceive"
-        app:layout_constraintEnd_toEndOf="@+id/buttonFightRewardReceive" />
-
-    <cz.cubeit.cubeit_test.CustomTextView
-        android:id="@+id/textViewFightRewardCharName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Your character"
-        android:textStyle="bold"
+        android:textColor="@color/loginColor_3"
         app:layout_constraintEnd_toStartOf="@+id/guideline141"
+        app:layout_constraintHorizontal_bias="0.601"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline304" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewFightRewardTitle" />
 
     <ImageView
         android:id="@+id/imageViewFightRewardCC"
@@ -123,25 +131,26 @@
         app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/xp" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFightRewardDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="6dp"
         android:background="@drawable/bg_basic_white"
         android:padding="5dp"
         android:text="Some description about the fight"
         android:textColor="@color/loginColor"
-        app:layout_constraintBottom_toTopOf="@+id/imageViewFightRewardXp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline103"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline141"
-        app:layout_constraintTop_toTopOf="@+id/guideline304" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewFightRewardTitle" />
 
     <ImageView
         android:id="@+id/imageViewFightRewardContinue"
         android:layout_width="wrap_content"
         android:tint="@color/colorSecondary"
         android:layout_height="0dp"
+        android:background="@drawable/bg_transparent_press_basic"
         app:layout_constraintBottom_toTopOf="@+id/guideline299"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline305"

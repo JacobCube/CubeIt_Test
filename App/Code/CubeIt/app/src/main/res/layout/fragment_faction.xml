@@ -9,7 +9,6 @@
     android:configChanges="orientation"
     android:screenOrientation="sensorLandscape">
 
-
     <ImageView
         android:id="@+id/imageViewFactionBgFragment"
         android:layout_width="0dp"
@@ -82,7 +81,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.2" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -99,7 +98,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline206"
         app:layout_constraintTop_toBottomOf="@+id/textViewFactionTitle" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -159,12 +158,14 @@
         app:layout_constraintEnd_toStartOf="@+id/buttonFactionEnemy"
         tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionInfoDesc"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/bg_basic_brown1_border"
+        android:background="@drawable/bg_basic_white_border"
         android:gravity="center_horizontal"
+        android:textColor="@color/loginColor"
+        android:backgroundTint="@color/loginColor_3"
         android:text="level : 1\n xp: 500/ 5000\n tax: 5000/ day"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline205"
@@ -172,7 +173,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline211"
         app:layout_constraintTop_toTopOf="@+id/textViewFactionDescription" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionGold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -183,7 +184,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline206"
         app:layout_constraintTop_toTopOf="@+id/guideline205" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextFactionGold"
         android:layout_width="80dp"
         android:layout_height="wrap_content"
@@ -200,9 +201,9 @@
         android:id="@+id/imageViewFactionGoldPlus"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:tint="@color/loginColor"
         android:clickable="true"
         android:focusable="true"
+        android:tint="@color/loginColor"
         app:layout_constraintBottom_toBottomOf="@+id/editTextFactionGold"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintStart_toEndOf="@+id/editTextFactionGold"
@@ -243,7 +244,7 @@
 
     </ListView>
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewFactionMemberDesc"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -270,13 +271,15 @@
 
     <ImageView
         android:id="@+id/imageViewFactionOpenLog"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:rotation="90"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H, 1:1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline88"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/arrow_down" />
 
@@ -300,5 +303,12 @@
         app:layout_constraintStart_toStartOf="@+id/guideline203"
         app:srcCompat="@drawable/new_message_bg"
         tools:visibility="gone" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline88"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.94" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -54,7 +54,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline317"
         app:srcCompat="@drawable/bg_basic_brown4" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewCreateStoryPublishInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -122,7 +122,7 @@
         app:layout_constraintStart_toStartOf="@+id/editTextCreateStoryPublishName"
         app:layout_constraintTop_toBottomOf="@+id/editTextCreateStoryPublishName" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextCreateStoryPublishName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
         app:layout_constraintStart_toStartOf="@+id/imageViewCreateStoryPublishBg"
         app:layout_constraintTop_toTopOf="@+id/guideline327" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextCreateStoryPublishDescription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -157,7 +157,7 @@
         app:layout_constraintStart_toStartOf="@+id/imageViewCreateStoryPublishBg"
         app:layout_constraintTop_toBottomOf="@+id/switchCreateStoryPublishEditable" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextCreateStoryPublishLimit"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

@@ -4,18 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:minHeight="225dp"
     android:configChanges="orientation"
-    app:layout_constraintDimensionRatio="H,1.5:1"
+    android:minHeight="275dp"
     android:screenOrientation="sensorLandscape">
 
     <ImageView
         android:id="@+id/imageViewPopUpDialogRegisterBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
         android:adjustViewBounds="true"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,1.5:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -27,8 +24,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="Given username already exists."
+        android:text="@string/sign_up_username_error"
         android:textColor="@color/red_error"
+        android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/buttonPopRegisterYes"
         app:layout_constraintEnd_toEndOf="@+id/buttonPopRegisterYes"
@@ -39,16 +37,16 @@
         android:id="@+id/buttonPopRegisterYes"
         style="@style/AppTheme.Button.Dark"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:fontFamily="@font/average_sans"
         android:text="@android:string/ok"
         android:textColor="@color/bg_basic_white"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/textViewPopRegisterPrivacyPolicy"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="parent" />
+        app:layout_constraintHorizontal_bias="0.486"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline26"
@@ -66,33 +64,34 @@
 
     <ImageView
         android:id="@+id/buttonCloseDialogRegister"
-        android:layout_width="0dp"
+        android:layout_width="30dp"
         android:layout_height="0dp"
         android:layout_marginEnd="4dp"
         android:adjustViewBounds="true"
         android:tint="@android:color/holo_red_dark"
         app:layout_constraintBottom_toTopOf="@+id/guideline26"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline27"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintTop_toTopOf="@+id/imageViewPopUpDialogRegisterBg"
+        app:layout_constraintVertical_bias="0.2"
         app:srcCompat="@drawable/close_image" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextPopRegisterName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:ems="10"
-        android:imeOptions="flagNoExtractUi"
         android:hint="@string/username"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/textViewPopRegisterError"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewPopRegisterTitle" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopRegisterTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -103,7 +102,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline26" />
 
-    <cz.cubeit.cubeit_test.CustomTextView
+    <cz.cubeit.cubeit.CustomTextView
         android:id="@+id/textViewPopRegisterLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -115,20 +114,41 @@
 
     <Switch
         android:id="@+id/switchPopRegisterInvited"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="6dp"
+        android:text="I was invited "
+        app:layout_constraintEnd_toStartOf="@+id/buttonPopRegisterYes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewPopRegisterPrivacyPolicy" />
+
+    <cz.cubeit.cubeit.CustomTextView
+        android:id="@+id/textViewPopRegisterPrivacyPolicy"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="I'm invited"
-        app:layout_constraintEnd_toStartOf="@+id/buttonPopRegisterYes"
-        app:layout_constraintTop_toTopOf="@+id/buttonPopRegisterYes" />
+        android:background="@drawable/bg_transparent_press"
+        android:gravity="center"
+        android:padding="5dp"
+        android:text="By continuing you agree with our terms of service."
+        android:textColor="@color/bg_basic_white"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewPopUpDialogRegisterBg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/switchPopRegisterInvited"
+        tools:visibility="visible" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextPopRegisterInvitation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/edittext_login_bg"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/circle_logincolor"
         android:hint="username"
         android:imeOptions="flagNoExtractUi"
-        android:paddingStart="4dp"
+        android:padding="5dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/switchPopRegisterInvited"
         app:layout_constraintStart_toStartOf="parent"

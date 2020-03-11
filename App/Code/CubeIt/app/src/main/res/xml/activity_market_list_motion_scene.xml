@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Transition
+        app:constraintSetStart="@id/motion_scene_market_list_start"
+        app:constraintSetEnd="@id/motion_scene_market_list_end"
+        app:duration="600">
+        <OnSwipe
+            app:touchAnchorId="@+id/recyclerViewMarketItems"
+            app:touchAnchorSide="top"
+            app:dragDirection="dragUp" />
+    </Transition>
+
+    <ConstraintSet android:id="@+id/motion_scene_market_list_start">
+        <Constraint
+            android:id="@+id/tabLayoutMarketItems"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/guideline76"
+            app:layout_constraintEnd_toStartOf="@+id/guideline85"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/motion_scene_market_list_end">
+        <Constraint
+            android:id="@+id/tabLayoutMarketItems"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintEnd_toStartOf="@+id/guideline85"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+    </ConstraintSet>
+</MotionScene>

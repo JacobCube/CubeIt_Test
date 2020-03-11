@@ -63,7 +63,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.12" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterDateFrom"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -82,12 +82,11 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/quideline153"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterSender"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -105,12 +104,11 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline157"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterReceiver"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -129,12 +127,11 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline157"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline154" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterDateTo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -154,7 +151,6 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/quideline153"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
         app:layout_constraintTop_toTopOf="@+id/guideline61" />
@@ -167,52 +163,31 @@
         app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/quideline153"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.26" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline157"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.52" />
-
-    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline154"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.38" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline158"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.66" />
-
     <Spinner
         android:id="@+id/spinnerInboxFilterCategory"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:background="@null"
         android:nextFocusLeft="@+id/editTextInboxFilterSender"
         android:nextFocusRight="@+id/editTextInboxFilterSender"
         android:nextFocusUp="@+id/editTextInboxFilterSender"
         android:nextFocusDown="@+id/editTextInboxFilterSender"
         android:nextFocusForward="@+id/editTextInboxFilterSender"
-        android:background="@null"
         android:popupBackground="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
-        app:layout_constraintTop_toTopOf="@+id/quideline153" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxFilterDateTo" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterSubject"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -230,12 +205,11 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline158"
         app:layout_constraintEnd_toStartOf="@+id/guideline152"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline157" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxFilterSender" />
 
-    <cz.cubeit.cubeit_test.CustomEditText
+    <cz.cubeit.cubeit.CustomEditText
         android:id="@+id/editTextInboxFilterContent"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -254,9 +228,8 @@
         android:textColor="@color/loginColor"
         android:textColorHint="@color/loginColor_2_dark"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline158"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline152"
-        app:layout_constraintTop_toTopOf="@+id/guideline157" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextInboxFilterReceiver" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
